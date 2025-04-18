@@ -1,0 +1,55 @@
+{
+  "name": "remind_me",
+  "version": "1.0.0",
+  "description": "This is the final project for Enterprise Web Application. The application here is a fullstact MERN with mySql and GraphQl Ecommerce Grocery Hub",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "set NODE_ENV=development&& nodemon --experimental-json-modules backend/server",
+    "client": "npm start --prefix frontend --max_old_space_size=4096 build",
+    "start": "node  ./backend/server.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-server": "npm install",
+    "start-server": "cd backend && node server.js",
+    "install-client": "cd frontend && npm install",
+    "build-client": "cd frontend && npm run build",
+    "start-client": "cd frontend && npm run start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arsaikia/EWA_Term_Project.git"
+  },
+  "keywords": [
+    "remind-me"
+  ],
+  "author": "Arunabh Saikia",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arsaikia/EWA_Term_Project/issues"
+  },
+  "homepage": "https://github.com/arsaikia/EWA_Term_Project#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "colors": "^1.4.0",
+    "compression": "^1.8.0",
+    "concurrently": "^5.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-handlebars": "^5.2.0",
+    "helmet": "^8.1.0",
+    "mongoose": "^7.6.3",
+    "octokit": "^2.1.0",
+    "react-cookie": "^4.1.1",
+    "uuid": "^8.3.2",
+    "validator": "^13.9.0"
+  },
+  "devDependencies": {
+    "concurrency": "^0.1.4",
+    "eslint": "^8.43.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "nodemon": "^2.0.6"
+  }
+}

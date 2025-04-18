@@ -1,0 +1,79 @@
+{
+	 "extends": [
+	 	"react-app",
+	 	"plugin:react/recommended"
+	 ],
+	 "plugins": [
+	 	"react",
+	 	"react-hooks"
+	 ],
+	 "parserOptions": {
+			// Required for certain syntax usages
+			"ecmaVersion": 2020,
+			"sourceType": "module",
+			"ecmaFeatures": {
+				"jsx": true
+			}
+	 },
+	 "ignorePatterns": ["*.png", "*.css"],
+	 "rules": {
+	 	"max-len": [
+	 		"error",
+	 		{
+	 			"code": 120
+	 		}
+	 	],
+	 	"import/order": [
+	 		"error",
+	 		{
+	 			"groups": [
+	 				"builtin",
+	 				"external",
+	 				"internal"
+	 			],
+	 			"pathGroups": [{
+	 				"pattern": "react",
+	 				"group": "external",
+	 				"position": "before"
+	 			}],
+	 			"pathGroupsExcludedImportTypes": [
+	 				"react"
+	 			],
+	 			"newlines-between": "always",
+	 			"alphabetize": {
+	 				"order": "asc",
+	 				"caseInsensitive": true
+	 			}
+	 		} 
+	 	],
+		"import/prefer-default-export": "off",
+	 	"object-curly-newline": ["error", {
+       "ObjectExpression": { "multiline": true, "minProperties": 1, "consistent": true },
+       "ObjectPattern": { "multiline": true, "minProperties": 1, "consistent": true },
+       "ImportDeclaration": { "multiline": true, "minProperties": 2, "consistent": false },
+       "ExportDeclaration": { "multiline": true, "minProperties": 1 }
+     }],
+     "object-property-newline": ["error", { "allowAllPropertiesOnSameLine": false }],
+	 	"sort-keys": ["error", "asc", {
+	 		"caseSensitive": true,
+	 		"natural": false,
+	 		"minKeys": 2
+	 	}],
+     "comma-dangle": ["error", {
+         "arrays": "always-multiline",
+         "objects": "always-multiline",
+         "imports": "always-multiline",
+         "exports": "always-multiline",
+         "functions": "never"
+     }],
+     "react/react-in-jsx-scope": "off",
+     "react/prop-types": "off",
+     "react-hooks/rules-of-hooks": "error",
+     "react-hooks/exhaustive-deps": "warn"
+	 },
+	 "settings": {
+	 	"react": {
+	 		"version": "detect"
+	 	}
+	 }
+}

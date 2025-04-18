@@ -1,0 +1,1043 @@
+[{
+  "_id": "61482de5-dc5b-434f-92a8-6127bcb3b0dc",
+  "name": "Valid Anagram",
+  "link": "valid-anagram/",
+  "group": "Arrays & Hashing",
+  "difficulty": "Easy"
+},
+{
+  "_id": "514e10c7-d284-4651-bf40-cb7b2d4cdae3",
+  "name": "Two Sum",
+  "link": "two-sum/",
+  "group": "Arrays & Hashing",
+  "difficulty": "Easy"
+},
+{
+  "_id": "e30e4617-c535-4672-8587-193c4d0b5ea3",
+  "name": "Group Anagrams",
+  "link": "group-anagrams/",
+  "group": "Arrays & Hashing",
+  "difficulty": "Medium"
+},
+{
+  "_id": "8a0b50cd-3636-4c33-9ccc-2b4da74c7da3",
+  "name": "Top K Frequent Elements",
+  "link": "top-k-frequent-elements/",
+  "group": "Arrays & Hashing",
+  "difficulty": "Medium"
+},
+{
+  "_id": "e068c6eb-17bc-4737-9cb9-35a27f3b7f72",
+  "name": "Product of Array Except Self",
+  "link": "product-of-array-except-self/",
+  "group": "Arrays & Hashing",
+  "difficulty": "Medium"
+},
+{
+  "_id": "79fea597-9ec3-4800-83cb-c41a98d4ddd8",
+  "name": "Valid Sudoku",
+  "link": "valid-sudoku/",
+  "group": "Arrays & Hashing",
+  "difficulty": "Medium"
+},
+{
+  "_id": "dd2e5b8f-4308-4f15-ab08-edf928b4e88c",
+  "name": "Encode and Decode Strings",
+  "link": "encode-and-decode-strings/",
+  "group": "Arrays & Hashing",
+  "difficulty": "Medium"
+},
+{
+  "_id": "2e926ab5-1761-436b-8359-30cd6c2a2ebc",
+  "name": "Longest Consecutive Sequence",
+  "link": "longest-consecutive-sequence/",
+  "group": "Arrays & Hashing",
+  "difficulty": "Medium"
+},
+{
+  "_id": "3b933a94-e28d-4591-826d-3f810f383e42",
+  "name": "Valid Palindrome",
+  "link": "valid-palindrome/",
+  "group": "Two Pointers",
+  "difficulty": "Easy"
+},
+{
+  "_id": "cb04aabd-3ab4-4e60-b6c2-d99bb66b2347",
+  "name": "Two Sum II Input Array Is Sorted",
+  "link": "two-sum-ii-input-array-is-sorted/",
+  "group": "Two Pointers",
+  "difficulty": "Medium"
+},
+{
+  "_id": "bb3b84d4-6dcb-48c5-a278-4165fdd9f5f5",
+  "name": "3Sum",
+  "link": "3sum/",
+  "group": "Two Pointers",
+  "difficulty": "Medium"
+},
+{
+  "_id": "fce404d5-bbfd-4a23-bb3c-3de7fffcd4bd",
+  "name": "Container With Most Water",
+  "link": "container-with-most-water/",
+  "group": "Two Pointers",
+  "difficulty": "Medium"
+},
+{
+  "_id": "3d4f0592-3495-49a2-ab42-c31ded9613c7",
+  "name": "Trapping Rain Water",
+  "link": "trapping-rain-water/",
+  "group": "Two Pointers",
+  "difficulty": "Hard"
+},
+{
+  "_id": "fd5864b0-607e-4897-ae50-38411aa0f9d8",
+  "name": "Best Time to Buy And Sell Stock",
+  "link": "best-time-to-buy-and-sell-stock/",
+  "group": "Sliding Window",
+  "difficulty": "Easy"
+},
+{
+  "_id": "f0cfb7db-3df7-4009-95b7-21fc69d76784",
+  "name": "Longest Substring Without Repeating Characters",
+  "link": "longest-substring-without-repeating-characters/",
+  "group": "Sliding Window",
+  "difficulty": "Medium"
+},
+{
+  "_id": "ee634ce7-8050-40b0-b7e7-a25e08bc67a5",
+  "name": "Longest Repeating Character Replacement",
+  "link": "longest-repeating-character-replacement/",
+  "group": "Sliding Window",
+  "difficulty": "Medium"
+},
+{
+  "_id": "a447b36c-292a-4427-85d1-dfcc06b227fa",
+  "name": "Permutation In String",
+  "link": "permutation-in-string/",
+  "group": "Sliding Window",
+  "difficulty": "Medium"
+},
+{
+  "_id": "020dbf3f-1d99-4c6d-8dae-5ea73a67fcde",
+  "name": "Minimum Window Substring",
+  "link": "minimum-window-substring/",
+  "group": "Sliding Window",
+  "difficulty": "Hard"
+},
+{
+  "_id": "e83420be-9dfc-440e-95e3-2b331bcf3228",
+  "name": "Sliding Window Maximum",
+  "link": "sliding-window-maximum/",
+  "group": "Sliding Window",
+  "difficulty": "Hard"
+},
+{
+  "_id": "45b9b418-1092-46fe-9352-183db5f9c198",
+  "name": "Valid Parentheses",
+  "link": "valid-parentheses/",
+  "group": "Stack",
+  "difficulty": "Easy"
+},
+{
+  "_id": "400373fa-6a06-465f-834f-321340ea115c",
+  "name": "Min Stack",
+  "link": "min-stack/",
+  "group": "Stack",
+  "difficulty": "Medium"
+},
+{
+  "_id": "bff4a7ae-3897-4902-b131-f2e7c996a998",
+  "name": "Evaluate Reverse Polish Notation",
+  "link": "evaluate-reverse-polish-notation/",
+  "group": "Stack",
+  "difficulty": "Medium"
+},
+{
+  "_id": "4b301f3c-70a6-4f46-932e-53b6f33cfcfb",
+  "name": "Generate Parentheses",
+  "link": "generate-parentheses/",
+  "group": "Stack",
+  "difficulty": "Medium"
+},
+{
+  "_id": "fa92a62a-32a9-4896-9b67-21cf02e1503a",
+  "name": "Daily Temperatures",
+  "link": "daily-temperatures/",
+  "group": "Stack",
+  "difficulty": "Medium"
+},
+{
+  "_id": "46f1f29d-040a-427a-83ac-f5047c9aa4ec",
+  "name": "Car Fleet",
+  "link": "car-fleet/",
+  "group": "Stack",
+  "difficulty": "Medium"
+},
+{
+  "_id": "f926d82d-faa2-45d2-ac5a-7c190a3fed3d",
+  "name": "Largest Rectangle In Histogram",
+  "link": "largest-rectangle-in-histogram/",
+  "group": "Stack",
+  "difficulty": "Hard"
+},
+{
+  "_id": "57bbb283-a785-4a6d-8af1-45c47c9a3851",
+  "name": "Binary Search",
+  "link": "binary-search/",
+  "group": "Binary Search",
+  "difficulty": "Easy"
+},
+{
+  "_id": "eedd0a38-df0e-49b4-99a9-754937e8e43d",
+  "name": "Search a 2D Matrix",
+  "link": "search-a-2d-matrix/",
+  "group": "Binary Search",
+  "difficulty": "Medium"
+},
+{
+  "_id": "d228b9a4-b3f5-45ae-985f-7afee7b15f96",
+  "name": "Koko Eating Bananas",
+  "link": "koko-eating-bananas/",
+  "group": "Binary Search",
+  "difficulty": "Medium"
+},
+{
+  "_id": "032f1f05-a33e-472f-9868-8f2dd670d481",
+  "name": "Find Minimum In Rotated Sorted Array",
+  "link": "find-minimum-in-rotated-sorted-array/",
+  "group": "Binary Search",
+  "difficulty": "Medium"
+},
+{
+  "_id": "fa452a51-276b-4458-be69-1edf1fdf4c9d",
+  "name": "Search In Rotated Sorted Array",
+  "link": "search-in-rotated-sorted-array/",
+  "group": "Binary Search",
+  "difficulty": "Medium"
+},
+{
+  "_id": "32beb46c-ad1c-482c-96dc-933207f8d2e5",
+  "name": "Time Based Key Value Store",
+  "link": "time-based-key-value-store/",
+  "group": "Binary Search",
+  "difficulty": "Medium"
+},
+{
+  "_id": "aa7e1f60-4106-45b7-8cfd-c1274f1126a1",
+  "name": "Median of Two Sorted Arrays",
+  "link": "median-of-two-sorted-arrays/",
+  "group": "Binary Search",
+  "difficulty": "Hard"
+},
+{
+  "_id": "515c9df9-ca83-4697-9f1f-281e85fce43a",
+  "name": "Reverse Linked List",
+  "link": "reverse-linked-list/",
+  "group": "Linked List",
+  "difficulty": "Easy"
+},
+{
+  "_id": "4dd1b9b7-9e24-4ddd-a65c-f2b5d767a1eb",
+  "name": "Merge Two Sorted Lists",
+  "link": "merge-two-sorted-lists/",
+  "group": "Linked List",
+  "difficulty": "Easy"
+},
+{
+  "_id": "a32aeb61-69d0-4432-9ed1-fd5edd6fa0f1",
+  "name": "Reorder List",
+  "link": "reorder-list/",
+  "group": "Linked List",
+  "difficulty": "Medium"
+},
+{
+  "_id": "73e731b1-ae11-4470-a98f-cafa006306e6",
+  "name": "Remove Nth Node From End of List",
+  "link": "remove-nth-node-from-end-of-list/",
+  "group": "Linked List",
+  "difficulty": "Medium"
+},
+{
+  "_id": "caa2a454-4399-438c-9936-30d117dc46e9",
+  "name": "Copy List With Random Pointer",
+  "link": "copy-list-with-random-pointer/",
+  "group": "Linked List",
+  "difficulty": "Medium"
+},
+{
+  "_id": "4ab40d11-f040-4e28-8172-e5325bd37947",
+  "name": "Add Two Numbers",
+  "link": "add-two-numbers/",
+  "group": "Linked List",
+  "difficulty": "Medium"
+},
+{
+  "_id": "18f2633f-58fa-44f8-95ba-939d24c75870",
+  "name": "Linked List Cycle",
+  "link": "linked-list-cycle/",
+  "group": "Linked List",
+  "difficulty": "Easy"
+},
+{
+  "_id": "2b4ef88b-ea0e-407d-bf06-288f38f8ecd1",
+  "name": "Find The Duplicate Number",
+  "link": "find-the-duplicate-number/",
+  "group": "Linked List",
+  "difficulty": "Medium"
+},
+{
+  "_id": "d0e3d685-ba1a-47f9-b80d-4dfe147418d0",
+  "name": "LRU Cache",
+  "link": "lru-cache/",
+  "group": "Linked List",
+  "difficulty": "Medium"
+},
+{
+  "_id": "fcd87a7d-210a-4f2f-b2a7-af290feae97b",
+  "name": "Merge K Sorted Lists",
+  "link": "merge-k-sorted-lists/",
+  "group": "Linked List",
+  "difficulty": "Hard"
+},
+{
+  "_id": "ed997cde-2196-4528-81a8-4bc065e8f3a6",
+  "name": "Reverse Nodes In K Group",
+  "link": "reverse-nodes-in-k-group/",
+  "group": "Linked List",
+  "difficulty": "Hard"
+},
+{
+  "_id": "936f6c8e-24f5-4f9e-ba7b-cf74ca8cc7ed",
+  "name": "Invert Binary Tree",
+  "link": "invert-binary-tree/",
+  "group": "Trees",
+  "difficulty": "Easy"
+},
+{
+  "_id": "bacd42b2-5566-4a87-bce6-420a72b7ec7d",
+  "name": "Maximum Depth of Binary Tree",
+  "link": "maximum-depth-of-binary-tree/",
+  "group": "Trees",
+  "difficulty": "Easy"
+},
+{
+  "_id": "7522e38e-b7eb-41a9-bc47-17de3aed0a87",
+  "name": "Diameter of Binary Tree",
+  "link": "diameter-of-binary-tree/",
+  "group": "Trees",
+  "difficulty": "Easy"
+},
+{
+  "_id": "9808d287-482a-403d-93d3-6d56eaac76a5",
+  "name": "Balanced Binary Tree",
+  "link": "balanced-binary-tree/",
+  "group": "Trees",
+  "difficulty": "Easy"
+},
+{
+  "_id": "6afb462f-805c-4d7d-9665-015aaf61175a",
+  "name": "Same Tree",
+  "link": "same-tree/",
+  "group": "Trees",
+  "difficulty": "Easy"
+},
+{
+  "_id": "9ff6ac8d-ebb1-49a5-a962-2951c0b4ea8c",
+  "name": "Subtree of Another Tree",
+  "link": "subtree-of-another-tree/",
+  "group": "Trees",
+  "difficulty": "Easy"
+},
+{
+  "_id": "080d8166-0a67-4036-920a-99b92fe1c93a",
+  "name": "Lowest Common Ancestor of a Binary Search Tree",
+  "link": "lowest-common-ancestor-of-a-binary-search-tree/",
+  "group": "Trees",
+  "difficulty": "Medium"
+},
+{
+  "_id": "1a2b9bd6-537f-4907-b097-36ab4ed539d0",
+  "name": "Binary Tree Level Order Traversal",
+  "link": "binary-tree-level-order-traversal/",
+  "group": "Trees",
+  "difficulty": "Medium"
+},
+{
+  "_id": "0e329c54-6132-49c4-9c3a-f4094d2842f1",
+  "name": "Binary Tree Right Side View",
+  "link": "binary-tree-right-side-view/",
+  "group": "Trees",
+  "difficulty": "Medium"
+},
+{
+  "_id": "dba2a38a-3baa-4b46-ba8b-c79d59ec72c5",
+  "name": "Count Good Nodes In Binary Tree",
+  "link": "count-good-nodes-in-binary-tree/",
+  "group": "Trees",
+  "difficulty": "Medium"
+},
+{
+  "_id": "5a85a4a9-9ee2-4464-b05b-50a15877277d",
+  "name": "Validate Binary Search Tree",
+  "link": "validate-binary-search-tree/",
+  "group": "Trees",
+  "difficulty": "Medium"
+},
+{
+  "_id": "b9d1e2d0-e84a-4bde-979f-4accdf4f55ca",
+  "name": "Kth Smallest Element In a Bst",
+  "link": "kth-smallest-element-in-a-bst/",
+  "group": "Trees",
+  "difficulty": "Medium"
+},
+{
+  "_id": "0bb7da01-39a0-4c94-a091-d5b4cc5df96b",
+  "name": "Construct Binary Tree From Preorder And Inorder Traversal",
+  "link": "construct-binary-tree-from-preorder-and-inorder-traversal/",
+  "group": "Trees",
+  "difficulty": "Medium"
+},
+{
+  "_id": "98307987-277b-41c4-8126-97a37ff81e27",
+  "name": "Binary Tree Maximum Path Sum",
+  "link": "binary-tree-maximum-path-sum/",
+  "group": "Trees",
+  "difficulty": "Hard"
+},
+{
+  "_id": "2e2a3ee5-f2de-4a72-88f8-2870bdffe906",
+  "name": "Serialize And Deserialize Binary Tree",
+  "link": "serialize-and-deserialize-binary-tree/",
+  "group": "Trees",
+  "difficulty": "Hard"
+},
+{
+  "_id": "45c165d0-d006-4d6d-a442-819ee05933a3",
+  "name": "Implement Trie Prefix Tree",
+  "link": "implement-trie-prefix-tree/",
+  "group": "Tries",
+  "difficulty": "Medium"
+},
+{
+  "_id": "00e66dd9-bccf-484c-93a1-9c7775d52dca",
+  "name": "Design Add And Search Words Data Structure",
+  "link": "design-add-and-search-words-data-structure/",
+  "group": "Tries",
+  "difficulty": "Medium"
+},
+{
+  "_id": "2595ff73-2591-4b26-ae60-54b8d95b7d70",
+  "name": "Word Search II",
+  "link": "word-search-ii/",
+  "group": "Tries",
+  "difficulty": "Hard"
+},
+{
+  "_id": "49a54bf0-2a55-4f5a-9c70-fcc590435ce8",
+  "name": "Kth Largest Element In a Stream",
+  "link": "kth-largest-element-in-a-stream/",
+  "group": "Heap / Priority Queue",
+  "difficulty": "Easy"
+},
+{
+  "_id": "e92dc165-d4ac-4b1a-a6fb-704d9b6f3eb9",
+  "name": "Last Stone Weight",
+  "link": "last-stone-weight/",
+  "group": "Heap / Priority Queue",
+  "difficulty": "Easy"
+},
+{
+  "_id": "54f290e7-0d32-4e10-8cc2-e8f2b6c3f797",
+  "name": "K Closest Points to Origin",
+  "link": "k-closest-points-to-origin/",
+  "group": "Heap / Priority Queue",
+  "difficulty": "Medium"
+},
+{
+  "_id": "160c0213-9e34-44f4-bd39-470f4079565e",
+  "name": "Kth Largest Element In An Array",
+  "link": "kth-largest-element-in-an-array/",
+  "group": "Heap / Priority Queue",
+  "difficulty": "Medium"
+},
+{
+  "_id": "0afc4c26-9164-47cd-b66c-b8e377ac0a94",
+  "name": "Task Scheduler",
+  "link": "task-scheduler/",
+  "group": "Heap / Priority Queue",
+  "difficulty": "Medium"
+},
+{
+  "_id": "0ee991f5-31f2-40fb-b054-21e00c52d80f",
+  "name": "Design Twitter",
+  "link": "design-twitter/",
+  "group": "Heap / Priority Queue",
+  "difficulty": "Medium"
+},
+{
+  "_id": "1125636f-a4c9-466d-8af6-d02ec1f4aa5e",
+  "name": "Find Median From Data Stream",
+  "link": "find-median-from-data-stream/",
+  "group": "Heap / Priority Queue",
+  "difficulty": "Hard"
+},
+{
+  "_id": "b216d90a-37e8-430c-8d6c-fdf0a8404069",
+  "name": "Subsets",
+  "link": "subsets/",
+  "group": "Backtracking",
+  "difficulty": "Medium"
+},
+{
+  "_id": "f6d55ebf-3110-4b39-a0c9-c6f881972e32",
+  "name": "Combination Sum",
+  "link": "combination-sum/",
+  "group": "Backtracking",
+  "difficulty": "Medium"
+},
+{
+  "_id": "a1381cd0-6f11-4949-87fc-8b87812ab762",
+  "name": "Permutations",
+  "link": "permutations/",
+  "group": "Backtracking",
+  "difficulty": "Medium"
+},
+{
+  "_id": "a65fdb04-5300-41dc-b367-b1f0a02d8858",
+  "name": "Subsets II",
+  "link": "subsets-ii/",
+  "group": "Backtracking",
+  "difficulty": "Medium"
+},
+{
+  "_id": "b283de0b-59a6-4bad-89b6-eeed165dda5d",
+  "name": "Combination Sum II",
+  "link": "combination-sum-ii/",
+  "group": "Backtracking",
+  "difficulty": "Medium"
+},
+{
+  "_id": "002e62fb-1d2e-4132-bb5b-2b39a56d042d",
+  "name": "Word Search",
+  "link": "word-search/",
+  "group": "Backtracking",
+  "difficulty": "Medium"
+},
+{
+  "_id": "a3313481-9a29-4372-bdab-f6bf272384e5",
+  "name": "Palindrome Partitioning",
+  "link": "palindrome-partitioning/",
+  "group": "Backtracking",
+  "difficulty": "Medium"
+},
+{
+  "_id": "b8ffee62-081e-4ba9-902c-cc1f83d1f663",
+  "name": "Letter Combinations of a Phone Number",
+  "link": "letter-combinations-of-a-phone-number/",
+  "group": "Backtracking",
+  "difficulty": "Medium"
+},
+{
+  "_id": "598a1859-0aad-4863-bdfb-b0fe1a172b00",
+  "name": "N Queens",
+  "link": "n-queens/",
+  "group": "Backtracking",
+  "difficulty": "Hard"
+},
+{
+  "_id": "23069830-5c35-4ddc-9925-ea7a39387988",
+  "name": "Number of Islands",
+  "link": "number-of-islands/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "f9ff05de-24b6-4249-b36c-ca5da315e1e6",
+  "name": "Clone Graph",
+  "link": "clone-graph/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "3ad80a68-df8e-42e5-a065-3cfdce42d1a5",
+  "name": "Max Area of Island",
+  "link": "max-area-of-island/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "32f44eab-9576-48ae-be80-9f8c0ccf0371",
+  "name": "Pacific Atlantic Water Flow",
+  "link": "pacific-atlantic-water-flow/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "7fa8916e-41f0-4766-bc0f-573e4a126ee8",
+  "name": "Surrounded Regions",
+  "link": "surrounded-regions/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "40aaa9f7-0907-4d52-a767-3edd3a7e4387",
+  "name": "Rotting Oranges",
+  "link": "rotting-oranges/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "0c37f03b-31b6-4587-a99c-15763e3b4e0a",
+  "name": "Walls And Gates",
+  "link": "walls-and-gates/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "3cbcb458-1ef7-43b5-9b78-eadc20ccba62",
+  "name": "Course Schedule",
+  "link": "course-schedule/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "ba7f0268-fba1-43ad-9394-0ff4a28a9e99",
+  "name": "Course Schedule II",
+  "link": "course-schedule-ii/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "9e947557-4df2-462d-8db0-d2bd1f912585",
+  "name": "Redundant Connection",
+  "link": "redundant-connection/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "0d3747ac-31e5-4d12-bd71-1f3291bb3d4e",
+  "name": "Number of Connected Components In An Undirected Graph",
+  "link": "number-of-connected-components-in-an-undirected-graph/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "f43f1489-4e64-43a3-8331-2a6103748164",
+  "name": "Graph Valid Tree",
+  "link": "graph-valid-tree/",
+  "group": "Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "fbea69d7-3e03-4f3b-93e9-6f4961711454",
+  "name": "Word Ladder",
+  "link": "word-ladder/",
+  "group": "Graphs",
+  "difficulty": "Hard"
+},
+{
+  "_id": "b768c48d-cd4a-42c2-9761-f3263701b55f",
+  "name": "Reconstruct Itinerary",
+  "link": "reconstruct-itinerary/",
+  "group": "Advanced Graphs",
+  "difficulty": "Hard"
+},
+{
+  "_id": "c346edbe-bf7e-42ce-82f7-d32ce19190d5",
+  "name": "Min Cost to Connect All Points",
+  "link": "min-cost-to-connect-all-points/",
+  "group": "Advanced Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "8f3ad8d7-800a-4d2f-a032-856b6c735bb3",
+  "name": "Network Delay Time",
+  "link": "network-delay-time/",
+  "group": "Advanced Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "15609849-b644-423c-aded-9f7dc4fdaba4",
+  "name": "Swim In Rising Water",
+  "link": "swim-in-rising-water/",
+  "group": "Advanced Graphs",
+  "difficulty": "Hard"
+},
+{
+  "_id": "9921d0ed-78c6-4caf-9fc3-aeb6e33c0f52",
+  "name": "Alien Dictionary",
+  "link": "alien-dictionary/",
+  "group": "Advanced Graphs",
+  "difficulty": "Hard"
+},
+{
+  "_id": "dd99f24c-4d90-440d-8bb3-4907e4d134bf",
+  "name": "Cheapest Flights Within K Stops",
+  "link": "cheapest-flights-within-k-stops/",
+  "group": "Advanced Graphs",
+  "difficulty": "Medium"
+},
+{
+  "_id": "ff7880b8-3251-4cae-ad47-0b5f6679b27c",
+  "name": "Climbing Stairs",
+  "link": "climbing-stairs/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Easy"
+},
+{
+  "_id": "3db2f442-10d7-448b-833f-48c5d949e4ce",
+  "name": "Min Cost Climbing Stairs",
+  "link": "min-cost-climbing-stairs/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Easy"
+},
+{
+  "_id": "7e7dc629-1357-4913-b49f-c3f0008cec61",
+  "name": "House Robber",
+  "link": "house-robber/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "7633b63e-3329-4c85-8922-28796203a162",
+  "name": "House Robber II",
+  "link": "house-robber-ii/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "578c006d-a956-4db0-b5a3-1fffc723c4d8",
+  "name": "Longest Palindromic Substring",
+  "link": "longest-palindromic-substring/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "cf4a214c-fd5c-4187-a8ec-a72612b44087",
+  "name": "Palindromic Substrings",
+  "link": "palindromic-substrings/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "ff2eefe1-ee65-47bc-bdb3-6f0e268a8607",
+  "name": "Decode Ways",
+  "link": "decode-ways/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "df3fc697-0fdc-427e-8228-4f58298bb0cc",
+  "name": "Coin Change",
+  "link": "coin-change/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "6c4ec1f6-f1ef-43f1-b67b-5e37b34b29de",
+  "name": "Maximum Product Subarray",
+  "link": "maximum-product-subarray/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "276504dd-761c-4475-89ae-a2ed20b39990",
+  "name": "Word Break",
+  "link": "word-break/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "52b78c29-de97-48a5-973a-b85d96d41ca5",
+  "name": "Longest Increasing Subsequence",
+  "link": "longest-increasing-subsequence/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "0e77dc80-0c6e-4c7e-a527-e7468bdb0526",
+  "name": "Partition Equal Subset Sum",
+  "link": "partition-equal-subset-sum/",
+  "group": "1-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "0cb241d4-66b5-4653-8d94-9a8a2a8d0a89",
+  "name": "Unique Paths",
+  "link": "unique-paths/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "be52335c-eaba-420d-817d-c7c4f5f230ec",
+  "name": "Longest Common Subsequence",
+  "link": "longest-common-subsequence/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "b26d68a4-27ad-48f1-98b5-d408a92b91ec",
+  "name": "Best Time to Buy And Sell Stock With Cooldown",
+  "link": "best-time-to-buy-and-sell-stock-with-cooldown/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "17ac480a-b46d-4927-a6b2-32605b89d1f8",
+  "name": "Coin Change II",
+  "link": "coin-change-ii/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "780a7103-81ca-4993-8892-b1587dc8040d",
+  "name": "Target Sum",
+  "link": "target-sum/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "0e48f236-9406-4fc5-ac29-d9becddca2b8",
+  "name": "Interleaving String",
+  "link": "interleaving-string/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Medium"
+},
+{
+  "_id": "68738322-ca21-46c4-b5c3-c369a36fc378",
+  "name": "Longest Increasing Path In a Matrix",
+  "link": "longest-increasing-path-in-a-matrix/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Hard"
+},
+{
+  "_id": "8df1eea3-5152-4442-a509-f3d48e6c3494",
+  "name": "Distinct Subsequences",
+  "link": "distinct-subsequences/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Hard"
+},
+{
+  "_id": "795afe42-d274-49be-9646-d0c13ba05a21",
+  "name": "Edit Distance",
+  "link": "edit-distance/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Hard"
+},
+{
+  "_id": "0691675a-ad38-4bd0-a5b1-d232ffcecc90",
+  "name": "Burst Balloons",
+  "link": "burst-balloons/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Hard"
+},
+{
+  "_id": "52d3b611-e791-4ef9-bc40-5d5eadde5778",
+  "name": "Regular Expression Matching",
+  "link": "regular-expression-matching/",
+  "group": "2-D Dynamic Programming",
+  "difficulty": "Hard"
+},
+{
+  "_id": "708b9b17-6e1b-4a54-90a6-4d81b5e59edb",
+  "name": "Maximum Subarray",
+  "link": "maximum-subarray/",
+  "group": "Greedy",
+  "difficulty": "Medium"
+},
+{
+  "_id": "39eb47ba-5ac6-4555-9fe5-2f2e8cde8d8b",
+  "name": "Jump Game",
+  "link": "jump-game/",
+  "group": "Greedy",
+  "difficulty": "Medium"
+},
+{
+  "_id": "e91fc47b-0c69-4b6c-ac5a-30dc5d8b62e8",
+  "name": "Jump Game II",
+  "link": "jump-game-ii/",
+  "group": "Greedy",
+  "difficulty": "Medium"
+},
+{
+  "_id": "140f7689-3a60-4e78-9b1a-1d162d61ac02",
+  "name": "Gas Station",
+  "link": "gas-station/",
+  "group": "Greedy",
+  "difficulty": "Medium"
+},
+{
+  "_id": "23c52f04-454c-441c-96f9-0e3da1ed73b9",
+  "name": "Hand of Straights",
+  "link": "hand-of-straights/",
+  "group": "Greedy",
+  "difficulty": "Medium"
+},
+{
+  "_id": "4efb2e25-be37-4ba8-b573-0efb90a25196",
+  "name": "Merge Triplets to Form Target Triplet",
+  "link": "merge-triplets-to-form-target-triplet/",
+  "group": "Greedy",
+  "difficulty": "Medium"
+},
+{
+  "_id": "e903746e-2ffd-40b1-8eca-b7c5994cecd7",
+  "name": "Partition Labels",
+  "link": "partition-labels/",
+  "group": "Greedy",
+  "difficulty": "Medium"
+},
+{
+  "_id": "fd462471-ab4b-42a8-938a-8abe50f47f80",
+  "name": "Valid Parenthesis String",
+  "link": "valid-parenthesis-string/",
+  "group": "Greedy",
+  "difficulty": "Medium"
+},
+{
+  "_id": "c0b179b3-7e3e-4e14-86ef-1dad738d57fa",
+  "name": "Insert Interval",
+  "link": "insert-interval/",
+  "group": "Intervals",
+  "difficulty": "Medium"
+},
+{
+  "_id": "31c59728-e2b5-4cd0-9993-90c35d21fa93",
+  "name": "Merge Intervals",
+  "link": "merge-intervals/",
+  "group": "Intervals",
+  "difficulty": "Medium"
+},
+{
+  "_id": "177a1851-9d5f-40e2-b4c4-0d6bdc035dd1",
+  "name": "Non Overlapping Intervals",
+  "link": "non-overlapping-intervals/",
+  "group": "Intervals",
+  "difficulty": "Medium"
+},
+{
+  "_id": "a7547afa-bda2-45e2-9d4e-22b5e85c08d7",
+  "name": "Meeting Rooms",
+  "link": "meeting-rooms/",
+  "group": "Intervals",
+  "difficulty": "Easy"
+},
+{
+  "_id": "50b696e2-40e0-4869-893c-44358b3b4e06",
+  "name": "Meeting Rooms II",
+  "link": "meeting-rooms-ii/",
+  "group": "Intervals",
+  "difficulty": "Medium"
+},
+{
+  "_id": "5535baea-85e5-456d-ba49-339a78b91e22",
+  "name": "Minimum Interval to Include Each Query",
+  "link": "minimum-interval-to-include-each-query/",
+  "group": "Intervals",
+  "difficulty": "Hard"
+},
+{
+  "_id": "f64b1e8d-b8c4-4fff-a1a8-5e1176eb92c1",
+  "name": "Rotate Image",
+  "link": "rotate-image/",
+  "group": "Math & Geometry",
+  "difficulty": "Medium"
+},
+{
+  "_id": "f8a48a3e-0d61-41f4-b8ae-8146b2f274ef",
+  "name": "Spiral Matrix",
+  "link": "spiral-matrix/",
+  "group": "Math & Geometry",
+  "difficulty": "Medium"
+},
+{
+  "_id": "762fc085-8e67-482a-9ed7-686b43b5f3a5",
+  "name": "Set Matrix Zeroes",
+  "link": "set-matrix-zeroes/",
+  "group": "Math & Geometry",
+  "difficulty": "Medium"
+},
+{
+  "_id": "bcfeef3a-84c0-4999-8ef0-71921c5c5faf",
+  "name": "Happy Number",
+  "link": "happy-number/",
+  "group": "Math & Geometry",
+  "difficulty": "Easy"
+},
+{
+  "_id": "864b9369-fc5d-4011-bec2-5dadae40f9c2",
+  "name": "Plus One",
+  "link": "plus-one/",
+  "group": "Math & Geometry",
+  "difficulty": "Easy"
+},
+{
+  "_id": "1cc38378-a868-4108-b679-a6a85721082c",
+  "name": "Pow(x",
+  "link": "powx-n/",
+  "group": "Math & Geometry",
+  "difficulty": "Medium"
+},
+{
+  "_id": "fbe41ec6-6d9c-48c0-8569-ec3a308d9d19",
+  "name": "Multiply Strings",
+  "link": "multiply-strings/",
+  "group": "Math & Geometry",
+  "difficulty": "Medium"
+},
+{
+  "_id": "740cfc94-51b0-4a8d-b2b6-a8d0d5399d91",
+  "name": "Detect Squares",
+  "link": "detect-squares/",
+  "group": "Math & Geometry",
+  "difficulty": "Medium"
+},
+{
+  "_id": "bf2cc34c-02df-4edb-b2e2-b6f5a03ba8a3",
+  "name": "Single Number",
+  "link": "single-number/",
+  "group": "Bit Manipulation",
+  "difficulty": "Easy"
+},
+{
+  "_id": "649165e1-a00d-429d-b28e-e9aef8f0e565",
+  "name": "Number of 1 Bits",
+  "link": "number-of-1-bits/",
+  "group": "Bit Manipulation",
+  "difficulty": "Easy"
+},
+{
+  "_id": "a297ef1c-bc0e-4886-a93d-86a08c832cca",
+  "name": "Counting Bits",
+  "link": "counting-bits/",
+  "group": "Bit Manipulation",
+  "difficulty": "Easy"
+},
+{
+  "_id": "bf724b1a-e284-434f-9819-50e09eb4b48c",
+  "name": "Reverse Bits",
+  "link": "reverse-bits/",
+  "group": "Bit Manipulation",
+  "difficulty": "Easy"
+},
+{
+  "_id": "bca8c383-cde7-472d-bfcf-8b0090009060",
+  "name": "Missing Number",
+  "link": "missing-number/",
+  "group": "Bit Manipulation",
+  "difficulty": "Easy"
+},
+{
+  "_id": "f7db4eab-d8a7-4c90-87cf-a45ed09bbfe7",
+  "name": "Sum of Two Integers",
+  "link": "sum-of-two-integers/",
+  "group": "Bit Manipulation",
+  "difficulty": "Medium"
+},
+{
+  "_id": "6a914985-c681-47e7-9fb1-6b218e94b102",
+  "name": "Reverse Integer",
+  "link": "reverse-integer/",
+  "group": "Bit Manipulation",
+  "difficulty": "Medium"
+}]
