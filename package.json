@@ -41,6 +41,7 @@
     "express-handlebars": "^5.2.0",
     "helmet": "^8.1.0",
     "mongoose": "^7.6.3",
+    "node-cache": "^5.1.2",
     "octokit": "^2.1.0",
     "react-cookie": "^4.1.1",
     "uuid": "^8.3.2",

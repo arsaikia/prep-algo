@@ -11,9 +11,10 @@ import SolveHistory from '../models/SolveHistory.js';
  */
 
 const getAllQuestions = asyncHandler(async (req, res, next) => {
-    // Get all questions without any filters
+    // Get all questions without any filters, using lean for better performance
     const questions = await Question.find()
         .select('_id name link group difficulty list order')
+        .lean()
         .sort({ order: 1 });
 
     return res.status(200).json({
@@ -32,7 +33,7 @@ const getAllQuestions = asyncHandler(async (req, res, next) => {
 const getQuestions = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
 
-    // Use aggregation pipeline to join questions with solve history
+    // Use aggregation pipeline with optimized stages
     const pipeline = [
         {
             $lookup: {
@@ -93,7 +94,9 @@ const getQuestions = asyncHandler(async (req, res, next) => {
         }
     ];
 
-    const questionsWithSolveCount = await Question.aggregate(pipeline).hint({ _id: 1 });
+    const questionsWithSolveCount = await Question.aggregate(pipeline)
+        .hint({ _id: 1 })
+        .allowDiskUse(true);
 
     return res.status(200).json({
         success: true,

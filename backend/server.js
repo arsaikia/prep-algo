@@ -47,15 +47,17 @@ app.use(cors(corsOptions));
 
 // Cache control middleware
 app.use((req, res, next) => {
-    res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
+    // Only cache GET requests
+    if (req.method === 'GET') {
+        res.set('Cache-Control', 'public, max-age=3600'); // 1 hour
+    } else {
+        res.set('Cache-Control', 'no-store');
+    }
     next();
 });
 
 // Mount routers
-app.use('/authentication', authentication);
-app.use('/questions', allQuestions);
 app.use('/api/v1/questions', getQuestions);
-app.use('/solveHistory', solveHistory);
 
 // Error handling for unhandled routes
 app.use('*', (req, res) => {
