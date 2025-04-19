@@ -71,6 +71,12 @@ const GoogleLoginContainer = styled.div`
   }
 `;
 
+const ModalTitle = styled.h2`
+  color: ${({ theme }) => theme.colors.text};
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+`;
+
 const GoogleLoginModal = ({ isOpen, onClose }) => {
     const dispatch = useDispatch();
     const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
@@ -94,6 +100,7 @@ const GoogleLoginModal = ({ isOpen, onClose }) => {
         <ModalOverlay onClick={onClose}>
             <ModalContent onClick={e => e.stopPropagation()}>
                 <CloseButton onClick={onClose}>×</CloseButton>
+                <ModalTitle>Login to Remind Me</ModalTitle>
                 <GoogleLoginContainer>
                     <GoogleLogin
                         onSuccess={handleGoogleSuccess}

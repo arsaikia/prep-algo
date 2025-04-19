@@ -13,9 +13,10 @@ import {
   NavLink, useLocation, useNavigate,
 } from 'react-router-dom';
 import styled from 'styled-components';
+import { Sun, Moon } from 'react-feather';
 
 import {
-  getQuestions, resetAuthState,
+  getQuestions, resetAuthState, updateTheme,
 } from '../actions/actions';
 import logo from '../logo.png';
 import {
@@ -371,6 +372,29 @@ const Toast = styled.div`
   }
 `;
 
+const ThemeToggleButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  margin-right: 10px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    color: #333;
+  }
+`;
+
 function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -390,11 +414,15 @@ function Navbar() {
 
   // Get states using useSelector ( state->reducerName )
   const userAuthState = useSelector((state) => state.auth);
+  const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
 
   // Fire actions using dispatch -> fires action -> Watcher saga handles rest
   const dispatch = useDispatch();
   // const fetchAllQuestions = (userId) => dispatch(getQuestions(userId));
   const resetAuth = () => dispatch(resetAuthState());
+  const toggleTheme = () => {
+    dispatch(updateTheme(isDarkMode ? 'LIGHT' : 'DARK'));
+  };
 
   // Safely access cookie values with fallbacks
   const userIdInCookie = cookies?.userId || '';
@@ -505,6 +533,10 @@ function Navbar() {
           </NavLinks>
 
           <UserSection>
+            <ThemeToggleButton onClick={toggleTheme} aria-label="Toggle theme">
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </ThemeToggleButton>
+
             {isUserAuthenticated ? (
               <UserProfile ref={dropdownRef}>
                 <ProfilePicture onClick={toggleDropdown}>
