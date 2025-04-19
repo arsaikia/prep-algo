@@ -1,5 +1,5 @@
 import {
-    takeEvery,
+    takeLatest,
     put,
     call,
 } from 'redux-saga/effects';
@@ -7,33 +7,47 @@ import {
 import {
     GOOGLE_LOGIN,
     GOOGLE_LOGIN_SUCCESS,
+    GOOGLE_LOGIN_FAILURE,
 } from '../actions/types';
-import { loginWithGoogle } from '../api/login';
+import { googleLogin } from '../api/login';
+import {
+    googleLoginSuccess,
+    googleLoginFailure,
+} from '../actions/actions';
 
 // worker Saga
 function* googleLoginHandler(action) {
     try {
-        // Call the backend API to register/login the Google user
-        const response = yield call(loginWithGoogle, action.payload);
+        console.log('Google login saga started with payload:', action.payload);
 
-        if (response.status === 200) {
-            // If successful, update the auth state
-            yield put({
-                type: GOOGLE_LOGIN_SUCCESS,
-                payload: action.payload,
-            });
+        // The credential is directly in action.payload as a string
+        const credential = action.payload;
+        if (!credential || typeof credential !== 'string') {
+            throw new Error('Invalid credential token received from Google');
+        }
+
+        // Call the API with the credential token
+        const response = yield call(googleLogin, { token: credential });
+        console.log('Google login API response:', response);
+
+        if (response.data && response.data.success) {
+            // Dispatch success with user data and JWT token
+            yield put(googleLoginSuccess({
+                ...response.data.user,
+                token: response.data.token,
+                lastActivity: Date.now(),
+            }));
         } else {
-            console.error('Google login failed:', response);
+            throw new Error(response.data?.message || 'Google login failed');
         }
     } catch (error) {
-        console.error('Error during Google login:', error);
+        console.error('Google login saga error:', error);
+        yield put(googleLoginFailure(error.message));
     }
 }
 
 function* googleLoginWatcher() {
-    yield takeEvery(GOOGLE_LOGIN, googleLoginHandler);
+    yield takeLatest(GOOGLE_LOGIN, googleLoginHandler);
 }
 
-export {
-    googleLoginWatcher,
-}; 
+export default googleLoginWatcher; 

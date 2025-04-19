@@ -410,19 +410,40 @@ function Navbar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // Initialize cookies with default values to prevent undefined errors
-  const [cookies, setCookie, removeCookie] = useCookies(['userId', 'name']);
+  const [cookies, setCookie, removeCookie] = useCookies(['userId', 'name', 'authToken']);
 
   // Get states using useSelector ( state->reducerName )
   const userAuthState = useSelector((state) => state.auth);
   const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
+  const dispatch = useDispatch();
 
   // Fire actions using dispatch -> fires action -> Watcher saga handles rest
-  const dispatch = useDispatch();
-  // const fetchAllQuestions = (userId) => dispatch(getQuestions(userId));
   const resetAuth = () => dispatch(resetAuthState());
   const toggleTheme = () => {
     dispatch(updateTheme(isDarkMode ? 'LIGHT' : 'DARK'));
   };
+
+  // Update last activity timestamp on user interaction
+  const updateLastActivity = () => {
+    if (userAuthState.isAuthenticated) {
+      dispatch({ type: 'UPDATE_LAST_ACTIVITY' });
+    }
+  };
+
+  // Add event listeners for user activity
+  useEffect(() => {
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+
+    activityEvents.forEach(event => {
+      window.addEventListener(event, updateLastActivity);
+    });
+
+    return () => {
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, updateLastActivity);
+      });
+    };
+  }, [userAuthState.isAuthenticated]);
 
   // Safely access cookie values with fallbacks
   const userIdInCookie = cookies?.userId || '';
@@ -470,9 +491,16 @@ function Navbar() {
       setIsSigningOut(true);
       setIsDropdownOpen(false);
 
-      // Clear all auth-related cookies with safe checks
-      if (cookies?.userId) removeCookie('userId');
-      if (cookies?.name) removeCookie('name');
+      // Clear all auth-related cookies with secure options
+      const cookieOptions = {
+        path: '/',
+        secure: true,
+        sameSite: 'strict',
+      };
+
+      if (cookies?.userId) removeCookie('userId', cookieOptions);
+      if (cookies?.name) removeCookie('name', cookieOptions);
+      if (cookies?.authToken) removeCookie('authToken', cookieOptions);
 
       // Reset Redux auth state
       resetAuth();

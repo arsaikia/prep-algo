@@ -5,7 +5,7 @@ import {
 } from '../actions/types';
 
 const initialState = {
-  isDarkModeEnabled: true,
+  isDarkModeEnabled: false,
 };
 
 const themeReducer = (state = initialState, action) => {
@@ -23,9 +23,7 @@ const themeReducer = (state = initialState, action) => {
       };
 
     default:
-      return {
-        ...state,
-      };
+      return state;
   }
 };
 

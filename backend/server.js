@@ -33,7 +33,7 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 // Allow CORS with specific options
 const BASE_URI = process.env.BASE_URI || "http://localhost:3000";
 const corsOptions = {
-    origin: BASE_URI,
+    origin: [BASE_URI, "http://192.168.1.234:3000"],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

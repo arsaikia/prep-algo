@@ -2,6 +2,10 @@ import User from '../models/User.js';
 import asyncHandler from '../middleware/async.js';
 import ErrorResponse from '../utils/errorResponse.js';
 import axios from 'axios';
+import { OAuth2Client } from 'google-auth-library';
+
+// Create a new OAuth2Client instance
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 /*
  * @desc     Google Sign In/Sign Up
@@ -16,14 +20,15 @@ export const googleAuth = asyncHandler(async (req, res, next) => {
     }
 
     try {
-        // Get user info from Google using the access token
-        const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+        // Verify the token with Google
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID
         });
 
-        const { sub: googleId, email, given_name: firstName, family_name: lastName, picture } = response.data;
+        // Get user info from the verified token
+        const payload = ticket.getPayload();
+        const { sub: googleId, email, given_name: firstName, family_name: lastName, picture } = payload;
 
         // Check if user exists
         let user = await User.findOne({ googleId });
@@ -63,4 +68,34 @@ export const googleAuth = asyncHandler(async (req, res, next) => {
         console.error('Google authentication error:', error);
         return next(new ErrorResponse('Google authentication failed', 401));
     }
+});
+
+/*
+ * @desc     Get user info by ID
+ * @route    GET /api/v1/authentication/user/:id
+ * @access   Public
+ */
+export const getUserById = asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return next(new ErrorResponse('Please provide a user ID', 400));
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+        return next(new ErrorResponse('User not found', 404));
+    }
+
+    res.status(200).json({
+        success: true,
+        user: {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            picture: user.picture
+        }
+    });
 });

@@ -5,7 +5,8 @@ import {
 
 import getQuestionsWatcher from './getAllQuestionsSaga';
 import getAllQuestionsWithoutHistoryWatcher from './getAllQuestionsWithoutHistorySaga';
-import { googleLoginWatcher } from './googleLoginSaga';
+import fetchUserInfoWatcher from './fetchUserInfoSaga';
+import googleLoginWatcher from './googleLoginSaga';
 import {
   launchCodeModal, closeCodeModal,
 } from './launchCodeModal';
@@ -26,5 +27,6 @@ export default function* rootSaga() {
     fork(markQuestionAsDoneWatcher),
     fork(launchCodeModal),
     fork(closeCodeModal),
+    fork(fetchUserInfoWatcher),
   ]);
 }

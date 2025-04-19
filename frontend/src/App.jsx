@@ -15,6 +15,8 @@ import { ThemeProvider } from 'styled-components';
 import {
   getAllQuestionsWithoutHistory,
   getQuestions,
+  resetAuthState,
+  fetchUserInfo,
 } from './actions/actions';
 import AllRoutes from './AllRoutes';
 import CodeSection from './components/CodeSection';
@@ -56,17 +58,32 @@ function QuestionsLoader({ children }) {
   const userIdInCookie = cookies.userId;
   const userId = userIdInCookie || 'guest';
 
+  console.log('QuestionsLoader mounted with userId:', userId);
+  console.log('Cookies:', cookies);
+
   // Fetch questions immediately when this component mounts
   useEffect(() => {
+    console.log('Dispatching getAllQuestionsWithoutHistory');
     // Always fetch questions without solve history
     dispatch(getAllQuestionsWithoutHistory());
   }, [dispatch]);
+
+  useEffect(() => {
+    console.log('Checking userId for fetchUserInfo:', userId);
+    if (userId !== 'guest') {
+      console.log('Dispatching fetchUserInfo with userId:', userId);
+      dispatch(fetchUserInfo(userId));
+    } else {
+      console.log('Not dispatching fetchUserInfo because userId is guest');
+    }
+  }, [dispatch, userId]);
 
   return children;
 }
 
 function App() {
-  const [cookies, setCookie] = useCookies(['userId', 'openTab', 'name']);
+  const [cookies, setCookie, removeCookie] = useCookies(['userId', 'openTab', 'name', 'authToken']);
+  const dispatch = useDispatch();
 
   // Get states using useSelector ( state->reducerName )
   const todoQuestions = useSelector((state) => state.questions.todoQuestions);
@@ -74,6 +91,7 @@ function App() {
   const userIdInAuthStore = useSelector((state) => state.auth.userId);
   const userNameIdInAuthStore = useSelector((state) => state.auth.firstName);
   const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
+  const authToken = useSelector((state) => state.auth.token);
 
   const userIdInCookie = cookies.userId;
   const userId = userIdInCookie || userIdInAuthStore || 'guest';
@@ -83,13 +101,47 @@ function App() {
     if (!isAuthenticated) {
       return;
     }
-    setCookie('userId', userId, {
+
+    // Set secure cookie options
+    const cookieOptions = {
       path: '/',
-    });
-    setCookie('name', userNameIdInAuthStore, {
-      path: '/',
-    });
-  }, [isAuthenticated, userId, userNameIdInAuthStore, setCookie]);
+      secure: true, // Only send over HTTPS
+      sameSite: 'strict', // Prevent CSRF attacks
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+    };
+
+    setCookie('userId', userId, cookieOptions);
+    setCookie('name', userNameIdInAuthStore, cookieOptions);
+
+    // Store JWT token if available
+    if (authToken) {
+      setCookie('authToken', authToken, cookieOptions);
+    }
+  }, [isAuthenticated, userId, userNameIdInAuthStore, setCookie, authToken]);
+
+  // Check for session timeout
+  useEffect(() => {
+    let sessionTimeout;
+
+    if (isAuthenticated) {
+      // Set session timeout to 30 minutes of inactivity
+      sessionTimeout = setTimeout(() => {
+        // Clear all auth cookies
+        removeCookie('userId');
+        removeCookie('name');
+        removeCookie('authToken');
+
+        // Dispatch reset auth action
+        dispatch(resetAuthState());
+      }, 30 * 60 * 1000); // 30 minutes
+    }
+
+    return () => {
+      if (sessionTimeout) {
+        clearTimeout(sessionTimeout);
+      }
+    };
+  }, [isAuthenticated, removeCookie, dispatch]);
 
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>

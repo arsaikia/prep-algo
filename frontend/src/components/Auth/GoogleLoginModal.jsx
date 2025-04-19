@@ -83,6 +83,16 @@ const GoogleLoginModal = ({ isOpen, onClose }) => {
 
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
+            console.log('Google credential received:', credentialResponse);
+
+            // The credential token is in credentialResponse.credential
+            // We need to pass just the token string, not the entire response object
+            if (!credentialResponse.credential) {
+                console.error('No credential token found in response');
+                return;
+            }
+
+            // Pass just the credential token to the login action
             await dispatch(loginWithGoogle(credentialResponse.credential));
             onClose();
         } catch (error) {

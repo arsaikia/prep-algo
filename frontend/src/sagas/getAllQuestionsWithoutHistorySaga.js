@@ -1,7 +1,7 @@
 import {
-    takeEvery,
-    put,
     call,
+    put,
+    takeLatest,
 } from 'redux-saga/effects';
 
 import {
@@ -74,9 +74,9 @@ function* fetchAllQuestionsWithoutHistory() {
 }
 
 // Watcher Saga
-function* getAllQuestionsWithoutHistoryWatcher() {
+export function* getAllQuestionsWithoutHistoryWatcher() {
     console.log('Saga: getAllQuestionsWithoutHistoryWatcher registered');
-    yield takeEvery(GET_ALL_QUESTIONS_WITHOUT_HISTORY, fetchAllQuestionsWithoutHistory);
+    yield takeLatest(GET_ALL_QUESTIONS_WITHOUT_HISTORY, fetchAllQuestionsWithoutHistory);
 }
 
 export default getAllQuestionsWithoutHistoryWatcher; 

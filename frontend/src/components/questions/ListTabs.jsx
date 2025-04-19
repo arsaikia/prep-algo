@@ -14,12 +14,12 @@ const TabsContainer = styled.div`
   }
   
   &::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: ${props => props.theme.colors.background};
     border-radius: 2px;
   }
   
   &::-webkit-scrollbar-thumb {
-    background: #888;
+    background: ${props => props.theme.colors.border};
     border-radius: 2px;
   }
 `;
@@ -28,8 +28,8 @@ const Tab = styled.button`
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 4px;
-  background-color: ${props => props.isActive ? '#1976d2' : '#e0e0e0'};
-  color: ${props => props.isActive ? 'white' : '#333'};
+  background-color: ${props => props.isActive ? props.theme.colors.primary : props.theme.colors.background};
+  color: ${props => props.isActive ? props.theme.colors.white : props.theme.colors.text};
   cursor: pointer;
   font-size: 1rem;
   font-weight: 500;
@@ -37,24 +37,24 @@ const Tab = styled.button`
   transition: all 0.2s;
 
   &:hover {
-    background-color: ${props => props.isActive ? '#1565c0' : '#d5d5d5'};
+    background-color: ${props => props.isActive ? props.theme.colors.primaryDark : props.theme.colors.border};
   }
 `;
 
 const ListTabs = ({ listNamesAndCounts, activeList, onTabChange }) => {
-    return (
-        <TabsContainer>
-            {listNamesAndCounts.map(({ name, count }) => (
-                <Tab
-                    key={name}
-                    isActive={activeList === name}
-                    onClick={() => onTabChange(name)}
-                >
-                    {name} ({count})
-                </Tab>
-            ))}
-        </TabsContainer>
-    );
+  return (
+    <TabsContainer>
+      {listNamesAndCounts.map(({ name, count }) => (
+        <Tab
+          key={name}
+          isActive={activeList === name}
+          onClick={() => onTabChange(name)}
+        >
+          {name} ({count})
+        </Tab>
+      ))}
+    </TabsContainer>
+  );
 };
 
 export default ListTabs; 
