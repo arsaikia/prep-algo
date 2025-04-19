@@ -57,23 +57,29 @@ function QuestionsLoader({ children }) {
   const [cookies] = useCookies(['userId']);
   const userIdInCookie = cookies.userId;
   const userId = userIdInCookie || 'guest';
+  const hasFetchedRef = React.useRef(false);
+  const hasFetchedUserRef = React.useRef(false);
 
   console.log('QuestionsLoader mounted with userId:', userId);
   console.log('Cookies:', cookies);
 
   // Fetch questions immediately when this component mounts
   useEffect(() => {
-    console.log('Dispatching getAllQuestionsWithoutHistory');
-    // Always fetch questions without solve history
-    dispatch(getAllQuestionsWithoutHistory());
+    if (!hasFetchedRef.current) {
+      console.log('Dispatching getAllQuestionsWithoutHistory');
+      // Always fetch questions without solve history
+      dispatch(getAllQuestionsWithoutHistory());
+      hasFetchedRef.current = true;
+    }
   }, [dispatch]);
 
   useEffect(() => {
     console.log('Checking userId for fetchUserInfo:', userId);
-    if (userId !== 'guest') {
+    if (userId !== 'guest' && !hasFetchedUserRef.current) {
       console.log('Dispatching fetchUserInfo with userId:', userId);
       dispatch(fetchUserInfo(userId));
-    } else {
+      hasFetchedUserRef.current = true;
+    } else if (userId === 'guest') {
       console.log('Not dispatching fetchUserInfo because userId is guest');
     }
   }, [dispatch, userId]);

@@ -49,9 +49,10 @@ const NavContent = styled.div`
 const Logo = styled(NavLink)`
   display: flex;
   align-items: center;
+  height: 100%;
   
   img {
-    height: 40px;
+    height: 100%;
     width: auto;
     max-width: 100%;
     object-fit: contain;

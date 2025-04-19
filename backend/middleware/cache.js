@@ -15,6 +15,15 @@ const cacheMiddleware = async (req, res, next) => {
 
     if (cachedResponse) {
         console.log(`Cache hit for ${req.originalUrl}`);
+
+        // Check if this is a user endpoint response
+        if (req.originalUrl.includes('/authentication/user/')) {
+            return res.status(200).json({
+                success: true,
+                user: cachedResponse
+            });
+        }
+
         // Format the cached response to match the database response structure
         return res.status(200).json({
             success: true,
@@ -35,8 +44,13 @@ const cacheMiddleware = async (req, res, next) => {
             try {
                 // Parse the response body if it's a string
                 const parsedBody = typeof body === 'string' ? JSON.parse(body) : body;
+
+                // Check if this is a user endpoint response
+                if (req.originalUrl.includes('/authentication/user/') && parsedBody && parsedBody.user) {
+                    cache.set(key, parsedBody.user, 3600);
+                }
                 // Store only the data array from the response
-                if (parsedBody && parsedBody.data) {
+                else if (parsedBody && parsedBody.data) {
                     cache.set(key, parsedBody.data, 3600);
                 }
             } catch (error) {
