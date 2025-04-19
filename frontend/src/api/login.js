@@ -15,3 +15,11 @@ export function login({
     }
   );
 }
+
+export function loginWithGoogle(googleUserData) {
+  console.log('Google login API: ', googleUserData);
+  return axios.post(
+    `${process.env.REACT_APP_API_BASE_URI}/authentication/google`,
+    googleUserData
+  );
+}

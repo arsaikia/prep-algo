@@ -1,18 +1,14 @@
 import colors from 'colors';
 import express from 'express';
 import dotenv from 'dotenv';
-import exphbs from 'express-handlebars';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
 import { connectDB } from './config/db.js';
 import performanceMonitor from './middleware/performance.js';
 
-import { allQuestions } from './routes/all.js';
 import { getQuestions } from './routes/getQuestions.js';
-import { authentication } from './routes/authentication.js';
-import { solveHistory } from './routes/solveHistory.js';
+import authentication from './routes/authentication.js';
 
 dotenv.config();
 
@@ -57,6 +53,7 @@ app.use((req, res, next) => {
 });
 
 // Mount routers
+app.use('/api/v1/authentication', authentication);
 app.use('/api/v1/questions', getQuestions);
 
 // Error handling for unhandled routes

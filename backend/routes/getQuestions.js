@@ -7,11 +7,11 @@ import {
     getQuestions,
 } from '../controller/getQuestions.js';
 
-// Apply cache middleware to all routes in this router
-router.use(cacheMiddleware);
-
-// Get all questions without solve history (lazy loading)
-router.route('/').get(getQuestions);
+// Apply cache middleware only to GET routes
+router.get('/', (req, res, next) => {
+    console.log('Route: GET /api/v1/questions/');
+    next();
+}, cacheMiddleware, getQuestions);
 
 // Export the router
 export { router as getQuestions };

@@ -8,24 +8,23 @@ import {
   Routes,
 } from 'react-router-dom';
 
-import All from './components/All';
 import Todo from './components/Todo';
+import AllQuestions from './pages/AllQuestions';
 import Error from './pages/Error';
 import Login from './pages/Login';
 import Playground from './pages/Playground';
-import Signup from './pages/Signup';
 
 function AllRoutes(props) {
   const {
-    allQuestionsProps,
     todoProps,
   } = props;
 
   return (
     <Routes>
-      <Route path="/" element={<All allQuestionsProps={allQuestionsProps} />} />
+      <Route path="/" element={<AllQuestions />} />
+      <Route path="/all" element={<AllQuestions />} />
+      <Route path="/questions" element={<AllQuestions />} />
       <Route path="/todo" element={<Todo {...todoProps} />} />
-      <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/playground" element={<Playground />} />
       <Route path="/404" element={<Error />} />

@@ -40,7 +40,7 @@ function Signup() {
     } else {
       console.error('Sign up failed.');
     }
-  }, [isSignedUp]);
+  }, [isSignedUp, navigate]);
 
   /** *******************************************************************
      * RETURNS JSX FROM HERE

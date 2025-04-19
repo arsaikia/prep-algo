@@ -1,11 +1,10 @@
-import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import pkg from 'validator';
 import { v4 as UUID_V4 } from 'uuid';
+import jwt from 'jsonwebtoken';
 const { isEmail } = pkg;
 
 const { Schema } = mongoose;
-const SALT_WORK_FACTOR = 10;
 
 const userSchema = new Schema({
   _id: { type: String, default: UUID_V4 },
@@ -29,11 +28,13 @@ const userSchema = new Schema({
     lowercase: true,
     validate: [isEmail, 'Please add a valid email']
   },
-  password: {
+  googleId: {
     type: String,
-    required: [true, 'Please add a password'],
-    minlength: [6, 'Password must be at least 6 characters'],
-    select: false // Don't return password in queries by default
+    required: true,
+    unique: true
+  },
+  picture: {
+    type: String
   },
   createdAt: {
     type: Date,
@@ -41,30 +42,25 @@ const userSchema = new Schema({
   }
 });
 
-// Create indexes
-userSchema.index({ email: 1 });
-
-// Pre-save middleware for password hashing
-userSchema.pre('save', async function save(next) {
-  if (!this.isModified('password')) return next();
-  try {
-    const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
-    this.password = await bcrypt.hash(this.password, salt);
-    return next();
-  } catch (err) {
-    return next(err);
-  }
-});
-
-// Method to compare password
-userSchema.methods.validatePassword = async function validatePassword(data) {
-  return bcrypt.compare(data, this.password);
+// Generate JWT token
+userSchema.methods.generateAuthToken = function generateAuthToken() {
+  return jwt.sign(
+    { id: this._id },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE }
+  );
 };
 
-// Static method to find user by email
-userSchema.statics.findByEmail = function (email) {
-  return this.findOne({ email }).select('+password');
+// Find user by Google ID
+userSchema.statics.findByGoogleId = function findByGoogleId(googleId) {
+  return this.findOne({ googleId });
+};
+
+// Find user by email
+userSchema.statics.findByEmail = function findByEmail(email) {
+  return this.findOne({ email });
 };
 
 const User = mongoose.model('User', userSchema);
+
 export default User;

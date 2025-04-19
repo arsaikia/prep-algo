@@ -1,96 +1,66 @@
 import User from '../models/User.js';
 import asyncHandler from '../middleware/async.js';
-import ErrorResponse from '../middleware/error.js';
-import { v4 as uuid } from 'uuid';
+import ErrorResponse from '../utils/errorResponse.js';
+import axios from 'axios';
 
 /*
- * @desc     Sign Up a user
- * @route    POST /api/v1/authentication/signup
+ * @desc     Google Sign In/Sign Up
+ * @route    POST /api/v1/authentication/google
  * @access   Public
  */
+export const googleAuth = asyncHandler(async (req, res, next) => {
+    const { token } = req.body;
 
-const signupUser = asyncHandler(async (req, res, next) => {
-    const { firstName, lastName, email, password } = req.body;
-
-    // Input validation
-    if (!firstName || !lastName || !email || !password) {
-        return next(new ErrorResponse('Please provide all required fields', 400));
+    if (!token) {
+        return next(new ErrorResponse('Please provide a Google token', 400));
     }
 
-    if (password.length < 6) {
-        return next(new ErrorResponse('Password must be at least 6 characters', 400));
-    }
+    try {
+        // Get user info from Google using the access token
+        const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
 
-    // Check if user already exists using index
-    const userExists = await User.findOne({ email }).select('_id');
-    if (userExists) {
-        return next(new ErrorResponse('User already exists. Please sign in', 409));
-    }
+        const { sub: googleId, email, given_name: firstName, family_name: lastName, picture } = response.data;
 
-    // Create new user with validated data
-    const user = await User.create({
-        firstName,
-        lastName,
-        email,
-        password,
-    });
+        // Check if user exists
+        let user = await User.findOne({ googleId });
 
-    if (!user) {
-        return next(new ErrorResponse('Signup error', 400));
-    }
-
-    // Return only necessary data
-    res.status(201).json({ 
-        success: true, 
-        data: { 
-            userId: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email
-        } 
-    });
-});
-
-/*
- * @desc     Sign In a user
- * @route    POST /api/v1/signin
- * @access   Public
- */
-
-const signInUser = asyncHandler(async (req, res, next) => {
-    const { email, password } = req.body;
-
-    // Input validation
-    if (!email || !password) {
-        return next(new ErrorResponse('Please provide email and password', 400));
-    }
-
-    // Use the static method to find user and select password
-    const user = await User.findByEmail(email);
-    
-    if (!user) {
-        return next(new ErrorResponse('Invalid credentials', 401));
-    }
-
-    // Check password
-    const isCorrectPassword = await user.validatePassword(password);
-    if (!isCorrectPassword) {
-        return next(new ErrorResponse('Invalid credentials', 401));
-    }
-
-    // Return user data
-    res.status(200).json({
-        success: true,
-        data: {
-            userId: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email
+        if (!user) {
+            // Create new user
+            user = await User.create({
+                googleId,
+                email,
+                firstName,
+                lastName,
+                picture
+            });
+        } else {
+            // Update user's profile picture if it has changed
+            if (user.picture !== picture) {
+                user.picture = picture;
+                await user.save();
+            }
         }
-    });
-});
 
-export {
-    signupUser,
-    signInUser,
-};
+        // Generate JWT token
+        const jwtToken = user.generateAuthToken();
+
+        res.status(200).json({
+            success: true,
+            token: jwtToken,
+            user: {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                picture: user.picture
+            }
+        });
+    } catch (error) {
+        console.error('Google authentication error:', error);
+        return next(new ErrorResponse('Google authentication failed', 401));
+    }
+});

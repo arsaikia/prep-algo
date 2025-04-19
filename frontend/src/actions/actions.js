@@ -1,7 +1,11 @@
 /* eslint-disable sort-keys */
 import {
   CLOSE_CODE_MODAL,
+  GET_ALL_QUESTIONS_WITHOUT_HISTORY,
+  GET_ALL_QUESTIONS_WITHOUT_HISTORY_SUCCESS,
+  GET_ALL_QUESTIONS_WITHOUT_HISTORY_FAILURE,
   GET_QUESTIONS,
+  GOOGLE_LOGIN,
   LOGIN,
   MARK_QUESTION_AS_DONE,
   RESET_AUTH,
@@ -13,6 +17,20 @@ import {
 export const getQuestions = (value) => ({
   type: GET_QUESTIONS,
   userId: value,
+});
+
+export const getAllQuestionsWithoutHistory = () => ({
+  type: GET_ALL_QUESTIONS_WITHOUT_HISTORY,
+});
+
+export const getAllQuestionsWithoutHistorySuccess = (data) => ({
+  type: GET_ALL_QUESTIONS_WITHOUT_HISTORY_SUCCESS,
+  payload: data,
+});
+
+export const getAllQuestionsWithoutHistoryFailure = (error) => ({
+  type: GET_ALL_QUESTIONS_WITHOUT_HISTORY_FAILURE,
+  payload: error,
 });
 
 export const updateTheme = (value) => ({
@@ -46,4 +64,9 @@ export const launchCodeModal = (payload) => ({
 
 export const closeCodeModal = () => ({
   type: CLOSE_CODE_MODAL,
+});
+
+export const loginWithGoogle = (googleUserData) => ({
+  type: GOOGLE_LOGIN,
+  payload: googleUserData,
 });

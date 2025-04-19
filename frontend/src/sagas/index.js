@@ -4,6 +4,8 @@ import {
 } from 'redux-saga/effects';
 
 import getQuestionsWatcher from './getAllQuestionsSaga';
+import getAllQuestionsWithoutHistoryWatcher from './getAllQuestionsWithoutHistorySaga';
+import { googleLoginWatcher } from './googleLoginSaga';
 import {
   launchCodeModal, closeCodeModal,
 } from './launchCodeModal';
@@ -14,12 +16,13 @@ import { userLoginWatcher } from './userLoginSaga';
 import { userSignupWatcher } from './userSignupSaga';
 
 export default function* rootSaga() {
+  console.log('Root saga started');
   yield all([
-    fork(userSignupWatcher),
-    fork(userLoginWatcher),
+    fork(googleLoginWatcher),
     fork(resetAuthSagaWatcher),
     fork(setThemeWatcher),
     fork(getQuestionsWatcher),
+    fork(getAllQuestionsWithoutHistoryWatcher),
     fork(markQuestionAsDoneWatcher),
     fork(launchCodeModal),
     fork(closeCodeModal),

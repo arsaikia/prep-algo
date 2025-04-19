@@ -1,6 +1,8 @@
 /* eslint-disable default-param-last */
 import {
   GET_ALL_QUESTIONS,
+  GET_ALL_QUESTIONS_WITHOUT_HISTORY,
+  GET_ALL_QUESTIONS_WITHOUT_HISTORY_SUCCESS,
   GET_SOLVED_QUESTIONS,
   GET_TODAY_QUESTIONS,
   GET_TOP_QUESTIONS,
@@ -10,6 +12,10 @@ import {
 
 const initialState = {
   allQuestions: {
+    groups: [],
+    questions: {},
+  },
+  allQuestionsWithoutHistory: {
     groups: [],
     questions: {},
   },
@@ -42,6 +48,19 @@ const questionReducer = (state = initialState, action) => {
         allQuestions: action.payload,
       };
 
+    case GET_ALL_QUESTIONS_WITHOUT_HISTORY:
+      return {
+        ...state,
+        isFetchingQuestions: true,
+      };
+
+    case GET_ALL_QUESTIONS_WITHOUT_HISTORY_SUCCESS:
+      return {
+        ...state,
+        allQuestionsWithoutHistory: action.payload,
+        isFetchingQuestions: false,
+      };
+
     case GET_TOP_QUESTIONS:
       return {
         ...state,
@@ -61,9 +80,7 @@ const questionReducer = (state = initialState, action) => {
       };
 
     default:
-      return {
-        ...state,
-      };
+      return state;
   }
 };
 
