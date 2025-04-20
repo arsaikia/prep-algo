@@ -1,7 +1,7 @@
 {
-  "name": "remind_me",
+  "name": "prep-algo",
   "version": "1.0.0",
-  "description": "This is the final project for Enterprise Web Application. The application here is a fullstact MERN with mySql and GraphQl Ecommerce Grocery Hub",
+  "description": "A platform for practicing algorithm problems with code execution and test cases",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -18,17 +18,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arsaikia/EWA_Term_Project.git"
+    "url": "git+https://github.com/arsaikia/prep-algo.git"
   },
   "keywords": [
-    "remind-me"
+    "prep-algo",
+    "algorithms",
+    "coding-practice"
   ],
   "author": "Arunabh Saikia",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/arsaikia/EWA_Term_Project/issues"
+    "url": "https://github.com/arsaikia/prep-algo/issues"
   },
-  "homepage": "https://github.com/arsaikia/EWA_Term_Project#readme",
+  "homepage": "https://github.com/arsaikia/prep-algo#readme",
   "dependencies": {
     "axios": "^1.8.4",
     "bcryptjs": "^2.4.3",
