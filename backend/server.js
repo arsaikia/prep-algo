@@ -9,6 +9,8 @@ import performanceMonitor from './middleware/performance.js';
 
 import { getQuestions } from './routes/getQuestions.js';
 import authentication from './routes/authentication.js';
+import leetcode from './routes/leetcode.js';
+import codeExecution from './routes/code.js';
 
 dotenv.config();
 
@@ -55,6 +57,8 @@ app.use((req, res, next) => {
 // Mount routers
 app.use('/api/v1/authentication', authentication);
 app.use('/api/v1/questions', getQuestions);
+app.use('/api/v1/leetcode', leetcode);
+app.use('/api/v1/code', codeExecution);
 
 // Error handling for unhandled routes
 app.use('*', (req, res) => {
