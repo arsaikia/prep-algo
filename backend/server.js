@@ -7,9 +7,9 @@ import helmet from 'helmet';
 import { connectDB } from './config/db.js';
 import performanceMonitor from './middleware/performance.js';
 
-import { getQuestions } from './routes/getQuestions.js';
+import questions from './routes/questions.js';
 import authentication from './routes/authentication.js';
-import leetcode from './routes/leetcode.js';
+import submission from './routes/submission.js';
 import codeExecution from './routes/code.js';
 
 // Load environment variables
@@ -63,8 +63,8 @@ app.get('/health', (req, res) => {
 
 // Mount routers
 app.use('/api/v1/authentication', authentication);
-app.use('/api/v1/questions', getQuestions);
-app.use('/api/v1/leetcode', leetcode);
+app.use('/api/v1/questions', questions);
+app.use('/api/v1/submission', submission);
 app.use('/api/v1/code', codeExecution);
 
 // Error handling for unhandled routes

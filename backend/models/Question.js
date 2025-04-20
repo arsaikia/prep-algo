@@ -43,11 +43,12 @@ const questionSchema = new mongoose.Schema({
         required: [true, 'Please add an order'],
         index: true
     },
-    // New fields for test cases
+    // Updated fields for test cases with array inputs
     exampleTestCases: [{
-        input: {
-            type: String,
-            required: true
+        inputs: {
+            type: [String], // Array of inputs
+            required: true,
+            validate: [arr => arr.length > 0, 'At least one input is required']
         },
         expectedOutput: {
             type: String,
@@ -59,9 +60,10 @@ const questionSchema = new mongoose.Schema({
         }
     }],
     testCases: [{
-        input: {
-            type: String,
-            required: true
+        inputs: {
+            type: [String], // Array of inputs
+            required: true,
+            validate: [arr => arr.length > 0, 'At least one input is required']
         },
         expectedOutput: {
             type: String,
@@ -72,6 +74,18 @@ const questionSchema = new mongoose.Schema({
             default: true
         }
     }],
+    templates: {
+        python: {
+            type: String,
+            required: false,
+            default: ''
+        },
+        javascript: {
+            type: String,
+            required: false,
+            default: ''
+        }
+    },
     createdAt: {
         type: Date,
         default: Date.now

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTheme } from 'styled-components';
 import { Play, Save, Download, Link, Shuffle } from 'react-feather';
+import Editor from '@monaco-editor/react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 
@@ -29,6 +30,10 @@ const EditorContainer = styled.div`
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 2rem;
+  height: 500px;
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: 4px;
+  overflow: hidden;
 `;
 
 const EditorHeader = styled.div`
@@ -208,113 +213,114 @@ const LanguageSelector = styled.select`
 
 const CodeSandbox = () => {
   const theme = useTheme();
-  const [language, setLanguage] = useState('javascript');
-  const [code, setCode] = useState(`// Write your code here
-function example() {
-  console.log("Hello, World!");
-}
-
-example();`);
+  const [language, setLanguage] = useState('python');
+  const [code, setCode] = useState('');
   const [output, setOutput] = useState('');
-  const [leetcodeUrl, setLeetcodeUrl] = useState('');
+  const [leetcodeUrl, setLeetcodeUrl] = useState('rotting-oranges');
   const [questionDescription, setQuestionDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [selectedQuestion, setSelectedQuestion] = useState('514e10c7-d284-4651-bf40-cb7b2d4cdae3');
-  const [testCases, setTestCases] = useState('');
   const [testResults, setTestResults] = useState(null);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
 
   // Get questions from Redux store
   const allQuestions = useSelector((state) => state.questions.allQuestionsWithoutHistory);
 
+  const getDefaultTemplate = (lang, question) => {
+    if (!question?.templates) {
+      // Fallback template if no question templates are available
+      if (lang === 'python') {
+        return `def solution(*args):
+    """
+    Write your solution here.
+    """
+    pass`;
+      } else {
+        return `/**
+ * Write your solution here.
+ * 
+ * @param {any} args - The input arguments
+ * @return {any} The solution output
+ */
+function solution(...args) {
+    
+}`;
+      }
+    }
+
+    // Use the template from the question data
+    return question.templates[lang] || getDefaultTemplate(lang, null);
+  };
+
   const handleLanguageChange = (e) => {
     const newLanguage = e.target.value;
     setLanguage(newLanguage);
-
-    // Update initial code based on language
-    if (newLanguage === 'python') {
-      setCode(`# Write your code here
-def example():
-    print("Hello, World!")
-
-example()`);
-    } else {
-      setCode(`// Write your code here
-function example() {
-  console.log("Hello, World!");
-}
-
-example();`);
+    if (currentQuestion) {
+      setCode(getDefaultTemplate(newLanguage, currentQuestion));
     }
   };
 
-  const selectRandomQuestion = () => {
-    // For testing, use a specific question ID
-    const testQuestionId = '514e10c7-d284-4651-bf40-cb7b2d4cdae3';
-
-    // Convert questions object to array and find the question
-    const questionsArray = Object.values(allQuestions.questions).flat();
-    const question = questionsArray.find(q => q._id === testQuestionId);
-
-    if (!question) {
-      setError('Test question not found');
-      return;
-    }
-
-    setSelectedQuestion(question);
-    setLeetcodeUrl(`https://leetcode.com/problems/${question.link}`);
-    fetchLeetCodeQuestion(`https://leetcode.com/problems/${question.link}`);
+  const handleEditorChange = (value) => {
+    setCode(value);
   };
 
-  const handleCodeChange = (e) => {
-    setCode(e.target.value);
+  const getEditorLanguage = () => {
+    return language === 'python' ? 'python' : 'javascript';
+  };
+
+  const getEditorTheme = () => {
+    return theme.darkMode ? 'vs-dark' : 'light';
   };
 
   const runCode = async () => {
     try {
-      if (language === 'javascript') {
-        // Create a safe environment to run the code
-        const safeEval = new Function('console', code);
+      setIsLoading(true);
+      setError('');
+      setOutput('');
+      setTestResults(null);
 
-        // Capture console.log output
-        let logs = [];
-        const customConsole = {
-          log: (...args) => {
-            logs.push(args.map(arg =>
-              typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-            ).join(' '));
-          }
+      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+      const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
+
+      // Submit code to the backend
+      const response = await axios.post(`${apiBaseUri}/questions/${questionId}/submit`, {
+        code
+      });
+
+      // Format the results for display
+      if (response.data) {
+        const formattedResults = {
+          summary: {
+            passed: response.data.passedTests,
+            failed: response.data.totalTests - response.data.passedTests,
+            total: response.data.totalTests,
+            score: response.data.score
+          },
+          results: response.data.results.map(r => ({
+            testCase: r.input,
+            output: r.result,
+            expectedOutput: r.expected,
+            passed: r.passed,
+            error: r.error
+          }))
         };
 
-        // Run the code
-        safeEval(customConsole);
-
-        // Update output
-        setOutput(logs.join('\n'));
+        setTestResults(formattedResults);
+        setOutput(`Test results: ${response.data.passedTests}/${response.data.totalTests} tests passed (${response.data.score}% score)`);
       } else {
-        // For Python code, we'll need to send it to the backend for execution
-        const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
-        const questionId = extractQuestionId(leetcodeUrl);
-        if (!questionId) {
-          setError('No LeetCode question selected');
-          return;
-        }
-        const response = await axios.post(`${apiBaseUri}/code/execute/python`, {
-          code,
-          questionId,
-          testCases: testCases.split('\n').filter(tc => tc.trim())
-        });
-        setTestResults(response.data);
-        setOutput('Test results are displayed below.');
+        setError('Invalid response format from server');
       }
     } catch (error) {
-      setOutput(`Error: ${error.message}`);
+      setError(`Error: ${error.response?.data?.message || error.message}`);
+      console.error('Error executing code:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const saveCode = () => {
     // In a real app, this would save to a database or local storage
-    localStorage.setItem(`savedCode_${language}`, code);
+    localStorage.setItem(`savedCode_${language}_${leetcodeUrl}`, code);
     alert('Code saved!');
   };
 
@@ -324,44 +330,28 @@ example();`);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `code.${extension}`;
+    a.download = `${leetcodeUrl}.${extension}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  const extractQuestionId = (url) => {
-    // Handle different LeetCode URL formats
-    // Format 1: https://leetcode.com/problems/two-sum/
-    // Format 2: https://leetcode.com/problems/two-sum/description/
-    // Format 3: https://leetcode.com/problems/two-sum/discuss/
-    const match = url.match(/leetcode\.com\/problems\/([^\/]+)/);
-    return match ? match[1] : null;
-  };
-
-  const fetchLeetCodeQuestion = async (url = leetcodeUrl) => {
-    if (!url) {
-      setError('Please enter a LeetCode URL');
-      return;
-    }
-
-    const questionId = extractQuestionId(url);
-    if (!questionId) {
-      setError('Invalid LeetCode URL format');
-      return;
-    }
-
+  const fetchLeetCodeQuestion = async () => {
     setIsLoading(true);
     setError('');
     setQuestionDescription('');
+    setCode('');
+    setTestResults(null);
+
+    const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
 
     try {
       // Use our backend endpoint to fetch question details
       const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
       console.log('Using API base URI:', apiBaseUri);
 
-      const response = await axios.get(`${apiBaseUri}/leetcode/question/${questionId}`);
+      const response = await axios.get(`${apiBaseUri}/questions/${questionId}`);
 
       if (!response.data) {
         setError('Question not found');
@@ -369,6 +359,7 @@ example();`);
       }
 
       const questionData = response.data;
+      setCurrentQuestion(questionData);
 
       // Check if description exists
       if (!questionData.description) {
@@ -383,46 +374,15 @@ example();`);
         .replace(/\\t/g, '\t');
 
       setQuestionDescription(formattedContent);
-      setTestCases(questionData.examples || '');
 
-      // Update the code editor with a template for the solution based on language
-      if (language === 'python') {
-        setCode(`"""
-LeetCode Problem: ${questionData.title || questionId}
-Difficulty: ${questionData.difficulty || 'Unknown'}
+      // Set the template based on the current language
+      const template = questionData.templates?.[language] || getDefaultTemplate(language, null);
+      setCode(template);
 
-${formattedContent.substring(0, 100)}...
-"""
-
-def solution(params):
-    # Your solution here
-    pass
-
-# Test cases
-${questionData.examples ? questionData.examples.split('\n').map((testCase, index) => `# Test case ${index + 1}:
-print(solution(${testCase}))`).join('\n\n') : 'print(solution())'}
-`);
-      } else {
-        setCode(`/**
- * LeetCode Problem: ${questionData.title || questionId}
- * Difficulty: ${questionData.difficulty || 'Unknown'}
- * 
- * ${formattedContent.substring(0, 100)}...
- */
-
-/**
- * @param {any} params
- * @return {any}
- */
-function solution(params) {
-    // Your solution here
-    
-}
-
-// Test cases
-${questionData.examples ? questionData.examples.split('\n').map((testCase, index) => `// Test case ${index + 1}:
-console.log(solution(${testCase}));`).join('\n\n') : 'console.log(solution());'}
-`);
+      // Try to load saved code for this question and language
+      const savedCode = localStorage.getItem(`savedCode_${language}_${questionId}`);
+      if (savedCode) {
+        setCode(savedCode);
       }
     } catch (err) {
       setError(`Error fetching question: ${err.message}`);
@@ -433,6 +393,18 @@ console.log(solution(${testCase}));`).join('\n\n') : 'console.log(solution());'}
     }
   };
 
+  // Initialize with default template and fetch the default question
+  useEffect(() => {
+    fetchLeetCodeQuestion();
+  }, []);
+
+  // Update code when language changes
+  useEffect(() => {
+    if (currentQuestion) {
+      setCode(getDefaultTemplate(language, currentQuestion));
+    }
+  }, [language, currentQuestion]);
+
   return (
     <Container>
       <Title>Code Sandbox</Title>
@@ -440,69 +412,48 @@ console.log(solution(${testCase}));`).join('\n\n') : 'console.log(solution());'}
 
       <LeetCodeContainer>
         <LeetCodeHeader>
-          <LeetCodeTitle>LeetCode Question</LeetCodeTitle>
+          <LeetCodeTitle>Question</LeetCodeTitle>
+          <LanguageSelector value={language} onChange={handleLanguageChange}>
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+          </LanguageSelector>
         </LeetCodeHeader>
-
-        <RandomButton onClick={selectRandomQuestion}>
-          <Shuffle size={16} />
-          Get Random Question
-        </RandomButton>
-
-        <div style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>
-          <p style={{ fontSize: '0.875rem', color: theme.colors.textSecondary }}>
-            Question URL (for reference):
-          </p>
-        </div>
-
         <LeetCodeInput
           type="text"
-          placeholder="Question URL will appear here"
           value={leetcodeUrl}
-          readOnly
+          onChange={(e) => setLeetcodeUrl(e.target.value)}
+          placeholder="Enter LeetCode question URL or ID"
         />
-
-        {selectedQuestion && (
-          <div style={{ marginTop: '1rem' }}>
-            <p><strong>Selected Question:</strong> {selectedQuestion.name}</p>
-            <p><strong>Difficulty:</strong> {selectedQuestion.difficulty}</p>
-          </div>
-        )}
-
-        {isLoading && <p>Loading question details...</p>}
-        {error && <p style={{ color: theme.colors.error }}>{error}</p>}
-        {questionDescription && (
-          <QuestionDescription>
-            <div dangerouslySetInnerHTML={{ __html: questionDescription }} />
-            {testCases && (
-              <div style={{ marginTop: '1rem' }}>
-                <h4>Test Cases:</h4>
-                <pre style={{
-                  backgroundColor: theme.colors.backgroundSecondary,
-                  padding: '1rem',
-                  borderRadius: '4px',
-                  overflowX: 'auto'
-                }}>
-                  {testCases}
-                </pre>
-              </div>
-            )}
-          </QuestionDescription>
-        )}
+        <LeetCodeButton onClick={() => fetchLeetCodeQuestion()}>
+          Load Question
+        </LeetCodeButton>
       </LeetCodeContainer>
+
+      {isLoading && (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>Loading question details...</p>
+        </div>
+      )}
+
+      {error && (
+        <div style={{ color: 'red', padding: '1rem', margin: '1rem 0', backgroundColor: '#ffebee', borderRadius: '4px' }}>
+          {error}
+        </div>
+      )}
+
+      {questionDescription && (
+        <QuestionDescription>
+          <div dangerouslySetInnerHTML={{ __html: questionDescription }} />
+        </QuestionDescription>
+      )}
 
       <EditorContainer>
         <EditorHeader>
-          <EditorTitle>
-            <LanguageSelector value={language} onChange={handleLanguageChange}>
-              <option value="javascript">JavaScript</option>
-              <option value="python">Python</option>
-            </LanguageSelector>
-            {language === 'javascript' ? 'JavaScript Editor' : 'Python Editor'}
-          </EditorTitle>
+          <EditorTitle>Code Editor</EditorTitle>
           <EditorActions>
-            <ActionButton onClick={runCode}>
+            <ActionButton onClick={runCode} disabled={isLoading}>
               <Play size={16} />
-              Run
+              {isLoading ? 'Running...' : 'Run Code'}
             </ActionButton>
             <ActionButton onClick={saveCode}>
               <Save size={16} />
@@ -514,64 +465,52 @@ console.log(solution(${testCase}));`).join('\n\n') : 'console.log(solution());'}
             </ActionButton>
           </EditorActions>
         </EditorHeader>
-        <CodeEditor
+        <Editor
+          height="100%"
+          defaultLanguage={getEditorLanguage()}
+          language={getEditorLanguage()}
+          theme={getEditorTheme()}
           value={code}
-          onChange={handleCodeChange}
-          spellCheck="false"
+          onChange={handleEditorChange}
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+            lineNumbers: 'on',
+            roundedSelection: false,
+            scrollBeyondLastLine: false,
+            readOnly: false,
+            automaticLayout: true,
+          }}
         />
       </EditorContainer>
 
-      <OutputHeader>
-        <OutputTitle>Output</OutputTitle>
-      </OutputHeader>
       <OutputContainer>
-        {output || 'Run your code to see output here...'}
+        <OutputHeader>
+          <OutputTitle>Output</OutputTitle>
+        </OutputHeader>
+        {error && <div style={{ color: 'red' }}>{error}</div>}
+        {output && <div>{output}</div>}
         {testResults && (
-          <div style={{ marginTop: '1rem' }}>
-            <h4>Test Results Summary:</h4>
-            <div style={{
-              display: 'flex',
-              gap: '1rem',
-              marginBottom: '1rem'
-            }}>
-              <span style={{ color: theme.colors.success }}>
-                Passed: {testResults.summary.passed}
-              </span>
-              <span style={{ color: theme.colors.error }}>
-                Failed: {testResults.summary.failed}
-              </span>
-              <span style={{ color: theme.colors.textSecondary }}>
-                No Expected Output: {testResults.summary.noExpectedOutput}
-              </span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {testResults.results.map((result, index) => (
-                <div
-                  key={index}
-                  style={{
-                    padding: '1rem',
-                    backgroundColor: result.passed === true
-                      ? `${theme.colors.success}20`
-                      : result.passed === false
-                        ? `${theme.colors.error}20`
-                        : theme.colors.backgroundSecondary,
-                    borderRadius: '4px',
-                    border: `1px solid ${result.passed === true
-                      ? theme.colors.success
-                      : result.passed === false
-                        ? theme.colors.error
-                        : theme.colors.border
-                      }`
-                  }}
-                >
-                  <div><strong>Test Case {index + 1}:</strong> {result.testCase}</div>
-                  <div><strong>Output:</strong> {result.output}</div>
-                  {result.expectedOutput !== 'No expected output provided' && (
-                    <div><strong>Expected:</strong> {result.expectedOutput}</div>
-                  )}
-                </div>
-              ))}
-            </div>
+          <div>
+            <h4>Test Results</h4>
+            <p>
+              Passed: {testResults.summary.passed}/{testResults.summary.total} (
+              {testResults.summary.score}%)
+            </p>
+            {testResults.results.map((result, index) => (
+              <div key={index} style={{ marginTop: '1rem' }}>
+                <p>Test Case {index + 1}:</p>
+                <p>Input: {JSON.stringify(result.testCase)}</p>
+                <p>Expected: {JSON.stringify(result.expectedOutput)}</p>
+                <p>Output: {JSON.stringify(result.output)}</p>
+                <p style={{ color: result.passed ? 'green' : 'red' }}>
+                  {result.passed ? 'Passed' : 'Failed'}
+                </p>
+                {result.error && (
+                  <p style={{ color: 'red' }}>Error: {result.error}</p>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </OutputContainer>
