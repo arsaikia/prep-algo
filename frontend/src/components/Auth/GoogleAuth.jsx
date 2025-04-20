@@ -42,28 +42,11 @@ const GoogleAuth = () => {
             try {
                 console.log('Google login response:', response);
 
-                // Get user info from Google
-                const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                    headers: { Authorization: `Bearer ${response.access_token}` },
-                }).then(res => res.json());
+                // Dispatch login action with just the token
+                // Our backend will verify the token and return user info
+                dispatch(loginWithGoogle(response.access_token));
 
-                console.log('Google user info:', userInfo);
-
-                // Dispatch login action with Google user info and token
-                dispatch(loginWithGoogle({
-                    token: response.access_token,
-                    googleId: userInfo.sub,
-                    email: userInfo.email,
-                    firstName: userInfo.given_name,
-                    lastName: userInfo.family_name,
-                    picture: userInfo.picture
-                }));
-
-                // Set cookies for user session
-                setCookie('userId', userInfo.sub, { path: '/' });
-                setCookie('name', userInfo.given_name, { path: '/' });
-
-                // Redirect to home page
+                // Navigate to home page - the saga will handle setting cookies
                 navigate('/');
             } catch (error) {
                 console.error('Error during Google login:', error);

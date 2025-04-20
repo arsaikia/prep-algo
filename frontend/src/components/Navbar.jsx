@@ -109,30 +109,40 @@ const UserProfile = styled.div`
 `;
 
 const ProfilePicture = styled.div`
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   cursor: pointer;
-  transition: transform 0.2s;
-  
-  &:hover {
-    transform: scale(1.05);
-  }
-  
+  position: relative;
+
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  
+
   span {
-    color: #666;
     font-size: 14px;
+    font-weight: 500;
+    color: ${({ theme }) => theme.colors.text};
+  }
+
+  .error-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   }
 `;
 
@@ -409,6 +419,7 @@ function Navbar() {
   const [showToast, setShowToast] = useState(false);
   const dropdownRef = useRef(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [profilePictureError, setProfilePictureError] = useState(false);
 
   // Initialize cookies with default values to prevent undefined errors
   const [cookies, setCookie, removeCookie] = useCookies(['userId', 'name', 'authToken']);
@@ -533,6 +544,10 @@ function Navbar() {
     setIsLoginModalOpen(true);
   };
 
+  const handleProfilePictureError = () => {
+    setProfilePictureError(true);
+  };
+
   return (
     <>
       {isSigningOut && (
@@ -554,11 +569,10 @@ function Navbar() {
           </Logo>
 
           <NavLinks>
-            {isUserAuthenticated && (
-              <NavLinkItem to="/todo" className={location.pathname === '/todo' ? 'active' : ''}>
-                Todo
-              </NavLinkItem>
-            )}
+            <NavLinkItem to="/all">All Questions</NavLinkItem>
+            <NavLinkItem to="/todo">Todo</NavLinkItem>
+            <NavLinkItem to="/playground">Playground</NavLinkItem>
+            <NavLinkItem to="/codesandbox">Code Sandbox</NavLinkItem>
           </NavLinks>
 
           <UserSection>
@@ -569,10 +583,16 @@ function Navbar() {
             {isUserAuthenticated ? (
               <UserProfile ref={dropdownRef}>
                 <ProfilePicture onClick={toggleDropdown}>
-                  {userPicture ? (
-                    <img src={userPicture} alt={userName} />
+                  {userPicture && !profilePictureError ? (
+                    <img
+                      src={userPicture}
+                      alt={userName}
+                      onError={handleProfilePictureError}
+                    />
                   ) : (
-                    <span>{userName ? userName.charAt(0).toUpperCase() : 'U'}</span>
+                    <div className="error-fallback">
+                      <span>{userName ? userName.charAt(0).toUpperCase() : 'U'}</span>
+                    </div>
                   )}
                 </ProfilePicture>
                 <DropdownMenu isOpen={isDropdownOpen}>
@@ -614,10 +634,16 @@ function Navbar() {
           <>
             <MobileUserSection>
               <MobileProfilePicture>
-                {userPicture ? (
-                  <img src={userPicture} alt={userName} />
+                {userPicture && !profilePictureError ? (
+                  <img
+                    src={userPicture}
+                    alt={userName}
+                    onError={handleProfilePictureError}
+                  />
                 ) : (
-                  <span>{userName ? userName.charAt(0).toUpperCase() : 'U'}</span>
+                  <div className="error-fallback">
+                    <span>{userName ? userName.charAt(0).toUpperCase() : 'U'}</span>
+                  </div>
                 )}
               </MobileProfilePicture>
             </MobileUserSection>

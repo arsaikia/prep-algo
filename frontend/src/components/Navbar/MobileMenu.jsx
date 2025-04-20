@@ -53,6 +53,8 @@ const MobileMenu = ({ isOpen, isUserAuthenticated, name, onSignOut }) => {
             {isUserAuthenticated && (
                 <MobileNavLink to="/todo">Todo</MobileNavLink>
             )}
+            <MobileNavLink to="/playground">Playground</MobileNavLink>
+            <MobileNavLink to="/codesandbox">Code Sandbox</MobileNavLink>
             {isUserAuthenticated && (
                 <div style={{ padding: '1rem' }}>
                     Hi, {name}
