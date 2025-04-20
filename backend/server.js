@@ -12,10 +12,8 @@ import authentication from './routes/authentication.js';
 import leetcode from './routes/leetcode.js';
 import codeExecution from './routes/code.js';
 
+// Load environment variables
 dotenv.config();
-
-// Connect to mongo
-connectDB();
 
 const app = express();
 
@@ -34,8 +32,12 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Allow CORS with specific options
 const BASE_URI = process.env.BASE_URI || "http://localhost:3000";
+const corsOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',')
+    : [BASE_URI, "http://192.168.1.234:3000"];
+
 const corsOptions = {
-    origin: [BASE_URI, "http://192.168.1.234:3000"],
+    origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -54,6 +56,11 @@ app.use((req, res, next) => {
     next();
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
+
 // Mount routers
 app.use('/api/v1/authentication', authentication);
 app.use('/api/v1/questions', getQuestions);
@@ -68,9 +75,30 @@ app.use('*', (req, res) => {
     });
 });
 
-// Listen to the PORT
-const PORT = process.env.PORT || 5050;
-
-app.listen(PORT, () => {
-    return console.log(`Server started on PORT ${PORT}`.yellow.bold);
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        error: 'Internal Server Error'
+    });
 });
+
+// Start server
+const startServer = async () => {
+    try {
+        // Connect to MongoDB
+        await connectDB();
+
+        // Listen to the PORT
+        const PORT = process.env.PORT || 8080;
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server started on PORT ${PORT}`.yellow.bold);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+};
+
+startServer();
