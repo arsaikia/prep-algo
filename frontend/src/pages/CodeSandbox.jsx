@@ -226,30 +226,36 @@ const CodeSandbox = () => {
   // Get questions from Redux store
   const allQuestions = useSelector((state) => state.questions.allQuestionsWithoutHistory);
 
-  const getDefaultTemplate = (lang, question) => {
-    if (!question?.templates) {
-      // Fallback template if no question templates are available
-      if (lang === 'python') {
-        return `def solution(*args):
-    """
-    Write your solution here.
-    """
-    pass`;
-      } else {
-        return `/**
- * Write your solution here.
- * 
- * @param {any} args - The input arguments
- * @return {any} The solution output
- */
-function solution(...args) {
-    
-}`;
-      }
+  const getDefaultTemplate = (language, question) => {
+    // If the question has a specific template, use it
+    if (question?.templates?.[language]) {
+      return question.templates[language];
     }
 
-    // Use the template from the question data
-    return question.templates[lang] || getDefaultTemplate(lang, null);
+    // Generate a method name based on the question
+    let methodName = 'solution';
+    if (question?.name) {
+      // Convert question name to camelCase for method name
+      methodName = question.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+(.)/g, (m, chr) => chr.toUpperCase())
+        .replace(/^[A-Z]/, c => c.toLowerCase());
+    }
+
+    if (language === 'python') {
+      return `class Solution:
+    def ${methodName}(self, *args):
+        """
+        Write your solution here.
+        """
+        pass`;
+    }
+
+    return `class Solution {
+    ${methodName}(...args) {
+        // Write your solution here
+    }
+}`;
   };
 
   const handleLanguageChange = (e) => {

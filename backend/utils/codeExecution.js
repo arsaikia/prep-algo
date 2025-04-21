@@ -3,13 +3,35 @@ import { writeFile, unlink } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 
+// Constants
 const EXECUTION_TIMEOUT = 5000; // 5 seconds timeout
+
+/**
+ * Extract imports from Python code
+ * @param {string} code - The Python code to extract imports from
+ * @returns {string} - The extracted imports
+ */
+const extractImports = (code) => {
+    const importRegex = /^(?:from\s+[\w.]+\s+import\s+[\w\s,]+|import\s+[\w\s,]+)$/gm;
+    const imports = code.match(importRegex) || [];
+    return imports.join('\n');
+};
+
+/**
+ * Remove imports from Python code
+ * @param {string} code - The Python code to remove imports from
+ * @returns {string} - The code without imports
+ */
+const removeImports = (code) => {
+    const importRegex = /^(?:from\s+[\w.]+\s+import\s+[\w\s,]+|import\s+[\w\s,]+)$/gm;
+    return code.replace(importRegex, '').trim();
+};
 
 /**
  * Run Python code against test cases
  * @param {string} code - The Python code to execute
- * @param {Array<{inputs: Array<string>, expectedOutput: string, isExample: boolean}>} testCases - Array of test cases
- * @returns {Promise<Array<{input: string, expectedOutput: string, actualOutput: string, isCorrect: boolean, error: string|null, isExample: boolean}>>}
+ * @param {Array<{inputs: Array<string>, expectedOutput: string}>} testCases - Array of test cases
+ * @returns {Promise<Array<{input: string, expectedOutput: string, actualOutput: string, isCorrect: boolean, error: string|null}>>}
  */
 export const runPythonCode = async (code, testCases) => {
     const results = [];
@@ -22,10 +44,8 @@ export const runPythonCode = async (code, testCases) => {
             // Convert input strings to Python literals
             const inputArgs = testCase.inputs.map(input => {
                 try {
-                    // Try to evaluate the input as a Python literal
                     return `eval(${JSON.stringify(input)})`;
                 } catch (e) {
-                    // If evaluation fails, treat it as a string
                     return JSON.stringify(input);
                 }
             });
@@ -35,6 +55,8 @@ import json
 import signal
 import sys
 
+${extractImports(code)}
+
 def timeout_handler(signum, frame):
     print(json.dumps({
         'passed': False,
@@ -42,48 +64,43 @@ def timeout_handler(signum, frame):
     }))
     sys.exit(1)
 
-# Set timeout handler
 signal.signal(signal.SIGALRM, timeout_handler)
 signal.alarm(${Math.ceil(EXECUTION_TIMEOUT / 1000)})
 
-${code}
+${removeImports(code)}
 
-# Test case execution
 if __name__ == "__main__":
     try:
-        # Convert input strings to Python objects
         args = [${inputArgs.join(', ')}]
+        solution = Solution()
         
-        # Execute the solution
-        result = solution(*args)
-        
-        # Convert expected output to Python object
+        method_name = next((attr_name for attr_name in dir(solution) 
+            if not attr_name.startswith('_') and callable(getattr(solution, attr_name))), None)
+                
+        if not method_name:
+            raise Exception("No solution method found in the Solution class")
+            
+        result = getattr(solution, method_name)(*args)
         expected = eval(${JSON.stringify(testCase.expectedOutput)})
         
-        # Compare results
-        # For lists and tuples, sort them to ignore order
         if isinstance(result, (list, tuple)):
             if isinstance(expected, list) and len(expected) > 0 and isinstance(expected[0], (list, tuple)):
-                # Multiple valid solutions case
                 passed = any(sorted(result) == sorted(valid_solution) for valid_solution in expected)
             else:
-                # Single solution case
                 passed = sorted(result) == sorted(expected)
         else:
             passed = result == expected
             
-        output = {
+        print(json.dumps({
             'passed': passed,
             'result': result,
             'expected': expected
-        }
-        print(json.dumps(output))
+        }))
     except Exception as e:
-        error_output = {
+        print(json.dumps({
             'passed': False,
             'error': str(e)
-        }
-        print(json.dumps(error_output))
+        }))
 `;
 
             await writeFile(tempFile, testCode);
@@ -94,19 +111,13 @@ if __name__ == "__main__":
                 let output = '';
                 let error = '';
 
-                // Set up process timeout
                 const timeoutId = setTimeout(() => {
                     python.kill();
                     reject(new Error(`Execution timed out (exceeded ${EXECUTION_TIMEOUT / 1000} seconds)`));
                 }, EXECUTION_TIMEOUT);
 
-                python.stdout.on('data', (data) => {
-                    output += data.toString();
-                });
-
-                python.stderr.on('data', (data) => {
-                    error += data.toString();
-                });
+                python.stdout.on('data', (data) => output += data.toString());
+                python.stderr.on('data', (data) => error += data.toString());
 
                 python.on('close', (code) => {
                     clearTimeout(timeoutId);
@@ -114,20 +125,16 @@ if __name__ == "__main__":
                         reject(new Error(error || 'Execution failed'));
                     } else {
                         try {
-                            // Split output by lines and get the last line which should be our JSON
                             const lines = output.trim().split('\n');
                             const lastLine = lines[lines.length - 1];
-                            const result = JSON.parse(lastLine);
-                            resolve(result);
+                            resolve(JSON.parse(lastLine));
                         } catch (e) {
-                            console.error('Debug - Parse error:', e);
                             reject(new Error('Invalid output format'));
                         }
                     }
                 });
             });
 
-            // Clean up the temporary file
             await unlink(tempFile);
 
             results.push({
