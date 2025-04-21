@@ -43,7 +43,7 @@ function AppContent() {
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <Navbar />
-      <Container width="90%" padding="0 5%">
+      <Container width="calc(100% - 2rem)" padding="0 1rem">
         <CodeSection />
         <AllRoutes />
       </Container>

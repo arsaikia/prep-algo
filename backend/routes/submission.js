@@ -288,7 +288,7 @@ router.post('/submit', async (req, res) => {
                     return tc;
                 } catch (e) {
                     // If parsing fails, use the string as input
-                    return { input: tc, expectedOutput: '' };
+                    return { inputs: [tc], expectedOutput: '' };
                 }
             });
 
@@ -301,9 +301,17 @@ router.post('/submit', async (req, res) => {
             });
         }
 
+        // Calculate score
+        const passedTests = results.filter(r => r.passed).length;
+        const totalTests = results.length;
+        const score = (passedTests / totalTests) * 100;
+
         res.json({
             success: true,
-            results
+            results,
+            passedTests,
+            totalTests,
+            score
         });
     } catch (error) {
         console.error('Error executing code:', error);

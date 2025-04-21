@@ -5,70 +5,136 @@ import { Play, Save, Download, Link, Shuffle } from 'react-feather';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import TestResults from '../components/TestResults';
 
 // Styled components
 const Container = styled.div`
-  padding: 2rem;
-  max-width: 1200px;
+  padding: 1rem;
+  max-width: 1400px;
   margin: 0 auto;
+
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
 `;
 
 const Title = styled.h1`
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin-bottom: 0.5rem;
   color: ${props => props.theme.colors.text};
+
+  @media (min-width: 768px) {
+    font-size: 2rem;
+  }
 `;
 
 const Subtitle = styled.p`
-  font-size: 1rem;
-  margin-bottom: 2rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
   color: ${props => props.theme.colors.textSecondary};
+
+  @media (min-width: 768px) {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+`;
+
+const MainContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+
+  @media (min-width: 1024px) {
+    flex-direction: row;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+`;
+
+const LeftPanel = styled.div`
+  flex: 1;
+  min-width: 0;
+  order: 1;
+`;
+
+const RightPanel = styled.div`
+  flex: 1;
+  min-width: 0;
+  order: 2;
 `;
 
 const EditorContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-bottom: 2rem;
-  height: 500px;
+  margin-bottom: 1rem;
+  height: 400px;
   border: 1px solid ${props => props.theme.colors.border};
   border-radius: 4px;
   overflow: hidden;
+
+  @media (min-width: 768px) {
+    height: 500px;
+    margin-bottom: 2rem;
+  }
 `;
 
 const EditorHeader = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
   background-color: ${props => props.theme.colors.backgroundSecondary};
   border-radius: 4px 4px 0 0;
   border: 1px solid ${props => props.theme.colors.border};
   border-bottom: none;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+  }
 `;
 
 const EditorTitle = styled.h3`
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: ${props => props.theme.colors.text};
+
+  @media (min-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 const EditorActions = styled.div`
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
+
+  @media (min-width: 768px) {
+    flex-wrap: nowrap;
+  }
 `;
 
 const ActionButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem;
   background-color: ${props => props.variant === 'primary' ? props.theme.colors.primary : 'transparent'};
   color: ${props => props.variant === 'primary' ? 'white' : props.theme.colors.text};
   border: 1px solid ${props => props.variant === 'primary' ? props.theme.colors.primary : props.theme.colors.border};
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   transition: all 0.2s ease;
+  white-space: nowrap;
+
+  @media (min-width: 768px) {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
 
   &:hover {
     background-color: ${props => props.variant === 'primary' ? props.theme.colors.primaryDark : props.theme.colors.backgroundHover};
@@ -115,29 +181,42 @@ const OutputTitle = styled.h3`
 `;
 
 const LeetCodeContainer = styled.div`
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   padding: 1rem;
   background-color: ${props => props.theme.colors.backgroundSecondary};
   border: 1px solid ${props => props.theme.colors.border};
   border-radius: 4px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 2rem;
+  }
 `;
 
 const LeetCodeHeader = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-bottom: 1rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 `;
 
 const LeetCodeTitle = styled.h3`
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: ${props => props.theme.colors.text};
+
+  @media (min-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 const LeetCodeInput = styled.input`
-  width: 100%;
+  flex: 1;
   padding: 0.5rem;
-  margin-bottom: 0.5rem;
   border: 1px solid ${props => props.theme.colors.border};
   border-radius: 4px;
   font-size: 0.875rem;
@@ -146,8 +225,14 @@ const LeetCodeInput = styled.input`
 `;
 
 const LeetCodeButton = styled(ActionButton)`
-  width: 100%;
-  justify-content: center;
+  width: auto;
+  white-space: nowrap;
+`;
+
+const InputContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 `;
 
 const RandomButton = styled(ActionButton)`
@@ -159,16 +244,20 @@ const RandomButton = styled(ActionButton)`
 `;
 
 const QuestionDescription = styled.div`
-  margin-top: 1rem;
   padding: 1rem;
   background-color: ${props => props.theme.colors.background};
   border: 1px solid ${props => props.theme.colors.border};
   border-radius: 4px;
-  max-height: 300px;
+  height: 400px;
   overflow-y: auto;
   font-size: 0.875rem;
   line-height: 1.5;
   color: ${props => props.theme.colors.text};
+  
+  @media (min-width: 768px) {
+    height: calc(100vh - 300px);
+    font-size: 0.875rem;
+  }
   
   pre {
     white-space: pre-wrap;
@@ -205,6 +294,11 @@ const LanguageSelector = styled.select`
   font-size: 0.875rem;
   cursor: pointer;
   margin-right: 1rem;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    width: auto;
+  }
 
   &:hover {
     background-color: ${props => props.theme.colors.backgroundHover};
@@ -222,6 +316,9 @@ const CodeSandbox = () => {
   const [error, setError] = useState('');
   const [testResults, setTestResults] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [isRunningExampleTests, setIsRunningExampleTests] = useState(false);
+  const [exampleTestResults, setExampleTestResults] = useState(null);
+  const [debugOutput, setDebugOutput] = useState('');
 
   // Get questions from Redux store
   const allQuestions = useSelector((state) => state.questions.allQuestionsWithoutHistory);
@@ -307,7 +404,8 @@ const CodeSandbox = () => {
             output: r.result,
             expectedOutput: r.expected,
             passed: r.passed,
-            error: r.error
+            error: r.error,
+            debugOutput: r.debugOutput
           }))
         };
 
@@ -399,6 +497,53 @@ const CodeSandbox = () => {
     }
   };
 
+  const runExampleTests = async () => {
+    try {
+      setIsRunningExampleTests(true);
+      setError('');
+      setDebugOutput('');
+      setExampleTestResults(null);
+
+      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+      const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
+
+      // Submit code to the backend for example test cases
+      const response = await axios.post(`${apiBaseUri}/code/execute/example`, {
+        code,
+        questionId
+      });
+
+      // Format the results for display
+      if (response.data) {
+        const formattedResults = {
+          summary: {
+            passed: response.data.summary.passed,
+            failed: response.data.summary.failed,
+            total: response.data.summary.total
+          },
+          results: response.data.results.map(r => ({
+            testCase: r.input,
+            output: r.actualOutput,
+            expectedOutput: r.expectedOutput,
+            passed: r.isCorrect,
+            error: r.error,
+            debugOutput: r.debugOutput
+          }))
+        };
+
+        setExampleTestResults(formattedResults);
+        setDebugOutput(`Example test results: ${response.data.summary.passed}/${response.data.summary.total} tests passed`);
+      } else {
+        setError('Invalid response format from server');
+      }
+    } catch (error) {
+      setError(`Error: ${error.response?.data?.message || error.message}`);
+      console.error('Error executing example tests:', error);
+    } finally {
+      setIsRunningExampleTests(false);
+    }
+  };
+
   // Initialize with default template and fetch the default question
   useEffect(() => {
     fetchLeetCodeQuestion();
@@ -419,20 +564,18 @@ const CodeSandbox = () => {
       <LeetCodeContainer>
         <LeetCodeHeader>
           <LeetCodeTitle>Question</LeetCodeTitle>
-          <LanguageSelector value={language} onChange={handleLanguageChange}>
-            <option value="python">Python</option>
-            <option value="javascript">JavaScript</option>
-          </LanguageSelector>
         </LeetCodeHeader>
-        <LeetCodeInput
-          type="text"
-          value={leetcodeUrl}
-          onChange={(e) => setLeetcodeUrl(e.target.value)}
-          placeholder="Enter LeetCode question URL or ID"
-        />
-        <LeetCodeButton onClick={() => fetchLeetCodeQuestion()}>
-          Load Question
-        </LeetCodeButton>
+        <InputContainer>
+          <LeetCodeInput
+            type="text"
+            value={leetcodeUrl}
+            onChange={(e) => setLeetcodeUrl(e.target.value)}
+            placeholder="Enter LeetCode question URL or ID"
+          />
+          <LeetCodeButton onClick={() => fetchLeetCodeQuestion()}>
+            Load Question
+          </LeetCodeButton>
+        </InputContainer>
       </LeetCodeContainer>
 
       {isLoading && (
@@ -442,84 +585,76 @@ const CodeSandbox = () => {
       )}
 
       {error && (
-        <div style={{ color: 'red', padding: '1rem', margin: '1rem 0', backgroundColor: '#ffebee', borderRadius: '4px' }}>
+        <div style={{ color: 'red', padding: '1rem', margin: '1rem', backgroundColor: '#ffebee', borderRadius: '4px' }}>
           {error}
         </div>
       )}
 
-      {questionDescription && (
-        <QuestionDescription>
-          <div dangerouslySetInnerHTML={{ __html: questionDescription }} />
-        </QuestionDescription>
-      )}
+      <MainContent>
+        <LeftPanel>
+          {questionDescription && (
+            <QuestionDescription>
+              <div dangerouslySetInnerHTML={{ __html: questionDescription }} />
+            </QuestionDescription>
+          )}
+        </LeftPanel>
 
-      <EditorContainer>
-        <EditorHeader>
-          <EditorTitle>Code Editor</EditorTitle>
-          <EditorActions>
-            <ActionButton onClick={runCode} disabled={isLoading}>
-              <Play size={16} />
-              {isLoading ? 'Running...' : 'Run Code'}
-            </ActionButton>
-            <ActionButton onClick={saveCode}>
-              <Save size={16} />
-              Save
-            </ActionButton>
-            <ActionButton onClick={downloadCode}>
-              <Download size={16} />
-              Download
-            </ActionButton>
-          </EditorActions>
-        </EditorHeader>
-        <Editor
-          height="100%"
-          defaultLanguage={getEditorLanguage()}
-          language={getEditorLanguage()}
-          theme={getEditorTheme()}
-          value={code}
-          onChange={handleEditorChange}
-          options={{
-            minimap: { enabled: false },
-            fontSize: 14,
-            lineNumbers: 'on',
-            roundedSelection: false,
-            scrollBeyondLastLine: false,
-            readOnly: false,
-            automaticLayout: true,
-          }}
-        />
-      </EditorContainer>
+        <RightPanel>
+          <EditorContainer>
+            <EditorHeader>
+              <EditorTitle>Code Editor</EditorTitle>
+              <EditorActions>
+                <LanguageSelector value={language} onChange={handleLanguageChange}>
+                  <option value="python">Python</option>
+                  <option value="javascript">JavaScript</option>
+                </LanguageSelector>
+                <ActionButton onClick={runExampleTests} disabled={isLoading || isRunningExampleTests}>
+                  <Play size={16} />
+                  {isRunningExampleTests ? 'Running Examples...' : 'Run Example Tests'}
+                </ActionButton>
+                <ActionButton onClick={runCode} disabled={isLoading || isRunningExampleTests} variant="primary">
+                  <Play size={16} />
+                  {isLoading ? 'Running...' : 'Submit Code'}
+                </ActionButton>
+              </EditorActions>
+            </EditorHeader>
+            <Editor
+              height="100%"
+              defaultLanguage={getEditorLanguage()}
+              language={getEditorLanguage()}
+              theme={getEditorTheme()}
+              value={code}
+              onChange={handleEditorChange}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: 'on',
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                readOnly: false,
+                automaticLayout: true,
+              }}
+            />
+          </EditorContainer>
 
-      <OutputContainer>
-        <OutputHeader>
-          <OutputTitle>Output</OutputTitle>
-        </OutputHeader>
-        {error && <div style={{ color: 'red' }}>{error}</div>}
-        {output && <div>{output}</div>}
-        {testResults && (
-          <div>
-            <h4>Test Results</h4>
-            <p>
-              Passed: {testResults.summary.passed}/{testResults.summary.total} (
-              {testResults.summary.score}%)
-            </p>
-            {testResults.results.map((result, index) => (
-              <div key={index} style={{ marginTop: '1rem' }}>
-                <p>Test Case {index + 1}:</p>
-                <p>Input: {JSON.stringify(result.testCase)}</p>
-                <p>Expected: {JSON.stringify(result.expectedOutput)}</p>
-                <p>Output: {JSON.stringify(result.output)}</p>
-                <p style={{ color: result.passed ? 'green' : 'red' }}>
-                  {result.passed ? 'Passed' : 'Failed'}
-                </p>
-                {result.error && (
-                  <p style={{ color: 'red' }}>Error: {result.error}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </OutputContainer>
+          <OutputContainer>
+            <OutputHeader>
+              <OutputTitle>Output</OutputTitle>
+            </OutputHeader>
+            {error && <div style={{ color: 'red' }}>{error}</div>}
+            {debugOutput && <div>{debugOutput}</div>}
+            {output && <div>{output}</div>}
+
+            {exampleTestResults && (
+              <TestResults results={exampleTestResults} type="example" />
+            )}
+
+            {testResults && (
+              <TestResults results={testResults} type="final" />
+            )}
+          </OutputContainer>
+        </RightPanel>
+      </MainContent>
     </Container>
   );
 };

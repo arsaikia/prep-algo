@@ -31,7 +31,7 @@ const removeImports = (code) => {
  * Run Python code against test cases
  * @param {string} code - The Python code to execute
  * @param {Array<{inputs: Array<string>, expectedOutput: string}>} testCases - Array of test cases
- * @returns {Promise<Array<{input: string, expectedOutput: string, actualOutput: string, isCorrect: boolean, error: string|null}>>}
+ * @returns {Promise<Array<{input: string, expectedOutput: string, actualOutput: string, isCorrect: boolean, error: string|null, debugOutput: string}>>}
  */
 export const runPythonCode = async (code, testCases) => {
     const results = [];
@@ -54,8 +54,21 @@ export const runPythonCode = async (code, testCases) => {
 import json
 import signal
 import sys
+import io
+import contextlib
 
 ${extractImports(code)}
+
+# Capture print statements
+class PrintCapture:
+    def __init__(self):
+        self.output = []
+    
+    def write(self, text):
+        self.output.append(text)
+    
+    def flush(self):
+        pass
 
 def timeout_handler(signum, frame):
     print(json.dumps({
@@ -71,6 +84,11 @@ ${removeImports(code)}
 
 if __name__ == "__main__":
     try:
+        # Set up print capture
+        print_capture = PrintCapture()
+        original_stdout = sys.stdout
+        sys.stdout = print_capture
+        
         args = [${inputArgs.join(', ')}]
         solution = Solution()
         
@@ -83,6 +101,9 @@ if __name__ == "__main__":
         result = getattr(solution, method_name)(*args)
         expected = eval(${JSON.stringify(testCase.expectedOutput)})
         
+        # Restore stdout
+        sys.stdout = original_stdout
+        
         if isinstance(result, (list, tuple)):
             if isinstance(expected, list) and len(expected) > 0 and isinstance(expected[0], (list, tuple)):
                 passed = any(sorted(result) == sorted(valid_solution) for valid_solution in expected)
@@ -94,12 +115,18 @@ if __name__ == "__main__":
         print(json.dumps({
             'passed': passed,
             'result': result,
-            'expected': expected
+            'expected': expected,
+            'debugOutput': ''.join(print_capture.output)
         }))
     except Exception as e:
+        # Restore stdout in case of exception
+        if 'sys.stdout' in locals():
+            sys.stdout = original_stdout
+        
         print(json.dumps({
             'passed': False,
-            'error': str(e)
+            'error': str(e),
+            'debugOutput': ''.join(print_capture.output) if 'print_capture' in locals() else ''
         }))
 `;
 
@@ -140,14 +167,19 @@ if __name__ == "__main__":
             results.push({
                 input: testCase.inputs,
                 expectedOutput: testCase.expectedOutput,
-                ...result
+                actualOutput: result.result,
+                passed: result.passed,
+                error: result.error || null,
+                debugOutput: result.debugOutput || ''
             });
         } catch (error) {
             results.push({
                 input: testCase.inputs,
                 expectedOutput: testCase.expectedOutput,
+                actualOutput: null,
                 passed: false,
-                error: error.message
+                error: error.message,
+                debugOutput: ''
             });
         }
     }
