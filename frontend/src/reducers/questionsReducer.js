@@ -4,7 +4,6 @@ import {
   GET_ALL_QUESTIONS_WITHOUT_HISTORY,
   GET_ALL_QUESTIONS_WITHOUT_HISTORY_SUCCESS,
   GET_SOLVED_QUESTIONS,
-  GET_TODAY_QUESTIONS,
   GET_TOP_QUESTIONS,
   HIDE_FETCH_LOADING,
   SHOW_FETCH_LOADING,
@@ -21,7 +20,6 @@ const initialState = {
   },
   isFetchingQuestions: true,
   solvedQuestions: [],
-  todoQuestions: [],
   topQuestions: {
     groups: [],
     questions: {},
@@ -71,12 +69,6 @@ const questionReducer = (state = initialState, action) => {
       return {
         ...state,
         solvedQuestions: action.payload,
-      };
-
-    case GET_TODAY_QUESTIONS:
-      return {
-        ...state,
-        todoQuestions: action.payload,
       };
 
     default:

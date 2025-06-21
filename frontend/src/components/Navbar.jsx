@@ -570,8 +570,6 @@ function Navbar() {
 
           <NavLinks>
             <NavLinkItem to="/all">All Questions</NavLinkItem>
-            <NavLinkItem to="/todo">Todo</NavLinkItem>
-            <NavLinkItem to="/playground">Playground</NavLinkItem>
             <NavLinkItem to="/codesandbox">Code Sandbox</NavLinkItem>
           </NavLinks>
 
@@ -624,12 +622,6 @@ function Navbar() {
       </NavContainer>
 
       <MobileMenuContainer isOpen={isMobileMenuOpen}>
-        {isUserAuthenticated && (
-          <MobileNavLink to="/todo" className={location.pathname === '/todo' ? 'active' : ''}>
-            Todo
-          </MobileNavLink>
-        )}
-
         {isUserAuthenticated ? (
           <>
             <MobileUserSection>

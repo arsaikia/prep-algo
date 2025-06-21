@@ -92,7 +92,6 @@ function App() {
   const dispatch = useDispatch();
 
   // Get states using useSelector ( state->reducerName )
-  const todoQuestions = useSelector((state) => state.questions.todoQuestions);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const userIdInAuthStore = useSelector((state) => state.auth.userId);
   const userNameIdInAuthStore = useSelector((state) => state.auth.firstName);

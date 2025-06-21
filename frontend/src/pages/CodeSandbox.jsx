@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTheme } from 'styled-components';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Play, Save, Download, Link, Shuffle } from 'react-feather';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
@@ -307,10 +308,12 @@ const LanguageSelector = styled.select`
 
 const CodeSandbox = () => {
   const theme = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [language, setLanguage] = useState('python');
   const [code, setCode] = useState('');
   const [output, setOutput] = useState('');
-  const [leetcodeUrl, setLeetcodeUrl] = useState('rotting-oranges');
+  const [leetcodeUrl, setLeetcodeUrl] = useState('');
   const [questionDescription, setQuestionDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -322,6 +325,21 @@ const CodeSandbox = () => {
 
   // Get questions from Redux store
   const allQuestions = useSelector((state) => state.questions.allQuestionsWithoutHistory);
+
+  // Check for question parameter in URL on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const questionParam = urlParams.get('question');
+
+    console.log('URL question parameter:', questionParam);
+
+    if (questionParam) {
+      setError(''); // Clear any existing errors
+      setLeetcodeUrl(questionParam);
+      // Automatically fetch the question
+      fetchLeetCodeQuestion(questionParam);
+    }
+  }, [location.search]);
 
   const getDefaultTemplate = (language, question) => {
     // If the question has a specific template, use it
@@ -441,21 +459,27 @@ const CodeSandbox = () => {
     URL.revokeObjectURL(url);
   };
 
-  const fetchLeetCodeQuestion = async () => {
+  const fetchLeetCodeQuestion = async (questionId = null) => {
+    const questionToFetch = questionId || leetcodeUrl;
+
+    if (!questionToFetch || !questionToFetch.trim()) {
+      setError('Please enter a question URL or ID');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     setQuestionDescription('');
-    setCode('');
     setTestResults(null);
-
-    const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
+    setExampleTestResults(null);
+    setDebugOutput('');
 
     try {
       // Use our backend endpoint to fetch question details
       const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
       console.log('Using API base URI:', apiBaseUri);
 
-      const response = await axios.get(`${apiBaseUri}/questions/${questionId}`);
+      const response = await axios.get(`${apiBaseUri}/questions/${questionToFetch}`);
 
       if (!response.data) {
         setError('Question not found');
@@ -484,9 +508,15 @@ const CodeSandbox = () => {
       setCode(template);
 
       // Try to load saved code for this question and language
-      const savedCode = localStorage.getItem(`savedCode_${language}_${questionId}`);
+      const savedCode = localStorage.getItem(`savedCode_${language}_${questionToFetch}`);
       if (savedCode) {
         setCode(savedCode);
+      }
+
+      // Update URL without the question parameter to clean it up
+      if (questionId) {
+        const newUrl = window.location.pathname;
+        navigate(newUrl, { replace: true });
       }
     } catch (err) {
       setError(`Error fetching question: ${err.message}`);
@@ -544,9 +574,9 @@ const CodeSandbox = () => {
     }
   };
 
-  // Initialize with default template and fetch the default question
+  // Initialize with default template
   useEffect(() => {
-    fetchLeetCodeQuestion();
+    setCode(getDefaultTemplate(language, null));
   }, []);
 
   // Update code when language changes

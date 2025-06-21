@@ -8,26 +8,18 @@ import {
   Routes,
 } from 'react-router-dom';
 
-import Todo from './components/Todo';
 import AllQuestions from './pages/AllQuestions';
 import CodeSandbox from './pages/CodeSandbox';
 import Error from './pages/Error';
 import Login from './pages/Login';
-import Playground from './pages/Playground';
 
 function AllRoutes(props) {
-  const {
-    todoProps,
-  } = props;
-
   return (
     <Routes>
       <Route path="/" element={<AllQuestions />} />
       <Route path="/all" element={<AllQuestions />} />
       <Route path="/questions" element={<AllQuestions />} />
-      <Route path="/todo" element={<Todo {...todoProps} />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/playground" element={<Playground />} />
       <Route path="/codesandbox" element={<CodeSandbox />} />
       <Route path="/404" element={<Error />} />
       <Route path="*" element={<Navigate replace to="/404" />} />

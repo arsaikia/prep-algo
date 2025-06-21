@@ -1,5 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { Play } from 'react-feather';
 import { formatLeetCodeUrl } from '../../utils/questions';
 
 // Styled components
@@ -61,6 +63,12 @@ const DifficultyCell = styled.td`
   }};
 `;
 
+const QuestionContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
 const QuestionLink = styled.a`
   text-decoration: none;
   color: inherit;
@@ -72,7 +80,58 @@ const QuestionLink = styled.a`
   }
 `;
 
+const SolveIcon = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: ${props => props.theme.colors.primary};
+  transition: all 0.2s ease;
+  opacity: 0.7;
+
+  &:hover {
+    background-color: ${props => props.theme.colors.primary};
+    color: white;
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
 const QuestionTable = ({ questions }) => {
+  const navigate = useNavigate();
+
+  const handleSolveClick = (question) => {
+    // Navigate to Code Sandbox with the question link as a parameter
+    navigate(`/codesandbox?question=${question.link}`);
+  };
+
+  const isQuestionAvailable = (question) => {
+    // For now, we'll consider a question available if it can be found in our database
+    // In the future, we can add more sophisticated checks based on whether the question
+    // has description, test cases, and templates when we fetch individual question details
+
+    // You can add specific question links that you know have full data
+    const availableQuestions = [
+      'rotting-oranges',
+      'two-sum',
+      'valid-anagram',
+      // Add more question links here as they become available
+    ];
+
+    // Remove trailing slash for comparison
+    const questionLink = question.link.replace(/\/$/, '');
+    return availableQuestions.includes(questionLink);
+  };
+
   return (
     <TableContainer>
       <Table>
@@ -84,23 +143,40 @@ const QuestionTable = ({ questions }) => {
           </tr>
         </TableHead>
         <tbody>
-          {questions.map((question, index) => (
-            <TableRow key={question._id}>
-              <TableCell>{index + 1}</TableCell>
-              <TableCell>
-                <QuestionLink
-                  href={formatLeetCodeUrl(question)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {question.name}
-                </QuestionLink>
-              </TableCell>
-              <DifficultyCell difficulty={question.difficulty}>
-                {question.difficulty}
-              </DifficultyCell>
-            </TableRow>
-          ))}
+          {questions.map((question, index) => {
+            const available = isQuestionAvailable(question);
+
+            return (
+              <TableRow key={question._id}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>
+                  <QuestionContainer>
+                    <QuestionLink
+                      href={formatLeetCodeUrl(question)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {question.name}
+                    </QuestionLink>
+                    {available && (
+                      <SolveIcon
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleSolveClick(question);
+                        }}
+                        title="Solve this question"
+                      >
+                        <Play size={14} />
+                      </SolveIcon>
+                    )}
+                  </QuestionContainer>
+                </TableCell>
+                <DifficultyCell difficulty={question.difficulty}>
+                  {question.difficulty}
+                </DifficultyCell>
+              </TableRow>
+            );
+          })}
         </tbody>
       </Table>
     </TableContainer>
