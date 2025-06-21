@@ -2,325 +2,331 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTheme } from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Play, Save, Download, Link, Shuffle, Clock, Star } from 'react-feather';
+import { Play, Save, Download, Link, Shuffle, Clock, Star, Code, Terminal, Eye, Settings } from 'react-feather';
+import { Timer, Pause, Play as PlayLucide, Square, Zap, Monitor, FileDown, FileText, Shuffle as ShuffleLucide, Code2, Terminal as TerminalLucide, Eye as EyeLucide, Settings as SettingsLucide } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import TestResults from '../components/TestResults';
 import { useTimeTracker } from '../utils/timeTracker';
+import { useTestUser } from '../contexts/TestUserContext';
 
-// Styled components
+// Modern styled components with clean design
 const Container = styled.div`
-  padding: 1rem;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
-
+  padding: 20px 12px;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
+  min-height: 100vh;
+  
   @media (min-width: 768px) {
-    padding: 2rem;
+    padding: 20px 16px;
   }
+`;
+
+const Header = styled.div`
+  text-align: center;
+  margin-bottom: 3rem;
 `;
 
 const Title = styled.h1`
-  font-size: 1.5rem;
+  font-size: 2.5rem;
   margin-bottom: 0.5rem;
-  color: ${props => props.theme.colors.text};
-
-  @media (min-width: 768px) {
-    font-size: 2rem;
-  }
-`;
-
-const Subtitle = styled.p`
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
-  color: ${props => props.theme.colors.textSecondary};
-
-  @media (min-width: 768px) {
-    font-size: 1rem;
-    margin-bottom: 2rem;
-  }
-`;
-
-const MainContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-
-  @media (min-width: 1024px) {
-    flex-direction: row;
-    gap: 2rem;
-    margin-top: 2rem;
-  }
-`;
-
-const LeftPanel = styled.div`
-  flex: 1;
-  min-width: 0;
-  order: 1;
-`;
-
-const RightPanel = styled.div`
-  flex: 1;
-  min-width: 0;
-  order: 2;
-`;
-
-const EditorContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  height: 400px;
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 4px;
-  overflow: hidden;
-
-  @media (min-width: 768px) {
-    height: 500px;
-    margin-bottom: 2rem;
-  }
-`;
-
-const EditorHeader = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background-color: ${props => props.theme.colors.backgroundSecondary};
-  border-radius: 4px 4px 0 0;
-  border: 1px solid ${props => props.theme.colors.border};
-  border-bottom: none;
-
-  @media (min-width: 768px) {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 1rem;
-  }
-`;
-
-const EditorTitle = styled.h3`
-  font-size: 0.875rem;
-  color: ${props => props.theme.colors.text};
-
-  @media (min-width: 768px) {
-    font-size: 1rem;
-  }
-`;
-
-const EditorActions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-
-  @media (min-width: 768px) {
-    flex-wrap: nowrap;
-  }
-`;
-
-const ActionButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background-color: ${props => props.variant === 'primary' ? props.theme.colors.primary : 'transparent'};
-  color: ${props => props.variant === 'primary' ? 'white' : props.theme.colors.text};
-  border: 1px solid ${props => props.variant === 'primary' ? props.theme.colors.primary : props.theme.colors.border};
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.75rem;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-
-  @media (min-width: 768px) {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-  }
-
-  &:hover {
-    background-color: ${props => props.variant === 'primary' ? props.theme.colors.primaryDark : props.theme.colors.backgroundHover};
-  }
-`;
-
-const CodeEditor = styled.textarea`
-  width: 100%;
-  height: 400px;
-  padding: 1rem;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  background-color: ${props => props.theme.colors.backgroundSecondary};
-  color: ${props => props.theme.colors.text};
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 0 0 4px 4px;
-  resize: vertical;
-`;
-
-const OutputContainer = styled.div`
-  padding: 1rem;
-  background-color: ${props => props.theme.colors.backgroundSecondary};
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 4px;
-  min-height: 200px;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: ${props => props.theme.colors.text};
-  white-space: pre-wrap;
-`;
-
-const OutputHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-`;
-
-const OutputTitle = styled.h3`
-  font-size: 1rem;
-  color: ${props => props.theme.colors.text};
-`;
-
-const LeetCodeContainer = styled.div`
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background-color: ${props => props.theme.colors.backgroundSecondary};
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 4px;
-
-  @media (min-width: 768px) {
-    margin-bottom: 2rem;
-  }
-`;
-
-const LeetCodeHeader = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-
-  @media (min-width: 768px) {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-`;
-
-const LeetCodeTitle = styled.h3`
-  font-size: 0.875rem;
-  color: ${props => props.theme.colors.text};
-
-  @media (min-width: 768px) {
-    font-size: 1rem;
-  }
-`;
-
-const LeetCodeInput = styled.input`
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 4px;
-  font-size: 0.875rem;
-  background-color: ${props => props.theme.colors.background};
-  color: ${props => props.theme.colors.text};
-`;
-
-const LeetCodeButton = styled(ActionButton)`
-  width: auto;
-  white-space: nowrap;
-`;
-
-const InputContainer = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-`;
-
-const RandomButton = styled(ActionButton)`
-  margin-bottom: 1rem;
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 12px;
 `;
 
-const QuestionDescription = styled.div`
-  padding: 1rem;
-  background-color: ${props => props.theme.colors.background};
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 4px;
-  height: 400px;
-  overflow-y: auto;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: ${props => props.theme.colors.text};
+const TitleText = styled.span`
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.brand.primary}, ${({ theme }) => theme.colors.brand.secondary || theme.colors.brand.primary}dd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+`;
+
+const Subtitle = styled.p`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+`;
+
+const MainContent = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
   
   @media (min-width: 768px) {
-    height: calc(100vh - 300px);
-    font-size: 0.875rem;
-  }
-  
-  pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    background-color: ${props => props.theme.colors.backgroundSecondary};
-    padding: 0.5rem;
-    border-radius: 4px;
-    margin: 0.5rem 0;
-  }
-  
-  code {
-    font-family: 'Fira Code', monospace;
-    background-color: ${props => props.theme.colors.backgroundSecondary};
-    padding: 0.2rem 0.4rem;
-    border-radius: 2px;
-  }
-  
-  p {
-    margin: 0.5rem 0;
-  }
-  
-  ul, ol {
-    margin: 0.5rem 0;
-    padding-left: 1.5rem;
+    gap: 1.5rem;
   }
 `;
 
-const LanguageSelector = styled.select`
-  padding: 0.5rem;
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 4px;
-  background-color: ${props => props.theme.colors.background};
-  color: ${props => props.theme.colors.text};
-  font-size: 0.875rem;
+const Panel = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const Card = styled.div`
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 2px solid ${({ theme }) => theme.colors.border};
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: ${({ theme }) => theme.colors.shadows.cardHover};
+    transform: translateY(-1px);
+  }
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const CardTitle = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const QuestionCard = styled(Card)`
+  margin-bottom: 2rem;
+`;
+
+const QuestionHeader = styled(CardHeader)`
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+  }
+`;
+
+const QuestionInputSection = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex: 1;
+`;
+
+const QuestionInput = styled.input`
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid ${({ theme }) => theme.colors.border};
+  border-radius: 8px;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 14px;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.brand.primary};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.brand.primary}20;
+  }
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textMuted};
+  }
+`;
+
+const ModernButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: ${props => props.variant === 'primary'
+    ? `linear-gradient(135deg, ${props.theme.colors.brand.primary}, ${props.theme.colors.brand.secondary || props.theme.colors.brand.primary}dd)`
+    : props.variant === 'success'
+      ? `linear-gradient(135deg, #28a745, #20c997)`
+      : props.variant === 'danger'
+        ? `linear-gradient(135deg, #dc3545, #e83e8c)`
+        : props.theme.colors.background
+  };
+  color: ${props => props.variant === 'primary' || props.variant === 'success' || props.variant === 'danger'
+    ? '#ffffff'
+    : props.theme.colors.text
+  };
+  border: ${props => props.variant === 'primary' || props.variant === 'success' || props.variant === 'danger'
+    ? 'none'
+    : `2px solid ${props.theme.colors.border}`
+  };
   cursor: pointer;
-  margin-right: 1rem;
-  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
 
-  @media (min-width: 768px) {
-    width: auto;
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: ${props => props.variant === 'primary' || props.variant === 'success' || props.variant === 'danger'
+    ? 'rgba(255, 255, 255, 0.1)'
+    : `linear-gradient(135deg, ${props.theme.colors.brand.primary}10, ${props.theme.colors.brand.secondary || props.theme.colors.brand.primary}05)`
+  };
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 8px;
+  }
+
+  &:hover:before {
+    opacity: 1;
   }
 
   &:hover {
-    background-color: ${props => props.theme.colors.backgroundHover};
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: ${props => props.variant === 'primary'
+    ? `0 12px 30px ${props.theme.colors.brand.primary}50`
+    : props.variant === 'success'
+      ? `0 12px 30px #28a74550`
+      : props.variant === 'danger'
+        ? `0 12px 30px #dc354550`
+        : `0 6px 20px ${props.theme.colors.brand.primary}25`
+  };
+  }
+
+  &:active {
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  &:disabled:hover {
+    transform: none;
+    box-shadow: none;
   }
 `;
 
-// Add new styled components for time tracking
-const TimerContainer = styled.div`
+const QuickTestSection = styled.div`
+  margin-top: 16px;
+  padding: 16px;
+  background: ${({ theme }) => theme.colors.background};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 8px;
+`;
+
+const QuickTestTitle = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: ${({ theme }) => theme.colors.textSecondary};
   display: flex;
   align-items: center;
+  gap: 6px;
+`;
+
+const QuickTestGrid = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const QuickTestButton = styled.button`
+  padding: 6px 12px;
+  font-size: 12px;
+  background: ${props => props.isActive ? props.theme.colors.brand.primary : 'transparent'};
+  color: ${props => props.isActive ? '#ffffff' : props.theme.colors.text};
+  border: 1px solid ${props => props.isActive ? props.theme.colors.brand.primary : props.theme.colors.border};
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: ${props => props.isActive ? props.theme.colors.brand.primary : props.theme.colors.backgroundHover};
+    border-color: ${({ theme }) => theme.colors.brand.primary};
+  }
+`;
+
+const TimerCard = styled.div`
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.brand.primary}12, ${({ theme }) => theme.colors.brand.secondary || theme.colors.brand.primary}06);
+  border: 1px solid ${({ theme }) => theme.colors.brand.primary}30;
+  border-radius: 16px;
+  padding: 16px 24px;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, ${({ theme }) => theme.colors.brand.primary}15, transparent);
+    animation: shimmer 4s infinite;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, ${({ theme }) => theme.colors.brand.primary}, ${({ theme }) => theme.colors.brand.secondary || theme.colors.brand.primary});
+    border-radius: 2px;
+  }
+  
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  
+  &:hover {
+    transform: translateY(-1px);
+    border-color: ${({ theme }) => theme.colors.brand.primary}50;
+    box-shadow: 0 4px 20px ${({ theme }) => theme.colors.brand.primary}20;
+  }
+`;
+
+const TimerContent = styled.div`
+  display: flex;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
-  background-color: ${props => props.theme.colors.backgroundSecondary};
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
   
   @media (max-width: 768px) {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 16px;
     align-items: stretch;
   }
 `;
@@ -328,141 +334,376 @@ const TimerContainer = styled.div`
 const TimerDisplay = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 16px;
+  flex-wrap: wrap;
+`;
+
+const TimerTime = styled.div`
   font-family: 'Fira Code', monospace;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: ${props => props.theme.colors.primary};
+  font-size: 1.3rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.brand.primary}, ${({ theme }) => theme.colors.brand.secondary || theme.colors.brand.primary}dd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+`;
+
+const TimerInfo = styled.div`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  white-space: nowrap;
 `;
 
 const TimerControls = styled.div`
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
 `;
 
-const TimerButton = styled.button`
+const TimerIcon = styled(Timer)`
+  color: ${({ theme }) => theme.colors.brand.primary};
+  animation: tick 1.5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 6px ${({ theme }) => theme.colors.brand.primary}50);
+  margin-right: 8px;
+  
+  @keyframes tick {
+    0% { 
+      transform: scale(1) rotate(-3deg);
+      filter: drop-shadow(0 0 6px ${({ theme }) => theme.colors.brand.primary}50);
+    }
+    100% { 
+      transform: scale(1.1) rotate(3deg);
+      filter: drop-shadow(0 0 10px ${({ theme }) => theme.colors.brand.primary}70);
+    }
+  }
+`;
+
+const TimerButton = styled(ModernButton)`
+  padding: 6px 12px;
+  font-size: 12px;
+  min-width: 70px;
+  height: 32px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+  }
+  
+  &:hover::after {
+    width: 60px;
+    height: 60px;
+  }
+  
+  &:active {
+    transform: translateY(0) scale(0.96);
+  }
+`;
+
+const SessionFeedbackCard = styled(Card)`
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.background}, ${({ theme }) => theme.colors.backgroundSecondary});
+`;
+
+const FeedbackContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+`;
+
+const RatingSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem 0.75rem;
-  background-color: transparent;
-  color: ${props => props.theme.colors.text};
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 4px;
+  gap: 12px;
+  flex-wrap: wrap;
+`;
+
+const RatingLabel = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+  white-space: nowrap;
+`;
+
+const RatingButtons = styled.div`
+  display: flex;
+  gap: 6px;
+`;
+
+const RatingButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  background: ${props => props.selected ? props.theme.colors.brand.primary : 'transparent'};
+  color: ${props => props.selected ? '#ffffff' : props.theme.colors.textSecondary};
+  border: 1px solid ${props => props.selected ? props.theme.colors.brand.primary : props.theme.colors.border};
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.75rem;
   transition: all 0.2s ease;
 
-  &:hover:not(:disabled) {
-    background-color: ${props => props.theme.colors.backgroundHover};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  &:hover {
+    background: ${props => props.selected ? props.theme.colors.brand.primary : props.theme.colors.backgroundHover};
+    border-color: ${({ theme }) => theme.colors.brand.primary};
   }
 `;
 
+const TagsSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const TagsGrid = styled.div`
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+`;
+
+const TagButton = styled.button`
+  padding: 4px 10px;
+  font-size: 11px;
+  background: ${props => props.selected ? '#28a745' : 'transparent'};
+  color: ${props => props.selected ? '#ffffff' : props.theme.colors.textSecondary};
+  border: 1px solid ${props => props.selected ? '#28a745' : props.theme.colors.border};
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: ${props => props.selected ? '#28a745' : props.theme.colors.backgroundHover};
+    border-color: #28a745;
+  }
+`;
+
+const EditorCard = styled(Card)`
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  
+  @media (max-width: 1024px) {
+    height: 500px;
+  }
+`;
+
+const EditorHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.background};
+  flex-shrink: 0;
+`;
+
+const EditorActions = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+`;
+
+const LanguageSelector = styled.select`
+  padding: 8px 12px;
+  border: 2px solid ${({ theme }) => theme.colors.border};
+  border-radius: 6px;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.brand.primary};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.brand.primary}20;
+  }
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.backgroundHover};
+  }
+`;
+
+const EditorContainer = styled.div`
+  flex: 1;
+  min-height: 0;
+  background: ${({ theme }) => theme.colors.background};
+`;
+
+const OutputCard = styled(Card)`
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+`;
+
+const OutputContent = styled.div`
+  flex: 1;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: ${({ theme }) => theme.colors.text};
+  white-space: pre-wrap;
+  overflow-y: auto;
+  max-height: 400px;
+`;
+
+const QuestionDescription = styled(Card)`
+  height: 500px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.6;
+  
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background: ${({ theme }) => theme.colors.background};
+    padding: 12px;
+    border-radius: 6px;
+    margin: 12px 0;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+  }
+  
+  code {
+    font-family: 'Fira Code', monospace;
+    background: ${({ theme }) => theme.colors.background};
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+  }
+  
+  p {
+    margin: 12px 0;
+  }
+  
+  ul, ol {
+    margin: 12px 0;
+    padding-left: 24px;
+  }
+`;
+
+const ErrorAlert = styled.div`
+  padding: 16px;
+  background: linear-gradient(135deg, #dc354510, #e83e8c10);
+  border: 2px solid #dc354530;
+  border-radius: 8px;
+  color: #dc3545;
+  margin: 16px 0;
+  font-weight: 500;
+`;
+
+const LoadingState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const LoadingSpinner = styled.div`
+  width: 40px;
+  height: 40px;
+  border: 3px solid ${({ theme }) => theme.colors.border};
+  border-top: 3px solid ${({ theme }) => theme.colors.brand.primary};
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+// Modal components
 const SessionFeedbackModal = styled.div`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
 `;
 
 const ModalContent = styled.div`
-  background-color: ${props => props.theme.colors.background};
-  padding: 2rem;
-  border-radius: 12px;
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 2px solid ${({ theme }) => theme.colors.border};
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
   overflow-y: auto;
+  box-shadow: ${({ theme }) => theme.colors.shadows.modal || '0 25px 50px rgba(0, 0, 0, 0.3)'};
 `;
 
 const ModalTitle = styled.h3`
-  margin-bottom: 1rem;
-  color: ${props => props.theme.colors.text};
-`;
-
-const RatingSection = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const RatingLabel = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
-  color: ${props => props.theme.colors.text};
-  font-weight: 500;
-`;
-
-const RatingButtons = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-`;
-
-const RatingButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem 0.75rem;
-  background-color: ${props => props.selected ? props.theme.colors.primary : 'transparent'};
-  color: ${props => props.selected ? 'white' : props.theme.colors.text};
-  border: 1px solid ${props => props.selected ? props.theme.colors.primary : props.theme.colors.border};
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.selected ? props.theme.colors.primaryDark : props.theme.colors.backgroundHover};
-  }
-`;
-
-const TagsSection = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const TagsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-`;
-
-const TagButton = styled.button`
-  padding: 0.4rem 0.8rem;
-  font-size: 0.75rem;
-  background-color: ${props => props.selected ? props.theme.colors.success : 'transparent'};
-  color: ${props => props.selected ? 'white' : props.theme.colors.text};
-  border: 1px solid ${props => props.selected ? props.theme.colors.success : props.theme.colors.border};
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.selected ? props.theme.colors.successDark : props.theme.colors.backgroundHover};
-  }
+  margin-bottom: 24px;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
 `;
 
 const SessionSummary = styled.div`
-  background-color: ${props => props.theme.colors.backgroundSecondary};
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  background: ${({ theme }) => theme.colors.background};
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  margin-bottom: 24px;
+`;
+
+const ModalActions = styled.div`
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
 `;
 
 const CodeSandbox = () => {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
+  const { isTestMode } = useTestUser();
   const [language, setLanguage] = useState('python');
   const [code, setCode] = useState('');
   const [output, setOutput] = useState('');
@@ -887,227 +1128,184 @@ const CodeSandbox = () => {
 
   return (
     <Container>
-      <Title>Code Sandbox</Title>
-      <Subtitle>Write, run, and test your code</Subtitle>
 
-      <LeetCodeContainer>
-        <LeetCodeHeader>
-          <LeetCodeTitle>Question</LeetCodeTitle>
-        </LeetCodeHeader>
-        <InputContainer>
-          <LeetCodeInput
-            type="text"
-            value={leetcodeUrl}
-            onChange={(e) => setLeetcodeUrl(e.target.value)}
-            placeholder="Enter LeetCode question URL or ID"
-          />
-          <LeetCodeButton onClick={() => fetchLeetCodeQuestion()}>
-            Load Question
-          </LeetCodeButton>
-        </InputContainer>
 
-        {/* Quick Test Questions */}
-        <div style={{
-          marginTop: '12px',
-          padding: '8px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '4px',
-          border: '1px solid #e9ecef'
-        }}>
-          <div style={{ fontSize: '0.875rem', fontWeight: '500', marginBottom: '6px', color: '#666' }}>
-            🚀 Quick Test Questions:
-          </div>
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {[
-              { id: 'two-sum', name: 'Two Sum', difficulty: 'Easy' },
-              { id: 'add-two-numbers', name: 'Add Two Numbers', difficulty: 'Medium' },
-              { id: 'longest-substring-without-repeating-characters', name: 'Longest Substring', difficulty: 'Medium' },
-              { id: 'median-of-two-sorted-arrays', name: 'Median Arrays', difficulty: 'Hard' },
-              { id: 'reverse-integer', name: 'Reverse Integer', difficulty: 'Medium' }
-            ].map(q => (
-              <button
-                key={q.id}
-                onClick={() => {
-                  setLeetcodeUrl(q.id);
-                  fetchLeetCodeQuestion(q.id);
-                }}
-                style={{
-                  padding: '4px 8px',
-                  fontSize: '0.75rem',
-                  backgroundColor: leetcodeUrl === q.id ? '#007bff' : 'white',
-                  color: leetcodeUrl === q.id ? 'white' : '#333',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {q.name} <span style={{ opacity: 0.7 }}>({q.difficulty})</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </LeetCodeContainer>
+      {isTestMode && (
+        <QuestionCard>
+          <QuestionHeader>
+            <CardTitle>
+              <Code size={20} />
+              Load Question
+            </CardTitle>
+          </QuestionHeader>
+          <QuestionInputSection>
+            <QuestionInput
+              type="text"
+              value={leetcodeUrl}
+              onChange={(e) => setLeetcodeUrl(e.target.value)}
+              placeholder="Enter LeetCode question URL or ID"
+            />
+            <ModernButton variant="primary" onClick={() => fetchLeetCodeQuestion()}>
+              <Link size={16} />
+              Load Question
+            </ModernButton>
+          </QuestionInputSection>
+
+          <QuickTestSection>
+            <QuickTestTitle>
+              🚀 Quick Test Questions
+            </QuickTestTitle>
+            <QuickTestGrid>
+              {[
+                { id: 'two-sum', name: 'Two Sum', difficulty: 'Easy' },
+                { id: 'add-two-numbers', name: 'Add Two Numbers', difficulty: 'Medium' },
+                { id: 'longest-substring-without-repeating-characters', name: 'Longest Substring', difficulty: 'Medium' },
+                { id: 'median-of-two-sorted-arrays', name: 'Median Arrays', difficulty: 'Hard' },
+                { id: 'reverse-integer', name: 'Reverse Integer', difficulty: 'Medium' }
+              ].map(q => (
+                <QuickTestButton
+                  key={q.id}
+                  isActive={leetcodeUrl === q.id}
+                  onClick={() => {
+                    setLeetcodeUrl(q.id);
+                    fetchLeetCodeQuestion(q.id);
+                  }}
+                >
+                  {q.name} <span style={{ opacity: 0.7 }}>({q.difficulty})</span>
+                </QuickTestButton>
+              ))}
+            </QuickTestGrid>
+          </QuickTestSection>
+        </QuestionCard>
+      )}
 
       {/* Enhanced Timer Display with QuestionSolver Features */}
       {currentQuestion && user.userId && user.userId !== 'guest' && (
-        <TimerContainer>
-          <TimerDisplay>
-            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#007bff' }}>
-              ⏱️ {formatTime(displayTime)} {isPaused && '(PAUSED)'}
-            </span>
-            <span style={{ fontSize: '0.875rem', color: '#666' }}>
-              Session for: {user.firstName} {user.lastName}
-            </span>
-          </TimerDisplay>
-          <TimerControls>
-            <TimerButton onClick={pause} disabled={!isTracking || isPaused}>
-              ⏸️ Pause
-            </TimerButton>
-            <TimerButton onClick={resume} disabled={!isTracking || !isPaused}>
-              ▶️ Resume
-            </TimerButton>
-            <TimerButton
-              onClick={() => handleSessionComplete(false)}
-              disabled={!isTracking}
-              style={{ color: '#dc3545' }}
-            >
-              ❌ Give Up
-            </TimerButton>
-          </TimerControls>
-        </TimerContainer>
+        <TimerCard>
+          <TimerContent>
+            <TimerDisplay>
+              <TimerTime>
+                <TimerIcon size={22} />
+                {formatTime(displayTime)} {isPaused && '(PAUSED)'}
+              </TimerTime>
+            </TimerDisplay>
+            <TimerControls>
+              <TimerButton onClick={pause} disabled={!isTracking || isPaused}>
+                <Pause size={12} style={{ marginRight: '4px' }} />
+                Pause
+              </TimerButton>
+              <TimerButton onClick={resume} disabled={!isTracking || !isPaused}>
+                <PlayLucide size={12} style={{ marginRight: '4px' }} />
+                Resume
+              </TimerButton>
+              <TimerButton
+                variant="danger"
+                onClick={() => handleSessionComplete(false)}
+                disabled={!isTracking}
+              >
+                <Square size={12} style={{ marginRight: '4px' }} />
+                Give Up
+              </TimerButton>
+            </TimerControls>
+          </TimerContent>
+        </TimerCard>
       )}
 
-      {/* Quick Feedback Section - Show during session */}
-      {currentQuestion && isTracking && (
-        <div style={{
-          background: '#f8f9fa',
-          padding: '12px 16px',
-          borderRadius: '8px',
-          marginBottom: '1rem',
-          border: '1px solid #e9ecef'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Quick Rating:</span>
-              {[1, 2, 3, 4, 5].map(rating => (
-                <button
-                  key={rating}
-                  onClick={() => handleDifficultyChange(rating)}
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '0.75rem',
-                    backgroundColor: sessionDifficultyRating === rating ? '#007bff' : 'transparent',
-                    color: sessionDifficultyRating === rating ? 'white' : '#666',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {rating}★
-                </button>
-              ))}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Quick Tags:</span>
-              {['struggled', 'easy-solve', 'learned-new-concept'].map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => handleTagToggle(tag)}
-                  style={{
-                    padding: '2px 8px',
-                    fontSize: '0.7rem',
-                    backgroundColor: selectedTags.includes(tag) ? '#28a745' : 'transparent',
-                    color: selectedTags.includes(tag) ? 'white' : '#666',
-                    border: '1px solid #ddd',
-                    borderRadius: '12px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {isLoading && (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <LoadingState>
+          <LoadingSpinner />
           <p>Loading question details...</p>
-        </div>
+        </LoadingState>
       )}
 
       {error && (
-        <div style={{ color: 'red', padding: '1rem', margin: '1rem', backgroundColor: '#ffebee', borderRadius: '4px' }}>
+        <ErrorAlert>
           {error}
-        </div>
+        </ErrorAlert>
       )}
 
       <MainContent>
-        <LeftPanel>
+        <Panel>
           {questionDescription && (
             <QuestionDescription>
+              <CardHeader>
+                <CardTitle>
+                  <EyeLucide size={20} />
+                  Question Description
+                </CardTitle>
+              </CardHeader>
               <div dangerouslySetInnerHTML={{ __html: questionDescription }} />
             </QuestionDescription>
           )}
-        </LeftPanel>
+        </Panel>
 
-        <RightPanel>
-          <EditorContainer>
+        <Panel>
+          <EditorCard>
             <EditorHeader>
-              <EditorTitle>Code Editor</EditorTitle>
+              <CardTitle>
+                <Code2 size={20} />
+                Code Editor
+              </CardTitle>
               <EditorActions>
                 <LanguageSelector value={language} onChange={handleLanguageChange}>
                   <option value="python">Python</option>
                   <option value="javascript">JavaScript</option>
                 </LanguageSelector>
-                <ActionButton onClick={runExampleTests} disabled={isLoading || isRunningExampleTests}>
-                  <Play size={16} />
+                <ModernButton onClick={runExampleTests} disabled={isLoading || isRunningExampleTests}>
+                  <PlayLucide size={16} style={{ marginRight: '6px' }} />
                   {isRunningExampleTests ? 'Running Examples...' : 'Run Example Tests'}
-                </ActionButton>
-                <ActionButton onClick={runCode} disabled={isLoading || isRunningExampleTests} variant="primary">
-                  <Play size={16} />
+                </ModernButton>
+                <ModernButton onClick={runCode} disabled={isLoading || isRunningExampleTests} variant="primary">
+                  <Zap size={16} style={{ marginRight: '6px' }} />
                   {isLoading ? 'Running...' : 'Submit Code'}
-                </ActionButton>
+                </ModernButton>
               </EditorActions>
             </EditorHeader>
-            <Editor
-              height="100%"
-              defaultLanguage={getEditorLanguage()}
-              language={getEditorLanguage()}
-              theme={getEditorTheme()}
-              value={code}
-              onChange={handleEditorChange}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 14,
-                lineNumbers: 'on',
-                roundedSelection: false,
-                scrollBeyondLastLine: false,
-                readOnly: false,
-                automaticLayout: true,
-              }}
-            />
-          </EditorContainer>
+            <EditorContainer>
+              <Editor
+                height="100%"
+                defaultLanguage={getEditorLanguage()}
+                language={getEditorLanguage()}
+                theme={getEditorTheme()}
+                value={code}
+                onChange={handleEditorChange}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  lineNumbers: 'on',
+                  roundedSelection: false,
+                  scrollBeyondLastLine: false,
+                  readOnly: false,
+                  automaticLayout: true,
+                }}
+              />
+            </EditorContainer>
+          </EditorCard>
 
-          <OutputContainer>
-            <OutputHeader>
-              <OutputTitle>Output</OutputTitle>
-            </OutputHeader>
-            {error && <div style={{ color: 'red' }}>{error}</div>}
-            {debugOutput && <div>{debugOutput}</div>}
-            {output && <div>{output}</div>}
+          <OutputCard>
+            <CardHeader>
+              <CardTitle>
+                <Monitor size={20} />
+                Output & Results
+              </CardTitle>
+            </CardHeader>
+            <OutputContent>
+              {error && <div style={{ color: '#dc3545', fontWeight: 'bold' }}>{error}</div>}
+              {debugOutput && <div style={{ color: '#28a745', fontWeight: 'bold' }}>{debugOutput}</div>}
+              {output && <div>{output}</div>}
 
-            {exampleTestResults && (
-              <TestResults results={exampleTestResults} type="example" />
-            )}
+              {exampleTestResults && (
+                <TestResults results={exampleTestResults} type="example" />
+              )}
 
-            {testResults && (
-              <TestResults results={testResults} type="final" />
-            )}
-          </OutputContainer>
-        </RightPanel>
+              {testResults && (
+                <TestResults results={testResults} type="final" />
+              )}
+            </OutputContent>
+          </OutputCard>
+        </Panel>
       </MainContent>
 
       {/* Enhanced Session Feedback Modal */}
@@ -1176,15 +1374,8 @@ const CodeSandbox = () => {
               </div>
             </TagsSection>
 
-            <div style={{
-              display: 'flex',
-              gap: '1rem',
-              justifyContent: 'space-between',
-              marginTop: '2rem',
-              padding: '1rem 0',
-              borderTop: '1px solid #eee'
-            }}>
-              <ActionButton
+            <ModalActions>
+              <ModernButton
                 onClick={() => {
                   setShowFeedbackModal(false);
                   // Don't reset data, keep for potential re-submission
@@ -1192,8 +1383,8 @@ const CodeSandbox = () => {
                 style={{ flex: 1 }}
               >
                 💾 Save & Continue Coding
-              </ActionButton>
-              <ActionButton
+              </ModernButton>
+              <ModernButton
                 variant="primary"
                 onClick={async () => {
                   // Send updated session data with final difficulty rating and tags
@@ -1240,8 +1431,8 @@ const CodeSandbox = () => {
                 style={{ flex: 1 }}
               >
                 ✅ Complete Session
-              </ActionButton>
-            </div>
+              </ModernButton>
+            </ModalActions>
           </ModalContent>
         </SessionFeedbackModal>
       )}
