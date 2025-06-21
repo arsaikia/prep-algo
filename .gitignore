@@ -55,3 +55,4 @@ logs
 *.log.*
 .npm
 .eslintcache
+frontend/.env.production

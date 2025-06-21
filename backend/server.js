@@ -31,13 +31,25 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Allow CORS with specific options
-const BASE_URI = process.env.BASE_URI || "http://localhost:3000";
 const corsOrigins = process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',')
-    : [BASE_URI, "http://192.168.1.234:3000"];
+    ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+    : ["http://localhost:3000", "https://prepalgo.web.app"]; // Development fallback
+
+console.log('CORS Origins configured:', corsOrigins);
 
 const corsOptions = {
-    origin: corsOrigins,
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (corsOrigins.includes(origin)) {
+            console.log('CORS: Origin allowed:', origin);
+            callback(null, true);
+        } else {
+            console.log('CORS: Origin blocked:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
