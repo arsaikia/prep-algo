@@ -11,6 +11,8 @@ import questions from './routes/questions.js';
 import authentication from './routes/authentication.js';
 import submission from './routes/submission.js';
 import codeExecution from './routes/code.js';
+import testRoute from './routes/test.js';
+import { solveHistory } from './routes/solveHistory.js';
 
 // Load environment variables
 dotenv.config();
@@ -78,6 +80,8 @@ app.use('/api/v1/authentication', authentication);
 app.use('/api/v1/questions', questions);
 app.use('/api/v1/submission', submission);
 app.use('/api/v1/code', codeExecution);
+app.use('/api/v1/test', testRoute);
+app.use('/api/v1/solveHistory', solveHistory);
 
 // Error handling for unhandled routes
 app.use('*', (req, res) => {

@@ -12,11 +12,12 @@ import AllQuestions from './pages/AllQuestions';
 import CodeSandbox from './pages/CodeSandbox';
 import Error from './pages/Error';
 import Login from './pages/Login';
+import Home from './pages/Home';
 
 function AllRoutes(props) {
   return (
     <Routes>
-      <Route path="/" element={<AllQuestions />} />
+      <Route path="/" element={<Home />} />
       <Route path="/all" element={<AllQuestions />} />
       <Route path="/questions" element={<AllQuestions />} />
       <Route path="/login" element={<Login />} />

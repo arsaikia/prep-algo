@@ -28,6 +28,33 @@ const removeImports = (code) => {
 };
 
 /**
+ * Add necessary typing imports if they're used but not imported
+ * @param {string} code - The Python code to analyze
+ * @returns {string} - Additional imports needed
+ */
+const getRequiredTypingImports = (code) => {
+    const existingImports = extractImports(code);
+    const codeWithoutImports = removeImports(code);
+
+    // Common typing imports that might be needed
+    const typingTypes = ['List', 'Dict', 'Set', 'Tuple', 'Optional', 'Union', 'Any'];
+    const neededTypes = [];
+
+    // Check if typing types are used but not imported
+    for (const type of typingTypes) {
+        if (codeWithoutImports.includes(type) && !existingImports.includes(type)) {
+            neededTypes.push(type);
+        }
+    }
+
+    if (neededTypes.length > 0) {
+        return `from typing import ${neededTypes.join(', ')}`;
+    }
+
+    return '';
+};
+
+/**
  * Run Python code against test cases
  * @param {string} code - The Python code to execute
  * @param {Array<{inputs: Array<string>, expectedOutput: string}>} testCases - Array of test cases
@@ -50,6 +77,11 @@ export const runPythonCode = async (code, testCases) => {
                 }
             });
 
+            // Get existing imports and required typing imports
+            const existingImports = extractImports(code);
+            const requiredTypingImports = getRequiredTypingImports(code);
+            const codeWithoutImports = removeImports(code);
+
             const testCode = `
 import json
 import signal
@@ -57,7 +89,8 @@ import sys
 import io
 import contextlib
 
-${extractImports(code)}
+${existingImports}
+${requiredTypingImports}
 
 # Capture print statements
 class PrintCapture:
@@ -80,7 +113,7 @@ def timeout_handler(signum, frame):
 signal.signal(signal.SIGALRM, timeout_handler)
 signal.alarm(${Math.ceil(EXECUTION_TIMEOUT / 1000)})
 
-${removeImports(code)}
+${codeWithoutImports}
 
 if __name__ == "__main__":
     try:
@@ -99,18 +132,46 @@ if __name__ == "__main__":
             raise Exception("No solution method found in the Solution class")
             
         result = getattr(solution, method_name)(*args)
-        expected = eval(${JSON.stringify(testCase.expectedOutput)})
+        
+        # Handle expected output - it comes as a string that might represent a data structure
+        expected_str = ${JSON.stringify(testCase.expectedOutput)}
+        
+        # Try to parse expected as Python literal (for [0,1], {}, etc.)
+        try:
+            expected = eval(expected_str)
+        except:
+            expected = expected_str
         
         # Restore stdout
         sys.stdout = original_stdout
         
-        if isinstance(result, (list, tuple)):
-            if isinstance(expected, list) and len(expected) > 0 and isinstance(expected[0], (list, tuple)):
-                passed = any(sorted(result) == sorted(valid_solution) for valid_solution in expected)
+        # Compare results - handle different types intelligently
+        def compare_results(actual, expected):
+            # Both are lists/arrays - compare as sorted lists for order independence
+            if isinstance(actual, (list, tuple)) and isinstance(expected, (list, tuple)):
+                return sorted(actual) == sorted(expected)
+            # One is list, other is string - try to convert string to list
+            elif isinstance(actual, (list, tuple)) and isinstance(expected, str):
+                try:
+                    expected_parsed = eval(expected)
+                    if isinstance(expected_parsed, (list, tuple)):
+                        return sorted(actual) == sorted(expected_parsed)
+                except:
+                    pass
+                return str(actual) == expected
+            elif isinstance(actual, str) and isinstance(expected, (list, tuple)):
+                try:
+                    actual_parsed = eval(actual)
+                    if isinstance(actual_parsed, (list, tuple)):
+                        return sorted(actual_parsed) == sorted(expected)
+                except:
+                    pass
+                return actual == str(expected)
+            # Direct comparison for same types
             else:
-                passed = sorted(result) == sorted(expected)
-        else:
-            passed = result == expected
+                return actual == expected
+        
+        passed = compare_results(result, expected)
             
         print(json.dumps({
             'passed': passed,

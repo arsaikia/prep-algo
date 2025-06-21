@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTheme } from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Play, Save, Download, Link, Shuffle } from 'react-feather';
+import { Play, Save, Download, Link, Shuffle, Clock, Star } from 'react-feather';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import TestResults from '../components/TestResults';
+import { useTimeTracker } from '../utils/timeTracker';
 
 // Styled components
 const Container = styled.div`
@@ -306,6 +307,158 @@ const LanguageSelector = styled.select`
   }
 `;
 
+// Add new styled components for time tracking
+const TimerContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: ${props => props.theme.colors.backgroundSecondary};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+`;
+
+const TimerDisplay = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: ${props => props.theme.colors.primary};
+`;
+
+const TimerControls = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
+const TimerButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background-color: transparent;
+  color: ${props => props.theme.colors.text};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: ${props => props.theme.colors.backgroundHover};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const SessionFeedbackModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background-color: ${props => props.theme.colors.background};
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+`;
+
+const ModalTitle = styled.h3`
+  margin-bottom: 1rem;
+  color: ${props => props.theme.colors.text};
+`;
+
+const RatingSection = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const RatingLabel = styled.label`
+  display: block;
+  margin-bottom: 0.5rem;
+  color: ${props => props.theme.colors.text};
+  font-weight: 500;
+`;
+
+const RatingButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+`;
+
+const RatingButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background-color: ${props => props.selected ? props.theme.colors.primary : 'transparent'};
+  color: ${props => props.selected ? 'white' : props.theme.colors.text};
+  border: 1px solid ${props => props.selected ? props.theme.colors.primary : props.theme.colors.border};
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.selected ? props.theme.colors.primaryDark : props.theme.colors.backgroundHover};
+  }
+`;
+
+const TagsSection = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const TagsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const TagButton = styled.button`
+  padding: 0.4rem 0.8rem;
+  font-size: 0.75rem;
+  background-color: ${props => props.selected ? props.theme.colors.success : 'transparent'};
+  color: ${props => props.selected ? 'white' : props.theme.colors.text};
+  border: 1px solid ${props => props.selected ? props.theme.colors.success : props.theme.colors.border};
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.selected ? props.theme.colors.successDark : props.theme.colors.backgroundHover};
+  }
+`;
+
+const SessionSummary = styled.div`
+  background-color: ${props => props.theme.colors.backgroundSecondary};
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+`;
+
 const CodeSandbox = () => {
   const theme = useTheme();
   const location = useLocation();
@@ -323,8 +476,138 @@ const CodeSandbox = () => {
   const [exampleTestResults, setExampleTestResults] = useState(null);
   const [debugOutput, setDebugOutput] = useState('');
 
-  // Get questions from Redux store
+  // Time tracking states
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [sessionDifficultyRating, setSessionDifficultyRating] = useState(null);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [timerStartTime, setTimerStartTime] = useState(null);
+  const [displayTime, setDisplayTime] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [pausedTime, setPausedTime] = useState(0);
+  const [pauseStartTime, setPauseStartTime] = useState(null);
+
+  // Get user data from Redux store, but override with test user for development
+  const userFromRedux = useSelector((state) => state.auth);
   const allQuestions = useSelector((state) => state.questions.allQuestionsWithoutHistory);
+
+  // TEST USER - Always signed in for development/testing
+  const testUser = {
+    userId: 'test-user-123',
+    firstName: 'Test',
+    lastName: 'User',
+    isAuthenticated: true,
+    picture: null
+  };
+
+  // Use test user instead of actual user for now
+  const user = testUser; // Change back to userFromRedux when ready for production
+
+  // Initialize time tracker
+  const {
+    currentTime,
+    isTracking,
+    startTracking,
+    stopTracking,
+    pause: originalPause,
+    resume: originalResume,
+    addTags,
+    setDifficultyRating: setTrackerDifficulty
+  } = useTimeTracker();
+
+  // Custom pause/resume functions
+  const pause = () => {
+    if (!isPaused && isTracking) {
+      setIsPaused(true);
+      setPauseStartTime(Date.now());
+      originalPause(); // Also pause the original tracker
+      console.log('⏸️ Timer paused');
+    }
+  };
+
+  const resume = () => {
+    if (isPaused && pauseStartTime) {
+      const pauseDuration = Date.now() - pauseStartTime;
+      setPausedTime(prev => prev + pauseDuration);
+      setIsPaused(false);
+      setPauseStartTime(null);
+      originalResume(); // Also resume the original tracker
+      console.log('▶️ Timer resumed');
+    }
+  };
+
+  // Direct timer update effect
+  useEffect(() => {
+    let interval;
+    if (isTracking && timerStartTime && !isPaused) {
+      interval = setInterval(() => {
+        const now = Date.now();
+        const elapsedMinutes = (now - timerStartTime - pausedTime) / (1000 * 60);
+        setDisplayTime(Math.max(0, elapsedMinutes));
+        console.log('⏱️ Timer update:', elapsedMinutes); // Debug log
+      }, 1000); // Update every second
+    }
+    return () => clearInterval(interval);
+  }, [isTracking, timerStartTime, isPaused, pausedTime]);
+
+  // Available tags for categorizing sessions
+  const availableTags = [
+    'array', 'string', 'tree', 'graph', 'dynamic-programming',
+    'binary-search', 'sorting', 'hash-table', 'two-pointers',
+    'sliding-window', 'backtracking', 'greedy', 'math',
+    'struggled', 'easy-solve', 'multiple-attempts', 'learned-new-concept'
+  ];
+
+  // Format time display
+  const formatTime = (minutes) => {
+    if (minutes < 1) {
+      const seconds = Math.floor(minutes * 60);
+      return `${seconds}s`;
+    }
+    const mins = Math.floor(minutes);
+    const secs = Math.floor((minutes % 1) * 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Start tracking when a question is loaded
+  useEffect(() => {
+    if (currentQuestion && user.userId && user.userId !== 'guest') {
+      startTracking(currentQuestion.id, user.userId);
+      setTimerStartTime(Date.now()); // Set our direct timer start time
+      setDisplayTime(0);
+      setIsPaused(false);
+      setPausedTime(0);
+      setPauseStartTime(null);
+    }
+  }, [currentQuestion, user.userId]);
+
+  // Handle session completion
+  const handleSessionComplete = async (success = true) => {
+    if (!isTracking) return;
+
+    try {
+      const sessionData = await stopTracking(success, sessionDifficultyRating, selectedTags);
+      console.log('📊 Session completed:', sessionData);
+      setShowFeedbackModal(true);
+    } catch (error) {
+      console.error('❌ Error completing session:', error);
+    }
+  };
+
+  // Handle difficulty rating change
+  const handleDifficultyChange = (rating) => {
+    setSessionDifficultyRating(rating);
+    setTrackerDifficulty(rating);
+  };
+
+  // Handle tag selection
+  const handleTagToggle = (tag) => {
+    const newTags = selectedTags.includes(tag)
+      ? selectedTags.filter(t => t !== tag)
+      : [...selectedTags, tag];
+
+    setSelectedTags(newTags);
+    addTags(newTags);
+  };
 
   // Check for question parameter in URL on component mount
   useEffect(() => {
@@ -338,6 +621,11 @@ const CodeSandbox = () => {
       setLeetcodeUrl(questionParam);
       // Automatically fetch the question
       fetchLeetCodeQuestion(questionParam);
+    } else {
+      // For testing: Auto-load two-sum if no question specified
+      const testQuestion = 'two-sum';
+      setLeetcodeUrl(testQuestion);
+      fetchLeetCodeQuestion(testQuestion);
     }
   }, [location.search]);
 
@@ -429,6 +717,12 @@ const CodeSandbox = () => {
 
         setTestResults(formattedResults);
         setOutput(`Test results: ${response.data.passedTests}/${response.data.totalTests} tests passed (${response.data.score}% score)`);
+
+        // Handle session completion based on results
+        const success = response.data.score >= 70; // Consider 70%+ as success
+        if (isTracking && user.userId !== 'guest') {
+          await handleSessionComplete(success);
+        }
       } else {
         setError('Invalid response format from server');
       }
@@ -535,10 +829,15 @@ const CodeSandbox = () => {
       setExampleTestResults(null);
 
       const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+      console.log('🔍 API Base URI being used:', apiBaseUri);
+      console.log('🔍 Environment variable REACT_APP_API_BASE_URI:', process.env.REACT_APP_API_BASE_URI);
       const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
 
+      const fullUrl = `${apiBaseUri}/code/execute/example`;
+      console.log('🔍 Full URL for request:', fullUrl);
+
       // Submit code to the backend for example test cases
-      const response = await axios.post(`${apiBaseUri}/code/execute/example`, {
+      const response = await axios.post(fullUrl, {
         code,
         questionId
       });
@@ -555,7 +854,7 @@ const CodeSandbox = () => {
             testCase: r.input,
             output: r.actualOutput,
             expectedOutput: r.expectedOutput,
-            passed: r.isCorrect,
+            passed: r.passed,
             error: r.error,
             debugOutput: r.debugOutput
           }))
@@ -606,7 +905,132 @@ const CodeSandbox = () => {
             Load Question
           </LeetCodeButton>
         </InputContainer>
+
+        {/* Quick Test Questions */}
+        <div style={{
+          marginTop: '12px',
+          padding: '8px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '4px',
+          border: '1px solid #e9ecef'
+        }}>
+          <div style={{ fontSize: '0.875rem', fontWeight: '500', marginBottom: '6px', color: '#666' }}>
+            🚀 Quick Test Questions:
+          </div>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {[
+              { id: 'two-sum', name: 'Two Sum', difficulty: 'Easy' },
+              { id: 'add-two-numbers', name: 'Add Two Numbers', difficulty: 'Medium' },
+              { id: 'longest-substring-without-repeating-characters', name: 'Longest Substring', difficulty: 'Medium' },
+              { id: 'median-of-two-sorted-arrays', name: 'Median Arrays', difficulty: 'Hard' },
+              { id: 'reverse-integer', name: 'Reverse Integer', difficulty: 'Medium' }
+            ].map(q => (
+              <button
+                key={q.id}
+                onClick={() => {
+                  setLeetcodeUrl(q.id);
+                  fetchLeetCodeQuestion(q.id);
+                }}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '0.75rem',
+                  backgroundColor: leetcodeUrl === q.id ? '#007bff' : 'white',
+                  color: leetcodeUrl === q.id ? 'white' : '#333',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {q.name} <span style={{ opacity: 0.7 }}>({q.difficulty})</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </LeetCodeContainer>
+
+      {/* Enhanced Timer Display with QuestionSolver Features */}
+      {currentQuestion && user.userId && user.userId !== 'guest' && (
+        <TimerContainer>
+          <TimerDisplay>
+            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#007bff' }}>
+              ⏱️ {formatTime(displayTime)} {isPaused && '(PAUSED)'}
+            </span>
+            <span style={{ fontSize: '0.875rem', color: '#666' }}>
+              Session for: {user.firstName} {user.lastName}
+            </span>
+          </TimerDisplay>
+          <TimerControls>
+            <TimerButton onClick={pause} disabled={!isTracking || isPaused}>
+              ⏸️ Pause
+            </TimerButton>
+            <TimerButton onClick={resume} disabled={!isTracking || !isPaused}>
+              ▶️ Resume
+            </TimerButton>
+            <TimerButton
+              onClick={() => handleSessionComplete(false)}
+              disabled={!isTracking}
+              style={{ color: '#dc3545' }}
+            >
+              ❌ Give Up
+            </TimerButton>
+          </TimerControls>
+        </TimerContainer>
+      )}
+
+      {/* Quick Feedback Section - Show during session */}
+      {currentQuestion && isTracking && (
+        <div style={{
+          background: '#f8f9fa',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          marginBottom: '1rem',
+          border: '1px solid #e9ecef'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Quick Rating:</span>
+              {[1, 2, 3, 4, 5].map(rating => (
+                <button
+                  key={rating}
+                  onClick={() => handleDifficultyChange(rating)}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '0.75rem',
+                    backgroundColor: sessionDifficultyRating === rating ? '#007bff' : 'transparent',
+                    color: sessionDifficultyRating === rating ? 'white' : '#666',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {rating}★
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Quick Tags:</span>
+              {['struggled', 'easy-solve', 'learned-new-concept'].map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagToggle(tag)}
+                  style={{
+                    padding: '2px 8px',
+                    fontSize: '0.7rem',
+                    backgroundColor: selectedTags.includes(tag) ? '#28a745' : 'transparent',
+                    color: selectedTags.includes(tag) ? 'white' : '#666',
+                    border: '1px solid #ddd',
+                    borderRadius: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {isLoading && (
         <div style={{ textAlign: 'center', padding: '2rem' }}>
@@ -685,6 +1109,142 @@ const CodeSandbox = () => {
           </OutputContainer>
         </RightPanel>
       </MainContent>
+
+      {/* Enhanced Session Feedback Modal */}
+      {showFeedbackModal && (
+        <SessionFeedbackModal>
+          <ModalContent>
+            <ModalTitle>🎉 Coding Session Complete!</ModalTitle>
+
+            <SessionSummary>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <strong>⏱️ Time Spent:</strong><br />
+                  <span style={{ fontSize: '1.2rem', color: '#007bff' }}>{formatTime(displayTime)}</span>
+                </div>
+                <div>
+                  <strong>📝 Question:</strong><br />
+                  <span style={{ color: '#666' }}>{currentQuestion?.title || 'Unknown'}</span>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <strong>👤 User:</strong><br />
+                  <span style={{ color: '#666' }}>{user.firstName} {user.lastName}</span>
+                </div>
+                <div>
+                  <strong>🎯 Language:</strong><br />
+                  <span style={{ color: '#666' }}>{language.charAt(0).toUpperCase() + language.slice(1)}</span>
+                </div>
+              </div>
+            </SessionSummary>
+
+            <RatingSection>
+              <RatingLabel>⭐ How difficult was this question for you?</RatingLabel>
+              <RatingButtons>
+                {[1, 2, 3, 4, 5].map(rating => (
+                  <RatingButton
+                    key={rating}
+                    selected={sessionDifficultyRating === rating}
+                    onClick={() => handleDifficultyChange(rating)}
+                  >
+                    <Star size={16} fill={sessionDifficultyRating === rating ? 'white' : 'none'} />
+                    {rating}
+                  </RatingButton>
+                ))}
+              </RatingButtons>
+              <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
+                1 = Very Easy, 5 = Very Hard
+              </div>
+            </RatingSection>
+
+            <TagsSection>
+              <RatingLabel>🏷️ Session Tags (select all that apply):</RatingLabel>
+              <TagsGrid>
+                {availableTags.map(tag => (
+                  <TagButton
+                    key={tag}
+                    selected={selectedTags.includes(tag)}
+                    onClick={() => handleTagToggle(tag)}
+                  >
+                    {tag}
+                  </TagButton>
+                ))}
+              </TagsGrid>
+              <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '8px' }}>
+                Selected: {selectedTags.length > 0 ? selectedTags.join(', ') : 'None'}
+              </div>
+            </TagsSection>
+
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'space-between',
+              marginTop: '2rem',
+              padding: '1rem 0',
+              borderTop: '1px solid #eee'
+            }}>
+              <ActionButton
+                onClick={() => {
+                  setShowFeedbackModal(false);
+                  // Don't reset data, keep for potential re-submission
+                }}
+                style={{ flex: 1 }}
+              >
+                💾 Save & Continue Coding
+              </ActionButton>
+              <ActionButton
+                variant="primary"
+                onClick={async () => {
+                  // Send updated session data with final difficulty rating and tags
+                  try {
+                    if (currentQuestion && user.userId && user.userId !== 'guest') {
+                      console.log('🎯 Sending updated session data with dialog inputs...');
+
+                      // Create updated session data
+                      const updatedSessionData = {
+                        userId: user.userId,
+                        questionId: currentQuestion.id,
+                        timeSpent: displayTime,
+                        success: true, // Assume success if they're completing the session
+                        difficultyRating: sessionDifficultyRating,
+                        tags: selectedTags
+                      };
+
+                      // Send to backend
+                      const apiBaseUrl = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+                      const response = await fetch(`${apiBaseUrl}/solveHistory`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(updatedSessionData)
+                      });
+
+                      if (response.ok) {
+                        console.log('✅ Updated session data sent successfully');
+                      } else {
+                        console.error('❌ Failed to send updated session data');
+                      }
+                    }
+                  } catch (error) {
+                    console.error('❌ Error sending updated session data:', error);
+                  }
+
+                  setShowFeedbackModal(false);
+                  // Reset for next session
+                  setSessionDifficultyRating(null);
+                  setSelectedTags([]);
+                  console.log('🎯 Session data saved for recommendations!');
+                }}
+                style={{ flex: 1 }}
+              >
+                ✅ Complete Session
+              </ActionButton>
+            </div>
+          </ModalContent>
+        </SessionFeedbackModal>
+      )}
     </Container>
   );
 };

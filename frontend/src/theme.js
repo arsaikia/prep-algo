@@ -17,6 +17,27 @@ export const lightTheme = {
         hover: '#bed4e9',
         white: '#ffffff',
         black: '#1c2127',
+
+        // Modern Brand Colors
+        brand: {
+            primary: '#8B5CF6',      // Violet - main brand color
+            secondary: '#3B82F6',    // Blue - secondary brand color
+            accent: '#10B981',       // Emerald - accent color
+            text: '#2d3748',         // Slate - main text color
+            textLight: '#64748b',    // Lighter slate for secondary text
+            gradient: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 50%, #10B981 100%)',
+            gradientHorizontal: 'linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981)',
+        },
+
+        // Algorithm/Code specific colors
+        algorithm: {
+            brain: '#8B5CF6',        // Purple for brain/intelligence
+            spark: '#10B981',        // Green for learning/growth
+            flow: '#3B82F6',         // Blue for data flow
+            success: '#10B981',      // Green for success states
+            processing: '#3B82F6',   // Blue for processing states
+        },
+
         gray: {
             100: '#e7f1fb',
             200: '#bed4e9',
@@ -50,6 +71,27 @@ export const darkTheme = {
         hover: '#1a1a1a',
         white: '#E0E0E0',
         black: '#121212',
+
+        // Modern Brand Colors (adjusted for dark theme)
+        brand: {
+            primary: '#a78bfa',      // Lighter violet for dark theme
+            secondary: '#60a5fa',    // Lighter blue for dark theme
+            accent: '#34d399',       // Lighter emerald for dark theme
+            text: '#e2e8f0',         // Light slate for dark theme text
+            textLight: '#94a3b8',    // Medium slate for secondary text
+            gradient: 'linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #34d399 100%)',
+            gradientHorizontal: 'linear-gradient(90deg, #a78bfa, #60a5fa, #34d399)',
+        },
+
+        // Algorithm/Code specific colors (dark theme variants)
+        algorithm: {
+            brain: '#a78bfa',        // Lighter purple for dark theme
+            spark: '#34d399',        // Lighter green for dark theme
+            flow: '#60a5fa',         // Lighter blue for dark theme
+            success: '#34d399',      // Lighter green for success
+            processing: '#60a5fa',   // Lighter blue for processing
+        },
+
         gray: {
             100: '#E0E0E0',
             200: '#B0B0B0',
@@ -62,4 +104,18 @@ export const darkTheme = {
             900: '#121212',
         }
     },
-}; 
+};
+
+// Usage Examples:
+// 
+// For styled-components:
+// color: ${({ theme }) => theme.colors.brand.primary};
+// background: ${({ theme }) => theme.colors.brand.gradient};
+// 
+// For algorithm-related elements:
+// color: ${({ theme }) => theme.colors.algorithm.brain};
+// box-shadow: 0 0 10px ${({ theme }) => theme.colors.algorithm.spark};
+//
+// For success/processing states:
+// color: ${({ theme }) => theme.colors.algorithm.success};
+// border-color: ${({ theme }) => theme.colors.algorithm.processing}; 

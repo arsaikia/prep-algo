@@ -1,0 +1,390 @@
+.daily-recommendations {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.daily-recommendations.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: #666;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.daily-recommendations.error {
+    text-align: center;
+    padding: 40px;
+    color: #e74c3c;
+}
+
+.retry-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 16px;
+}
+
+.retry-btn:hover {
+    background: #2980b9;
+}
+
+.recommendations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.recommendations-header h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.controls label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: #555;
+}
+
+.controls select {
+    padding: 6px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    background: white;
+    font-size: 14px;
+}
+
+.refresh-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.refresh-btn:hover {
+    background: #218838;
+}
+
+.analysis-summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    color: white;
+}
+
+.user-stats {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 12px;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.level-beginner {
+    color: #48dbfb;
+}
+
+.level-intermediate {
+    color: #feca57;
+}
+
+.level-advanced {
+    color: #ff6b6b;
+}
+
+.weak-areas {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.weak-areas-label {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.weak-areas-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.weak-area-tag {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.recommendations-list {
+    display: grid;
+    gap: 16px;
+}
+
+.recommendation-card {
+    background: white;
+    border: 2px solid #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.recommendation-card:hover {
+    border-color: #3498db;
+    box-shadow: 0 4px 20px rgba(52, 152, 219, 0.15);
+    transform: translateY(-2px);
+}
+
+.recommendation-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.priority-indicator {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.strategy-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.question-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.question-name {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.question-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.question-group {
+    background: #f8f9fa;
+    color: #495057;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.question-difficulty {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.recommendation-reason {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.reason-text {
+    display: block;
+    color: #495057;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.last-solved {
+    display: block;
+    color: #6c757d;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.recommendation-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.strategy-tag {
+    background: #e9ecef;
+    color: #495057;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.priority-tag {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.priority-high {
+    background: #fee;
+    color: #dc3545;
+}
+
+.priority-medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.priority-low {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.no-recommendations {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.no-recommendations h3 {
+    color: #28a745;
+    margin-bottom: 12px;
+}
+
+.recommendations-footer {
+    margin-top: 24px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #17a2b8;
+}
+
+.recommendation-tip {
+    margin: 0;
+    color: #495057;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .daily-recommendations {
+        padding: 16px;
+    }
+
+    .recommendations-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .recommendations-header h2 {
+        font-size: 24px;
+        text-align: center;
+    }
+
+    .controls {
+        justify-content: center;
+    }
+
+    .user-stats {
+        gap: 16px;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .recommendation-header {
+        gap: 12px;
+    }
+
+    .question-name {
+        font-size: 16px;
+    }
+
+    .recommendation-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+}

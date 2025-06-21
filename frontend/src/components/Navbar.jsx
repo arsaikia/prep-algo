@@ -18,7 +18,6 @@ import { Sun, Moon } from 'react-feather';
 import {
   getQuestions, resetAuthState, updateTheme,
 } from '../actions/actions';
-import logo from '../logo.png';
 import {
   Container, Flex, CenteredFlex, StyledNavLink, BlankButton,
 } from '../styles';
@@ -50,16 +49,176 @@ const Logo = styled(NavLink)`
   display: flex;
   align-items: center;
   height: 100%;
+  text-decoration: none;
+  color: #333;
+  font-weight: 700;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
   
-  img {
-    height: 100%;
-    width: auto;
-    max-width: 100%;
-    object-fit: contain;
-    transition: transform 0.2s ease;
-    
-    &:hover {
-      transform: scale(1.05);
+  &:hover {
+    transform: scale(1.05);
+    color: #4a90e2;
+  }
+  
+  &:hover .logo-icon-container .brain-icon {
+    animation-duration: 1.5s;
+  }
+  
+  &:hover .logo-icon-container .algorithm-dots {
+    animation-duration: 0.8s;
+  }
+  
+  &:hover .logo-icon-container .learning-spark {
+    animation-duration: 1s;
+  }
+  
+  .logo-icon-container {
+    position: relative;
+    margin-right: 12px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .brain-icon {
+    font-size: 2rem;
+    animation: brainPulse 3s ease-in-out infinite;
+    transform-origin: center;
+    filter: drop-shadow(0 0 4px ${({ theme }) => theme.colors.algorithm.brain}66);
+    z-index: 3;
+  }
+  
+  .algorithm-dots {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    z-index: 1;
+  }
+  
+  .algorithm-dots::before,
+  .algorithm-dots::after {
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: linear-gradient(45deg, ${({ theme }) => theme.colors.algorithm.spark}, ${({ theme }) => theme.colors.algorithm.flow});
+    border-radius: 50%;
+    animation: algorithmFlow 2s linear infinite;
+  }
+  
+  .algorithm-dots::before {
+    top: 2px;
+    left: 8px;
+    animation-delay: 0s;
+  }
+  
+  .algorithm-dots::after {
+    bottom: 2px;
+    right: 8px;
+    animation-delay: 1s;
+  }
+  
+  .learning-spark {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 0.8rem;
+    animation: sparkle 2.5s ease-in-out infinite;
+    z-index: 4;
+  }
+  
+  .recommendation-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    background: ${({ theme }) => theme.colors.brand.gradient};
+    border-radius: 50%;
+    animation: recommend 3s ease-in-out infinite;
+    z-index: 2;
+  }
+  
+  .logo-text {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.02em;
+    color: ${({ theme }) => theme.colors.brand.text};
+    font-weight: 700;
+    font-size: 1.5rem;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .logo-text::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: ${({ theme }) => theme.colors.brand.gradientHorizontal};
+    animation: underlineGrow 4s ease-in-out infinite;
+  }
+  
+  @keyframes brainPulse {
+    0%, 100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 4px ${({ theme }) => theme.colors.algorithm.brain}66);
+    }
+    50% {
+      transform: scale(1.1);
+      filter: drop-shadow(0 0 8px ${({ theme }) => theme.colors.algorithm.brain}99);
+    }
+  }
+  
+  @keyframes algorithmFlow {
+    0% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.5) translateX(10px);
+    }
+  }
+  
+  @keyframes sparkle {
+    0%, 100% {
+      opacity: 0;
+      transform: scale(0.8) rotate(0deg);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2) rotate(180deg);
+    }
+  }
+  
+  @keyframes recommend {
+    0%, 100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.5);
+    }
+  }
+  
+  @keyframes underlineGrow {
+    0%, 100% {
+      width: 0;
+    }
+    50% {
+      width: 100%;
     }
   }
 `;
@@ -565,12 +724,25 @@ function Navbar() {
       <NavContainer>
         <NavContent>
           <Logo to="/">
-            <img src={logo} alt="Logo" />
+            {/* Animated Logo representing daily problem recommendations:
+                🔄 = Daily refresh/rotation of problems
+                📅 = Daily calendar-based recommendations  
+                🎯 = Targeted learning
+                ⚡ = Quick daily practice
+                🧠 = Smart recommendations
+            */}
+            <div className="logo-icon-container">
+              <span className="brain-icon">🧠</span>
+              <span className="algorithm-dots"></span>
+              <span className="learning-spark">⚡</span>
+              <span className="recommendation-indicator"></span>
+            </div>
+            <span className="logo-text">
+              PrepAlgo
+            </span>
           </Logo>
 
           <NavLinks>
-            <NavLinkItem to="/all">All Questions</NavLinkItem>
-            <NavLinkItem to="/codesandbox">Code Sandbox</NavLinkItem>
           </NavLinks>
 
           <UserSection>
