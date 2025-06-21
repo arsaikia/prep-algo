@@ -1,3 +1,72 @@
+# PrepAlgo Frontend
+
+Your personalized coding practice recommendations platform.
+
+## Development Features
+
+### God Mode 🔑
+
+God Mode enables test features and developer tools for testing and debugging purposes.
+
+#### How to Enable God Mode
+
+**Method 1: Navbar Button**
+- Look for the "Dev Mode" button in the navbar
+- Click it to enable God Mode (will reload the page)
+
+**Method 2: Browser Console**
+```javascript
+// Enable God Mode
+document.cookie = "isGodMode=1; path=/";
+window.location.reload();
+
+// Disable God Mode  
+document.cookie = "isGodMode=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+window.location.reload();
+```
+
+**Method 3: Environment Variable**
+```bash
+REACT_APP_ENABLE_TEST_FEATURES=true npm start
+```
+
+#### God Mode Features
+
+When God Mode is enabled, you get access to:
+
+- **Test User Selector**: Switch between different test users to see various completion scenarios
+- **Debug Logging**: Enhanced console logging for development
+- **Performance Metrics**: Additional performance monitoring (when configured)
+- **Experimental Features**: Access to beta features
+
+#### Test Users Available
+
+- `test-alice-beginner-001` - Low completion, mostly easy questions
+- `test-bob-intermediate-002` - Medium completion, mixed difficulties  
+- `test-carol-advanced-003` - High completion, comprehensive coverage
+- `test-david-specialized-004` - Uneven completion across topics
+- `test-emma-struggling-005` - High retry counts, struggling patterns
+- `test-user-123` - Original test user with comprehensive history
+
+## Getting Started
+
+```bash
+npm install
+npm start
+```
+
+The app will be available at `http://localhost:3000`.
+
+## Environment Variables
+
+Create a `.env` file in the frontend root:
+
+```env
+REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id
+REACT_APP_API_BASE_URI=http://localhost:5000/api/v1
+REACT_APP_ENABLE_TEST_FEATURES=false
+```
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

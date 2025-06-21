@@ -122,8 +122,80 @@ const submitCode = async (req, res) => {
     }
 };
 
+/*
+ * @desc     Get All Questions with User Progress
+ * @route    GET /api/v1/questions/get-questions/:userId
+ * @access   Public
+ */
+const getAllQuestionsWithUserProgress = asyncHandler(async (req, res, next) => {
+    const { userId } = req.params;
+
+    try {
+        // Get all questions (don't filter - always show all questions)
+        const questions = await Question.find()
+            .select('_id name link group difficulty list order')
+            .sort({ order: 1 });
+
+        // Get user's solve history
+        const solveHistory = await SolveHistory.find({ userId })
+            .select('questionId solveCount lastUpdatedAt firstSolvedAt');
+
+        // Create a map of solved questions for quick lookup
+        const solvedQuestionsMap = {};
+        solveHistory.forEach(history => {
+            solvedQuestionsMap[history.questionId.toString()] = {
+                solved: true,
+                solveCount: history.solveCount,
+                lastSolved: history.lastUpdatedAt,
+                firstSolved: history.firstSolvedAt
+            };
+        });
+
+        // Group questions by their group property and add solve status
+        const groupedQuestions = {};
+        const groups = [];
+
+        questions.forEach(question => {
+            const group = question.group;
+
+            if (!groupedQuestions[group]) {
+                groupedQuestions[group] = [];
+                groups.push(group);
+            }
+
+            // Add solve status to question
+            const questionWithStatus = {
+                ...question.toObject(),
+                solved: solvedQuestionsMap[question._id.toString()]?.solved || false,
+                solveCount: solvedQuestionsMap[question._id.toString()]?.solveCount || 0,
+                lastSolved: solvedQuestionsMap[question._id.toString()]?.lastSolved || null,
+                firstSolved: solvedQuestionsMap[question._id.toString()]?.firstSolved || null
+            };
+
+            groupedQuestions[group].push(questionWithStatus);
+        });
+
+        // Return in the same format as the existing questions API
+        const result = {
+            groups: groups,
+            questions: groupedQuestions
+        };
+
+        res.status(200).json({
+            success: true,
+            count: questions.length,
+            data: result
+        });
+
+    } catch (error) {
+        console.error('Error in getAllQuestionsWithUserProgress:', error);
+        return next(new ErrorResponse('Server Error', 500));
+    }
+});
+
 export {
     getQuestions,
     getQuestionById,
-    submitCode
+    submitCode,
+    getAllQuestionsWithUserProgress
 }; 

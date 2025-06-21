@@ -3,22 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import DailyRecommendations from '../components/DailyRecommendations/DailyRecommendations';
+import { useTestUser } from '../contexts/TestUserContext';
 
 // Styled components
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
+  min-height: 100vh;
 `;
 
 const Title = styled.h1`
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
   text-align: center;
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: 700;
 `;
 
 const Subtitle = styled.p`
-  color: #666;
+  color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: 3rem;
   text-align: center;
   font-size: 1.1rem;
@@ -33,65 +39,63 @@ const QuickLinks = styled.div`
 `;
 
 const QuickLinkButton = styled.button`
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 2px solid ${({ theme }) => theme.colors.border};
   border-radius: 8px;
   padding: 12px 24px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   text-decoration: none;
-  color: #333;
+  color: ${({ theme }) => theme.colors.text};
   
   &:hover {
-    background-color: #e9ecef;
+    background: ${({ theme }) => theme.colors.backgroundHover};
+    border-color: ${({ theme }) => theme.colors.brand.primary};
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: ${({ theme }) => theme.colors.shadows.button};
+  }
+  
+  &:focus {
+    outline: 2px solid ${({ theme }) => theme.colors.brand.primary};
+    outline-offset: 2px;
   }
 `;
 
 const Home = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { selectedUserId, isTestMode } = useTestUser();
 
-    // TEST USER - Always signed in for development/testing
-    const testUser = {
-        userId: 'test-user-123',
-        firstName: 'Test',
-        lastName: 'User',
-        isAuthenticated: true,
-        picture: null
-    };
+  // Handle question selection from daily recommendations
+  const handleQuestionSelect = useCallback((question) => {
+    // Navigate to CodeSandbox with the selected question
+    const questionLink = question.link || question.name.toLowerCase().replace(/\s+/g, '-');
+    navigate(`/codesandbox?question=${questionLink}`);
+  }, [navigate]);
 
-    // Handle question selection from daily recommendations
-    const handleQuestionSelect = useCallback((question) => {
-        // Navigate to CodeSandbox with the selected question
-        const questionLink = question.link || question.name.toLowerCase().replace(/\s+/g, '-');
-        navigate(`/codesandbox?question=${questionLink}`);
-    }, [navigate]);
+  return (
+    <Container>
+      <Title>🎯 PrepAlgo</Title>
+      <Subtitle>Your personalized coding practice recommendations</Subtitle>
 
-    return (
-        <Container>
-            <Title>🎯 PrepAlgo</Title>
-            <Subtitle>Your personalized coding practice recommendations</Subtitle>
+      <QuickLinks>
+        <QuickLinkButton onClick={() => navigate('/all')}>
+          📚 Browse All Questions
+        </QuickLinkButton>
+        <QuickLinkButton onClick={() => navigate('/codesandbox')}>
+          💻 Code Sandbox
+        </QuickLinkButton>
+      </QuickLinks>
 
-            <QuickLinks>
-                <QuickLinkButton onClick={() => navigate('/all')}>
-                    📚 Browse All Questions
-                </QuickLinkButton>
-                <QuickLinkButton onClick={() => navigate('/codesandbox')}>
-                    💻 Code Sandbox
-                </QuickLinkButton>
-            </QuickLinks>
-
-            {/* Daily Recommendations Section */}
-            {testUser.userId && testUser.userId !== 'guest' && (
-                <DailyRecommendations
-                    userId={testUser.userId}
-                    onQuestionSelect={handleQuestionSelect}
-                />
-            )}
-        </Container>
-    );
+      {/* Daily Recommendations Section */}
+      {isTestMode && selectedUserId && (
+        <DailyRecommendations
+          userId={selectedUserId}
+          onQuestionSelect={handleQuestionSelect}
+        />
+      )}
+    </Container>
+  );
 };
 
 export default Home; 

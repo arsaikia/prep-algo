@@ -11,17 +11,17 @@
     align-items: center;
     justify-content: center;
     min-height: 200px;
-    color: #666;
 }
 
 .loading-spinner {
     width: 40px;
     height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
+    border: 4px solid transparent;
+    border-top: 4px solid currentColor;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 16px;
+    opacity: 0.6;
 }
 
 @keyframes spin {
@@ -37,7 +37,6 @@
 .daily-recommendations.error {
     text-align: center;
     padding: 40px;
-    color: #e74c3c;
 }
 
 .retry-btn {

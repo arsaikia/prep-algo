@@ -1,6 +1,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/prop-types */
 import React from 'react';
+import { useTheme } from 'styled-components';
 
 import { useWindowSize } from '@uidotdev/usehooks';
 import { Tooltip } from 'react-tooltip';
@@ -13,6 +14,7 @@ function DifficultyDot(props) {
     text,
   } = props;
 
+  const theme = useTheme();
   const {
     width,
     // eslint-disable-next-line no-unused-vars
@@ -20,11 +22,26 @@ function DifficultyDot(props) {
   } = useWindowSize();
   const isMobile = width < 768;
 
+  // Get difficulty color from theme
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case 'Easy':
+        return theme.colors.difficulty.easy;
+      case 'Medium':
+        return theme.colors.difficulty.medium;
+      case 'Hard':
+        return theme.colors.difficulty.hard;
+      default:
+        return theme.colors.difficulty.unknown;
+    }
+  };
+
+  const difficultyColor = getDifficultyColor(text);
+
   if (isMobile) {
     return (
       <div style={{
-        // eslint-disable-next-line no-nested-ternary
-        background: text === 'Easy' ? 'lightseagreen' : text === 'Medium' ? '#6a5acd' : 'indianred',
+        background: difficultyColor,
         borderRadius: '50%',
         display: 'inline-block',
         height: '6px',
@@ -40,7 +57,7 @@ function DifficultyDot(props) {
       <CenteredFlex
         data-tooltip-id={id}
         style={{
-          border: `0.2em solid ${text === 'Easy' ? 'lightseagreen' : text === 'Medium' ? '#6a5acd' : 'indianred'}`,
+          border: `0.2em solid ${difficultyColor}`,
           borderRadius: '50%',
           cursor: 'pointer',
           height: '0.8em',
@@ -49,7 +66,7 @@ function DifficultyDot(props) {
         }}
       >
         <div style={{
-          background: text === 'Easy' ? 'lightseagreen' : text === 'Medium' ? '#6a5acd' : 'indianred',
+          background: difficultyColor,
           borderRadius: '50%',
           height: '0.45em',
           width: '0.45em',

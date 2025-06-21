@@ -3,6 +3,9 @@ export const GET_THEME = 'GET_THEME';
 export const UPDATE_THEME = 'UPDATE_THEME';
 export const SET_DARK_MODE = 'SET_DARK_MODE';
 export const SET_LIGHT_MODE = 'SET_LIGHT_MODE';
+export const INITIALIZE_THEME = 'INITIALIZE_THEME';
+export const SET_SYSTEM_THEME = 'SET_SYSTEM_THEME';
+export const SET_USER_THEME_PREFERENCE = 'SET_USER_THEME_PREFERENCE';
 
 // Login user
 export const LOGIN = 'LOGIN';
