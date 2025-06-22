@@ -900,10 +900,12 @@ const CodeSandbox = () => {
       // Automatically fetch the question
       fetchLeetCodeQuestion(questionParam);
     } else {
-      // For testing: Auto-load two-sum if no question specified
-      const testQuestion = 'two-sum';
-      setLeetcodeUrl(testQuestion);
-      fetchLeetCodeQuestion(testQuestion);
+      // For testing: Auto-load two-sum if no question specified and not in dev mode
+      if (!isDevMode()) {
+        const testQuestion = 'two-sum';
+        setLeetcodeUrl(testQuestion);
+        fetchLeetCodeQuestion(testQuestion);
+      }
     }
   }, [location.search]);
 
@@ -1001,7 +1003,7 @@ const CodeSandbox = () => {
         setOutput(`Test results: ${response.data.passedTests}/${response.data.totalTests} tests passed (${response.data.score}% score)`);
 
         // Handle session completion based on results
-        const success = response.data.score >= 70; // Consider 70%+ as success
+        const success = response.data.score === 100; // Require 100% success for Smart Hybrid recommendations
         if (isTracking && user.userId !== 'guest') {
           await handleSessionComplete(success);
         }
@@ -1185,7 +1187,7 @@ const CodeSandbox = () => {
               onChange={(e) => setLeetcodeUrl(e.target.value)}
               placeholder="Enter LeetCode question URL or ID"
             />
-            <ModernButton variant="primary" onClick={() => fetchLeetCodeQuestion()}>
+            <ModernButton variant="primary" onClick={() => fetchLeetCodeQuestion(leetcodeUrl)}>
               <Link size={16} />
               Load Question
             </ModernButton>
@@ -1431,14 +1433,18 @@ const CodeSandbox = () => {
                     if (currentQuestion && user.userId && user.userId !== 'guest') {
 
 
-                      // Create updated session data
+                      // Create updated session data with adaptive context
                       const updatedSessionData = {
                         userId: user.userId,
                         questionId: currentQuestion.id,
                         timeSpent: displayTime,
                         success: true, // Assume success if they're completing the session
                         difficultyRating: sessionDifficultyRating,
-                        tags: selectedTags
+                        tags: selectedTags,
+                        // NEW: Adaptive context
+                        strategy: currentQuestion.recommendationStrategy || 'general_practice',
+                        sessionNumber: 1, // Could be enhanced to track session position
+                        previousQuestionResult: null // Could be enhanced to track previous question
                       };
 
                       // Send to backend

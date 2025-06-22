@@ -133,9 +133,7 @@ const Home = () => {
         </QuickLinkButton>
       </QuickLinks>
 
-
-
-      {/* Daily Recommendations Section - Show for authenticated users OR test mode */}
+      {/* Smart Daily Recommendations Section - Show for authenticated users OR test mode */}
       {recommendationUserId ? (
         <DailyRecommendations
           userId={recommendationUserId}

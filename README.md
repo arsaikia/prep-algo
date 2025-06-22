@@ -10,7 +10,17 @@ A comprehensive platform for practicing algorithm problems with real-time code e
 - **User Authentication**: Secure login with Google OAuth integration
 - **Progress Tracking**: Monitor your algorithm practice progress
 - **Problem Categories**: Organized problem sets by difficulty and topic
+- **Smart Recommendations**: AI-powered daily problem recommendations with adaptive learning
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
+
+## 📚 Documentation
+
+- **[Smart Hybrid Recommendations](SMART_HYBRID_README.md)** - Advanced AI recommendation system ⭐ **Active**
+- **[System Migration Guide](SYSTEM_MIGRATION.md)** - Migration from legacy systems
+- **[Daily Recommendations](DAILY_RECOMMENDATIONS_README.md)** - Basic daily problem system (Legacy)
+- **[Recommendation Improvements](RECOMMENDATION_IMPROVEMENTS.md)** - System enhancement notes
+- **[Color System](COLOR_SYSTEM_README.md)** - UI design guidelines
+- **[Tracking Implementation](TRACKING_IMPLEMENTATION.md)** - Progress tracking details
 
 ## 🛠️ Tech Stack
 

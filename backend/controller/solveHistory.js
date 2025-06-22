@@ -1,4 +1,5 @@
 import SolveHistory from '../models/SolveHistory.js';
+import UserProfile from '../models/UserProfile.js';
 import asyncHandler from '../middleware/async.js';
 import ErrorResponse from '../middleware/error.js';
 import { v4 as uuid } from 'uuid';
@@ -34,10 +35,13 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
         timeSpent, // in minutes
         difficultyRating, // 1-5 scale
         tags, // array of strings
-        success = true // boolean
+        success = true, // boolean
+        strategy, // which recommendation strategy suggested this question
+        sessionNumber = 1, // question number in this session
+        previousQuestionResult // success of previous question in session
     } = req.body;
 
-    console.log('📊 updateSolveHistory received:', { userId, questionId, timeSpent, difficultyRating, tags, success });
+    console.log('📊 updateSolveHistory received:', { userId, questionId, timeSpent, difficultyRating, tags, success, strategy });
 
     const question = await Question.findById(questionId);
     const user = await User.findById(userId);
@@ -51,6 +55,15 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
 
     const lastSolve = await SolveHistory.findOne({ userId, questionId });
 
+    // NEW: Get or create user profile for adaptive features
+    let userProfile = await UserProfile.findByUserId(userId);
+    if (!userProfile) {
+        console.log('📊 Creating user profile for adaptive recommendations...');
+        const existingHistory = await SolveHistory.find({ userId }).populate('questionId');
+        userProfile = await UserProfile.createFromSolveHistory(userId, existingHistory);
+        await userProfile.save();
+    }
+
     let response;
     const currentTimestamp = new Date();
 
@@ -63,11 +76,18 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
             newAverageTime = (currentTotal + timeSpent) / (totalSessions + 1);
         }
 
-        // Prepare solve session data
+        // Prepare solve session data with adaptive context
         const newSolveSession = {
             solvedAt: currentTimestamp,
             timeSpent: timeSpent || null,
-            success: success
+            success: success,
+            sessionContext: {
+                timeOfDay: getTimeOfDay(),
+                dayOfWeek: getDayOfWeek(),
+                sessionNumber: sessionNumber,
+                previousQuestionResult: previousQuestionResult,
+                recommendationStrategy: strategy
+            }
         };
 
         // Update existing record
@@ -97,7 +117,14 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
             solveHistory: [{
                 solvedAt: currentTimestamp,
                 timeSpent: timeSpent || null,
-                success: success
+                success: success,
+                sessionContext: {
+                    timeOfDay: getTimeOfDay(),
+                    dayOfWeek: getDayOfWeek(),
+                    sessionNumber: sessionNumber,
+                    previousQuestionResult: previousQuestionResult,
+                    recommendationStrategy: strategy
+                }
             }]
         });
     }
@@ -105,6 +132,25 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
     if (!response) {
         return next(new Error(`SolveHistory update error`, 500));
     }
+
+    // NEW: Update user profile with this solve session for adaptive recommendations
+    if (userProfile) {
+        try {
+            userProfile.updateRecentPerformance({
+                questionId,
+                success,
+                timeSpent: timeSpent || 15,
+                difficulty: question.difficulty,
+                strategy: strategy || 'general_practice'
+            });
+            await userProfile.save();
+            console.log('📊 Updated user profile for adaptive recommendations');
+        } catch (profileError) {
+            console.error('📊 Error updating user profile:', profileError);
+            // Don't fail the main request if profile update fails
+        }
+    }
+
     res.status(201).json({ success: true, data: response });
 });
 
@@ -374,6 +420,19 @@ const getNextDifficulty = (userLevel, difficultyStats) => {
         return 'Hard';
     }
     return null;
+};
+
+// Helper functions for session context
+const getTimeOfDay = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 18) return 'afternoon';
+    return 'evening';
+};
+
+const getDayOfWeek = () => {
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return days[new Date().getDay()];
 };
 
 export {

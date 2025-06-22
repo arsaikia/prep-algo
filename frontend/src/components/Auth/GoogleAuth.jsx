@@ -1,69 +1,54 @@
 import React from 'react';
-import { useGoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { loginWithGoogle } from '../../actions/actions';
 
-const GoogleButton = styled.button`
+const GoogleButtonContainer = styled.div`
   display: flex;
-  align-items: center;
   justify-content: center;
-  background-color: white;
-  color: #757575;
-  border: 1px solid #dadce0;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  
-  &:hover {
-    background-color: #f8f9fa;
-  }
-  
-  img {
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
-  }
+  width: 100%;
 `;
 
 const GoogleAuth = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const login = useGoogleLogin({
-        onSuccess: async (response) => {
-            try {
-
-
-                // Dispatch login action with just the token
-                // Our backend will verify the token and return user info
-                dispatch(loginWithGoogle(response.access_token));
-
-                // Navigate to home page - the saga will handle setting cookies
-                navigate('/');
-            } catch (error) {
-                // Error during Google login
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            // The credential token is in credentialResponse.credential
+            // This is the ID token that our backend expects
+            if (!credentialResponse.credential) {
+                console.error('No credential token found in response');
+                return;
             }
-        },
-        onError: (error) => {
-            // Google login failed
+
+            // Dispatch login action with the ID token
+            dispatch(loginWithGoogle(credentialResponse.credential));
+
+            // Navigate to home page - the saga will handle setting cookies
+            navigate('/');
+        } catch (error) {
+            console.error('Error during Google login:', error);
         }
-    });
+    };
+
+    const handleGoogleError = () => {
+        console.error('Google login failed');
+    };
 
     return (
-        <GoogleButton onClick={() => login()}>
-            <img
-                src="https://www.google.com/favicon.ico"
-                alt="Google logo"
+        <GoogleButtonContainer>
+            <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                theme="outline"
+                size="large"
+                width="100%"
             />
-            Sign in with Google
-        </GoogleButton>
+        </GoogleButtonContainer>
     );
 };
 

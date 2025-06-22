@@ -1,22 +1,19 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import User from './models/User.js';
-import Question from './models/Question.js';
-import SolveHistory from './models/SolveHistory.js';
-import { connectDB } from './config/db.js';
+import User from '../models/User.js';
+import Question from '../models/Question.js';
+import SolveHistory from '../models/SolveHistory.js';
+import { connectDB } from '../config/db.js';
 
 dotenv.config();
-
-// Connect to database
-connectDB();
 
 const testUsers = [
     {
         _id: 'test-alice-beginner-001',
         firstName: 'Alice',
         lastName: 'Beginner',
-        email: 'alice.beginner@test.com',
-        googleId: 'alice-beginner-123',
+        email: 'test-alice-beginner-001@test.com',
+        googleId: 'test-alice-beginner-001-google-id',
         picture: 'https://via.placeholder.com/150/FF6B6B/FFFFFF?text=AB',
         profile: 'beginner' // Just started, mostly easy questions
     },
@@ -24,8 +21,8 @@ const testUsers = [
         _id: 'test-bob-intermediate-002',
         firstName: 'Bob',
         lastName: 'Intermediate',
-        email: 'bob.intermediate@test.com',
-        googleId: 'bob-intermediate-456',
+        email: 'test-bob-intermediate-002@test.com',
+        googleId: 'test-bob-intermediate-002-google-id',
         picture: 'https://via.placeholder.com/150/4ECDC4/FFFFFF?text=BI',
         profile: 'intermediate' // Mixed difficulty, some patterns mastered
     },
@@ -33,8 +30,8 @@ const testUsers = [
         _id: 'test-carol-advanced-003',
         firstName: 'Carol',
         lastName: 'Advanced',
-        email: 'carol.advanced@test.com',
-        googleId: 'carol-advanced-789',
+        email: 'test-carol-advanced-003@test.com',
+        googleId: 'test-carol-advanced-003-google-id',
         picture: 'https://via.placeholder.com/150/45B7D1/FFFFFF?text=CA',
         profile: 'advanced' // Mostly hard questions, comprehensive coverage
     },
@@ -42,8 +39,8 @@ const testUsers = [
         _id: 'test-david-specialized-004',
         firstName: 'David',
         lastName: 'Specialized',
-        email: 'david.specialized@test.com',
-        googleId: 'david-specialized-012',
+        email: 'test-david-specialized-004@test.com',
+        googleId: 'test-david-specialized-004-google-id',
         picture: 'https://via.placeholder.com/150/96CEB4/FFFFFF?text=DS',
         profile: 'specialized' // Strong in some areas, weak in others
     },
@@ -51,25 +48,43 @@ const testUsers = [
         _id: 'test-emma-struggling-005',
         firstName: 'Emma',
         lastName: 'Struggling',
-        email: 'emma.struggling@test.com',
-        googleId: 'emma-struggling-345',
+        email: 'test-emma-struggling-005@test.com',
+        googleId: 'test-emma-struggling-005-google-id',
         picture: 'https://via.placeholder.com/150/FFEAA7/FFFFFF?text=ES',
         profile: 'struggling' // High retry counts, needs reinforcement
+    },
+    {
+        _id: 'test-user-123',
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test-user-123@test.com',
+        googleId: 'test-user-123-google-id',
+        picture: 'https://via.placeholder.com/150/DDA0DD/FFFFFF?text=TU',
+        profile: 'comprehensive' // Updated comprehensive history
     }
 ];
 
 const createTestUsers = async () => {
     try {
-        console.log('🚀 Creating test users...');
+        console.log('🚀 Creating Frontend Test Users...');
+        console.log('===================================');
 
-        // Clear existing test users
+        // Connect to database
+        await connectDB();
+
+        // Clear existing test users first
+        console.log('🧹 Clearing existing test users...');
         await User.deleteMany({ email: { $regex: '@test.com$' } });
-        const existingTestUserIds = await User.find({ email: { $regex: '@test.com$' } }).distinct('_id');
-        await SolveHistory.deleteMany({ userId: { $in: existingTestUserIds } });
+        await SolveHistory.deleteMany({ userId: { $regex: /^test-/ } });
 
         // Get all questions to work with
         const allQuestions = await Question.find().sort({ order: 1 });
         console.log(`📚 Found ${allQuestions.length} questions`);
+
+        if (allQuestions.length === 0) {
+            console.log('❌ No questions found in database. Please run syncQuestionsFromJson.js first.');
+            process.exit(1);
+        }
 
         // Group questions by difficulty and category
         const questionsByDifficulty = {
@@ -87,70 +102,86 @@ const createTestUsers = async () => {
         });
 
         const groups = Object.keys(questionsByGroup);
-        console.log(`🏷️ Found ${groups.length} question groups:`, groups);
+        console.log(`🏷️ Found ${groups.length} question groups:`, groups.slice(0, 5).join(', ') + (groups.length > 5 ? '...' : ''));
+        console.log(`📊 Question distribution: Easy: ${questionsByDifficulty.Easy.length}, Medium: ${questionsByDifficulty.Medium.length}, Hard: ${questionsByDifficulty.Hard.length}`);
+        console.log('');
 
         for (const userData of testUsers) {
-            console.log(`\n👤 Creating user: ${userData.firstName} ${userData.lastName} (${userData.profile})`);
+            console.log(`👤 Creating user: ${userData.firstName} ${userData.lastName} (${userData.profile})`);
 
             // Create user
             const user = await User.create(userData);
-            console.log(`✅ User created with ID: ${user._id}`);
+            console.log(`   ✅ User created with ID: ${user._id}`);
 
             // Generate solve history based on profile
             const solveHistories = [];
 
             switch (userData.profile) {
                 case 'beginner':
-                    // Alice: 15-20 easy questions, 3-5 medium, 0-1 hard
+                    // Alice: Low completion, mostly easy
                     solveHistories.push(
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Easy, 18, 1, 1),
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Medium, 4, 1, 2),
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Hard, 1, 2, 3)
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Easy, 8, 1, 2),
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Medium, 2, 2, 4)
                     );
                     break;
 
                 case 'intermediate':
-                    // Bob: 25-30 easy, 15-20 medium, 5-8 hard
+                    // Bob: Medium completion, mixed
                     solveHistories.push(
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Easy, 28, 1, 1),
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Medium, 18, 1, 2),
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Hard, 7, 1, 3)
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Easy, 15, 1, 2),
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Medium, 12, 1, 3),
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Hard, 3, 2, 4)
                     );
                     break;
 
                 case 'advanced':
-                    // Carol: 40+ easy, 30+ medium, 20+ hard
+                    // Carol: High completion, comprehensive
                     solveHistories.push(
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Easy, 45, 1, 1),
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Medium, 35, 1, 2),
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Hard, 25, 1, 2)
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Easy, 25, 1, 1),
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Medium, 30, 1, 2),
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Hard, 15, 1, 3)
                     );
                     break;
 
                 case 'specialized':
-                    // David: Strong in Arrays/Strings, weak in Trees/Graphs
+                    // David: Uneven across topics
                     const strongGroups = ['Array', 'String', 'Hash Table', 'Two Pointers'].filter(g => groups.includes(g));
                     const weakGroups = ['Tree', 'Graph', 'Dynamic Programming'].filter(g => groups.includes(g));
 
-                    // Strong areas: high solve count
+                    // Strong areas: high solve count, low retry
                     strongGroups.forEach(group => {
                         const groupQuestions = questionsByGroup[group] || [];
-                        solveHistories.push(...generateSolveHistory(user._id, groupQuestions, Math.min(groupQuestions.length, 15), 1, 1));
+                        solveHistories.push(...generateSolveHistory(user._id, groupQuestions, Math.min(groupQuestions.length, 12), 1, 1));
                     });
 
                     // Weak areas: few questions, high retry count
                     weakGroups.forEach(group => {
                         const groupQuestions = questionsByGroup[group] || [];
-                        solveHistories.push(...generateSolveHistory(user._id, groupQuestions, Math.min(groupQuestions.length, 3), 3, 5));
+                        solveHistories.push(...generateSolveHistory(user._id, groupQuestions, Math.min(groupQuestions.length, 4), 3, 6));
                     });
+
+                    // Fill in with random questions
+                    const remainingQuestions = allQuestions.filter(q =>
+                        ![...strongGroups, ...weakGroups].includes(q.group)
+                    );
+                    solveHistories.push(...generateSolveHistory(user._id, remainingQuestions, 8, 1, 3));
                     break;
 
                 case 'struggling':
-                    // Emma: Lower question count but high retry rates
+                    // Emma: High retry counts
                     solveHistories.push(
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Easy, 12, 2, 4),
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Medium, 6, 3, 6),
-                        ...generateSolveHistory(user._id, questionsByDifficulty.Hard, 2, 4, 8)
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Easy, 12, 3, 7),
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Medium, 5, 4, 8),
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Hard, 1, 5, 10)
+                    );
+                    break;
+
+                case 'comprehensive':
+                    // Test User 123: Updated comprehensive history
+                    solveHistories.push(
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Easy, 30, 1, 2),
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Medium, 35, 1, 3),
+                        ...generateSolveHistory(user._id, questionsByDifficulty.Hard, 20, 1, 4)
                     );
                     break;
             }
@@ -158,19 +189,27 @@ const createTestUsers = async () => {
             // Insert solve histories
             if (solveHistories.length > 0) {
                 await SolveHistory.insertMany(solveHistories);
-                console.log(`📊 Created ${solveHistories.length} solve history records`);
+                console.log(`   📊 Created ${solveHistories.length} solve history records`);
             }
         }
 
-        console.log('\n🎉 Test users created successfully!');
+        console.log('\n🎉 Frontend Test Users Created Successfully!');
+        console.log('============================================');
 
         // Print summary
-        console.log('\n📋 Summary:');
+        console.log('\n📋 SUMMARY:');
         for (const userData of testUsers) {
             const user = await User.findOne({ email: userData.email });
             const solveCount = await SolveHistory.countDocuments({ userId: user._id });
-            console.log(`${userData.firstName} ${userData.lastName}: ${solveCount} questions solved`);
+            const successfulSolves = await SolveHistory.countDocuments({
+                userId: user._id,
+                'solveHistory.success': true
+            });
+            console.log(`${userData.firstName} ${userData.lastName}: ${solveCount} questions attempted, ${successfulSolves} solved`);
         }
+
+        console.log('\n✅ All test users are ready for frontend testing!');
+        console.log('🎯 You can now use the TestUserSelector dropdown in the frontend.');
 
     } catch (error) {
         console.error('❌ Error creating test users:', error);

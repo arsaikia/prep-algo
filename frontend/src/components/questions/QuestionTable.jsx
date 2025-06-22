@@ -167,12 +167,72 @@ const SolveButton = styled.button`
   }
 `;
 
-const QuestionTable = ({ questions }) => {
+const SmartReasonBadge = styled.div`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-top: 4px;
+`;
+
+const PriorityIndicator = styled.div`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: ${props => {
+    switch (props.priority) {
+      case 'high': return '#ff4757';
+      case 'medium': return '#ffa502';
+      case 'low': return '#2ed573';
+      default: return '#747d8c';
+    }
+  }};
+  margin-left: 8px;
+`;
+
+const MarkCompleteButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #2ed573;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #26d0ce;
+    transform: scale(1.05);
+  }
+`;
+
+const QuestionTable = ({
+  questions,
+  showHeaders = false,
+  showProgress = false,
+  onQuestionCompleted = null,
+  isSmartMode = false
+}) => {
   const navigate = useNavigate();
 
   const handleSolveClick = (question) => {
     // Navigate to Code Sandbox with the question link as a parameter
     navigate(`/codesandbox?question=${question.link}`);
+  };
+
+  const handleMarkComplete = (question) => {
+    if (onQuestionCompleted) {
+      onQuestionCompleted(question._id || question.id, {
+        timeSpent: 0, // Could be tracked in the future
+        success: true
+      });
+    }
   };
 
   const isQuestionAvailable = (question) => {
@@ -205,7 +265,12 @@ const QuestionTable = ({ questions }) => {
                 {index + 1}
               </QuestionNumber>
               <QuestionInfo>
-                <QuestionName>{question.name}</QuestionName>
+                <QuestionName>
+                  {question.name}
+                  {isSmartMode && question.priority && (
+                    <PriorityIndicator priority={question.priority} />
+                  )}
+                </QuestionName>
                 <QuestionMeta>
                   <DifficultyBadge difficulty={question.difficulty}>
                     {question.difficulty}
@@ -216,6 +281,9 @@ const QuestionTable = ({ questions }) => {
                     </SolvedIndicator>
                   )}
                 </QuestionMeta>
+                {isSmartMode && question.reason && (
+                  <SmartReasonBadge>{question.reason}</SmartReasonBadge>
+                )}
               </QuestionInfo>
               <QuestionActions>
                 <QuestionLink
@@ -236,6 +304,18 @@ const QuestionTable = ({ questions }) => {
                     <Play size={14} />
                     Solve
                   </SolveButton>
+                )}
+                {isSmartMode && onQuestionCompleted && (
+                  <MarkCompleteButton
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleMarkComplete(question);
+                    }}
+                    title="Mark as completed"
+                  >
+                    <CheckCircle size={12} />
+                    Done
+                  </MarkCompleteButton>
                 )}
               </QuestionActions>
             </QuestionHeader>

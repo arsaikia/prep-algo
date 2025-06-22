@@ -171,7 +171,7 @@ export const timeTracker = new TimeTracker();
  */
 export const updateSolveHistoryWithTracking = async (sessionData) => {
     try {
-        const apiBaseUrl = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+        const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/v1';
 
         const response = await fetch(`${apiBaseUrl}/solveHistory`, {
             method: 'POST',
@@ -235,7 +235,33 @@ export const useTimeTracker = () => {
         setCurrentTime(0);
 
         if (sessionData) {
+            // Update solve history
             await updateSolveHistoryWithTracking(sessionData);
+
+            // If successful, also mark as complete in Smart Hybrid Recommendation system
+            if (success && sessionData.userId && sessionData.questionId) {
+                const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/v1';
+                try {
+                    await fetch(`${apiBaseUrl}/smart-recommendations/${sessionData.userId}/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            questionId: sessionData.questionId,
+                            timeSpent: sessionData.timeSpent,
+                            success: true
+                        })
+                    });
+                    console.log('✅ Question marked as complete in Smart Hybrid system');
+                } catch (error) {
+                    console.error('❌ Error marking question complete in Smart Hybrid system:', error);
+                    console.error('   API URL:', apiBaseUrl);
+                    console.error('   User ID:', sessionData.userId);
+                    console.error('   Question ID:', sessionData.questionId);
+                    // Don't fail the whole operation if this fails
+                }
+            }
         }
 
         return sessionData;
