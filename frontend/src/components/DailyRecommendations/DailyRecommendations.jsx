@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { getDailyRecommendations } from '../../api/getDailyRecommendations';
-import { getSmartDailyRecommendations } from '../../api/getSmartRecommendations';
+import { getSmartDailyRecommendations, replaceCompletedQuestions } from '../../api/getSmartRecommendations';
 
 // Animations
 const spin = keyframes`
@@ -255,71 +255,68 @@ const RecommendationsList = styled.div`
     gap: 16px;
 `;
 
+const CompletedSectionDivider = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0 16px 0;
+    opacity: 0.8;
+`;
+
+const CompletedSectionTitle = styled.h3`
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.textSecondary};
+    white-space: nowrap;
+`;
+
+const CompletedSectionLine = styled.div`
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, 
+        ${({ theme }) => theme.colors.border}, 
+        transparent
+    );
+`;
+
 const RecommendationCard = styled.div`
     background: ${({ theme, $isCompleted }) =>
         $isCompleted
-            ? theme.colors.difficulty.easy + '08'  // Very subtle green background tint
+            ? theme.colors.backgroundSecondary
             : theme.colors.recommendations.cardBackground
     };
     border: 2px solid ${({ theme, $isCompleted }) =>
         $isCompleted
-            ? theme.colors.difficulty.easy + '40'  // Subtle green border
+            ? theme.colors.border
             : theme.colors.recommendations.cardBorder
     };
     border-radius: 12px;
     padding: 20px;
     cursor: ${({ $isCompleted }) => $isCompleted ? 'default' : 'pointer'};
     transition: all 0.3s ease;
-    box-shadow: ${({ theme }) => theme.colors.recommendations.cardShadow};
+    box-shadow: ${({ theme, $isCompleted }) =>
+        $isCompleted
+            ? 'none'
+            : theme.colors.recommendations.cardShadow
+    };
     animation: ${slideUp} 0.5s ease-out;
     animation-delay: ${({ index }) => index * 0.1}s;
     animation-fill-mode: both;
-    position: relative;
+    opacity: ${({ $isCompleted }) => $isCompleted ? 0.7 : 1};
     
-    ${({ $isCompleted }) => $isCompleted && `
-        opacity: 0.8;
-        
-        &::after {
-            content: '';
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 24px;
-            height: 24px;
-            background: #28a745;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: completionPulse 0.6s ease-out;
-        }
-        
-        &::before {
-            content: '✓';
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 14px;
-            color: white;
-            font-weight: bold;
-            z-index: 1;
-        }
-        
-        @keyframes completionPulse {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-    `}
-    
-    &:hover:not([data-completed="true"]) {
-        border-color: ${({ theme }) => theme.colors.recommendations.cardBorderHover};
-        box-shadow: ${({ theme }) => theme.colors.recommendations.cardShadowHover};
-        transform: translateY(-2px);
-    }
-    
-    &[data-completed="true"]:hover {
-        transform: none;
+    &:hover {
+        border-color: ${({ theme, $isCompleted }) =>
+        $isCompleted
+            ? theme.colors.border
+            : theme.colors.recommendations.cardBorderHover
+    };
+        box-shadow: ${({ theme, $isCompleted }) =>
+        $isCompleted
+            ? 'none'
+            : theme.colors.recommendations.cardShadowHover
+    };
+        transform: ${({ $isCompleted }) => $isCompleted ? 'none' : 'translateY(-2px)'};
     }
 `;
 
@@ -387,26 +384,13 @@ const QuestionName = styled.h4`
     margin: 0 0 8px 0;
     font-size: 18px;
     font-weight: 600;
-    color: ${({ theme, $isCompleted }) => $isCompleted ? theme.colors.textSecondary : theme.colors.text};
+    color: ${({ theme, $isCompleted }) =>
+        $isCompleted
+            ? theme.colors.textSecondary
+            : theme.colors.text
+    };
     line-height: 1.3;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    
-    ${({ $isCompleted }) => $isCompleted && `
-        opacity: 0.8;
-    `}
-`;
-
-const CompletionStatus = styled.span`
-    color: #28a745;
-    font-size: 14px;
-    font-weight: 600;
-    background: rgba(40, 167, 69, 0.1);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-style: normal;
-    text-decoration: none;
+    text-decoration: ${({ $isCompleted }) => $isCompleted ? 'line-through' : 'none'};
 `;
 
 const QuestionMeta = styled.div`
@@ -491,28 +475,6 @@ const LastSolved = styled.span`
     color: ${({ theme }) => theme.colors.textTertiary};
     font-size: 12px;
     font-style: italic;
-`;
-
-const CompletedSectionDivider = styled.div`
-    display: flex;
-    align-items: center;
-    margin: 32px 0 16px 0;
-    gap: 16px;
-`;
-
-const CompletedSectionTitle = styled.h3`
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: ${({ theme }) => theme.colors.textSecondary};
-    white-space: nowrap;
-`;
-
-const CompletedSectionLine = styled.div`
-    flex: 1;
-    height: 1px;
-    background: ${({ theme }) => theme.colors.border};
-    opacity: 0.5;
 `;
 
 const RecommendationFooter = styled.div`
@@ -751,6 +713,7 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [replacingCompleted, setReplacingCompleted] = useState(false);
     const [colorScheme, setColorScheme] = useState('original'); // original, complementary, triadic
 
     useEffect(() => {
@@ -809,11 +772,30 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
 
 
     const canRefresh = () => {
-        if (!batchInfo) return true;
-        const now = new Date();
-        const lastRefresh = new Date(batchInfo.lastRefresh);
-        const hoursSinceRefresh = (now - lastRefresh) / (1000 * 60 * 60);
-        return hoursSinceRefresh >= 1; // 1 hour cooldown
+        return batchInfo?.canRefresh || false;
+    };
+
+    const canReplaceCompleted = () => {
+        return batchInfo?.canReplaceCompleted || false;
+    };
+
+    const handleReplaceCompleted = async () => {
+        if (!userId || replacingCompleted) return;
+
+        setReplacingCompleted(true);
+        try {
+            const data = await replaceCompletedQuestions(userId);
+            setRecommendations(data.recommendations);
+            setAnalysis(data.analysis);
+            setProgress(data.progress);
+            setBatchInfo(data.batchInfo);
+            setError(null);
+        } catch (err) {
+            console.error('Error replacing completed questions:', err);
+            setError(err.message || 'Failed to replace completed questions');
+        } finally {
+            setReplacingCompleted(false);
+        }
     };
 
     const getStrategyIcon = (strategy) => {
@@ -869,12 +851,16 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
                                 {Math.round((progress.completed / progress.total) * 100)}% Complete
                             </ProgressText>
                         </ProgressBarContainer>
-                        {(refreshing || canRefresh()) && (
+                        {canRefresh() && (
                             <SmartRefreshButton
                                 onClick={() => fetchRecommendations(true)}
                                 disabled={refreshing}
+                                style={{
+                                    background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+                                    opacity: 0.8
+                                }}
                             >
-                                {refreshing ? '🔄 Refreshing...' : '🔄 Smart Refresh'}
+                                {refreshing ? '🔄 Full Refresh...' : '🔄 Full Refresh'}
                             </SmartRefreshButton>
                         )}
                     </ProgressContainer>
@@ -999,9 +985,23 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
                                     {completedQuestions.length > 0 && (
                                         <>
                                             <CompletedSectionDivider>
-                                                <CompletedSectionTitle>
-                                                    ✅ Completed Questions ({completedQuestions.length})
-                                                </CompletedSectionTitle>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                                    <CompletedSectionTitle>
+                                                        ✅ Completed Questions ({completedQuestions.length})
+                                                    </CompletedSectionTitle>
+                                                    {canReplaceCompleted() && (
+                                                        <SmartRefreshButton
+                                                            onClick={handleReplaceCompleted}
+                                                            disabled={replacingCompleted}
+                                                            style={{
+                                                                fontSize: '0.85rem',
+                                                                padding: '8px 16px'
+                                                            }}
+                                                        >
+                                                            {replacingCompleted ? '🔄 Getting Fresh...' : '✨ Get Fresh Questions'}
+                                                        </SmartRefreshButton>
+                                                    )}
+                                                </div>
                                                 <CompletedSectionLine />
                                             </CompletedSectionDivider>
 
@@ -1031,16 +1031,14 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
                                                             <QuestionInfo>
                                                                 <QuestionName $isCompleted={isCompleted}>
                                                                     {rec.question.name}
-                                                                    {isCompleted && <CompletionStatus>Completed</CompletionStatus>}
                                                                 </QuestionName>
                                                                 <QuestionMeta>
-                                                                    <QuestionGroup style={{ opacity: isCompleted ? 0.7 : 1 }}>
+                                                                    <QuestionGroup>
                                                                         {rec.question.group}
                                                                     </QuestionGroup>
                                                                     <QuestionDifficulty
                                                                         className={`difficulty-${rec.question.difficulty?.toLowerCase()}`}
                                                                         $colorScheme={colorScheme}
-                                                                        style={{ opacity: isCompleted ? 0.7 : 1 }}
                                                                     >
                                                                         {rec.question.difficulty}
                                                                     </QuestionDifficulty>
@@ -1048,21 +1046,21 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
                                                             </QuestionInfo>
                                                         </RecommendationHeader>
 
-                                                        <RecommendationReason style={{ opacity: isCompleted ? 0.7 : 1 }}>
+                                                        <RecommendationReason>
                                                             <ReasonText>{rec.reason}</ReasonText>
                                                             {rec.lastSolved && (
                                                                 <LastSolved>
-                                                                    {isCompleted ? 'Completed:' : 'Last solved:'} {new Date(rec.lastSolved).toLocaleDateString()}
+                                                                    ✅ Completed: {new Date(rec.lastSolved).toLocaleDateString()}
                                                                 </LastSolved>
                                                             )}
                                                         </RecommendationReason>
 
-                                                        <RecommendationFooter style={{ opacity: isCompleted ? 0.7 : 1 }}>
+                                                        <RecommendationFooter>
                                                             <StrategyTag strategy={rec.strategy} $colorScheme={colorScheme}>
                                                                 {rec.strategy ? rec.strategy.replace(/_/g, ' ') : 'general practice'}
                                                             </StrategyTag>
                                                             <PriorityTag className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
-                                                                {isCompleted ? 'solved' : `${rec.priority} priority`}
+                                                                {rec.priority} priority
                                                             </PriorityTag>
                                                         </RecommendationFooter>
                                                     </RecommendationCard>

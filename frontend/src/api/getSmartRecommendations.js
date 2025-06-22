@@ -67,4 +67,33 @@ export const markQuestionCompleted = async (userId, questionId, completionData =
         console.error('Error marking question completed:', error);
         throw error;
     }
+};
+
+export const replaceCompletedQuestions = async (userId) => {
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/smart-recommendations/${userId}/replace-completed`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to replace completed questions');
+        }
+
+        return data.data;
+    } catch (error) {
+        console.error('Error replacing completed questions:', error);
+        throw error;
+    }
 }; 
