@@ -956,7 +956,11 @@ const CodeSandbox = () => {
   };
 
   const getEditorTheme = () => {
-    return theme.darkMode ? 'vs-dark' : 'light';
+    // Get the current theme state from Redux
+    const { isDarkModeEnabled } = useSelector(state => state.theme);
+
+    // Return Monaco Editor theme based on current app theme
+    return isDarkModeEnabled ? 'vs-dark' : 'vs';
   };
 
   const runCode = async () => {
@@ -1248,22 +1252,6 @@ const CodeSandbox = () => {
       )}
 
       {/* User Debug Info */}
-      {user.userId && user.userId !== 'guest' && (
-        <div style={{
-          background: '#f8f9fa',
-          border: '1px solid #dee2e6',
-          borderRadius: '8px',
-          padding: '8px 12px',
-          marginBottom: '1rem',
-          fontSize: '0.85rem',
-          color: '#666'
-        }}>
-          <strong>👤 Tracking for:</strong> {user.firstName} {user.lastName}
-          <span style={{ opacity: 0.7 }}> (ID: {user.userId})</span>
-          {isDevMode() && <span style={{ color: '#007bff', fontWeight: 'bold' }}> [DEV MODE]</span>}
-        </div>
-      )}
-
       {isLoading && (
         <LoadingState>
           <LoadingSpinner />

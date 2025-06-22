@@ -123,7 +123,7 @@ GET /api/v1/solveHistory/:userId/daily-recommendations?count=5
 
 ### Customization Options
 - **Question Count**: Choose 3, 5, 7, or 10 recommendations
-- **Refresh Button**: Generate new recommendations
+- **Color Themes**: Original, complementary, or triadic color schemes
 - **Responsive Design**: Optimized for desktop and mobile
 
 ## 🔧 Setup Instructions
