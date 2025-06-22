@@ -1,63 +1,36 @@
 import axios from 'axios';
 
-export function login({
-  email, password,
-}) {
-  console.log('login API: ', {
-    email,
-    password,
-  });
-  return axios.post(
-    `${process.env.REACT_APP_API_BASE_URI}/authentication/signin`,
-    {
-      email,
-      password,
-    }
-  );
+export function login(payload) {
+  return axios.post(`${process.env.REACT_APP_API_BASE_URI}/authentication/login`, payload);
 }
 
-export const googleLogin = async (googleUserData) => {
+export const googleLogin = async (accessToken) => {
   try {
-    console.log('Sending Google login request with data:', googleUserData);
-    const response = await axios.post(
-      `${process.env.REACT_APP_API_BASE_URI}/authentication/google`,
-      { token: googleUserData.token },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    console.log('Google login response:', response);
+    // Fetch user data from Google API using the access token
+    const googleUserResponse = await fetch(`https://www.googleapis.com/oauth2/v2/userinfo?access_token=${accessToken}`);
+    const googleUserData = await googleUserResponse.json();
+
+    // Send user data to our backend
+    const response = await axios.post(`${process.env.REACT_APP_API_BASE_URI}/authentication/google-login`, {
+      googleId: googleUserData.id,
+      email: googleUserData.email,
+      firstName: googleUserData.given_name,
+      lastName: googleUserData.family_name,
+      picture: googleUserData.picture
+    });
+
     return response;
   } catch (error) {
-    console.error('Google login error:', error);
     throw error;
   }
 };
 
 export const getUserInfo = async (userId) => {
   try {
-    console.log('Fetching user info for userId:', userId);
-    console.log('API URL:', `${process.env.REACT_APP_API_BASE_URI}/authentication/user/${userId}`);
-    console.log('Environment variables:', {
-      REACT_APP_API_BASE_URI: process.env.REACT_APP_API_BASE_URI,
-      NODE_ENV: process.env.NODE_ENV
-    });
+    const response = await axios.get(`${process.env.REACT_APP_API_BASE_URI}/authentication/user/${userId}`);
 
-    const response = await axios.get(
-      `${process.env.REACT_APP_API_BASE_URI}/authentication/user/${userId}`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    console.log('User info response:', response);
     return response;
   } catch (error) {
-    console.error('Error fetching user info:', error);
-    console.error('Error details:', error.message, error.response?.data);
     throw error;
   }
 };

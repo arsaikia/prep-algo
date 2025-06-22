@@ -14,15 +14,15 @@ import {
   SHOW_LOADING,
   TOGGLE_CODE_MODAL,
 } from '../actions/types';
-import getCode from '../api/fetchCode';
+import { fetchCode } from '../api/fetchCode';
 
 // worker Saga
 function* toggleCodeHandler(action) {
   const {
-    fetchCode, id, group, link,
+    fetchCode: shouldFetchCode, id, group, link,
   } = action.payload;
 
-  console.log(action.payload);
+
 
   yield put({
     payload: {
@@ -35,9 +35,12 @@ function* toggleCodeHandler(action) {
     type: SHOW_LOADING,
   });
 
-  if (fetchCode) {
-    const questionsDataResponse = yield call(getCode, group, link.slice(0, -1));
-    console.log(questionsDataResponse);
+  if (shouldFetchCode) {
+    const questionsDataResponse = yield call(fetchCode, {
+      login: group,
+      url: link.slice(0, -1),
+      codeOnly: true
+    });
     if (questionsDataResponse) {
       yield put({
         payload: {

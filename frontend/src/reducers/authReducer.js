@@ -47,10 +47,10 @@ const authReducer = (state = initialState, action) => {
         ...state,
         ...action.payload,
         isAuthenticated: true,
-        userId: action.payload.id,
         error: null,
         token: action.payload.token || null,
         lastActivity: Date.now(),
+        userId: action.payload.id || action.payload._id || action.payload.userId,
       };
 
     case GOOGLE_LOGIN_FAILURE:

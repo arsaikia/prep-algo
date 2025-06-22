@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Question from '../models/Question.js';
+import { runPythonCode } from '../utils/codeExecution.js';
 
 const router = express.Router();
 const execAsync = promisify(exec);
@@ -22,54 +23,13 @@ const createTempFile = async (code) => {
     return tempFile;
 };
 
-// Helper function to run Python code with test cases
-const runPythonCode = async (code, testCases) => {
-    const tempFile = await createTempFile(code);
-    const results = [];
-
-    try {
-        for (const testCase of testCases) {
-            try {
-                const { stdout, stderr } = await execAsync(`python3 ${tempFile}`, {
-                    input: testCase.input
-                });
-
-                const output = stdout.trim();
-                const isCorrect = output === testCase.expectedOutput;
-
-                results.push({
-                    input: testCase.input,
-                    expectedOutput: testCase.expectedOutput,
-                    actualOutput: output,
-                    isCorrect,
-                    error: stderr || null
-                });
-            } catch (error) {
-                results.push({
-                    input: testCase.input,
-                    expectedOutput: testCase.expectedOutput,
-                    actualOutput: null,
-                    isCorrect: false,
-                    error: error.message
-                });
-            }
-        }
-    } finally {
-        // Clean up temp file
-        try {
-            await fs.promises.unlink(tempFile);
-        } catch (error) {
-            console.error('Error cleaning up temp file:', error);
-        }
-    }
-
-    return results;
-};
-
 // Execute code with example test cases
 router.post('/execute/example', async (req, res) => {
     try {
         const { code, questionId } = req.body;
+
+        console.log('🔍 BACKEND: Received request for questionId:', questionId);
+        console.log('🔍 BACKEND: Code length:', code?.length || 0);
 
         if (!code) {
             return res.status(400).json({ error: 'Code is required' });
@@ -80,27 +40,46 @@ router.post('/execute/example', async (req, res) => {
         }
 
         // Get question from database
-        const question = await Question.findById(questionId);
+        const question = await Question.findOne({
+            $or: [
+                { link: questionId },
+                { link: `${questionId}/` }
+            ]
+        });
+
         if (!question) {
+            console.log('🔍 BACKEND: Question not found for ID:', questionId);
             return res.status(404).json({ error: 'Question not found' });
         }
+
+        console.log('🔍 BACKEND: Found question:', question.name);
+        console.log('🔍 BACKEND: Example test cases count:', question.exampleTestCases?.length || 0);
 
         if (!question.exampleTestCases || question.exampleTestCases.length === 0) {
             return res.status(400).json({ error: 'No example test cases available for this question' });
         }
 
+        console.log('🔍 BACKEND: First test case:', question.exampleTestCases[0]);
+
+        // Use the runPythonCode function from codeExecution.js
         const results = await runPythonCode(code, question.exampleTestCases);
 
-        res.json({
+        console.log('🔍 BACKEND: Execution results:', results);
+
+        const response = {
             results,
             summary: {
                 total: results.length,
-                passed: results.filter(r => r.isCorrect).length,
-                failed: results.filter(r => !r.isCorrect).length
+                passed: results.filter(r => r.passed).length,
+                failed: results.filter(r => !r.passed).length
             }
-        });
+        };
+
+        console.log('🔍 BACKEND: Sending response:', response);
+
+        res.json(response);
     } catch (error) {
-        console.error('Error executing code:', error);
+        console.error('🔍 BACKEND: Error executing code:', error);
         res.status(500).json({ error: 'Failed to execute code' });
     }
 });
@@ -119,7 +98,13 @@ router.post('/execute/submit', async (req, res) => {
         }
 
         // Get question from database
-        const question = await Question.findById(questionId);
+        const question = await Question.findOne({
+            $or: [
+                { link: questionId },
+                { link: `${questionId}/` }
+            ]
+        });
+
         if (!question) {
             return res.status(404).json({ error: 'Question not found' });
         }
@@ -128,17 +113,18 @@ router.post('/execute/submit', async (req, res) => {
             return res.status(400).json({ error: 'No test cases available for this question' });
         }
 
+        // Use the runPythonCode function from codeExecution.js
         const results = await runPythonCode(code, question.testCases);
 
         // Only return whether the submission passed or failed, not the actual test cases
-        const passed = results.every(r => r.isCorrect);
+        const passed = results.every(r => r.passed);
 
         res.json({
             passed,
             summary: {
                 total: results.length,
-                passed: results.filter(r => r.isCorrect).length,
-                failed: results.filter(r => !r.isCorrect).length
+                passed: results.filter(r => r.passed).length,
+                failed: results.filter(r => !r.passed).length
             }
         });
     } catch (error) {

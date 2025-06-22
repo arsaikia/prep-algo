@@ -3,7 +3,6 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { setCookie } from 'react-cookie';
 
 import { loginWithGoogle } from '../../actions/actions';
 
@@ -40,7 +39,7 @@ const GoogleAuth = () => {
     const login = useGoogleLogin({
         onSuccess: async (response) => {
             try {
-                console.log('Google login response:', response);
+
 
                 // Dispatch login action with just the token
                 // Our backend will verify the token and return user info
@@ -49,11 +48,11 @@ const GoogleAuth = () => {
                 // Navigate to home page - the saga will handle setting cookies
                 navigate('/');
             } catch (error) {
-                console.error('Error during Google login:', error);
+                // Error during Google login
             }
         },
         onError: (error) => {
-            console.error('Google login failed:', error);
+            // Google login failed
         }
     });
 

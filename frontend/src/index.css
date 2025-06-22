@@ -1,5 +1,4 @@
-body 
-{
+body {
   margin: 0;
   padding: 0;
   font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
@@ -10,6 +9,17 @@ body
   height: 100vh;
   max-width: 100%;
 
+  /* App background will be controlled by theme system */
+  transition: background-color 0.3s ease;
+
+  /* Use CSS custom property for theme-colored background */
+  background-color: var(--theme-background, #ffffff);
+}
+
+/* Root element background for theme transitions */
+#root {
+  min-height: 100vh;
+  transition: background-color 0.3s ease;
 }
 
 p {
@@ -18,10 +28,6 @@ p {
 
 .bold {
   font-weight: bold;
-
-  @media screen and (max-width: 768px) {
-    font-weight: 600;
-  }
 }
 
 code {
@@ -30,79 +36,42 @@ code {
 }
 
 a:link {
-      text-decoration: none;
+  text-decoration: none;
 }
 
 a:visited {
-      text-decoration: none;
+  text-decoration: none;
 }
 
 a:hover {
-      text-decoration: none;
+  text-decoration: none;
 }
 
 a:active {
-      text-decoration: none;
+  text-decoration: none;
 }
-
 
 .ReactModal__Overlay {
-    opacity: 0;
-    transition: opacity 400ms ease-in-out;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(240, 240, 240, 0.8);
-    z-index: 100;
-    
+  opacity: 0;
+  transition: opacity 400ms ease-in-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(240, 240, 240, 0.8);
+  z-index: 100;
 }
 
-
-.ReactModal__Overlay--after-open{
-    opacity: 1;
+.ReactModal__Overlay--after-open {
+  opacity: 1;
 }
 
-.ReactModal__Overlay--before-close{
-    opacity: 0;
+.ReactModal__Overlay--before-close {
+  opacity: 0;
 }
 
-
-
-
-table {
-  border-collapse: collapse;
-  border: 2px solid rgb(200,200,200);
-  letter-spacing: 1px;
-  font-size: 0.8rem;
-  width: 100%;
-}
-
-td, th {
-  border: 1px solid rgb(190,190,190);
-  padding: 10px 20px;
-}
-
-th {
-  background-color: rgb(235,235,235);
-}
-
-td {
-  text-align: center;
-}
-
-tr:nth-child(even) td {
-  background-color: rgb(250,250,250);
-}
-
-tr:nth-child(odd) td {
-  background-color: rgb(245,245,245);
-}
-
-caption {
-  padding: 10px;
-}
+/* Removed global table styles that were overriding themed styled-components */
 
 /* CSS */
 .button-4 {
@@ -174,7 +143,7 @@ caption {
   color: rgba(0, 0, 0, 0.85);
   cursor: pointer;
   display: inline-flex;
-  font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: 600;
   justify-content: center;
@@ -220,7 +189,7 @@ caption {
   color: #FFFFFF;
   cursor: pointer;
   display: inline-block;
-  font-family: Inter,-apple-system,system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-family: Inter, -apple-system, system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
   height: 44px;
   line-height: 44px;
   outline: 0;
@@ -243,14 +212,13 @@ caption {
   background: #00bd68;
 }
 
-.error{
+.error {
   color: red;
 }
 
 .tooltip-z-idx {
   z-index: 9999;
 }
-
 
 /* CSS */
 .button-85 {
@@ -270,18 +238,16 @@ caption {
 
 .button-85:before {
   content: "";
-  background: linear-gradient(
-    45deg,
-    #ff0000,
-    #ff7300,
-    #fffb00,
-    #48ff00,
-    #00ffd5,
-    #002bff,
-    #7a00ff,
-    #ff00c8,
-    #ff0000
-  );
+  background: linear-gradient(45deg,
+      #ff0000,
+      #ff7300,
+      #fffb00,
+      #48ff00,
+      #00ffd5,
+      #002bff,
+      #7a00ff,
+      #ff00c8,
+      #ff0000);
   position: absolute;
   top: -2px;
   left: -2px;
@@ -300,9 +266,11 @@ caption {
   0% {
     background-position: 0 0;
   }
+
   50% {
     background-position: 400% 0;
   }
+
   100% {
     background-position: 0 0;
   }
@@ -370,7 +338,7 @@ caption {
   color: #fff;
   cursor: pointer;
   display: inline-block;
-  font-family: "Farfetch Basis","Helvetica Neue",Arial,sans-serif;
+  font-family: "Farfetch Basis", "Helvetica Neue", Arial, sans-serif;
   font-size: 16px;
   font-weight: 700;
   line-height: 1.5;
@@ -402,12 +370,12 @@ caption {
   background-color: #FCFCFD;
   border-radius: 4px;
   border-width: 0;
-  box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset;
+  box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
   box-sizing: border-box;
   color: #36395A;
   cursor: pointer;
   display: inline-flex;
-  font-family: "JetBrains Mono",monospace;
+  font-family: "JetBrains Mono", monospace;
   height: 48px;
   justify-content: center;
   line-height: 1;
@@ -418,12 +386,12 @@ caption {
   position: relative;
   text-align: left;
   text-decoration: none;
-  transition: box-shadow .15s,transform .15s;
+  transition: box-shadow .15s, transform .15s;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
   white-space: nowrap;
-  will-change: box-shadow,transform;
+  will-change: box-shadow, transform;
   font-size: 18px;
 }
 

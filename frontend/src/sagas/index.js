@@ -1,32 +1,29 @@
-import {
-  all,
-  fork,
-} from 'redux-saga/effects';
+import { all } from 'redux-saga/effects';
 
-import getQuestionsWatcher from './getAllQuestionsSaga';
+import getAllQuestionsWatcher from './getAllQuestionsSaga';
 import getAllQuestionsWithoutHistoryWatcher from './getAllQuestionsWithoutHistorySaga';
-import fetchUserInfoWatcher from './fetchUserInfoSaga';
 import googleLoginWatcher from './googleLoginSaga';
-import {
-  launchCodeModal, closeCodeModal,
-} from './launchCodeModal';
+import { launchCodeModal, closeCodeModal } from './launchCodeModal';
 import { markQuestionAsDoneWatcher } from './markQuestionAsDone';
 import { resetAuthSagaWatcher } from './resetAuthSaga';
 import { setThemeWatcher } from './themeSaga';
 import { userLoginWatcher } from './userLoginSaga';
 import { userSignupWatcher } from './userSignupSaga';
+import fetchUserInfoWatcher from './fetchUserInfoSaga';
 
+// Root saga combines all watchers
 export default function* rootSaga() {
-  console.log('Root saga started');
   yield all([
-    fork(googleLoginWatcher),
-    fork(resetAuthSagaWatcher),
-    fork(setThemeWatcher),
-    fork(getQuestionsWatcher),
-    fork(getAllQuestionsWithoutHistoryWatcher),
-    fork(markQuestionAsDoneWatcher),
-    fork(launchCodeModal),
-    fork(closeCodeModal),
-    fork(fetchUserInfoWatcher),
+    getAllQuestionsWatcher(),
+    getAllQuestionsWithoutHistoryWatcher(),
+    userLoginWatcher(),
+    userSignupWatcher(),
+    googleLoginWatcher(),
+    launchCodeModal(),
+    closeCodeModal(),
+    markQuestionAsDoneWatcher(),
+    resetAuthSagaWatcher(),
+    setThemeWatcher(),
+    fetchUserInfoWatcher(),
   ]);
 }

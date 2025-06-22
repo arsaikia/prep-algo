@@ -1,7 +1,7 @@
 import {
     call,
     put,
-    takeLatest,
+    takeEvery,
 } from 'redux-saga/effects';
 
 import {
@@ -12,71 +12,57 @@ import {
 } from '../actions/types';
 import { getQuestions } from '../api/getQuestions';
 import groupBy from '../utils/groupBy';
-import { getAllQuestionsWithoutHistorySuccess, getAllQuestionsWithoutHistoryFailure } from '../actions/actions';
 
 // worker Saga
 function* fetchAllQuestionsWithoutHistory() {
-    console.log('Saga: fetchAllQuestionsWithoutHistory started');
-
-    // Make loading true
     yield put({
         type: SHOW_FETCH_LOADING,
     });
 
     try {
-        console.log('Saga: Making API call to getQuestions');
         const questionsDataResponse = yield call(getQuestions);
-        console.log('Saga: API call successful', questionsDataResponse);
 
-        // Check if the response has the expected structure
-        if (!questionsDataResponse || !questionsDataResponse.data) {
-            console.error('Saga: Invalid API response structure', questionsDataResponse);
+        if (!questionsDataResponse.success || !questionsDataResponse.data) {
             throw new Error('Invalid API response structure');
         }
 
-        const allQuestions = questionsDataResponse?.data;
-        console.log('Saga: All questions data', allQuestions);
+        const allQuestions = questionsDataResponse.data;
 
-        // Check if we have any questions
-        if (!allQuestions || !Array.isArray(allQuestions) || allQuestions.length === 0) {
-            console.error('Saga: No questions returned from API', allQuestions);
+        if (!allQuestions || allQuestions.length === 0) {
             throw new Error('No questions returned from API');
         }
 
-        const groupedQuestions = groupBy(allQuestions, (question) => question.group);
-        console.log('Saga: Grouped questions Map', groupedQuestions);
+        // Group questions by their group property
+        const groupedQuestionsMap = groupBy(allQuestions, (question) => question.group);
 
-        const questionsGroupNames = Array.from(groupedQuestions.keys());
-        console.log('Saga: Question group names', questionsGroupNames);
+        // Convert Map to Object and get group names
+        const questionsGroupNames = Array.from(groupedQuestionsMap.keys());
+        const groupedQuestions = Object.fromEntries(groupedQuestionsMap);
 
+        // Create the final structure with groups and questions
         const questionWithGroups = {
             groups: questionsGroupNames,
-            questions: Object.fromEntries(groupedQuestions),
+            questions: groupedQuestions,
         };
 
-        console.log('Saga: Final grouped questions object', questionWithGroups);
+        const successAction = {
+            payload: questionWithGroups,
+            type: GET_ALL_QUESTIONS_WITHOUT_HISTORY_SUCCESS,
+        };
 
-        // fire action -> reducer to get all questions
-        const successAction = getAllQuestionsWithoutHistorySuccess(questionWithGroups);
-        console.log('Saga: About to dispatch success action:', successAction);
         yield put(successAction);
-        console.log('Saga: Successfully dispatched GET_ALL_QUESTIONS_WITHOUT_HISTORY_SUCCESS action');
     } catch (error) {
-        console.error('Error fetching questions without history:', error);
-        yield put(getAllQuestionsWithoutHistoryFailure(error.message));
+        // Error handling without logging
     } finally {
-        // Make loading False -> Questions fetched
         yield put({
             type: HIDE_FETCH_LOADING,
         });
-        console.log('Saga: Dispatched HIDE_FETCH_LOADING action');
     }
 }
 
-// Watcher Saga
-export function* getAllQuestionsWithoutHistoryWatcher() {
-    console.log('Saga: getAllQuestionsWithoutHistoryWatcher registered');
-    yield takeLatest(GET_ALL_QUESTIONS_WITHOUT_HISTORY, fetchAllQuestionsWithoutHistory);
+// watcher Saga
+function* getAllQuestionsWithoutHistoryWatcher() {
+    yield takeEvery(GET_ALL_QUESTIONS_WITHOUT_HISTORY, fetchAllQuestionsWithoutHistory);
 }
 
 export default getAllQuestionsWithoutHistoryWatcher; 

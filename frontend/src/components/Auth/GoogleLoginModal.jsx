@@ -78,52 +78,52 @@ const ModalTitle = styled.h2`
 `;
 
 const GoogleLoginModal = ({ isOpen, onClose }) => {
-    const dispatch = useDispatch();
-    const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
+  const dispatch = useDispatch();
+  const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
 
-    const handleGoogleSuccess = async (credentialResponse) => {
-        try {
-            console.log('Google credential received:', credentialResponse);
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
 
-            // The credential token is in credentialResponse.credential
-            // We need to pass just the token string, not the entire response object
-            if (!credentialResponse.credential) {
-                console.error('No credential token found in response');
-                return;
-            }
 
-            // Pass just the credential token to the login action
-            await dispatch(loginWithGoogle(credentialResponse.credential));
-            onClose();
-        } catch (error) {
-            console.error('Google login failed:', error);
-        }
-    };
+      // The credential token is in credentialResponse.credential
+      // We need to pass just the token string, not the entire response object
+      if (!credentialResponse.credential) {
+        console.error('No credential token found in response');
+        return;
+      }
 
-    const handleGoogleError = () => {
-        console.error('Google login failed');
-    };
+      // Pass just the credential token to the login action
+      await dispatch(loginWithGoogle(credentialResponse.credential));
+      onClose();
+    } catch (error) {
+      console.error('Google login failed:', error);
+    }
+  };
 
-    if (!isOpen) return null;
+  const handleGoogleError = () => {
+    console.error('Google login failed');
+  };
 
-    return (
-        <ModalOverlay onClick={onClose}>
-            <ModalContent onClick={e => e.stopPropagation()}>
-                <CloseButton onClick={onClose}>×</CloseButton>
-                <ModalTitle>Login to Remind Me</ModalTitle>
-                <GoogleLoginContainer>
-                    <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
-                        onError={handleGoogleError}
-                        useOneTap
-                        theme={isDarkMode ? "filled_black" : "filled_blue"}
-                        size="large"
-                        width="100%"
-                    />
-                </GoogleLoginContainer>
-            </ModalContent>
-        </ModalOverlay>
-    );
+  if (!isOpen) return null;
+
+  return (
+    <ModalOverlay onClick={onClose}>
+      <ModalContent onClick={e => e.stopPropagation()}>
+        <CloseButton onClick={onClose}>×</CloseButton>
+        <ModalTitle>Login to Remind Me</ModalTitle>
+        <GoogleLoginContainer>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            useOneTap
+            theme={isDarkMode ? "filled_black" : "filled_blue"}
+            size="large"
+            width="100%"
+          />
+        </GoogleLoginContainer>
+      </ModalContent>
+    </ModalOverlay>
+  );
 };
 
 export default GoogleLoginModal; 

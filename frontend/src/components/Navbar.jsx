@@ -13,21 +13,25 @@ import {
   NavLink, useLocation, useNavigate,
 } from 'react-router-dom';
 import styled from 'styled-components';
-import { Sun, Moon } from 'react-feather';
+import { Sun, Moon, Monitor } from 'react-feather';
 
 import {
-  getQuestions, resetAuthState, updateTheme,
+  getQuestions, resetAuthState,
 } from '../actions/actions';
-import logo from '../logo.png';
 import {
   Container, Flex, CenteredFlex, StyledNavLink, BlankButton,
 } from '../styles';
 import GoogleLoginModal from './Auth/GoogleLoginModal';
+import useTheme from '../hooks/useTheme';
+import TestUserSelector from './TestUserSelector/TestUserSelector';
+import { useTestUser } from '../contexts/TestUserContext';
+import { isDevMode } from '../utils/featureFlags';
 
 // Styled components
 const NavContainer = styled.nav`
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: ${({ theme }) => theme.colors.navbarBackground || theme.colors.background};
+  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   position: fixed;
   top: 0;
   left: 0;
@@ -50,16 +54,176 @@ const Logo = styled(NavLink)`
   display: flex;
   align-items: center;
   height: 100%;
+  text-decoration: none;
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: 700;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
   
-  img {
-    height: 100%;
-    width: auto;
-    max-width: 100%;
-    object-fit: contain;
-    transition: transform 0.2s ease;
-    
-    &:hover {
-      transform: scale(1.05);
+  &:hover {
+    transform: scale(1.05);
+    color: ${({ theme }) => theme.colors.brand.primary};
+  }
+  
+  &:hover .logo-icon-container .brain-icon {
+    animation-duration: 1.5s;
+  }
+  
+  &:hover .logo-icon-container .algorithm-dots {
+    animation-duration: 0.8s;
+  }
+  
+  &:hover .logo-icon-container .learning-spark {
+    animation-duration: 1s;
+  }
+  
+  .logo-icon-container {
+    position: relative;
+    margin-right: 12px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .brain-icon {
+    font-size: 2rem;
+    animation: brainPulse 3s ease-in-out infinite;
+    transform-origin: center;
+    filter: drop-shadow(0 0 4px ${({ theme }) => theme.colors.algorithm.brain}66);
+    z-index: 3;
+  }
+  
+  .algorithm-dots {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    z-index: 1;
+  }
+  
+  .algorithm-dots::before,
+  .algorithm-dots::after {
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: linear-gradient(45deg, ${({ theme }) => theme.colors.algorithm.spark}, ${({ theme }) => theme.colors.algorithm.flow});
+    border-radius: 50%;
+    animation: algorithmFlow 2s linear infinite;
+  }
+  
+  .algorithm-dots::before {
+    top: 2px;
+    left: 8px;
+    animation-delay: 0s;
+  }
+  
+  .algorithm-dots::after {
+    bottom: 2px;
+    right: 8px;
+    animation-delay: 1s;
+  }
+  
+  .learning-spark {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 0.8rem;
+    animation: sparkle 2.5s ease-in-out infinite;
+    z-index: 4;
+  }
+  
+  .recommendation-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    background: ${({ theme }) => theme.colors.brand.gradient};
+    border-radius: 50%;
+    animation: recommend 3s ease-in-out infinite;
+    z-index: 2;
+  }
+  
+  .logo-text {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.02em;
+    color: ${({ theme }) => theme.colors.brand.text};
+    font-weight: 700;
+    font-size: 1.5rem;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .logo-text::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: ${({ theme }) => theme.colors.brand.gradientHorizontal};
+    animation: underlineGrow 4s ease-in-out infinite;
+  }
+  
+  @keyframes brainPulse {
+    0%, 100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 4px ${({ theme }) => theme.colors.algorithm.brain}66);
+    }
+    50% {
+      transform: scale(1.1);
+      filter: drop-shadow(0 0 8px ${({ theme }) => theme.colors.algorithm.brain}99);
+    }
+  }
+  
+  @keyframes algorithmFlow {
+    0% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.5) translateX(10px);
+    }
+  }
+  
+  @keyframes sparkle {
+    0%, 100% {
+      opacity: 0;
+      transform: scale(0.8) rotate(0deg);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2) rotate(180deg);
+    }
+  }
+  
+  @keyframes recommend {
+    0%, 100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.5);
+    }
+  }
+  
+  @keyframes underlineGrow {
+    0%, 100% {
+      width: 0;
+    }
+    50% {
+      width: 100%;
     }
   }
 `;
@@ -74,7 +238,7 @@ const NavLinks = styled.div`
 `;
 
 const NavLinkItem = styled(NavLink)`
-  color: #333;
+  color: ${({ theme }) => theme.colors.text};
   text-decoration: none;
   padding: 10px 15px;
   margin: 0 5px;
@@ -83,11 +247,11 @@ const NavLinkItem = styled(NavLink)`
   transition: background-color 0.3s;
   
   &:hover {
-    background-color: #f5f5f5;
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   }
   
   &.active {
-    color: #4a90e2;
+    color: ${({ theme }) => theme.colors.brand.primary};
     font-weight: 600;
   }
 `;
@@ -150,9 +314,10 @@ const DropdownMenu = styled.div`
   position: absolute;
   top: 45px;
   right: 0;
-  background-color: white;
+  background-color: ${({ theme }) => theme.colors.background};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: ${({ theme }) => theme.colors.shadows.dropdown};
   width: 160px;
   z-index: 1001;
   overflow: hidden;
@@ -165,25 +330,33 @@ const DropdownItem = styled.div`
   transition: background-color 0.2s;
   display: flex;
   align-items: center;
+  color: ${({ theme }) => theme.colors.text};
   
   &:hover {
-    background-color: #f5f5f5;
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+  }
+  
+  &:not(:last-child) {
+    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   }
   
   svg {
     margin-right: 10px;
     width: 16px;
     height: 16px;
+    color: ${({ theme }) => theme.colors.textSecondary};
   }
 `;
 
 const UserName = styled.span`
   font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const SignOutButton = styled.button`
-  background-color: #f5f5f5;
-  border: none;
+  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+  color: ${({ theme }) => theme.colors.text};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 4px;
   padding: 8px 12px;
   cursor: pointer;
@@ -191,12 +364,12 @@ const SignOutButton = styled.button`
   transition: background-color 0.3s;
   
   &:hover {
-    background-color: #e0e0e0;
+    background-color: ${({ theme }) => theme.colors.backgroundTertiary};
   }
 `;
 
 const LoginButton = styled(NavLink)`
-  background-color: #4a90e2;
+  background-color: ${({ theme }) => theme.colors.brand.primary};
   color: white;
   border: none;
   border-radius: 4px;
@@ -208,7 +381,7 @@ const LoginButton = styled(NavLink)`
   transition: background-color 0.3s;
   
   &:hover {
-    background-color: #3a7bc8;
+    background-color: ${({ theme }) => theme.colors.brand.primaryDark};
   }
 `;
 
@@ -232,7 +405,7 @@ const MobileMenuButton = styled.button`
   span {
     width: 100%;
     height: 3px;
-    background-color: #333;
+    background-color: ${({ theme }) => theme.colors.text};
     border-radius: 3px;
     transition: all 0.3s ease;
     
@@ -256,8 +429,9 @@ const MobileMenuContainer = styled.div`
   top: 70px;
   left: 0;
   right: 0;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: ${({ theme }) => theme.colors.navbarBackground || theme.colors.background};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  box-shadow: ${({ theme }) => theme.colors.shadows.card};
   z-index: 999;
   
   @media (max-width: 768px) {
@@ -268,24 +442,24 @@ const MobileMenuContainer = styled.div`
 const MobileNavLink = styled(NavLink)`
   display: block;
   padding: 15px 20px;
-  color: #333;
+  color: ${({ theme }) => theme.colors.text};
   text-decoration: none;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   font-weight: 500;
   
   &:hover {
-    background-color: #f5f5f5;
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   }
   
   &.active {
-    color: #4a90e2;
+    color: ${({ theme }) => theme.colors.brand.primary};
     font-weight: 600;
   }
 `;
 
 const MobileUserSection = styled.div`
   padding: 15px 20px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   align-items: center;
 `;
@@ -295,7 +469,7 @@ const MobileProfilePicture = styled.div`
   height: 40px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #f0f0f0;
+  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -307,7 +481,7 @@ const MobileProfilePicture = styled.div`
   }
   
   span {
-    color: #666;
+    color: ${({ theme }) => theme.colors.textSecondary};
     font-size: 16px;
   }
 `;
@@ -319,12 +493,12 @@ const MobileSignOutButton = styled.button`
   background: none;
   border: none;
   text-align: left;
-  color: #333;
+  color: ${({ theme }) => theme.colors.text};
   font-weight: 500;
   cursor: pointer;
   
   &:hover {
-    background-color: #f5f5f5;
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   }
 `;
 
@@ -338,7 +512,7 @@ const LoadingOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: ${({ theme }) => theme.colors.background}CC;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -348,8 +522,8 @@ const LoadingOverlay = styled.div`
 const LoadingSpinner = styled.div`
   width: 40px;
   height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #4a90e2;
+  border: 3px solid ${({ theme }) => theme.colors.border};
+  border-top: 3px solid ${({ theme }) => theme.colors.brand.primary};
   border-radius: 50%;
   animation: spin 1s linear infinite;
   
@@ -363,11 +537,11 @@ const Toast = styled.div`
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #4caf50;
+  background-color: ${({ theme }) => theme.colors.status.success};
   color: white;
   padding: 12px 20px;
   border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: ${({ theme }) => theme.colors.shadows.button};
   z-index: 2000;
   animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
   animation-fill-mode: forwards;
@@ -396,72 +570,139 @@ const ThemeToggleButton = styled.button`
   transition: background-color 0.2s;
   
   &:hover {
-    background-color: #f5f5f5;
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   }
   
   svg {
     width: 20px;
     height: 20px;
-    color: #333;
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;
+
+const DevModeIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1.5px solid ${({ theme }) => theme.colors.brand.primary};
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+  margin-right: 8px;
+  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  
+  .dev-icon {
+    color: ${({ theme }) => theme.colors.brand.primary};
+    font-size: 14px;
+    font-weight: bold;
+    filter: drop-shadow(0 1px 2px ${({ theme }) => theme.colors.brand.primary}40);
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 11px;
+    font-weight: 500;
+    
+    .user-type {
+      color: ${({ theme }) => theme.colors.brand.primary};
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+    
+    .separator {
+      color: ${({ theme }) => theme.colors.textSecondary};
+      font-weight: 400;
+    }
+    
+    .user-name {
+      color: ${({ theme }) => theme.colors.text};
+      font-weight: 600;
+    }
+  }
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.backgroundHover};
+    border-color: ${({ theme }) => theme.colors.brand.secondary};
+    box-shadow: ${({ theme }) => theme.colors.shadows.cardHover};
+    transform: translateY(-1px);
+  }
+  
+  @media (max-width: 768px) {
+    display: none; // Hide on mobile to save space
   }
 `;
 
 function Navbar() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const {
-    width,
-  } = useWindowSize();
-  const isMobile = width < 768;
+  // State management
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const dropdownRef = useRef(null);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [profilePictureError, setProfilePictureError] = useState(false);
 
-  // Initialize cookies with default values to prevent undefined errors
+  // Hooks
+  const { width } = useWindowSize();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [cookies, setCookie, removeCookie] = useCookies(['userId', 'name', 'authToken']);
+  const dropdownRef = useRef(null);
 
-  // Get states using useSelector ( state->reducerName )
+  // Redux state
   const userAuthState = useSelector((state) => state.auth);
-  const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
   const dispatch = useDispatch();
+
+  // Theme management
+  const { isDarkModeEnabled, userPreference, isFollowingSystem, toggleTheme } = useTheme();
+
+  // Test user management
+  const { selectedUserId, changeUser } = useTestUser();
 
   // Fire actions using dispatch -> fires action -> Watcher saga handles rest
   const resetAuth = () => dispatch(resetAuthState());
-  const toggleTheme = () => {
-    dispatch(updateTheme(isDarkMode ? 'LIGHT' : 'DARK'));
-  };
-
-  // Update last activity timestamp on user interaction
-  const updateLastActivity = () => {
-    if (userAuthState.isAuthenticated) {
-      dispatch({ type: 'UPDATE_LAST_ACTIVITY' });
-    }
-  };
-
-  // Add event listeners for user activity
-  useEffect(() => {
-    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-
-    activityEvents.forEach(event => {
-      window.addEventListener(event, updateLastActivity);
-    });
-
-    return () => {
-      activityEvents.forEach(event => {
-        window.removeEventListener(event, updateLastActivity);
-      });
-    };
-  }, [userAuthState.isAuthenticated]);
 
   // Safely access cookie values with fallbacks
   const userIdInCookie = cookies?.userId || '';
   const userName = cookies?.name || '';
   const isUserAuthenticated = !!userIdInCookie;
   const userPicture = userAuthState?.picture || '';
+
+  // Determine effective user for dev mode display
+  const getEffectiveUserInfo = () => {
+    if (!isDevMode()) return null;
+
+    if (selectedUserId) {
+      return {
+        type: 'test',
+        displayName: selectedUserId.replace('test-', '').replace(/-/g, ' '),
+        fullId: selectedUserId
+      };
+    }
+
+    if (isUserAuthenticated) {
+      return {
+        type: 'auth',
+        displayName: userName || 'User',
+        fullId: userAuthState?.id || userAuthState?.userId || userIdInCookie
+      };
+    }
+
+    return {
+      type: 'guest',
+      displayName: 'Guest',
+      fullId: 'guest'
+    };
+  };
+
+  const effectiveUser = getEffectiveUserInfo();
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -565,19 +806,63 @@ function Navbar() {
       <NavContainer>
         <NavContent>
           <Logo to="/">
-            <img src={logo} alt="Logo" />
+            {/* Animated Logo representing daily problem recommendations:
+                🔄 = Daily refresh/rotation of problems
+                📅 = Daily calendar-based recommendations  
+                🎯 = Targeted learning
+                ⚡ = Quick daily practice
+                🧠 = Smart recommendations
+            */}
+            <div className="logo-icon-container">
+              <span className="brain-icon">🧠</span>
+              <span className="algorithm-dots"></span>
+              <span className="learning-spark">⚡</span>
+              <span className="recommendation-indicator"></span>
+            </div>
+            <span className="logo-text">
+              PrepAlgo
+            </span>
           </Logo>
 
           <NavLinks>
-            <NavLinkItem to="/all">All Questions</NavLinkItem>
-            <NavLinkItem to="/todo">Todo</NavLinkItem>
-            <NavLinkItem to="/playground">Playground</NavLinkItem>
-            <NavLinkItem to="/codesandbox">Code Sandbox</NavLinkItem>
           </NavLinks>
 
           <UserSection>
-            <ThemeToggleButton onClick={toggleTheme} aria-label="Toggle theme">
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            {effectiveUser && (
+              <DevModeIndicator
+                title={`Dev Mode Active - Using ${effectiveUser.type === 'test' ? 'test user' : effectiveUser.type === 'auth' ? 'authenticated account' : 'guest account'}: ${effectiveUser.fullId}`}
+              >
+                <span className="dev-icon">🛠️</span>
+                <div className="user-info">
+                  <span className="user-type">
+                    {effectiveUser.type === 'test' ? 'Test' : effectiveUser.type === 'auth' ? 'Auth' : 'Guest'}
+                  </span>
+                  <span className="separator">:</span>
+                  <span className="user-name">{effectiveUser.displayName}</span>
+                </div>
+              </DevModeIndicator>
+            )}
+
+            {isDevMode() && (
+              <TestUserSelector
+                selectedUserId={selectedUserId}
+                onUserChange={changeUser}
+                style={{ marginRight: '12px' }}
+              />
+            )}
+
+            <ThemeToggleButton
+              onClick={toggleTheme}
+              aria-label={`Toggle theme (currently ${isFollowingSystem ? 'system' : userPreference})`}
+              title={`Theme: ${isFollowingSystem ? 'System' : userPreference === 'dark' ? 'Dark' : 'Light'}`}
+            >
+              {isFollowingSystem ? (
+                <Monitor size={20} />
+              ) : isDarkModeEnabled ? (
+                <Sun size={20} />
+              ) : (
+                <Moon size={20} />
+              )}
             </ThemeToggleButton>
 
             {isUserAuthenticated ? (
@@ -624,12 +909,6 @@ function Navbar() {
       </NavContainer>
 
       <MobileMenuContainer isOpen={isMobileMenuOpen}>
-        {isUserAuthenticated && (
-          <MobileNavLink to="/todo" className={location.pathname === '/todo' ? 'active' : ''}>
-            Todo
-          </MobileNavLink>
-        )}
-
         {isUserAuthenticated ? (
           <>
             <MobileUserSection>

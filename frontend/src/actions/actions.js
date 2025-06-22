@@ -14,6 +14,9 @@ import {
   SIGNUP,
   TOGGLE_CODE_MODAL,
   UPDATE_THEME,
+  INITIALIZE_THEME,
+  SET_SYSTEM_THEME,
+  SET_USER_THEME_PREFERENCE,
   FETCH_USER_INFO,
   FETCH_USER_INFO_SUCCESS,
   FETCH_USER_INFO_FAILURE,
@@ -99,4 +102,18 @@ export const fetchUserInfoSuccess = (data) => ({
 export const fetchUserInfoFailure = (error) => ({
   type: FETCH_USER_INFO_FAILURE,
   payload: error,
+});
+
+export const initializeTheme = () => ({
+  type: INITIALIZE_THEME,
+});
+
+export const setSystemTheme = (isDark) => ({
+  type: SET_SYSTEM_THEME,
+  payload: isDark,
+});
+
+export const setUserThemePreference = (preference) => ({
+  type: SET_USER_THEME_PREFERENCE,
+  payload: preference, // 'light', 'dark', or null (for system)
 });

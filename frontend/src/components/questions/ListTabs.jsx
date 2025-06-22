@@ -28,16 +28,18 @@ const Tab = styled.button`
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 4px;
-  background-color: ${props => props.isActive ? props.theme.colors.primary : props.theme.colors.background};
-  color: ${props => props.isActive ? props.theme.colors.white : props.theme.colors.text};
+  background-color: ${props => props.isActive ? props.theme.colors.brand.primary : props.theme.colors.backgroundSecondary};
+  color: ${props => props.isActive ? '#ffffff' : props.theme.colors.text};
   cursor: pointer;
   font-size: 1rem;
   font-weight: 500;
   white-space: nowrap;
   transition: all 0.2s;
+  border: 1px solid ${props => props.isActive ? props.theme.colors.brand.primary : props.theme.colors.border};
 
   &:hover {
-    background-color: ${props => props.isActive ? props.theme.colors.primaryDark : props.theme.colors.border};
+    background-color: ${props => props.isActive ? props.theme.colors.brand.primary : props.theme.colors.backgroundHover};
+    border-color: ${props => props.isActive ? props.theme.colors.brand.primary : props.theme.colors.brand.primary};
   }
 `;
 

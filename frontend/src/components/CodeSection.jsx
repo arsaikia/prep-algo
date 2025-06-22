@@ -49,7 +49,7 @@ function CodeSection() {
 
     // eslint-disable-next-line no-unused-vars
     const codeToShow = codes.filter((code, idx) => code.questionId === selectedQuestionId);
-    console.log(codeToShow);
+
     if (codeToShow.length) {
       setCodeText(codeToShow[0].code);
     }
@@ -60,7 +60,7 @@ function CodeSection() {
     };
   }, [codes, selectedQuestionId]);
 
-  console.log(codeText, showLoading);
+
 
   // Fire actions using dispatch -> fires action -> Watcher saga handles rest
   const dispatch = useDispatch();
@@ -89,14 +89,14 @@ function CodeSection() {
       {
         !showLoading && text
         && (
-        <CopyBlock
-          language={language}
-          text={text}
-          showLineNumbers={lineNumbers}
-          theme={dracula}
-          wrapLines
-          codeBlock
-        />
+          <CopyBlock
+            language={language}
+            text={text}
+            showLineNumbers={lineNumbers}
+            theme={dracula}
+            wrapLines
+            codeBlock
+          />
         )
       }
     </Modal>

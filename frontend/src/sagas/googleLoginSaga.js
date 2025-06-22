@@ -14,7 +14,21 @@ import {
     googleLoginSuccess,
     googleLoginFailure,
 } from '../actions/actions';
-import { setCookie } from 'react-cookie';
+// Cookie utility functions
+const setCookie = (name, value, options = {}) => {
+    const defaultOptions = { path: '/', maxAge: 86400 * 7 }; // 7 days
+    const cookieOptions = { ...defaultOptions, ...options };
+
+    let cookieString = `${name}=${encodeURIComponent(value)}`;
+
+    if (cookieOptions.path) cookieString += `; path=${cookieOptions.path}`;
+    if (cookieOptions.maxAge) cookieString += `; max-age=${cookieOptions.maxAge}`;
+    if (cookieOptions.domain) cookieString += `; domain=${cookieOptions.domain}`;
+    if (cookieOptions.secure) cookieString += `; secure`;
+    if (cookieOptions.httpOnly) cookieString += `; httpOnly`;
+
+    document.cookie = cookieString;
+};
 
 // Cache for profile pictures
 const profilePictureCache = new Map();
@@ -47,44 +61,42 @@ const handleProfilePicture = (user) => {
 // worker Saga
 function* googleLoginHandler(action) {
     try {
-        console.log('Google login saga started with token');
-
-        // The credential is directly in action.payload as a string
         const token = action.payload;
-        if (!token || typeof token !== 'string') {
-            throw new Error('Invalid token received from Google');
+
+        if (!token) {
+            throw new Error('No access token provided');
         }
 
-        // Call the API with the token
-        const response = yield call(googleLogin, { token });
-        console.log('Google login API response:', response);
+        // Call the API
+        const response = yield call(googleLogin, token);
 
         if (response.data && response.data.success) {
-            const { user, token: jwtToken } = response.data;
+            const userData = response.data.data;
 
-            // Handle profile picture with fallback
-            const processedUser = {
-                ...user,
-                picture: handleProfilePicture(user)
-            };
-
-            // Set cookies for user session
-            setCookie('userId', processedUser.id, { path: '/' });
-            setCookie('name', processedUser.firstName, { path: '/' });
-            setCookie('authToken', jwtToken, { path: '/' });
-
-            // Dispatch success with user data and JWT token
-            yield put(googleLoginSuccess({
-                ...processedUser,
-                token: jwtToken,
-                lastActivity: Date.now(),
-            }));
+            // Dispatch success action with user data
+            yield put({
+                type: GOOGLE_LOGIN_SUCCESS,
+                payload: {
+                    isAuthenticated: true,
+                    userId: userData.userId || userData._id,
+                    id: userData._id || userData.userId, // Include both for compatibility
+                    firstName: userData.firstName,
+                    lastName: userData.lastName,
+                    email: userData.email,
+                    picture: userData.picture,
+                    token: userData.token,
+                    user: userData
+                }
+            });
         } else {
-            throw new Error(response.data?.message || 'Google login failed');
+            throw new Error(response.data?.message || 'Login failed');
         }
     } catch (error) {
-        console.error('Google login saga error:', error);
-        yield put(googleLoginFailure(error.message));
+        // Dispatch failure action
+        yield put({
+            type: GOOGLE_LOGIN_FAILURE,
+            payload: error.message || 'Google login failed'
+        });
     }
 }
 

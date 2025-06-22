@@ -13,7 +13,7 @@ import { signup } from '../api/signup';
 // worker Saga
 function* signupHandler(action) {
   const questionsDataResponse = yield call(signup, action.payload);
-  console.log('SIGNUP_SUCCESS');
+
   yield put({
     payload: {
       isSignedUp: questionsDataResponse.status === 200,
@@ -21,7 +21,7 @@ function* signupHandler(action) {
     type: SIGNUP_SUCCESS,
   });
 
-  console.log(questionsDataResponse);
+
 }
 
 function* userSignupWatcher() {

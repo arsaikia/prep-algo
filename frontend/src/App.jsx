@@ -11,6 +11,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
+import styled from 'styled-components';
 
 import {
   getAllQuestionsWithoutHistory,
@@ -24,16 +25,42 @@ import FullScreenLoader from './components/Loader/FullScreenLoader';
 import Navbar from './components/Navbar';
 import { Container } from './styles';
 import { lightTheme, darkTheme } from './theme';
+import useTheme from './hooks/useTheme';
+import { TestUserProvider } from './contexts/TestUserContext';
+
+// App wrapper with theme background
+const AppWrapper = styled.div`
+  min-height: 100vh;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
+  transition: all 0.3s ease;
+`;
 
 // Wrapper component to access location
 function AppContent() {
   const location = useLocation();
   const isAllQuestionsPage = location.pathname === '/all' || location.pathname === '/questions';
   const isLoginPage = location.pathname === '/login';
-  const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
+  const { isDarkModeEnabled } = useTheme();
 
   // Get states using useSelector ( state->reducerName )
   const isFetchingQuestions = useSelector((state) => state.questions.isFetchingQuestions);
+
+  // Update body background color based on theme
+  useEffect(() => {
+    const theme = isDarkModeEnabled ? darkTheme : lightTheme;
+    const backgroundColor = theme.colors.background;
+
+    // Set CSS custom property for theme background
+    document.documentElement.style.setProperty('--theme-background', backgroundColor);
+    document.body.style.backgroundColor = backgroundColor;
+
+    // Cleanup function to reset on unmount (though this component rarely unmounts)
+    return () => {
+      document.documentElement.style.removeProperty('--theme-background');
+      document.body.style.backgroundColor = '';
+    };
+  }, [isDarkModeEnabled]);
 
   // Only show loading indicator if we're not on the AllQuestions page or Login page
   if (isFetchingQuestions && !isAllQuestionsPage && !isLoginPage) {
@@ -41,12 +68,14 @@ function AppContent() {
   }
 
   return (
-    <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
-      <Navbar />
-      <Container width="90%" padding="0 5%">
-        <CodeSection />
-        <AllRoutes />
-      </Container>
+    <ThemeProvider theme={isDarkModeEnabled ? darkTheme : lightTheme}>
+      <AppWrapper>
+        <Navbar />
+        <Container width="calc(100% - 2rem)" padding="0 1rem">
+          <CodeSection />
+          <AllRoutes />
+        </Container>
+      </AppWrapper>
     </ThemeProvider>
   );
 }
@@ -60,13 +89,9 @@ function QuestionsLoader({ children }) {
   const hasFetchedRef = React.useRef(false);
   const hasFetchedUserRef = React.useRef(false);
 
-  console.log('QuestionsLoader mounted with userId:', userId);
-  console.log('Cookies:', cookies);
-
   // Fetch questions immediately when this component mounts
   useEffect(() => {
     if (!hasFetchedRef.current) {
-      console.log('Dispatching getAllQuestionsWithoutHistory');
       // Always fetch questions without solve history
       dispatch(getAllQuestionsWithoutHistory());
       hasFetchedRef.current = true;
@@ -74,13 +99,9 @@ function QuestionsLoader({ children }) {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log('Checking userId for fetchUserInfo:', userId);
     if (userId !== 'guest' && !hasFetchedUserRef.current) {
-      console.log('Dispatching fetchUserInfo with userId:', userId);
       dispatch(fetchUserInfo(userId));
       hasFetchedUserRef.current = true;
-    } else if (userId === 'guest') {
-      console.log('Not dispatching fetchUserInfo because userId is guest');
     }
   }, [dispatch, userId]);
 
@@ -92,15 +113,19 @@ function App() {
   const dispatch = useDispatch();
 
   // Get states using useSelector ( state->reducerName )
-  const todoQuestions = useSelector((state) => state.questions.todoQuestions);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const userIdInAuthStore = useSelector((state) => state.auth.userId);
   const userNameIdInAuthStore = useSelector((state) => state.auth.firstName);
-  const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
+  const { isDarkModeEnabled } = useTheme();
   const authToken = useSelector((state) => state.auth.token);
 
   const userIdInCookie = cookies.userId;
   const userId = userIdInCookie || userIdInAuthStore || 'guest';
+
+  // Log feature flags on app startup
+  useEffect(() => {
+    // Feature flags initialization (no logging)
+  }, []);
 
   // Set cookie when user logs in
   useEffect(() => {
@@ -150,13 +175,15 @@ function App() {
   }, [isAuthenticated, removeCookie, dispatch]);
 
   return (
-    <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
+    <ThemeProvider theme={isDarkModeEnabled ? darkTheme : lightTheme}>
       <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
-        <Router>
-          <QuestionsLoader>
-            <AppContent />
-          </QuestionsLoader>
-        </Router>
+        <TestUserProvider>
+          <Router>
+            <QuestionsLoader>
+              <AppContent />
+            </QuestionsLoader>
+          </Router>
+        </TestUserProvider>
       </GoogleOAuthProvider>
     </ThemeProvider>
   );

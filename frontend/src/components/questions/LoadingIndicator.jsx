@@ -11,13 +11,13 @@ const Container = styled.div`
 const LoadingText = styled.h2`
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: #1976d2;
+  color: ${({ theme }) => theme.colors.brand.primary};
 `;
 
 const Spinner = styled.div`
-  border: 4px solid rgba(0, 0, 0, 0.1);
+  border: 4px solid ${({ theme }) => theme.colors.border};
   border-radius: 50%;
-  border-top: 4px solid #1976d2;
+  border-top: 4px solid ${({ theme }) => theme.colors.brand.primary};
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;
@@ -30,12 +30,12 @@ const Spinner = styled.div`
 `;
 
 const LoadingIndicator = ({ message = 'Loading questions...' }) => {
-    return (
-        <Container>
-            <LoadingText>{message}</LoadingText>
-            <Spinner />
-        </Container>
-    );
+  return (
+    <Container>
+      <LoadingText>{message}</LoadingText>
+      <Spinner />
+    </Container>
+  );
 };
 
 export default LoadingIndicator; 
