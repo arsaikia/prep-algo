@@ -138,7 +138,13 @@ if __name__ == "__main__":
         
         # Try to parse expected as Python literal (for [0,1], {}, etc.)
         try:
-            expected = eval(expected_str)
+            # Handle JavaScript boolean strings
+            if expected_str.lower() == "true":
+                expected = True
+            elif expected_str.lower() == "false":
+                expected = False
+            else:
+                expected = eval(expected_str)
         except:
             expected = expected_str
         

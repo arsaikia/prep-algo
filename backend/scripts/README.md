@@ -1,8 +1,40 @@
 # Test Scripts
 
-This folder contains scripts for managing test data and users for development and testing purposes.
+This folder contains scripts for managing test data, users, and questions for development and testing purposes.
 
 ## Scripts
+
+### `syncQuestionsFromJson.js` ⭐ NEW
+Syncs questions from the `_data/questions.json` file to the MongoDB database. This is the primary tool for updating question data.
+
+**Usage:**
+```bash
+# Sync all questions from JSON to database
+npm run sync-questions
+
+# Dry run to see what would be changed without making changes
+npm run sync-questions:dry-run
+
+# Sync a specific question
+node scripts/syncQuestionsFromJson.js --question=valid-palindrome
+
+# Force update (overwrite existing data)
+node scripts/syncQuestionsFromJson.js --force
+```
+
+**Features:**
+- ✅ Creates new questions that don't exist in database
+- 🔄 Updates existing questions with new data from JSON
+- 📊 Detailed logging and progress reporting
+- 🔍 Dry run mode for safe testing
+- 🎯 Specific question targeting
+- 🛡️ Smart detection of what needs updating
+
+**What gets synced:**
+- Question descriptions
+- Test cases (both example and full test suites)
+- Code templates (Python, JavaScript)
+- Question metadata (name, group, difficulty)
 
 ### `createTestUsers.js`
 Creates comprehensive test users with varied solve histories to test the recommendation system.

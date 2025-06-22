@@ -6,6 +6,36 @@ The **Daily Practice Recommendation System** is an intelligent algorithm that an
 
 ## 🧠 How It Works
 
+### Adaptive Features System
+
+The recommendation system has **three tiers** of intelligence that activate based on user progress:
+
+| Tier | Requirements | Features Available | Description |
+|------|-------------|-------------------|-------------|
+| **🆕 No Adaptive** | 0 questions solved | Basic beginner questions | Static Easy questions from TOP 150 |
+| **🎯 Basic Adaptive** | 3-19 questions solved | Personalized recommendations, strategy selection, time preferences | Your data drives recommendations |
+| **🧠 Full Adaptive** | 20+ questions solved | Everything + dynamic weight adjustment | System learns and adapts strategies |
+
+#### Feature Breakdown
+
+**🆕 No Adaptive Features** (`enabled: false`)
+- Static beginner-friendly questions (Easy difficulty from TOP 150)
+- No personalization or user analysis
+- Perfect for first-time users
+
+**🎯 Basic Adaptive Features** (`enabled: true, level: "basic"`)
+- ✅ **Personalized recommendations** based on solve history
+- ✅ **Strategy-based selection** (weak areas, progressive difficulty, spaced repetition)
+- ✅ **Time-based preferences** analysis
+- ✅ **Default adaptive weights** (40% weak areas, 30% progressive, 20% spaced repetition)
+- ❌ No dynamic weight adjustment (weights stay fixed)
+
+**🧠 Full Adaptive Features** (`enabled: true, level: "full"`)
+- ✅ **Everything from Basic tier**
+- ✅ **Dynamic weight adjustment** based on performance patterns
+- ✅ **Advanced pattern recognition** for learning optimization
+- ✅ **Sophisticated learning velocity** tracking and adaptation
+
 ### High-Level Architecture
 
 The recommendation system follows a cyclical learning approach where user interactions continuously improve future recommendations:
@@ -96,12 +126,34 @@ Recommendations are prioritized to maximize learning impact:
 
 ### Backend API
 
-#### Endpoint
+#### Endpoints
+
+**Original Recommendations** (All users)
 ```http
 GET /api/v1/solveHistory/:userId/daily-recommendations?count=5
 ```
 
+**Adaptive Recommendations** (Enhanced with adaptive features)
+```http
+GET /api/v1/adaptive-recommendations/:userId/daily?count=5
+```
+
+**Update Solve History** (For adaptive learning)
+```http
+POST /api/v1/adaptive-recommendations/:userId/update
+Content-Type: application/json
+
+{
+  "questionId": "question-id",
+  "success": true,
+  "timeSpent": 25,
+  "strategy": "weak_area_reinforcement"
+}
+```
+
 #### Response Format
+
+**Adaptive Recommendations Response**
 ```json
 {
   "success": true,
@@ -116,7 +168,12 @@ GET /api/v1/solveHistory/:userId/daily-recommendations?count=5
         },
         "reason": "Strengthen weak area: Arrays & Hashing",
         "priority": "high",
-        "strategy": "weak_area_reinforcement"
+        "strategy": "weak_area_reinforcement",
+        "adaptiveContext": {
+          "weightUsed": 0.4,
+          "timeOptimized": true,
+          "personalizedReason": "Based on your 25% success rate in Arrays"
+        }
       }
     ],
     "analysis": {
@@ -124,13 +181,103 @@ GET /api/v1/solveHistory/:userId/daily-recommendations?count=5
       "totalSolved": 45,
       "weakAreas": ["Dynamic Programming", "Graphs"],
       "strongAreas": ["Arrays & Hashing"],
-      "recentActivity": 3
-    }
+      "recentActivity": 3,
+      "adaptiveWeights": {
+        "weak_area_reinforcement": 0.4,
+        "progressive_difficulty": 0.3,
+        "spaced_repetition": 0.2,
+        "topic_exploration": 0.07,
+        "general_practice": 0.03
+      },
+      "timePreferences": {
+        "optimalTimeOfDay": "evening",
+        "morningPerformance": { "sessionCount": 2, "averageSuccessRate": 0.6 },
+        "afternoonPerformance": { "sessionCount": 5, "averageSuccessRate": 0.8 },
+        "eveningPerformance": { "sessionCount": 8, "averageSuccessRate": 0.9 }
+      },
+      "adaptiveFeatures": {
+        "enabled": true,
+        "level": "basic",
+        "dataPoints": 3,
+        "reason": "Basic adaptive features available"
+      }
+    },
+    "totalSolved": 45
   }
 }
 ```
 
 ## 📊 Data Models
+
+### UserProfile Schema (New - Adaptive Features)
+
+```javascript
+{
+  userId: String,           // User identifier
+  
+  // Adaptive Strategy Weights (Phase 1)
+  adaptiveWeights: {
+    weak_area_reinforcement: { type: Number, default: 0.4 },
+    progressive_difficulty: { type: Number, default: 0.3 },
+    spaced_repetition: { type: Number, default: 0.2 },
+    topic_exploration: { type: Number, default: 0.07 },
+    general_practice: { type: Number, default: 0.03 }
+  },
+  
+  // Learning Velocity Tracking (Phase 1)
+  learningVelocity: {
+    questionsPerWeek: { type: Number, default: 3 },
+    lastWeekCount: { type: Number, default: 0 },
+    trend: { type: String, enum: ['increasing', 'stable', 'decreasing'], default: 'stable' }
+  },
+  
+  // Time-based Performance Preferences (Phase 1)
+  timePreferences: {
+    morningPerformance: {
+      sessionCount: { type: Number, default: 0 },
+      averageSuccessRate: { type: Number, default: 0.5 },
+      averageTimePerQuestion: { type: Number, default: 15 }
+    },
+    afternoonPerformance: {
+      sessionCount: { type: Number, default: 0 },
+      averageSuccessRate: { type: Number, default: 0.5 },
+      averageTimePerQuestion: { type: Number, default: 15 }
+    },
+    eveningPerformance: {
+      sessionCount: { type: Number, default: 0 },
+      averageSuccessRate: { type: Number, default: 0.5 },
+      averageTimePerQuestion: { type: Number, default: 15 }
+    },
+    optimalTimeOfDay: { type: String, default: 'morning' }
+  },
+  
+  // Recent Performance Tracking (Phase 1)
+  recentPerformance: {
+    last10Questions: [{
+      questionId: String,
+      success: Boolean,
+      timeSpent: Number,
+      difficulty: String,
+      solvedAt: Date,
+      strategy: String // Which strategy recommended this question
+    }],
+    recentSuccessRate: { type: Number, default: 0.5 },
+    performanceTrend: { type: String, enum: ['improving', 'stable', 'declining'], default: 'stable' }
+  },
+  
+  // Adaptation Metadata
+  adaptationMetadata: {
+    lastAnalyzed: { type: Date, default: Date.now },
+    lastWeightAdjustment: Date,
+    adaptationEnabled: { type: Boolean, default: true },
+    dataQuality: {
+      hasSufficientData: { type: Boolean, default: false }, // At least 20 questions solved
+      lastQualityCheck: Date
+    },
+    version: { type: String, default: '1.0' }
+  }
+}
+```
 
 ### Enhanced SolveHistory Schema
 
@@ -187,13 +334,32 @@ GET /api/v1/solveHistory/:userId/daily-recommendations?count=5
 
 ### 1. Backend Setup
 
-Add the recommendation route to your Express server:
+Add the recommendation routes to your Express server:
 
 ```javascript
-// routes/solveHistory.js
+// routes/solveHistory.js (Original recommendations)
 import { getDailyRecommendations } from '../controller/solveHistory.js';
-
 router.route('/:userId/daily-recommendations').get(getDailyRecommendations);
+
+// routes/adaptiveRecommendations.js (New adaptive recommendations)
+import { 
+  getAdaptiveDailyRecommendations,
+  updateAdaptiveSolveHistory 
+} from '../controller/adaptiveRecommendations.js';
+
+router.route('/:userId/daily').get(getAdaptiveDailyRecommendations);
+router.route('/:userId/update').post(updateAdaptiveSolveHistory);
+```
+
+Register the routes in your main server file:
+
+```javascript
+// server.js
+import adaptiveRecommendationsRoutes from './routes/adaptiveRecommendations.js';
+import solveHistoryRoutes from './routes/solveHistory.js';
+
+app.use('/api/v1/adaptive-recommendations', adaptiveRecommendationsRoutes);
+app.use('/api/v1/solveHistory', solveHistoryRoutes);
 ```
 
 ### 2. Frontend Setup
@@ -389,6 +555,11 @@ const fillerQuestions = await Question.find({
 
 The recommendation engine has been thoroughly tested and verified:
 
+**Adaptive Features System (Tested):**
+- ✅ **No Adaptive** (0 questions): Static beginner questions working correctly
+- ✅ **Basic Adaptive** (3-19 questions): Personalized recommendations, strategy selection, time preferences
+- ✅ **Full Adaptive** (20+ questions): Dynamic weight adjustment, advanced pattern recognition
+
 **Strategy Distribution (Actual):**
 - ✅ **Weak Area Reinforcement**: 40% allocation working correctly
 - ✅ **Progressive Difficulty**: 30% allocation working correctly  
@@ -402,8 +573,9 @@ The recommendation engine has been thoroughly tested and verified:
 - ✅ **New Users**: Get beginner-friendly Easy questions from TOP 150
 
 **API Endpoints (Functional):**
-- ✅ `GET /api/v1/solveHistory/:userId/daily-recommendations?count=5`
-- ✅ `POST /api/v1/solveHistory` (for updating solve history)
+- ✅ `GET /api/v1/solveHistory/:userId/daily-recommendations?count=5` (Original)
+- ✅ `GET /api/v1/adaptive-recommendations/:userId/daily?count=5` (Adaptive)
+- ✅ `POST /api/v1/adaptive-recommendations/:userId/update` (Learning updates)
 - ✅ Proper error handling and fallbacks for edge cases
 
 **Frontend Integration (Working):**

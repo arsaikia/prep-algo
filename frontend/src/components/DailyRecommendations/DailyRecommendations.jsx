@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { getDailyRecommendations } from '../../api/getDailyRecommendations';
+import { getSmartDailyRecommendations } from '../../api/getSmartRecommendations';
 
 // Animations
 const spin = keyframes`
@@ -168,27 +169,157 @@ const WeakAreaTag = styled.span`
     }
 `;
 
+// Smart Hybrid Progress Components
+const ProgressContainer = styled.div`
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+`;
+
+const ProgressInfo = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+`;
+
+const ProgressTitle = styled.h3`
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
+`;
+
+const ProgressSubtitle = styled.p`
+    margin: 0;
+    font-size: 0.9rem;
+    color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const ProgressBarContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: 200px;
+`;
+
+const ProgressBar = styled.div`
+    width: 200px;
+    height: 8px;
+    background: ${({ theme }) => theme.colors.border};
+    border-radius: 4px;
+    overflow: hidden;
+`;
+
+const ProgressFill = styled.div`
+    width: ${props => props.percentage}%;
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    transition: width 0.3s ease;
+`;
+
+const ProgressText = styled.span`
+    font-size: 0.85rem;
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-weight: 500;
+`;
+
+const SmartRefreshButton = styled.button`
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: ${props => props.disabled ? props.theme.colors.border : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
+    color: white;
+    font-weight: 600;
+    cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+    transition: all 0.2s ease;
+    opacity: ${props => props.disabled ? 0.6 : 1};
+    font-size: 0.9rem;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+`;
+
+
+
 const RecommendationsList = styled.div`
     display: grid;
     gap: 16px;
 `;
 
 const RecommendationCard = styled.div`
-    background: ${({ theme }) => theme.colors.recommendations.cardBackground};
-    border: 2px solid ${({ theme }) => theme.colors.recommendations.cardBorder};
+    background: ${({ theme, $isCompleted }) =>
+        $isCompleted
+            ? theme.colors.difficulty.easy + '08'  // Very subtle green background tint
+            : theme.colors.recommendations.cardBackground
+    };
+    border: 2px solid ${({ theme, $isCompleted }) =>
+        $isCompleted
+            ? theme.colors.difficulty.easy + '40'  // Subtle green border
+            : theme.colors.recommendations.cardBorder
+    };
     border-radius: 12px;
     padding: 20px;
-    cursor: pointer;
+    cursor: ${({ $isCompleted }) => $isCompleted ? 'default' : 'pointer'};
     transition: all 0.3s ease;
     box-shadow: ${({ theme }) => theme.colors.recommendations.cardShadow};
     animation: ${slideUp} 0.5s ease-out;
     animation-delay: ${({ index }) => index * 0.1}s;
     animation-fill-mode: both;
+    position: relative;
     
-    &:hover {
+    ${({ $isCompleted }) => $isCompleted && `
+        opacity: 0.8;
+        
+        &::after {
+            content: '';
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 24px;
+            height: 24px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: completionPulse 0.6s ease-out;
+        }
+        
+        &::before {
+            content: '✓';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+            z-index: 1;
+        }
+        
+        @keyframes completionPulse {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    `}
+    
+    &:hover:not([data-completed="true"]) {
         border-color: ${({ theme }) => theme.colors.recommendations.cardBorderHover};
         box-shadow: ${({ theme }) => theme.colors.recommendations.cardShadowHover};
         transform: translateY(-2px);
+    }
+    
+    &[data-completed="true"]:hover {
+        transform: none;
     }
 `;
 
@@ -256,8 +387,26 @@ const QuestionName = styled.h4`
     margin: 0 0 8px 0;
     font-size: 18px;
     font-weight: 600;
-    color: ${({ theme }) => theme.colors.text};
+    color: ${({ theme, $isCompleted }) => $isCompleted ? theme.colors.textSecondary : theme.colors.text};
     line-height: 1.3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    ${({ $isCompleted }) => $isCompleted && `
+        opacity: 0.8;
+    `}
+`;
+
+const CompletionStatus = styled.span`
+    color: #28a745;
+    font-size: 14px;
+    font-weight: 600;
+    background: rgba(40, 167, 69, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-style: normal;
+    text-decoration: none;
 `;
 
 const QuestionMeta = styled.div`
@@ -342,6 +491,28 @@ const LastSolved = styled.span`
     color: ${({ theme }) => theme.colors.textTertiary};
     font-size: 12px;
     font-style: italic;
+`;
+
+const CompletedSectionDivider = styled.div`
+    display: flex;
+    align-items: center;
+    margin: 32px 0 16px 0;
+    gap: 16px;
+`;
+
+const CompletedSectionTitle = styled.h3`
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.textSecondary};
+    white-space: nowrap;
+`;
+
+const CompletedSectionLine = styled.div`
+    flex: 1;
+    height: 1px;
+    background: ${({ theme }) => theme.colors.border};
+    opacity: 0.5;
 `;
 
 const RecommendationFooter = styled.div`
@@ -575,8 +746,11 @@ const MobileContainer = styled.div`
 const DailyRecommendations = ({ userId, onQuestionSelect }) => {
     const [recommendations, setRecommendations] = useState([]);
     const [analysis, setAnalysis] = useState(null);
+    const [progress, setProgress] = useState(null);
+    const [batchInfo, setBatchInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
     const [colorScheme, setColorScheme] = useState('original'); // original, complementary, triadic
 
     useEffect(() => {
@@ -585,34 +759,61 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
         }
     }, [userId]);
 
-    const fetchRecommendations = async () => {
+    const fetchRecommendations = async (forceRefresh = false) => {
         try {
-            setLoading(true);
-            const response = await getDailyRecommendations(userId, 5); // Always fetch 5 recommendations
-            setRecommendations(response.data.recommendations || []);
+            if (forceRefresh) {
+                setRefreshing(true);
+            } else {
+                setLoading(true);
+            }
 
-            // Handle both analysis object (users with history) and strategy string (new users)
-            if (response.data.analysis) {
-                setAnalysis(response.data.analysis);
-            } else if (response.data.strategy) {
-                // Create a basic analysis object for new users
+            // Use Smart Hybrid recommendations with fallback to original
+            let data;
+            try {
+                data = await getSmartDailyRecommendations(userId, {
+                    count: 5,
+                    forceRefresh
+                });
+            } catch (smartError) {
+                console.warn('Smart recommendations failed, falling back to original:', smartError);
+                const response = await getDailyRecommendations(userId, 5);
+                data = response.data;
+            }
+
+            setRecommendations(data.recommendations || []);
+            setAnalysis(data.analysis || null);
+            setProgress(data.progress || null);
+            setBatchInfo(data.batchInfo || null);
+
+            // Handle legacy format for new users
+            if (!data.analysis && data.strategy) {
                 setAnalysis({
-                    userLevel: response.data.strategy,
+                    userLevel: data.strategy,
                     totalSolved: 0,
                     recentActivity: 0,
                     weakAreas: [],
                     strongAreas: []
                 });
-            } else {
-                setAnalysis(null);
             }
 
             setError(null);
         } catch (err) {
+            console.error('Error fetching recommendations:', err);
             setError('Failed to fetch recommendations');
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
+    };
+
+
+
+    const canRefresh = () => {
+        if (!batchInfo) return true;
+        const now = new Date();
+        const lastRefresh = new Date(batchInfo.lastRefresh);
+        const hoursSinceRefresh = (now - lastRefresh) / (1000 * 60 * 60);
+        return hoursSinceRefresh >= 1; // 1 hour cooldown
     };
 
     const getStrategyIcon = (strategy) => {
@@ -650,6 +851,35 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
     return (
         <MobileContainer>
             <Container>
+                {/* Progress Tracking */}
+                {progress && (
+                    <ProgressContainer>
+                        <ProgressInfo>
+                            <ProgressTitle>📊 Today's Progress</ProgressTitle>
+                            <ProgressSubtitle>
+                                {progress.completed}/{progress.total} questions completed
+                                {batchInfo && ` • Batch from ${new Date(batchInfo.createdAt).toLocaleDateString()}`}
+                            </ProgressSubtitle>
+                        </ProgressInfo>
+                        <ProgressBarContainer>
+                            <ProgressBar>
+                                <ProgressFill percentage={(progress.completed / progress.total) * 100} />
+                            </ProgressBar>
+                            <ProgressText>
+                                {Math.round((progress.completed / progress.total) * 100)}% Complete
+                            </ProgressText>
+                        </ProgressBarContainer>
+                        {(refreshing || canRefresh()) && (
+                            <SmartRefreshButton
+                                onClick={() => fetchRecommendations(true)}
+                                disabled={refreshing}
+                            >
+                                {refreshing ? '🔄 Refreshing...' : '🔄 Smart Refresh'}
+                            </SmartRefreshButton>
+                        )}
+                    </ProgressContainer>
+                )}
+
                 {analysis && (
                     <AnalysisSummary>
                         <UserStats>
@@ -691,59 +921,158 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
                             <p>You've solved all available questions in your current categories. Try exploring new topics!</p>
                         </NoRecommendations>
                     ) : (
-                        recommendations.map((rec, index) => {
-                            // Safety check for undefined recommendations
-                            if (!rec || !rec.question) {
-                                return null;
-                            }
+                        (() => {
+                            // Sort recommendations: incomplete first, then completed at bottom
+                            const sortedRecommendations = [...recommendations].sort((a, b) => {
+                                if (a.completed && !b.completed) return 1;
+                                if (!a.completed && b.completed) return -1;
+                                return 0;
+                            });
+
+                            const activeQuestions = sortedRecommendations.filter(rec => !rec.completed);
+                            const completedQuestions = sortedRecommendations.filter(rec => rec.completed);
 
                             return (
-                                <RecommendationCard
-                                    key={rec.question._id}
-                                    index={index}
-                                    onClick={() => onQuestionSelect && onQuestionSelect(rec.question)}
-                                >
-                                    <RecommendationHeader>
-                                        <PriorityIndicator className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
-                                            {index + 1}
-                                        </PriorityIndicator>
-                                        <StrategyIcon>
-                                            {getStrategyIcon(rec.strategy)}
-                                        </StrategyIcon>
-                                        <QuestionInfo>
-                                            <QuestionName>{rec.question.name}</QuestionName>
-                                            <QuestionMeta>
-                                                <QuestionGroup>{rec.question.group}</QuestionGroup>
-                                                <QuestionDifficulty
-                                                    className={`difficulty-${rec.question.difficulty?.toLowerCase()}`}
-                                                    $colorScheme={colorScheme}
-                                                >
-                                                    {rec.question.difficulty}
-                                                </QuestionDifficulty>
-                                            </QuestionMeta>
-                                        </QuestionInfo>
-                                    </RecommendationHeader>
+                                <>
+                                    {/* Active Questions */}
+                                    {activeQuestions.map((rec, index) => {
+                                        // Safety check for undefined recommendations
+                                        if (!rec || !rec.question) {
+                                            return null;
+                                        }
 
-                                    <RecommendationReason>
-                                        <ReasonText>{rec.reason}</ReasonText>
-                                        {rec.lastSolved && (
-                                            <LastSolved>
-                                                Last solved: {new Date(rec.lastSolved).toLocaleDateString()}
-                                            </LastSolved>
-                                        )}
-                                    </RecommendationReason>
+                                        return (
+                                            <RecommendationCard
+                                                key={rec.question._id}
+                                                index={index}
+                                                $isCompleted={false}
+                                                data-completed={false}
+                                                onClick={() => onQuestionSelect && onQuestionSelect(rec.question)}
+                                            >
+                                                <RecommendationHeader>
+                                                    <PriorityIndicator className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
+                                                        {index + 1}
+                                                    </PriorityIndicator>
+                                                    <StrategyIcon>
+                                                        {getStrategyIcon(rec.strategy)}
+                                                    </StrategyIcon>
+                                                    <QuestionInfo>
+                                                        <QuestionName $isCompleted={false}>
+                                                            {rec.question.name}
+                                                        </QuestionName>
+                                                        <QuestionMeta>
+                                                            <QuestionGroup>
+                                                                {rec.question.group}
+                                                            </QuestionGroup>
+                                                            <QuestionDifficulty
+                                                                className={`difficulty-${rec.question.difficulty?.toLowerCase()}`}
+                                                                $colorScheme={colorScheme}
+                                                            >
+                                                                {rec.question.difficulty}
+                                                            </QuestionDifficulty>
+                                                        </QuestionMeta>
+                                                    </QuestionInfo>
+                                                </RecommendationHeader>
 
-                                    <RecommendationFooter>
-                                        <StrategyTag strategy={rec.strategy} $colorScheme={colorScheme}>
-                                            {rec.strategy ? rec.strategy.replace(/_/g, ' ') : 'general practice'}
-                                        </StrategyTag>
-                                        <PriorityTag className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
-                                            {rec.priority} priority
-                                        </PriorityTag>
-                                    </RecommendationFooter>
-                                </RecommendationCard>
+                                                <RecommendationReason>
+                                                    <ReasonText>{rec.reason}</ReasonText>
+                                                    {rec.lastSolved && (
+                                                        <LastSolved>
+                                                            Last solved: {new Date(rec.lastSolved).toLocaleDateString()}
+                                                        </LastSolved>
+                                                    )}
+                                                </RecommendationReason>
+
+                                                <RecommendationFooter>
+                                                    <StrategyTag strategy={rec.strategy} $colorScheme={colorScheme}>
+                                                        {rec.strategy ? rec.strategy.replace(/_/g, ' ') : 'general practice'}
+                                                    </StrategyTag>
+                                                    <PriorityTag className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
+                                                        {rec.priority} priority
+                                                    </PriorityTag>
+                                                </RecommendationFooter>
+                                            </RecommendationCard>
+                                        );
+                                    })}
+
+                                    {/* Completed Questions Section */}
+                                    {completedQuestions.length > 0 && (
+                                        <>
+                                            <CompletedSectionDivider>
+                                                <CompletedSectionTitle>
+                                                    ✅ Completed Questions ({completedQuestions.length})
+                                                </CompletedSectionTitle>
+                                                <CompletedSectionLine />
+                                            </CompletedSectionDivider>
+
+                                            {completedQuestions.map((rec, index) => {
+                                                // Safety check for undefined recommendations
+                                                if (!rec || !rec.question) {
+                                                    return null;
+                                                }
+
+                                                const isCompleted = rec.completed || false;
+
+                                                return (
+                                                    <RecommendationCard
+                                                        key={rec.question._id}
+                                                        index={index}
+                                                        $isCompleted={isCompleted}
+                                                        data-completed={isCompleted}
+                                                        onClick={() => !isCompleted && onQuestionSelect && onQuestionSelect(rec.question)}
+                                                    >
+                                                        <RecommendationHeader>
+                                                            <PriorityIndicator className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
+                                                                {isCompleted ? '✓' : index + 1}
+                                                            </PriorityIndicator>
+                                                            <StrategyIcon style={{ opacity: isCompleted ? 0.6 : 1 }}>
+                                                                {getStrategyIcon(rec.strategy)}
+                                                            </StrategyIcon>
+                                                            <QuestionInfo>
+                                                                <QuestionName $isCompleted={isCompleted}>
+                                                                    {rec.question.name}
+                                                                    {isCompleted && <CompletionStatus>Completed</CompletionStatus>}
+                                                                </QuestionName>
+                                                                <QuestionMeta>
+                                                                    <QuestionGroup style={{ opacity: isCompleted ? 0.7 : 1 }}>
+                                                                        {rec.question.group}
+                                                                    </QuestionGroup>
+                                                                    <QuestionDifficulty
+                                                                        className={`difficulty-${rec.question.difficulty?.toLowerCase()}`}
+                                                                        $colorScheme={colorScheme}
+                                                                        style={{ opacity: isCompleted ? 0.7 : 1 }}
+                                                                    >
+                                                                        {rec.question.difficulty}
+                                                                    </QuestionDifficulty>
+                                                                </QuestionMeta>
+                                                            </QuestionInfo>
+                                                        </RecommendationHeader>
+
+                                                        <RecommendationReason style={{ opacity: isCompleted ? 0.7 : 1 }}>
+                                                            <ReasonText>{rec.reason}</ReasonText>
+                                                            {rec.lastSolved && (
+                                                                <LastSolved>
+                                                                    {isCompleted ? 'Completed:' : 'Last solved:'} {new Date(rec.lastSolved).toLocaleDateString()}
+                                                                </LastSolved>
+                                                            )}
+                                                        </RecommendationReason>
+
+                                                        <RecommendationFooter style={{ opacity: isCompleted ? 0.7 : 1 }}>
+                                                            <StrategyTag strategy={rec.strategy} $colorScheme={colorScheme}>
+                                                                {rec.strategy ? rec.strategy.replace(/_/g, ' ') : 'general practice'}
+                                                            </StrategyTag>
+                                                            <PriorityTag className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
+                                                                {isCompleted ? 'solved' : `${rec.priority} priority`}
+                                                            </PriorityTag>
+                                                        </RecommendationFooter>
+                                                    </RecommendationCard>
+                                                );
+                                            })}
+                                        </>
+                                    )}
+                                </>
                             );
-                        })
+                        })()
                     )}
                 </RecommendationsList>
 

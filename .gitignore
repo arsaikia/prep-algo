@@ -62,3 +62,6 @@ frontend/.env.production
 
 # Firebase
 .firebase/
+
+# Internal planning documents
+RECOMMENDATION_IMPROVEMENTS.md

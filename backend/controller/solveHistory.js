@@ -1,4 +1,5 @@
 import SolveHistory from '../models/SolveHistory.js';
+import UserProfile from '../models/UserProfile.js';
 import asyncHandler from '../middleware/async.js';
 import ErrorResponse from '../middleware/error.js';
 import { v4 as uuid } from 'uuid';
@@ -34,10 +35,14 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
         timeSpent, // in minutes
         difficultyRating, // 1-5 scale
         tags, // array of strings
-        success = true // boolean
+        success = true, // boolean
+        strategy, // which recommendation strategy suggested this question
+        sessionNumber = 1, // question number in this session
+        previousQuestionResult, // success of previous question in session
+        feedbackOnly = false // NEW: if true, only update feedback fields without creating new solve session
     } = req.body;
 
-    console.log('📊 updateSolveHistory received:', { userId, questionId, timeSpent, difficultyRating, tags, success });
+    console.log('📊 updateSolveHistory received:', { userId, questionId, timeSpent, difficultyRating, tags, success, strategy, feedbackOnly });
 
     const question = await Question.findById(questionId);
     const user = await User.findById(userId);
@@ -51,40 +56,87 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
 
     const lastSolve = await SolveHistory.findOne({ userId, questionId });
 
+    // NEW: Get or create user profile for adaptive features
+    let userProfile = await UserProfile.findByUserId(userId);
+    if (!userProfile) {
+        console.log('📊 Creating user profile for adaptive recommendations...');
+        const existingHistory = await SolveHistory.find({ userId }).populate('questionId');
+        userProfile = await UserProfile.createFromSolveHistory(userId, existingHistory);
+        await userProfile.save();
+    }
+
     let response;
     const currentTimestamp = new Date();
 
     if (lastSolve) {
-        // Calculate new average time if timeSpent is provided
-        let newAverageTime = lastSolve.averageTimeToSolve;
-        if (timeSpent && typeof timeSpent === 'number') {
-            const totalSessions = lastSolve.solveHistory?.length || lastSolve.solveCount;
-            const currentTotal = (lastSolve.averageTimeToSolve || 0) * totalSessions;
-            newAverageTime = (currentTotal + timeSpent) / (totalSessions + 1);
+        if (feedbackOnly) {
+            // FEEDBACK-ONLY UPDATE: Only update feedback fields without creating new solve session
+            console.log('📊 Feedback-only update for existing solve history');
+            response = await SolveHistory.findByIdAndUpdate(
+                lastSolve._id,
+                {
+                    lastUpdatedAt: currentTimestamp,
+                    difficulty_rating: difficultyRating || lastSolve.difficulty_rating,
+                    tags: tags || lastSolve.tags,
+                    // Update strategy in the most recent solve session if it exists
+                    ...(lastSolve.solveHistory?.length > 0 && {
+                        'solveHistory.$[elem].sessionContext.recommendationStrategy': strategy
+                    })
+                },
+                {
+                    new: true,
+                    arrayFilters: [{ 'elem.solvedAt': { $exists: true } }]
+                }
+            );
+        } else {
+            // REGULAR UPDATE: Create new solve session
+            console.log('📊 Creating new solve session for existing question');
+
+            // Calculate new average time if timeSpent is provided
+            let newAverageTime = lastSolve.averageTimeToSolve;
+            if (timeSpent && typeof timeSpent === 'number') {
+                const totalSessions = lastSolve.solveHistory?.length || lastSolve.solveCount;
+                const currentTotal = (lastSolve.averageTimeToSolve || 0) * totalSessions;
+                newAverageTime = (currentTotal + timeSpent) / (totalSessions + 1);
+            }
+
+            // Prepare solve session data with adaptive context
+            const newSolveSession = {
+                solvedAt: currentTimestamp,
+                timeSpent: timeSpent || null,
+                success: success,
+                sessionContext: {
+                    timeOfDay: getTimeOfDay(),
+                    dayOfWeek: getDayOfWeek(),
+                    sessionNumber: sessionNumber,
+                    previousQuestionResult: previousQuestionResult,
+                    recommendationStrategy: strategy
+                }
+            };
+
+            // Update existing record
+            response = await SolveHistory.findByIdAndUpdate(
+                lastSolve._id,
+                {
+                    solveCount: lastSolve.solveCount + 1,
+                    lastUpdatedAt: currentTimestamp,
+                    averageTimeToSolve: newAverageTime,
+                    difficulty_rating: difficultyRating || lastSolve.difficulty_rating,
+                    tags: tags || lastSolve.tags,
+                    $push: { solveHistory: newSolveSession }
+                },
+                { new: true }
+            );
+        }
+    } else {
+        if (feedbackOnly) {
+            // FEEDBACK-ONLY but no existing record - this shouldn't happen
+            console.warn('📊 Warning: Feedback-only update requested but no existing solve history found');
+            return next(new Error(`Cannot update feedback - no existing solve history found`, 404));
         }
 
-        // Prepare solve session data
-        const newSolveSession = {
-            solvedAt: currentTimestamp,
-            timeSpent: timeSpent || null,
-            success: success
-        };
-
-        // Update existing record
-        response = await SolveHistory.findByIdAndUpdate(
-            lastSolve._id,
-            {
-                solveCount: lastSolve.solveCount + 1,
-                lastUpdatedAt: currentTimestamp,
-                averageTimeToSolve: newAverageTime,
-                difficulty_rating: difficultyRating || lastSolve.difficulty_rating,
-                tags: tags || lastSolve.tags,
-                $push: { solveHistory: newSolveSession }
-            },
-            { new: true }
-        );
-    } else {
         // Create new record
+        console.log('📊 Creating new solve history record');
         response = await SolveHistory.create({
             userId,
             questionId,
@@ -97,7 +149,14 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
             solveHistory: [{
                 solvedAt: currentTimestamp,
                 timeSpent: timeSpent || null,
-                success: success
+                success: success,
+                sessionContext: {
+                    timeOfDay: getTimeOfDay(),
+                    dayOfWeek: getDayOfWeek(),
+                    sessionNumber: sessionNumber,
+                    previousQuestionResult: previousQuestionResult,
+                    recommendationStrategy: strategy
+                }
             }]
         });
     }
@@ -105,6 +164,28 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
     if (!response) {
         return next(new Error(`SolveHistory update error`, 500));
     }
+
+    // NEW: Update user profile with this solve session for adaptive recommendations
+    if (userProfile && !feedbackOnly) {
+        // Only update user profile for actual solve sessions, not feedback-only updates
+        try {
+            userProfile.updateRecentPerformance({
+                questionId,
+                success,
+                timeSpent: timeSpent || 15,
+                difficulty: question.difficulty,
+                strategy: strategy || 'general_practice'
+            });
+            await userProfile.save();
+            console.log('📊 Updated user profile for adaptive recommendations');
+        } catch (profileError) {
+            console.error('📊 Error updating user profile:', profileError);
+            // Don't fail the main request if profile update fails
+        }
+    } else if (feedbackOnly) {
+        console.log('📊 Skipping user profile update for feedback-only request');
+    }
+
     res.status(201).json({ success: true, data: response });
 });
 
@@ -374,6 +455,19 @@ const getNextDifficulty = (userLevel, difficultyStats) => {
         return 'Hard';
     }
     return null;
+};
+
+// Helper functions for session context
+const getTimeOfDay = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 18) return 'afternoon';
+    return 'evening';
+};
+
+const getDayOfWeek = () => {
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return days[new Date().getDay()];
 };
 
 export {

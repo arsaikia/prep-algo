@@ -11,6 +11,7 @@ import TestResults from '../components/TestResults.jsx';
 import { useTimeTracker } from '../utils/timeTracker.js';
 import { useTestUser } from '../contexts/TestUserContext';
 import { isFeatureEnabled, isDevMode } from '../utils/featureFlags';
+import { markQuestionCompleted } from '../api/getSmartRecommendations.js';
 
 // Modern styled components with clean design
 const Container = styled.div`
@@ -900,10 +901,12 @@ const CodeSandbox = () => {
       // Automatically fetch the question
       fetchLeetCodeQuestion(questionParam);
     } else {
-      // For testing: Auto-load two-sum if no question specified
-      const testQuestion = 'two-sum';
-      setLeetcodeUrl(testQuestion);
-      fetchLeetCodeQuestion(testQuestion);
+      // For testing: Auto-load two-sum if no question specified and not in dev mode
+      if (!isDevMode()) {
+        const testQuestion = 'two-sum';
+        setLeetcodeUrl(testQuestion);
+        fetchLeetCodeQuestion(testQuestion);
+      }
     }
   }, [location.search]);
 
@@ -998,12 +1001,49 @@ const CodeSandbox = () => {
         };
 
         setTestResults(formattedResults);
-        setOutput(`Test results: ${response.data.passedTests}/${response.data.totalTests} tests passed (${response.data.score}% score)`);
 
         // Handle session completion based on results
-        const success = response.data.score >= 70; // Consider 70%+ as success
-        if (isTracking && user.userId !== 'guest') {
-          await handleSessionComplete(success);
+        const success = response.data.score === 100; // Require 100% success
+
+        // Mark question as completed in recommendations immediately if 100% success
+        if (success && user.userId !== 'guest' && currentQuestion) {
+          try {
+            // Stop the timer immediately upon successful completion
+            if (isTracking) {
+              await stopTracking(true, sessionDifficultyRating, selectedTags);
+              console.log('⏱️ Timer stopped - question completed successfully');
+            }
+
+            await markQuestionCompleted(user.userId, currentQuestion.id, {
+              timeSpent: displayTime,
+              success: true
+            });
+            console.log('✅ Question marked as completed in recommendations');
+
+            // Show success message to user
+            setOutput(`🎉 Perfect! ${response.data.passedTests}/${response.data.totalTests} tests passed (${response.data.score}% score) - Question completed!`);
+
+            // Show optional feedback modal for successful completion
+            setShowFeedbackModal(true);
+          } catch (error) {
+            console.error('Error marking question as completed in recommendations:', error);
+            // Still stop the timer even if there's an error
+            if (isTracking) {
+              try {
+                await stopTracking(true, sessionDifficultyRating, selectedTags);
+                console.log('⏱️ Timer stopped despite recommendation error');
+              } catch (timerError) {
+                console.error('Error stopping timer:', timerError);
+              }
+            }
+            // Don't block the user experience for this error
+            setOutput(`✅ All tests passed (${response.data.score}% score)! Note: Could not update recommendations.`);
+            // Still show the modal for feedback
+            setShowFeedbackModal(true);
+          }
+        } else if (!success) {
+          // For failed attempts, just show the results without modal
+          setOutput(`Test results: ${response.data.passedTests}/${response.data.totalTests} tests passed (${response.data.score}% score) - Keep trying!`);
         }
       } else {
         setError('Invalid response format from server');
@@ -1064,6 +1104,11 @@ const CodeSandbox = () => {
 
       const questionData = response.data;
       setCurrentQuestion(questionData);
+
+      // Initialize time tracking for this question
+      if (user.userId !== 'guest') {
+        startTracking(questionData.id, user.userId);
+      }
 
       // Check if description exists
       if (!questionData.description) {
@@ -1185,7 +1230,7 @@ const CodeSandbox = () => {
               onChange={(e) => setLeetcodeUrl(e.target.value)}
               placeholder="Enter LeetCode question URL or ID"
             />
-            <ModernButton variant="primary" onClick={() => fetchLeetCodeQuestion()}>
+            <ModernButton variant="primary" onClick={() => fetchLeetCodeQuestion(leetcodeUrl)}>
               <Link size={16} />
               Load Question
             </ModernButton>
@@ -1226,7 +1271,7 @@ const CodeSandbox = () => {
             <TimerDisplay>
               <TimerTime>
                 <TimerIcon size={22} />
-                {formatTime(displayTime)} {isPaused && '(PAUSED)'}
+                {formatTime(displayTime)} {isPaused && '(PAUSED)'} {!isTracking && displayTime > 0 && '✅ COMPLETED'}
               </TimerTime>
             </TimerDisplay>
             <TimerControls>
@@ -1246,6 +1291,11 @@ const CodeSandbox = () => {
                 <Square size={12} style={{ marginRight: '4px' }} />
                 Give Up
               </TimerButton>
+              {!isTracking && displayTime > 0 && (
+                <TimerButton variant="success" disabled>
+                  ✅ Question Completed!
+                </TimerButton>
+              )}
             </TimerControls>
           </TimerContent>
         </TimerCard>
@@ -1351,17 +1401,33 @@ const CodeSandbox = () => {
       {showFeedbackModal && (
         <SessionFeedbackModal>
           <ModalContent>
-            <ModalTitle>🎉 Coding Session Complete!</ModalTitle>
+            <ModalTitle>🎉 Perfect Solution! Question Completed!</ModalTitle>
+
+            <div style={{
+              background: 'linear-gradient(135deg, #28a745, #20c997)',
+              color: 'white',
+              padding: '16px',
+              borderRadius: '8px',
+              marginBottom: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '8px' }}>
+                ✅ All tests passed! Question marked as completed in your recommendations.
+              </div>
+              <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                Great job solving "{currentQuestion?.name || 'this question'}" in {formatTime(displayTime)}!
+              </div>
+            </div>
 
             <SessionSummary>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                 <div>
                   <strong>⏱️ Time Spent:</strong><br />
-                  <span style={{ fontSize: '1.2rem', color: '#007bff' }}>{formatTime(displayTime)}</span>
+                  <span style={{ fontSize: '1.2rem', color: '#28a745' }}>{formatTime(displayTime)}</span>
                 </div>
                 <div>
                   <strong>📝 Question:</strong><br />
-                  <span style={{ color: '#666' }}>{currentQuestion?.title || 'Unknown'}</span>
+                  <span style={{ color: '#666' }}>{currentQuestion?.name || 'Unknown'}</span>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -1376,8 +1442,20 @@ const CodeSandbox = () => {
               </div>
             </SessionSummary>
 
+            <div style={{
+              background: '#f8f9fa',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '20px',
+              fontSize: '0.9rem',
+              color: '#666',
+              textAlign: 'center'
+            }}>
+              📊 Optional: Help us improve recommendations by sharing your experience
+            </div>
+
             <RatingSection>
-              <RatingLabel>⭐ How difficult was this question for you?</RatingLabel>
+              <RatingLabel>⭐ How difficult was this question for you? (Optional)</RatingLabel>
               <RatingButtons>
                 {[1, 2, 3, 4, 5].map(rating => (
                   <RatingButton
@@ -1396,7 +1474,7 @@ const CodeSandbox = () => {
             </RatingSection>
 
             <TagsSection>
-              <RatingLabel>🏷️ Session Tags (select all that apply):</RatingLabel>
+              <RatingLabel>🏷️ Session Tags (select all that apply - Optional):</RatingLabel>
               <TagsGrid>
                 {availableTags.map(tag => (
                   <TagButton
@@ -1417,59 +1495,78 @@ const CodeSandbox = () => {
               <ModernButton
                 onClick={() => {
                   setShowFeedbackModal(false);
-                  // Don't reset data, keep for potential re-submission
+                  // Reset for next session
+                  setSessionDifficultyRating(null);
+                  setSelectedTags([]);
+                  // Timer is already stopped, no need to stop again
                 }}
                 style={{ flex: 1 }}
               >
-                💾 Save & Continue Coding
+                🚀 Continue Coding
               </ModernButton>
               <ModernButton
                 variant="primary"
                 onClick={async () => {
-                  // Send updated session data with final difficulty rating and tags
+                  // Update existing solve history record with additional feedback
                   try {
-                    if (currentQuestion && user.userId && user.userId !== 'guest') {
+                    if (currentQuestion && user.userId && user.userId !== 'guest' &&
+                      (sessionDifficultyRating || selectedTags.length > 0)) {
 
-
-                      // Create updated session data
-                      const updatedSessionData = {
+                      // Create feedback update data
+                      const feedbackUpdate = {
                         userId: user.userId,
                         questionId: currentQuestion.id,
-                        timeSpent: displayTime,
-                        success: true, // Assume success if they're completing the session
                         difficultyRating: sessionDifficultyRating,
-                        tags: selectedTags
+                        tags: selectedTags,
+                        // Additional context for adaptive recommendations
+                        strategy: currentQuestion.recommendationStrategy || 'general_practice'
                       };
 
-                      // Send to backend
+                      // Update the existing solve history record with feedback
                       const apiBaseUrl = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
                       const response = await fetch(`${apiBaseUrl}/solveHistory`, {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify(updatedSessionData)
+                        body: JSON.stringify({
+                          ...feedbackUpdate,
+                          // Mark this as feedback-only update (no new solve session)
+                          feedbackOnly: true,
+                          timeSpent: 0, // Don't add time since it was already tracked
+                          success: true // This was already successful
+                        })
                       });
 
                       if (response.ok) {
-                        // Session data sent successfully
+                        console.log('✅ Feedback updated successfully');
                       } else {
-                        // Failed to send session data
+                        console.warn('⚠️ Could not update feedback - using fallback');
+                        // Fallback: If the feedback endpoint doesn't exist, just log locally
+                        console.log('📊 Feedback data:', feedbackUpdate);
                       }
+                    } else {
+                      console.log('📝 No additional feedback provided - skipping update');
                     }
                   } catch (error) {
-                    // Error sending session data
+                    console.error('Error updating feedback:', error);
+                    // Don't block the user experience
+                    console.log('📊 Feedback data (failed to submit):', {
+                      questionId: currentQuestion?.id,
+                      difficultyRating: sessionDifficultyRating,
+                      tags: selectedTags
+                    });
                   }
 
                   setShowFeedbackModal(false);
                   // Reset for next session
                   setSessionDifficultyRating(null);
                   setSelectedTags([]);
-
+                  // Timer is already stopped and data already submitted
                 }}
                 style={{ flex: 1 }}
               >
-                ✅ Complete Session
+                📤 Submit Feedback & Continue
               </ModernButton>
             </ModalActions>
           </ModalContent>

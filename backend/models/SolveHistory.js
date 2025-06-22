@@ -60,6 +60,40 @@ const solveHistorySchema = new mongoose.Schema({
         success: {
             type: Boolean,
             default: true,
+        },
+        // NEW FIELDS for Phase 1 adaptive recommendations
+        sessionContext: {
+            timeOfDay: {
+                type: String,
+                enum: ['morning', 'afternoon', 'evening'],
+                default: function () {
+                    const hour = new Date().getHours();
+                    if (hour >= 5 && hour < 12) return 'morning';
+                    if (hour >= 12 && hour < 18) return 'afternoon';
+                    return 'evening';
+                }
+            },
+            dayOfWeek: {
+                type: String,
+                enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+                default: function () {
+                    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                    return days[new Date().getDay()];
+                }
+            },
+            sessionNumber: {
+                type: Number,
+                default: 1 // 1st, 2nd, 3rd question in this session
+            },
+            previousQuestionResult: {
+                type: Boolean,
+                required: false // Success of previous question in this session
+            },
+            recommendationStrategy: {
+                type: String,
+                enum: ['weak_area_reinforcement', 'progressive_difficulty', 'spaced_repetition', 'topic_exploration', 'general_practice'],
+                required: false // Which strategy recommended this question
+            }
         }
     }]
 });
