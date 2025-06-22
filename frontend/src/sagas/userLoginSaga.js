@@ -1,38 +1,48 @@
 import {
-  takeEvery,
-  put,
   call,
+  put,
+  takeEvery,
 } from 'redux-saga/effects';
 
-import {
-  LOGIN, LOGIN_SUCCESS,
-} from '../actions/types';
 import { login } from '../api/login';
+import { getQuestions } from '../api/getQuestions';
+import {
+  LOGIN,
+  LOGIN_SUCCESS,
+  LOGIN_FAILURE,
+  GET_ALL_QUESTIONS,
+} from '../actions/types';
 
 // worker Saga
-function* loginHandler(action) {
-  const questionsDataResponse = yield call(login, action.payload);
-  const {
-    userId, firstName, lastName,
-  } = questionsDataResponse?.data?.data ?? {};
-  console.log(questionsDataResponse);
-  yield put({
-    payload: {
-      firstName,
-      isAuthenticated: questionsDataResponse.status === 200,
-      lastName,
-      userId,
-    },
-    type: LOGIN_SUCCESS,
-  });
+function* userLoginHandler(action) {
+  try {
+    const response = yield call(login, action.payload);
 
-  console.log(questionsDataResponse);
+    if (response.data.success) {
+      yield put({
+        type: LOGIN_SUCCESS,
+        payload: response.data.data,
+      });
+
+      // Fetch questions after successful login
+      const questionsDataResponse = yield call(getQuestions);
+
+      if (questionsDataResponse.success) {
+        yield put({
+          type: GET_ALL_QUESTIONS,
+          payload: questionsDataResponse.data,
+        });
+      }
+    }
+  } catch (error) {
+    yield put({
+      type: LOGIN_FAILURE,
+      payload: error.message,
+    });
+  }
 }
 
-function* userLoginWatcher() {
-  yield takeEvery(LOGIN, loginHandler);
+// watcher Saga
+export function* userLoginWatcher() {
+  yield takeEvery(LOGIN, userLoginHandler);
 }
-
-export {
-  userLoginWatcher,
-};

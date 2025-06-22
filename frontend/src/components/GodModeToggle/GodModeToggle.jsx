@@ -54,10 +54,10 @@ const GodModeToggle = ({ className }) => {
       $isActive={isActive}
       onClick={handleToggle}
       className={className}
-      title={`God Mode: ${isActive ? 'Enabled' : 'Disabled'} - Click to toggle test features`}
+      title={`Dev Mode: ${isActive ? 'Enabled' : 'Disabled'} - Click to toggle development features (test users, debug info, etc.)`}
     >
       {isActive ? <EyeOff size={12} /> : <Eye size={12} />}
-      {isActive ? 'God Mode' : 'Dev Mode'}
+      {isActive ? 'Dev Mode' : 'Dev Mode'}
     </GodModeButton>
   );
 };

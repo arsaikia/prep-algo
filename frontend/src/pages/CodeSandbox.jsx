@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import TestResults from '../components/TestResults';
 import { useTimeTracker } from '../utils/timeTracker';
 import { useTestUser } from '../contexts/TestUserContext';
+import { isFeatureEnabled, isDevMode } from '../utils/featureFlags';
 
 // Modern styled components with clean design
 const Container = styled.div`
@@ -703,7 +704,7 @@ const CodeSandbox = () => {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const { isTestMode } = useTestUser();
+  const { selectedUserId } = useTestUser();
   const [language, setLanguage] = useState('python');
   const [code, setCode] = useState('');
   const [output, setOutput] = useState('');
@@ -731,17 +732,55 @@ const CodeSandbox = () => {
   const userFromRedux = useSelector((state) => state.auth);
   const allQuestions = useSelector((state) => state.questions.allQuestionsWithoutHistory);
 
-  // TEST USER - Always signed in for development/testing
-  const testUser = {
-    userId: 'test-user-123',
-    firstName: 'Test',
-    lastName: 'User',
-    isAuthenticated: true,
-    picture: null
+  // Determine which user to use based on authentication state
+  const getEffectiveUser = () => {
+    // DEV MODE OVERRIDE: When dev mode is active and a test user is selected,
+    // prioritize the test user over the authenticated user. This allows developers
+    // to test different user scenarios even when they're logged in.
+    if (isDevMode() && selectedUserId) {
+      return {
+        userId: selectedUserId,
+        firstName: 'Test',
+        lastName: 'User',
+        isAuthenticated: true,
+        picture: null
+      };
+    }
+
+    // AUTHENTICATED USER: Use the real user's data when they're properly logged in
+    if (userFromRedux.isAuthenticated && userFromRedux.userId && userFromRedux.userId !== 'guest') {
+      return {
+        userId: userFromRedux.id || userFromRedux.userId, // Handle the ID field issue
+        firstName: userFromRedux.firstName,
+        lastName: userFromRedux.lastName,
+        isAuthenticated: true,
+        picture: userFromRedux.picture
+      };
+    }
+
+    // LOGIN BUG FALLBACK: Handle edge case where userId is "guest" but 
+    // we have the actual user ID in the 'id' field (from auth reducer bug)
+    if (userFromRedux.isAuthenticated && userFromRedux.id) {
+      return {
+        userId: userFromRedux.id,
+        firstName: userFromRedux.firstName,
+        lastName: userFromRedux.lastName,
+        isAuthenticated: true,
+        picture: userFromRedux.picture
+      };
+    }
+
+    // GUEST FALLBACK: Return guest user object for unauthenticated sessions
+    return {
+      userId: 'guest',
+      firstName: 'Guest',
+      lastName: '',
+      isAuthenticated: false,
+      picture: null
+    };
   };
 
-  // Use test user instead of actual user for now
-  const user = testUser; // Change back to userFromRedux when ready for production
+  const user = getEffectiveUser();
 
   // Initialize time tracker
   const {
@@ -761,7 +800,7 @@ const CodeSandbox = () => {
       setIsPaused(true);
       setPauseStartTime(Date.now());
       originalPause(); // Also pause the original tracker
-      console.log('⏸️ Timer paused');
+      // Timer paused
     }
   };
 
@@ -772,7 +811,7 @@ const CodeSandbox = () => {
       setIsPaused(false);
       setPauseStartTime(null);
       originalResume(); // Also resume the original tracker
-      console.log('▶️ Timer resumed');
+      // Timer resumed
     }
   };
 
@@ -784,7 +823,7 @@ const CodeSandbox = () => {
         const now = Date.now();
         const elapsedMinutes = (now - timerStartTime - pausedTime) / (1000 * 60);
         setDisplayTime(Math.max(0, elapsedMinutes));
-        console.log('⏱️ Timer update:', elapsedMinutes); // Debug log
+        // Timer update
       }, 1000); // Update every second
     }
     return () => clearInterval(interval);
@@ -827,7 +866,7 @@ const CodeSandbox = () => {
 
     try {
       const sessionData = await stopTracking(success, sessionDifficultyRating, selectedTags);
-      console.log('📊 Session completed:', sessionData);
+
       setShowFeedbackModal(true);
     } catch (error) {
       console.error('❌ Error completing session:', error);
@@ -854,8 +893,6 @@ const CodeSandbox = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const questionParam = urlParams.get('question');
-
-    console.log('URL question parameter:', questionParam);
 
     if (questionParam) {
       setError(''); // Clear any existing errors
@@ -969,7 +1006,7 @@ const CodeSandbox = () => {
       }
     } catch (error) {
       setError(`Error: ${error.response?.data?.message || error.message}`);
-      console.error('Error executing code:', error);
+
     } finally {
       setIsLoading(false);
     }
@@ -1012,7 +1049,7 @@ const CodeSandbox = () => {
     try {
       // Use our backend endpoint to fetch question details
       const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
-      console.log('Using API base URI:', apiBaseUri);
+      // Using configured API base URI
 
       const response = await axios.get(`${apiBaseUri}/questions/${questionToFetch}`);
 
@@ -1070,12 +1107,11 @@ const CodeSandbox = () => {
       setExampleTestResults(null);
 
       const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
-      console.log('🔍 API Base URI being used:', apiBaseUri);
-      console.log('🔍 Environment variable REACT_APP_API_BASE_URI:', process.env.REACT_APP_API_BASE_URI);
+      // API Base URI configuration
       const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
 
       const fullUrl = `${apiBaseUri}/code/execute/example`;
-      console.log('🔍 Full URL for request:', fullUrl);
+      // Making API request to fetch question details
 
       // Submit code to the backend for example test cases
       const response = await axios.post(fullUrl, {
@@ -1130,7 +1166,7 @@ const CodeSandbox = () => {
     <Container>
 
 
-      {isTestMode && (
+      {isDevMode() && (
         <QuestionCard>
           <QuestionHeader>
             <CardTitle>
@@ -1211,7 +1247,22 @@ const CodeSandbox = () => {
         </TimerCard>
       )}
 
-
+      {/* User Debug Info */}
+      {user.userId && user.userId !== 'guest' && (
+        <div style={{
+          background: '#f8f9fa',
+          border: '1px solid #dee2e6',
+          borderRadius: '8px',
+          padding: '8px 12px',
+          marginBottom: '1rem',
+          fontSize: '0.85rem',
+          color: '#666'
+        }}>
+          <strong>👤 Tracking for:</strong> {user.firstName} {user.lastName}
+          <span style={{ opacity: 0.7 }}> (ID: {user.userId})</span>
+          {isDevMode() && <span style={{ color: '#007bff', fontWeight: 'bold' }}> [DEV MODE]</span>}
+        </div>
+      )}
 
       {isLoading && (
         <LoadingState>
@@ -1390,7 +1441,7 @@ const CodeSandbox = () => {
                   // Send updated session data with final difficulty rating and tags
                   try {
                     if (currentQuestion && user.userId && user.userId !== 'guest') {
-                      console.log('🎯 Sending updated session data with dialog inputs...');
+
 
                       // Create updated session data
                       const updatedSessionData = {
@@ -1413,20 +1464,20 @@ const CodeSandbox = () => {
                       });
 
                       if (response.ok) {
-                        console.log('✅ Updated session data sent successfully');
+                        // Session data sent successfully
                       } else {
-                        console.error('❌ Failed to send updated session data');
+                        // Failed to send session data
                       }
                     }
                   } catch (error) {
-                    console.error('❌ Error sending updated session data:', error);
+                    // Error sending session data
                   }
 
                   setShowFeedbackModal(false);
                   // Reset for next session
                   setSessionDifficultyRating(null);
                   setSelectedTags([]);
-                  console.log('🎯 Session data saved for recommendations!');
+
                 }}
                 style={{ flex: 1 }}
               >

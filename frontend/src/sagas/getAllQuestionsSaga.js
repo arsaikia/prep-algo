@@ -22,7 +22,7 @@ function* fetchAllQuestions(action) {
 
     try {
         const userId = action.userId; // Action structure: { type: GET_QUESTIONS, userId }
-        console.log('Fetching questions for userId:', userId);
+
 
         const response = yield call(axios.get, `${API_BASE_URL}/questions/get-questions/${userId}`);
 
@@ -56,12 +56,12 @@ function* fetchAllQuestions(action) {
                 type: GET_SOLVED_QUESTIONS,
             });
 
-            console.log('Questions fetched successfully');
+
         } else {
-            console.error('Failed to fetch questions:', response.status);
+
         }
     } catch (error) {
-        console.error('Error fetching questions:', error);
+
     }
 
     // Make loading False -> Questions fetched

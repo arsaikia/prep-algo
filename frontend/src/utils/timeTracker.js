@@ -33,7 +33,6 @@ class TimeTracker {
 
         // Store in localStorage for persistence
         localStorage.setItem('currentSession', JSON.stringify(this.sessionData));
-        console.log(`⏱️ Started tracking time for question ${questionId}`);
     }
 
     /**
@@ -43,7 +42,6 @@ class TimeTracker {
         if (!this.isPaused && this.startTime) {
             this.isPaused = true;
             this.pauseStartTime = new Date();
-            console.log('⏸️ Timer paused');
         }
     }
 
@@ -55,7 +53,6 @@ class TimeTracker {
             this.pausedTime += new Date() - this.pauseStartTime;
             this.isPaused = false;
             this.pauseStartTime = null;
-            console.log('▶️ Timer resumed');
         }
     }
 
@@ -68,7 +65,6 @@ class TimeTracker {
      */
     stopTracking(success = true, difficultyRating = null, tags = []) {
         if (!this.startTime) {
-            console.warn('⚠️ Timer was not started');
             return null;
         }
 
@@ -88,7 +84,6 @@ class TimeTracker {
         // Clear localStorage
         localStorage.removeItem('currentSession');
 
-        console.log(`⏹️ Stopped tracking. Time spent: ${timeSpentMinutes} minutes`);
         return sessionResult;
     }
 
@@ -147,10 +142,8 @@ class TimeTracker {
             try {
                 this.sessionData = JSON.parse(savedSession);
                 this.startTime = new Date(this.sessionData.startTime);
-                console.log('🔄 Session restored from localStorage');
                 return true;
             } catch (error) {
-                console.error('❌ Failed to restore session:', error);
                 localStorage.removeItem('currentSession');
             }
         }
@@ -167,7 +160,6 @@ class TimeTracker {
         this.isPaused = false;
         this.sessionData = {};
         localStorage.removeItem('currentSession');
-        console.log('🔄 Timer reset');
     }
 }
 
@@ -180,8 +172,6 @@ export const timeTracker = new TimeTracker();
 export const updateSolveHistoryWithTracking = async (sessionData) => {
     try {
         const apiBaseUrl = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
-
-        console.log('📊 Sending session data to solveHistory:', sessionData);
 
         const response = await fetch(`${apiBaseUrl}/solveHistory`, {
             method: 'POST',
@@ -203,10 +193,8 @@ export const updateSolveHistoryWithTracking = async (sessionData) => {
         }
 
         const result = await response.json();
-        console.log('✅ Solve history updated successfully:', result);
         return result;
     } catch (error) {
-        console.error('❌ Failed to update solve history:', error);
         throw error;
     }
 };

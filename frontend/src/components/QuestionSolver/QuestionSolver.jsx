@@ -44,7 +44,7 @@ const QuestionSolver = ({ question, userId, onComplete }) => {
 
         try {
             const sessionData = await stopTracking(success, difficultyRating, selectedTags);
-            console.log('📊 Session completed:', sessionData);
+
 
             if (onComplete) {
                 onComplete(sessionData);

@@ -27,7 +27,6 @@ import { Container } from './styles';
 import { lightTheme, darkTheme } from './theme';
 import useTheme from './hooks/useTheme';
 import { TestUserProvider } from './contexts/TestUserContext';
-import { logFeatureFlags, isGodMode } from './utils/featureFlags';
 
 // App wrapper with theme background
 const AppWrapper = styled.div`
@@ -90,13 +89,9 @@ function QuestionsLoader({ children }) {
   const hasFetchedRef = React.useRef(false);
   const hasFetchedUserRef = React.useRef(false);
 
-  console.log('QuestionsLoader mounted with userId:', userId);
-  console.log('Cookies:', cookies);
-
   // Fetch questions immediately when this component mounts
   useEffect(() => {
     if (!hasFetchedRef.current) {
-      console.log('Dispatching getAllQuestionsWithoutHistory');
       // Always fetch questions without solve history
       dispatch(getAllQuestionsWithoutHistory());
       hasFetchedRef.current = true;
@@ -104,13 +99,9 @@ function QuestionsLoader({ children }) {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log('Checking userId for fetchUserInfo:', userId);
     if (userId !== 'guest' && !hasFetchedUserRef.current) {
-      console.log('Dispatching fetchUserInfo with userId:', userId);
       dispatch(fetchUserInfo(userId));
       hasFetchedUserRef.current = true;
-    } else if (userId === 'guest') {
-      console.log('Not dispatching fetchUserInfo because userId is guest');
     }
   }, [dispatch, userId]);
 
@@ -130,6 +121,11 @@ function App() {
 
   const userIdInCookie = cookies.userId;
   const userId = userIdInCookie || userIdInAuthStore || 'guest';
+
+  // Log feature flags on app startup
+  useEffect(() => {
+    // Feature flags initialization (no logging)
+  }, []);
 
   // Set cookie when user logs in
   useEffect(() => {

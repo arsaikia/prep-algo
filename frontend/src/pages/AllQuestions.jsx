@@ -23,6 +23,7 @@ import {
 } from '../utils/questions';
 import { getQuestions } from '../actions/actions';
 import { useTestUser } from '../contexts/TestUserContext';
+import { isDevMode } from '../utils/featureFlags';
 
 // Styled components
 const Container = styled.div`
@@ -630,7 +631,11 @@ const AllQuestions = () => {
         isFetchingQuestions,
     } = useSelector((state) => state.questions);
 
-    // Get selected user from context
+    // Get authenticated user from Redux store
+    const authUser = useSelector(state => state.auth);
+    const { isAuthenticated, userId: authUserId } = authUser;
+
+    // Get selected user from context (for test mode)
     const { selectedUserId } = useTestUser();
 
     // State to track active list tab
@@ -643,10 +648,36 @@ const AllQuestions = () => {
     // State to track expanded groups
     const [expandedGroups, setExpandedGroups] = useState({});
 
+    // Determine which user ID to use for fetching questions
+    const getUserIdForQuestions = () => {
+        // DEV MODE OVERRIDE: When dev mode is active and a test user is selected,
+        // prioritize the test user over the authenticated user. This allows developers
+        // to test different user scenarios even when they're logged in.
+        if (isDevMode() && selectedUserId) {
+            return selectedUserId;
+        }
+
+        // AUTHENTICATED USER: Use the real user's ID when they're properly logged in
+        if (isAuthenticated && authUserId && authUserId !== 'guest') {
+            return authUserId;
+        }
+
+        // LOGIN BUG FALLBACK: Handle edge case where userId is "guest" but 
+        // we have the actual user ID in the 'id' field (from auth reducer bug)
+        if (isAuthenticated && authUser.id) {
+            return authUser.id;
+        }
+
+        // GUEST FALLBACK: Use 'guest' as default for unauthenticated users
+        return 'guest';
+    };
+
+    const questionUserId = getUserIdForQuestions();
+
     // Fetch questions with user data when component mounts or user changes
     useEffect(() => {
-        dispatch(getQuestions(selectedUserId));
-    }, [dispatch, selectedUserId]);
+        dispatch(getQuestions(questionUserId));
+    }, [dispatch, questionUserId]);
 
     // Get all unique list names and their counts from questions
     const listNamesAndCounts = useMemo(() => {

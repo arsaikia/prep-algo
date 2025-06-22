@@ -25,6 +25,7 @@ import GoogleLoginModal from './Auth/GoogleLoginModal';
 import useTheme from '../hooks/useTheme';
 import TestUserSelector from './TestUserSelector/TestUserSelector';
 import { useTestUser } from '../contexts/TestUserContext';
+import { isDevMode } from '../utils/featureFlags';
 
 // Styled components
 const NavContainer = styled.nav`
@@ -579,6 +580,66 @@ const ThemeToggleButton = styled.button`
   }
 `;
 
+const DevModeIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1.5px solid ${({ theme }) => theme.colors.brand.primary};
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+  margin-right: 8px;
+  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  
+  .dev-icon {
+    color: ${({ theme }) => theme.colors.brand.primary};
+    font-size: 14px;
+    font-weight: bold;
+    filter: drop-shadow(0 1px 2px ${({ theme }) => theme.colors.brand.primary}40);
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 11px;
+    font-weight: 500;
+    
+    .user-type {
+      color: ${({ theme }) => theme.colors.brand.primary};
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+    
+    .separator {
+      color: ${({ theme }) => theme.colors.textSecondary};
+      font-weight: 400;
+    }
+    
+    .user-name {
+      color: ${({ theme }) => theme.colors.text};
+      font-weight: 600;
+    }
+  }
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.backgroundHover};
+    border-color: ${({ theme }) => theme.colors.brand.secondary};
+    box-shadow: ${({ theme }) => theme.colors.shadows.cardHover};
+    transform: translateY(-1px);
+  }
+  
+  @media (max-width: 768px) {
+    display: none; // Hide on mobile to save space
+  }
+`;
+
 function Navbar() {
   // State management
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -603,7 +664,7 @@ function Navbar() {
   const { isDarkModeEnabled, userPreference, isFollowingSystem, toggleTheme } = useTheme();
 
   // Test user management
-  const { selectedUserId, changeUser, isTestMode } = useTestUser();
+  const { selectedUserId, changeUser } = useTestUser();
 
   // Fire actions using dispatch -> fires action -> Watcher saga handles rest
   const resetAuth = () => dispatch(resetAuthState());
@@ -613,6 +674,35 @@ function Navbar() {
   const userName = cookies?.name || '';
   const isUserAuthenticated = !!userIdInCookie;
   const userPicture = userAuthState?.picture || '';
+
+  // Determine effective user for dev mode display
+  const getEffectiveUserInfo = () => {
+    if (!isDevMode()) return null;
+
+    if (selectedUserId) {
+      return {
+        type: 'test',
+        displayName: selectedUserId.replace('test-', '').replace(/-/g, ' '),
+        fullId: selectedUserId
+      };
+    }
+
+    if (isUserAuthenticated) {
+      return {
+        type: 'auth',
+        displayName: userName || 'User',
+        fullId: userAuthState?.id || userAuthState?.userId || userIdInCookie
+      };
+    }
+
+    return {
+      type: 'guest',
+      displayName: 'Guest',
+      fullId: 'guest'
+    };
+  };
+
+  const effectiveUser = getEffectiveUserInfo();
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -738,7 +828,22 @@ function Navbar() {
           </NavLinks>
 
           <UserSection>
-            {isTestMode && (
+            {effectiveUser && (
+              <DevModeIndicator
+                title={`Dev Mode Active - Using ${effectiveUser.type === 'test' ? 'test user' : effectiveUser.type === 'auth' ? 'authenticated account' : 'guest account'}: ${effectiveUser.fullId}`}
+              >
+                <span className="dev-icon">🛠️</span>
+                <div className="user-info">
+                  <span className="user-type">
+                    {effectiveUser.type === 'test' ? 'Test' : effectiveUser.type === 'auth' ? 'Auth' : 'Guest'}
+                  </span>
+                  <span className="separator">:</span>
+                  <span className="user-name">{effectiveUser.displayName}</span>
+                </div>
+              </DevModeIndicator>
+            )}
+
+            {isDevMode() && (
               <TestUserSelector
                 selectedUserId={selectedUserId}
                 onUserChange={changeUser}

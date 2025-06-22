@@ -69,95 +69,6 @@ const RetryButton = styled.button`
     }
 `;
 
-const Header = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid ${({ theme }) => theme.colors.border};
-    
-    h2 {
-        margin: 0;
-        color: ${({ theme }) => theme.colors.brand.text};
-        font-size: 28px;
-        font-weight: 700;
-    }
-`;
-
-const ColorSchemeSelector = styled.div`
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    
-    label {
-        font-size: 12px;
-        color: ${({ theme }) => theme.colors.textSecondary};
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    select {
-        padding: 4px 8px;
-        border: 1px solid ${({ theme }) => theme.colors.border};
-        border-radius: 4px;
-        background: ${({ theme }) => theme.colors.background};
-        color: ${({ theme }) => theme.colors.text};
-        font-size: 12px;
-        
-        &:focus {
-            outline: none;
-            border-color: ${({ theme }) => theme.colors.brand.primary};
-        }
-    }
-`;
-
-const Controls = styled.div`
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-    
-    label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 500;
-        color: ${({ theme }) => theme.colors.textSecondary};
-    }
-    
-    select {
-        padding: 6px 12px;
-        border: 2px solid ${({ theme }) => theme.colors.border};
-        border-radius: 6px;
-        background: ${({ theme }) => theme.colors.background};
-        color: ${({ theme }) => theme.colors.text};
-        font-size: 14px;
-        transition: border-color 0.2s ease;
-        
-        &:focus {
-            outline: none;
-            border-color: ${({ theme }) => theme.colors.brand.primary};
-        }
-    }
-`;
-
-const RefreshButton = styled.button`
-    background: ${({ theme }) => theme.colors.interactive.buttonSuccess};
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    
-    &:hover {
-        background: ${({ theme }) => theme.colors.interactive.buttonSuccessHover};
-        transform: translateY(-1px);
-    }
-`;
-
 const AnalysisSummary = styled.div`
     background: ${({ theme }) => theme.colors.recommendations.analysisGradient};
     border-radius: 12px;
@@ -593,26 +504,50 @@ const RecommendationTip = styled.p`
     }
 `;
 
+const FooterThemeSelector = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
+    
+    label {
+        font-size: 14px;
+        font-weight: 600;
+        color: ${({ theme }) => theme.colors.brand.primary};
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    select {
+        padding: 6px 12px;
+        border: 2px solid ${({ theme }) => theme.colors.border};
+        border-radius: 6px;
+        background: ${({ theme }) => theme.colors.background};
+        color: ${({ theme }) => theme.colors.text};
+        font-size: 14px;
+        transition: border-color 0.2s ease;
+        
+        &:focus {
+            outline: none;
+            border-color: ${({ theme }) => theme.colors.brand.primary};
+        }
+    }
+    
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+`;
+
 // Mobile responsive styles
 const MobileContainer = styled.div`
     @media (max-width: 768px) {
         ${Container} {
             padding: 16px;
-        }
-        
-        ${Header} {
-            flex-direction: column;
-            gap: 16px;
-            align-items: flex-start;
-            
-            h2 {
-                font-size: 24px;
-            }
-        }
-        
-        ${Controls} {
-            flex-direction: column;
-            width: 100%;
         }
         
         ${UserStats} {
@@ -642,25 +577,39 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
     const [analysis, setAnalysis] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [recommendationCount, setRecommendationCount] = useState(5);
     const [colorScheme, setColorScheme] = useState('original'); // original, complementary, triadic
 
     useEffect(() => {
         if (userId) {
             fetchRecommendations();
         }
-    }, [userId, recommendationCount]);
+    }, [userId]);
 
     const fetchRecommendations = async () => {
         try {
             setLoading(true);
-            const response = await getDailyRecommendations(userId, recommendationCount);
+            const response = await getDailyRecommendations(userId, 5); // Always fetch 5 recommendations
             setRecommendations(response.data.recommendations || []);
-            setAnalysis(response.data.analysis);
+
+            // Handle both analysis object (users with history) and strategy string (new users)
+            if (response.data.analysis) {
+                setAnalysis(response.data.analysis);
+            } else if (response.data.strategy) {
+                // Create a basic analysis object for new users
+                setAnalysis({
+                    userLevel: response.data.strategy,
+                    totalSolved: 0,
+                    recentActivity: 0,
+                    weakAreas: [],
+                    strongAreas: []
+                });
+            } else {
+                setAnalysis(null);
+            }
+
             setError(null);
         } catch (err) {
             setError('Failed to fetch recommendations');
-            console.error('Error fetching recommendations:', err);
         } finally {
             setLoading(false);
         }
@@ -701,38 +650,6 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
     return (
         <MobileContainer>
             <Container>
-                <Header>
-                    <h2>🎯 Your Daily Practice</h2>
-                    <Controls>
-                        <label>
-                            Questions:
-                            <select
-                                value={recommendationCount}
-                                onChange={(e) => setRecommendationCount(parseInt(e.target.value))}
-                            >
-                                <option value={3}>3</option>
-                                <option value={5}>5</option>
-                                <option value={7}>7</option>
-                                <option value={10}>10</option>
-                            </select>
-                        </label>
-                        <ColorSchemeSelector>
-                            <label>Theme:</label>
-                            <select
-                                value={colorScheme}
-                                onChange={(e) => setColorScheme(e.target.value)}
-                            >
-                                <option value="original">Original</option>
-                                <option value="complementary">Complementary</option>
-                                <option value="triadic">Triadic</option>
-                            </select>
-                        </ColorSchemeSelector>
-                        <RefreshButton onClick={fetchRecommendations}>
-                            🔄 Refresh
-                        </RefreshButton>
-                    </Controls>
-                </Header>
-
                 {analysis && (
                     <AnalysisSummary>
                         <UserStats>
@@ -774,52 +691,59 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
                             <p>You've solved all available questions in your current categories. Try exploring new topics!</p>
                         </NoRecommendations>
                     ) : (
-                        recommendations.map((rec, index) => (
-                            <RecommendationCard
-                                key={rec.question._id}
-                                index={index}
-                                onClick={() => onQuestionSelect && onQuestionSelect(rec.question)}
-                            >
-                                <RecommendationHeader>
-                                    <PriorityIndicator className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
-                                        {index + 1}
-                                    </PriorityIndicator>
-                                    <StrategyIcon>
-                                        {getStrategyIcon(rec.strategy)}
-                                    </StrategyIcon>
-                                    <QuestionInfo>
-                                        <QuestionName>{rec.question.name}</QuestionName>
-                                        <QuestionMeta>
-                                            <QuestionGroup>{rec.question.group}</QuestionGroup>
-                                            <QuestionDifficulty
-                                                className={`difficulty-${rec.question.difficulty?.toLowerCase()}`}
-                                                $colorScheme={colorScheme}
-                                            >
-                                                {rec.question.difficulty}
-                                            </QuestionDifficulty>
-                                        </QuestionMeta>
-                                    </QuestionInfo>
-                                </RecommendationHeader>
+                        recommendations.map((rec, index) => {
+                            // Safety check for undefined recommendations
+                            if (!rec || !rec.question) {
+                                return null;
+                            }
 
-                                <RecommendationReason>
-                                    <ReasonText>{rec.reason}</ReasonText>
-                                    {rec.lastSolved && (
-                                        <LastSolved>
-                                            Last solved: {new Date(rec.lastSolved).toLocaleDateString()}
-                                        </LastSolved>
-                                    )}
-                                </RecommendationReason>
+                            return (
+                                <RecommendationCard
+                                    key={rec.question._id}
+                                    index={index}
+                                    onClick={() => onQuestionSelect && onQuestionSelect(rec.question)}
+                                >
+                                    <RecommendationHeader>
+                                        <PriorityIndicator className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
+                                            {index + 1}
+                                        </PriorityIndicator>
+                                        <StrategyIcon>
+                                            {getStrategyIcon(rec.strategy)}
+                                        </StrategyIcon>
+                                        <QuestionInfo>
+                                            <QuestionName>{rec.question.name}</QuestionName>
+                                            <QuestionMeta>
+                                                <QuestionGroup>{rec.question.group}</QuestionGroup>
+                                                <QuestionDifficulty
+                                                    className={`difficulty-${rec.question.difficulty?.toLowerCase()}`}
+                                                    $colorScheme={colorScheme}
+                                                >
+                                                    {rec.question.difficulty}
+                                                </QuestionDifficulty>
+                                            </QuestionMeta>
+                                        </QuestionInfo>
+                                    </RecommendationHeader>
 
-                                <RecommendationFooter>
-                                    <StrategyTag strategy={rec.strategy} $colorScheme={colorScheme}>
-                                        {rec.strategy.replace(/_/g, ' ')}
-                                    </StrategyTag>
-                                    <PriorityTag className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
-                                        {rec.priority} priority
-                                    </PriorityTag>
-                                </RecommendationFooter>
-                            </RecommendationCard>
-                        ))
+                                    <RecommendationReason>
+                                        <ReasonText>{rec.reason}</ReasonText>
+                                        {rec.lastSolved && (
+                                            <LastSolved>
+                                                Last solved: {new Date(rec.lastSolved).toLocaleDateString()}
+                                            </LastSolved>
+                                        )}
+                                    </RecommendationReason>
+
+                                    <RecommendationFooter>
+                                        <StrategyTag strategy={rec.strategy} $colorScheme={colorScheme}>
+                                            {rec.strategy ? rec.strategy.replace(/_/g, ' ') : 'general practice'}
+                                        </StrategyTag>
+                                        <PriorityTag className={`priority-${rec.priority}`} $colorScheme={colorScheme}>
+                                            {rec.priority} priority
+                                        </PriorityTag>
+                                    </RecommendationFooter>
+                                </RecommendationCard>
+                            );
+                        })
                     )}
                 </RecommendationsList>
 
@@ -828,9 +752,20 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
                         <RecommendationTip>
                             💡 <strong>Tip:</strong> Focus on high-priority recommendations first.
                             They're tailored to address your specific learning needs!
-                            <br />
-                            🎨 <strong>Color Schemes:</strong> Try different themes to see complementary and triadic color combinations!
                         </RecommendationTip>
+                        <FooterThemeSelector>
+                            <label>
+                                🎨 <strong>Color Schemes:</strong> Try different themes to see complementary and triadic color combinations!
+                            </label>
+                            <select
+                                value={colorScheme}
+                                onChange={(e) => setColorScheme(e.target.value)}
+                            >
+                                <option value="original">Original</option>
+                                <option value="complementary">Complementary</option>
+                                <option value="triadic">Triadic</option>
+                            </select>
+                        </FooterThemeSelector>
                     </RecommendationsFooter>
                 )}
             </Container>
