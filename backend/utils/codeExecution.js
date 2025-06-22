@@ -138,13 +138,7 @@ if __name__ == "__main__":
         
         # Try to parse expected as Python literal (for [0,1], {}, etc.)
         try:
-            # Handle JavaScript boolean strings
-            if expected_str.lower() == "true":
-                expected = True
-            elif expected_str.lower() == "false":
-                expected = False
-            else:
-                expected = eval(expected_str)
+            expected = eval(expected_str)
         except:
             expected = expected_str
         
@@ -153,6 +147,14 @@ if __name__ == "__main__":
         
         # Compare results - handle different types intelligently
         def compare_results(actual, expected):
+            # Handle boolean vs string conversion (common issue)
+            if isinstance(actual, bool) and isinstance(expected, str):
+                if expected.lower() in ['true', 'false']:
+                    return str(actual).lower() == expected.lower()
+            elif isinstance(actual, str) and isinstance(expected, bool):
+                if actual.lower() in ['true', 'false']:
+                    return actual.lower() == str(expected).lower()
+            
             # Both are lists/arrays - compare as sorted lists for order independence
             if isinstance(actual, (list, tuple)) and isinstance(expected, (list, tuple)):
                 return sorted(actual) == sorted(expected)
@@ -178,10 +180,16 @@ if __name__ == "__main__":
                 return actual == expected
         
         passed = compare_results(result, expected)
+        
+        # Convert boolean results to string format for consistency with expected output
+        formatted_result = result
+        if isinstance(result, bool) and isinstance(expected, str):
+            if expected.lower() in ['true', 'false']:
+                formatted_result = str(result).lower()
             
         print(json.dumps({
             'passed': passed,
-            'result': result,
+            'result': formatted_result,
             'expected': expected,
             'debugOutput': ''.join(print_capture.output)
         }))

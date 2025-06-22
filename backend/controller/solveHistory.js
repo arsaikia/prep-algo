@@ -38,11 +38,10 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
         success = true, // boolean
         strategy, // which recommendation strategy suggested this question
         sessionNumber = 1, // question number in this session
-        previousQuestionResult, // success of previous question in session
-        feedbackOnly = false // NEW: if true, only update feedback fields without creating new solve session
+        previousQuestionResult // success of previous question in session
     } = req.body;
 
-    console.log('📊 updateSolveHistory received:', { userId, questionId, timeSpent, difficultyRating, tags, success, strategy, feedbackOnly });
+    console.log('📊 updateSolveHistory received:', { userId, questionId, timeSpent, difficultyRating, tags, success, strategy });
 
     const question = await Question.findById(questionId);
     const user = await User.findById(userId);
@@ -69,74 +68,43 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
     const currentTimestamp = new Date();
 
     if (lastSolve) {
-        if (feedbackOnly) {
-            // FEEDBACK-ONLY UPDATE: Only update feedback fields without creating new solve session
-            console.log('📊 Feedback-only update for existing solve history');
-            response = await SolveHistory.findByIdAndUpdate(
-                lastSolve._id,
-                {
-                    lastUpdatedAt: currentTimestamp,
-                    difficulty_rating: difficultyRating || lastSolve.difficulty_rating,
-                    tags: tags || lastSolve.tags,
-                    // Update strategy in the most recent solve session if it exists
-                    ...(lastSolve.solveHistory?.length > 0 && {
-                        'solveHistory.$[elem].sessionContext.recommendationStrategy': strategy
-                    })
-                },
-                {
-                    new: true,
-                    arrayFilters: [{ 'elem.solvedAt': { $exists: true } }]
-                }
-            );
-        } else {
-            // REGULAR UPDATE: Create new solve session
-            console.log('📊 Creating new solve session for existing question');
+        // Calculate new average time if timeSpent is provided
+        let newAverageTime = lastSolve.averageTimeToSolve;
+        if (timeSpent && typeof timeSpent === 'number') {
+            const totalSessions = lastSolve.solveHistory?.length || lastSolve.solveCount;
+            const currentTotal = (lastSolve.averageTimeToSolve || 0) * totalSessions;
+            newAverageTime = (currentTotal + timeSpent) / (totalSessions + 1);
+        }
 
-            // Calculate new average time if timeSpent is provided
-            let newAverageTime = lastSolve.averageTimeToSolve;
-            if (timeSpent && typeof timeSpent === 'number') {
-                const totalSessions = lastSolve.solveHistory?.length || lastSolve.solveCount;
-                const currentTotal = (lastSolve.averageTimeToSolve || 0) * totalSessions;
-                newAverageTime = (currentTotal + timeSpent) / (totalSessions + 1);
+        // Prepare solve session data with adaptive context
+        const newSolveSession = {
+            solvedAt: currentTimestamp,
+            timeSpent: timeSpent || null,
+            success: success,
+            sessionContext: {
+                timeOfDay: getTimeOfDay(),
+                dayOfWeek: getDayOfWeek(),
+                sessionNumber: sessionNumber,
+                previousQuestionResult: previousQuestionResult,
+                recommendationStrategy: strategy
             }
+        };
 
-            // Prepare solve session data with adaptive context
-            const newSolveSession = {
-                solvedAt: currentTimestamp,
-                timeSpent: timeSpent || null,
-                success: success,
-                sessionContext: {
-                    timeOfDay: getTimeOfDay(),
-                    dayOfWeek: getDayOfWeek(),
-                    sessionNumber: sessionNumber,
-                    previousQuestionResult: previousQuestionResult,
-                    recommendationStrategy: strategy
-                }
-            };
-
-            // Update existing record
-            response = await SolveHistory.findByIdAndUpdate(
-                lastSolve._id,
-                {
-                    solveCount: lastSolve.solveCount + 1,
-                    lastUpdatedAt: currentTimestamp,
-                    averageTimeToSolve: newAverageTime,
-                    difficulty_rating: difficultyRating || lastSolve.difficulty_rating,
-                    tags: tags || lastSolve.tags,
-                    $push: { solveHistory: newSolveSession }
-                },
-                { new: true }
-            );
-        }
+        // Update existing record
+        response = await SolveHistory.findByIdAndUpdate(
+            lastSolve._id,
+            {
+                solveCount: lastSolve.solveCount + 1,
+                lastUpdatedAt: currentTimestamp,
+                averageTimeToSolve: newAverageTime,
+                difficulty_rating: difficultyRating || lastSolve.difficulty_rating,
+                tags: tags || lastSolve.tags,
+                $push: { solveHistory: newSolveSession }
+            },
+            { new: true }
+        );
     } else {
-        if (feedbackOnly) {
-            // FEEDBACK-ONLY but no existing record - this shouldn't happen
-            console.warn('📊 Warning: Feedback-only update requested but no existing solve history found');
-            return next(new Error(`Cannot update feedback - no existing solve history found`, 404));
-        }
-
         // Create new record
-        console.log('📊 Creating new solve history record');
         response = await SolveHistory.create({
             userId,
             questionId,
@@ -166,8 +134,7 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
     }
 
     // NEW: Update user profile with this solve session for adaptive recommendations
-    if (userProfile && !feedbackOnly) {
-        // Only update user profile for actual solve sessions, not feedback-only updates
+    if (userProfile) {
         try {
             userProfile.updateRecentPerformance({
                 questionId,
@@ -182,8 +149,6 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
             console.error('📊 Error updating user profile:', profileError);
             // Don't fail the main request if profile update fails
         }
-    } else if (feedbackOnly) {
-        console.log('📊 Skipping user profile update for feedback-only request');
     }
 
     res.status(201).json({ success: true, data: response });

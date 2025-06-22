@@ -88,7 +88,7 @@ const dailyRecommendationBatchSchema = new mongoose.Schema({
     },
     batchType: {
         type: String,
-        enum: ['daily', 'refresh', 'bonus'],
+        enum: ['daily', 'refresh', 'bonus', 'selective_refresh'],
         default: 'daily'
     },
     metadata: {
@@ -113,34 +113,49 @@ dailyRecommendationBatchSchema.methods.shouldRefresh = function (userId) {
     const timeSinceGeneration = now - this.generatedAt;
     const timeSinceLastRefresh = this.lastRefreshAt ? now - this.lastRefreshAt : Infinity;
 
+    // Check if this is a different day (next day refresh logic)
+    const batchDate = new Date(this.generatedAt);
+    const today = new Date();
+    const isDifferentDay = batchDate.toDateString() !== today.toDateString();
+
     // Refresh conditions
     const conditions = {
-        questionsCompleted: this.questionsCompleted.length >= 2,
-        timeThreshold: timeSinceGeneration > (6 * 60 * 60 * 1000), // 6 hours
-        recentRefresh: timeSinceLastRefresh < (60 * 60 * 1000), // 1 hour cooldown
+        // Only allow refresh if it's a different day AND user made progress
+        nextDayWithProgress: isDifferentDay && this.questionsCompleted.length > 0,
+
+        // Allow immediate refresh only if ALL questions completed
         allCompleted: this.questionsCompleted.length >= this.recommendations.length,
-        isStale: this.isStale
+
+        // Batch marked as stale (manual override)
+        isStale: this.isStale,
+
+        // Recent refresh cooldown (1 hour)
+        recentRefresh: timeSinceLastRefresh < (60 * 60 * 1000),
+
+        // Legacy conditions (for backward compatibility)
+        questionsCompleted: this.questionsCompleted.length >= 2,
+        timeThreshold: timeSinceGeneration > (6 * 60 * 60 * 1000) // 6 hours
     };
 
-    // Allow refresh if:
-    // 1. User completed 2+ questions, OR
-    // 2. 6+ hours passed since generation, OR
-    // 3. All questions completed, OR
-    // 4. Batch marked as stale
-    // BUT NOT if refreshed within last hour (unless all completed)
+    // NEW HYBRID LOGIC:
+    // 1. Same day: Only refresh if ALL completed
+    // 2. Next day: Refresh if user made ANY progress (completed 1+ questions)
+    // 3. Manual refresh always allowed (via isStale flag)
+    // 4. Respect cooldown period
     const shouldRefresh = (
-        conditions.questionsCompleted ||
-        conditions.timeThreshold ||
+        conditions.nextDayWithProgress ||
         conditions.allCompleted ||
         conditions.isStale
-    ) && (!conditions.recentRefresh || conditions.allCompleted);
+    ) && !conditions.recentRefresh;
 
     return {
         allowed: shouldRefresh,
         reasons: conditions,
+        strategy: isDifferentDay ? 'next_day_refresh' : 'same_day_stable',
         nextRefreshAvailable: conditions.recentRefresh ?
             new Date(this.lastRefreshAt.getTime() + 60 * 60 * 1000) :
-            new Date()
+            new Date(),
+        canReplaceCompleted: this.questionsCompleted.length > 0
     };
 };
 

@@ -3,7 +3,7 @@ import SolveHistory from '../models/SolveHistory.js';
 import UserProfile from '../models/UserProfile.js';
 import Question from '../models/Question.js';
 import asyncHandler from '../middleware/async.js';
-import ErrorResponse from '../middleware/error.js';
+import ErrorResponse from '../utils/errorResponse.js';
 
 /*
  * @desc     Get smart daily recommendations with hybrid caching
@@ -42,6 +42,7 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
 
         // Get completed question IDs for status checking
         const completedQuestionIds = batch.questionsCompleted.map(q => q.questionId);
+        const refreshCheck = batch.shouldRefresh(userId);
 
         // Format response
         const response = {
@@ -69,8 +70,11 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
                     generatedAt: batch.generatedAt,
                     refreshCount: batch.refreshCount,
                     batchType: batch.batchType,
-                    canRefresh: batch.shouldRefresh(userId).allowed,
-                    nextRefreshAvailable: batch.shouldRefresh(userId).nextRefreshAvailable
+                    strategy: refreshCheck.strategy,
+                    canRefresh: refreshCheck.allowed,
+                    canReplaceCompleted: refreshCheck.canReplaceCompleted,
+                    nextRefreshAvailable: refreshCheck.nextRefreshAvailable,
+                    completedCount: batch.questionsCompleted.length
                 },
                 totalSolved: batch.analysis.totalSolved
             }
@@ -127,6 +131,76 @@ const markQuestionCompleted = asyncHandler(async (req, res, next) => {
 });
 
 /*
+ * @desc     Replace completed questions with fresh ones (keep incomplete)
+ * @route    POST /api/v1/smart-recommendations/:userId/replace-completed
+ * @access   Public
+ */
+const replaceCompletedQuestions = asyncHandler(async (req, res, next) => {
+    const { userId } = req.params;
+
+    console.log(`🔄 Replace completed questions requested for user: ${userId}`);
+
+    try {
+        const batch = await DailyRecommendationBatch.findTodaysBatch(userId);
+
+        if (!batch) {
+            return next(new ErrorResponse('No active daily batch found', 404));
+        }
+
+        if (batch.questionsCompleted.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No completed questions to replace'
+            });
+        }
+
+        // Perform selective replacement - only replace completed questions
+        const refreshedBatch = await performSelectiveRefresh(batch, userId);
+        const progress = refreshedBatch.getProgress();
+        const completedQuestionIds = refreshedBatch.questionsCompleted.map(q => q.questionId);
+        const refreshCheck = refreshedBatch.shouldRefresh(userId);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                recommendations: refreshedBatch.recommendations.map(rec => {
+                    const questionId = rec.question._id || rec.question.id;
+                    const isCompleted = completedQuestionIds.includes(questionId);
+                    const completionData = isCompleted ?
+                        refreshedBatch.questionsCompleted.find(q => q.questionId === questionId) : null;
+
+                    return {
+                        question: rec.question,
+                        reason: rec.reason,
+                        priority: rec.priority,
+                        strategy: rec.strategy,
+                        adaptiveContext: rec.adaptiveContext,
+                        completed: isCompleted,
+                        lastSolved: completionData ? completionData.completedAt : null
+                    };
+                }),
+                analysis: refreshedBatch.analysis,
+                progress,
+                batchInfo: {
+                    generatedAt: refreshedBatch.generatedAt,
+                    refreshCount: refreshedBatch.refreshCount,
+                    batchType: refreshedBatch.batchType,
+                    strategy: refreshCheck.strategy,
+                    canRefresh: refreshCheck.allowed,
+                    canReplaceCompleted: refreshCheck.canReplaceCompleted,
+                    completedCount: refreshedBatch.questionsCompleted.length
+                },
+                message: `🔄 Replaced ${batch.questionsCompleted.length} completed questions with fresh ones!`
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error replacing completed questions:', error);
+        return next(new ErrorResponse('Failed to replace completed questions', 500));
+    }
+});
+
+/*
  * @desc     Force refresh recommendations (with validation)
  * @route    POST /api/v1/smart-recommendations/:userId/refresh
  * @access   Public
@@ -158,28 +232,16 @@ const forceRefreshRecommendations = asyncHandler(async (req, res, next) => {
         const refreshedBatch = await performSmartRefresh(batch, userId, 5);
         const progress = refreshedBatch.getProgress();
 
-        // Get completed question IDs for status checking
-        const completedQuestionIds = refreshedBatch.questionsCompleted.map(q => q.questionId);
-
         res.status(200).json({
             success: true,
             data: {
-                recommendations: refreshedBatch.recommendations.map(rec => {
-                    const questionId = rec.question._id || rec.question.id;
-                    const isCompleted = completedQuestionIds.includes(questionId);
-                    const completionData = isCompleted ?
-                        refreshedBatch.questionsCompleted.find(q => q.questionId === questionId) : null;
-
-                    return {
-                        question: rec.question,
-                        reason: rec.reason,
-                        priority: rec.priority,
-                        strategy: rec.strategy,
-                        adaptiveContext: rec.adaptiveContext,
-                        completed: isCompleted,
-                        lastSolved: completionData ? completionData.completedAt : null
-                    };
-                }),
+                recommendations: refreshedBatch.recommendations.map(rec => ({
+                    question: rec.question,
+                    reason: rec.reason,
+                    priority: rec.priority,
+                    strategy: rec.strategy,
+                    adaptiveContext: rec.adaptiveContext
+                })),
                 analysis: refreshedBatch.analysis,
                 progress,
                 batchInfo: {
@@ -308,6 +370,73 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
     await currentBatch.save();
 
     console.log(`✅ Smart refresh completed - ${carriedOverRecommendations.length} carried over, ${newRecommendations.length} new`);
+    return currentBatch;
+};
+
+const performSelectiveRefresh = async (currentBatch, userId) => {
+    console.log(`🎯 Performing selective refresh for user: ${userId}`);
+
+    // Get user profile and fresh analysis
+    let userProfile = await UserProfile.findByUserId(userId);
+    if (!userProfile) {
+        const existingHistory = await SolveHistory.find({ userId }).populate('questionId');
+        userProfile = await UserProfile.createFromSolveHistory(userId, existingHistory);
+        await userProfile.save();
+    }
+
+    const userHistory = await SolveHistory.find({ userId }).populate('questionId');
+    const freshAnalysis = await analyzeUserPatternsAdaptive(userId, userHistory, userProfile);
+
+    // Get completed question IDs
+    const completedQuestionIds = currentBatch.questionsCompleted.map(q => q.questionId);
+
+    // Separate completed and incomplete recommendations
+    const incompleteRecommendations = currentBatch.recommendations.filter(rec => {
+        const questionId = rec.question._id || rec.question.id;
+        return !completedQuestionIds.includes(questionId);
+    });
+
+    const completedCount = currentBatch.recommendations.length - incompleteRecommendations.length;
+
+    console.log(`   📋 Keeping ${incompleteRecommendations.length} incomplete questions`);
+    console.log(`   🔄 Replacing ${completedCount} completed questions`);
+
+    // Generate new questions to replace completed ones
+    let newRecommendations = [];
+    if (completedCount > 0) {
+        // Get all question IDs to exclude (solved + current batch)
+        const allExcludedIds = [
+            ...await SolveHistory.find({ userId }).distinct('questionId'),
+            ...currentBatch.recommendations.map(r => r.question._id || r.question.id)
+        ];
+
+        newRecommendations = await generateAdaptiveRecommendations(
+            userId,
+            freshAnalysis,
+            userProfile,
+            completedCount,
+            allExcludedIds
+        );
+    }
+
+    // Combine incomplete + new recommendations
+    const finalRecommendations = [
+        ...incompleteRecommendations, // Keep incomplete as-is
+        ...newRecommendations         // Add fresh questions
+    ];
+
+    // Update batch
+    currentBatch.recommendations = finalRecommendations;
+    currentBatch.analysis = freshAnalysis;
+    currentBatch.refreshCount += 1;
+    currentBatch.lastRefreshAt = new Date();
+    currentBatch.batchType = 'selective_refresh';
+    currentBatch.metadata.totalRefreshes += 1;
+    currentBatch.metadata.questionsReplaced = completedCount;
+
+    await currentBatch.save();
+
+    console.log(`✅ Selective refresh completed - ${completedCount} questions replaced`);
     return currentBatch;
 };
 
@@ -498,5 +627,6 @@ const getDifficultyForLevel = (userLevel) => {
 export {
     getSmartDailyRecommendations,
     markQuestionCompleted,
-    forceRefreshRecommendations
+    forceRefreshRecommendations,
+    replaceCompletedQuestions
 }; 

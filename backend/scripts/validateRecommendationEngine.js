@@ -348,18 +348,18 @@ const testSolveHistoryIntegration = async () => {
     log('🧪 Testing Solve History Integration...');
 
     // Get initial recommendations
-    const initialResult = await fetchRecommendations(TEST_USERS.authenticated, 3);
+    const initialResult = await fetchRecommendations(TEST_USERS.beginner, 3);
 
     if (initialResult.success && initialResult.data.data.recommendations.length > 0) {
         const questionId = initialResult.data.data.recommendations[0].question._id;
 
         // Update solve history
-        const updateResult = await updateSolveHistory(TEST_USERS.authenticated, questionId, 15);
+        const updateResult = await updateSolveHistory(TEST_USERS.beginner, questionId, 15);
         assert(updateResult.success, 'Can update solve history');
 
         if (updateResult.success) {
             // Get updated recommendations
-            const updatedResult = await fetchRecommendations(TEST_USERS.authenticated, 3);
+            const updatedResult = await fetchRecommendations(TEST_USERS.beginner, 3);
             assert(updatedResult.success, 'Can fetch recommendations after history update');
 
             if (VERBOSE) {
