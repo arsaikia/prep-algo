@@ -55,13 +55,14 @@ export const googleAuth = asyncHandler(async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            token: jwtToken,
-            user: {
-                id: user._id,
+            data: {
+                _id: user._id,
+                userId: user._id,
                 firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
-                picture: user.picture
+                picture: user.picture,
+                token: jwtToken
             }
         });
     } catch (error) {
