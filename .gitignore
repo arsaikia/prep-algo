@@ -56,3 +56,6 @@ logs
 .npm
 .eslintcache
 frontend/.env.production
+
+# Firebase
+.firebase/
