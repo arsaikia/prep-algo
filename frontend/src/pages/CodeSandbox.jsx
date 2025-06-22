@@ -7,8 +7,8 @@ import { Timer, Pause, Play as PlayLucide, Square, Zap, Monitor, FileDown, FileT
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-import TestResults from '../components/TestResults';
-import { useTimeTracker } from '../utils/timeTracker';
+import TestResults from '../components/TestResults.jsx';
+import { useTimeTracker } from '../utils/timeTracker.js';
 import { useTestUser } from '../contexts/TestUserContext';
 import { isFeatureEnabled, isDevMode } from '../utils/featureFlags';
 

@@ -38,6 +38,42 @@ cd backend
 node scripts/addTestUsers.js
 ```
 
+### `validateRecommendationEngine.js`
+Comprehensive validation script for testing the recommendation engine functionality.
+
+**Features:**
+- Tests all 5 recommendation strategies (weak area reinforcement, progressive difficulty, spaced repetition, topic exploration, general practice)
+- Validates user level classification (beginner, intermediate, advanced)
+- Checks strategy distribution percentages (40%, 30%, 20%, remaining, fill)
+- Tests priority system (high, medium, low)
+- Validates API response formats and data structures
+- Tests edge cases (invalid users, different count parameters)
+- Performance testing (response times, consistency)
+- Solve history integration testing
+
+**Usage:**
+```bash
+cd backend
+node scripts/validateRecommendationEngine.js [--verbose]
+```
+
+**Output:**
+- ✅ **Normal mode**: Shows pass/fail summary with total counts
+- 🐛 **Verbose mode**: Shows detailed debug information, strategy distributions, and performance metrics
+- 📊 **Summary report**: Complete test results with timing information
+
+**Example Output:**
+```
+🚀 Starting Recommendation Engine Validation...
+✅ PASS: API responds successfully
+✅ PASS: User test-alice-beginner-001 classified as beginner
+✅ PASS: Weak area reinforcement within expected range (40.0%)
+📊 VALIDATION SUMMARY REPORT
+✅ Tests Passed: 34
+❌ Tests Failed: 0
+🎉 ALL TESTS PASSED! Recommendation engine is working correctly.
+```
+
 ## Test User IDs for Frontend Testing
 
 You can use these user IDs in the frontend test user selector to test different completion scenarios:
