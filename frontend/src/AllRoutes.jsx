@@ -14,7 +14,7 @@ import Error from './pages/Error';
 import Login from './pages/Login';
 import Home from './pages/Home';
 
-function AllRoutes(props) {
+function AllRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />

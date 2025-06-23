@@ -25,7 +25,7 @@ const TestSelect = styled.select`
 
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.brand.primary};
+    border-color: ${({ theme }) => theme.colors.primary};
   }
 
   option {
@@ -35,32 +35,32 @@ const TestSelect = styled.select`
 `;
 
 const TestUserSelector = ({ selectedUserId, onUserChange, className }) => {
-    // Test users data
-    const testUsers = [
-        { id: null, name: 'Use My Account', description: 'Use authenticated user account' },
-        { id: 'test-alice-beginner-001', name: 'Alice Beginner', description: 'Low completion, mostly easy' },
-        { id: 'test-bob-intermediate-002', name: 'Bob Intermediate', description: 'Medium completion, mixed' },
-        { id: 'test-carol-advanced-003', name: 'Carol Advanced', description: 'High completion, comprehensive' },
-        { id: 'test-david-specialized-004', name: 'David Specialized', description: 'Uneven across topics' },
-        { id: 'test-emma-struggling-005', name: 'Emma Struggling', description: 'High retry counts' },
-        { id: 'test-user-123', name: 'Original Test User', description: 'Updated comprehensive history' }
-    ];
+  // Test users data
+  const testUsers = [
+    { id: null, name: 'Use My Account', description: 'Use authenticated user account' },
+    { id: 'test-alice-beginner-001', name: 'Alice Beginner', description: 'Low completion, mostly easy' },
+    { id: 'test-bob-intermediate-002', name: 'Bob Intermediate', description: 'Medium completion, mixed' },
+    { id: 'test-carol-advanced-003', name: 'Carol Advanced', description: 'High completion, comprehensive' },
+    { id: 'test-david-specialized-004', name: 'David Specialized', description: 'Uneven across topics' },
+    { id: 'test-emma-struggling-005', name: 'Emma Struggling', description: 'High retry counts' },
+    { id: 'test-user-123', name: 'Original Test User', description: 'Updated comprehensive history' }
+  ];
 
-    return (
-        <TestUserContainer className={className}>
-            <User size={14} />
-            <TestSelect
-                value={selectedUserId || ''}
-                onChange={(e) => onUserChange(e.target.value || null)}
-            >
-                {testUsers.map(user => (
-                    <option key={user.id || 'none'} value={user.id || ''}>
-                        {user.name}
-                    </option>
-                ))}
-            </TestSelect>
-        </TestUserContainer>
-    );
+  return (
+    <TestUserContainer className={className}>
+      <User size={14} />
+      <TestSelect
+        value={selectedUserId || ''}
+        onChange={(e) => onUserChange(e.target.value || null)}
+      >
+        {testUsers.map(user => (
+          <option key={user.id || 'none'} value={user.id || ''}>
+            {user.name}
+          </option>
+        ))}
+      </TestSelect>
+    </TestUserContainer>
+  );
 };
 
 export default TestUserSelector; 

@@ -23,17 +23,26 @@ import AllRoutes from './AllRoutes';
 import CodeSection from './components/CodeSection';
 import FullScreenLoader from './components/Loader/FullScreenLoader';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import { Container } from './styles';
-import { lightTheme, darkTheme } from './theme';
+import { createTheme } from './theme';
 import useTheme from './hooks/useTheme';
 import { TestUserProvider } from './contexts/TestUserContext';
 
 // App wrapper with theme background
 const AppWrapper = styled.div`
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   transition: all 0.3s ease;
+`;
+
+const MainContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 `;
 
 // Wrapper component to access location
@@ -41,40 +50,47 @@ function AppContent() {
   const location = useLocation();
   const isAllQuestionsPage = location.pathname === '/all' || location.pathname === '/questions';
   const isLoginPage = location.pathname === '/login';
-  const { isDarkModeEnabled } = useTheme();
+  const { isDarkModeEnabled, colorScheme } = useTheme();
 
   // Get states using useSelector ( state->reducerName )
   const isFetchingQuestions = useSelector((state) => state.questions.isFetchingQuestions);
 
-  // Update body background color based on theme
+  // Update body background color based on theme and color scheme
   useEffect(() => {
-    const theme = isDarkModeEnabled ? darkTheme : lightTheme;
+    const theme = createTheme(isDarkModeEnabled ? 'dark' : 'light', colorScheme);
     const backgroundColor = theme.colors.background;
 
-    // Set CSS custom property for theme background
+    // Set CSS custom properties for theme colors
     document.documentElement.style.setProperty('--theme-background', backgroundColor);
+    document.documentElement.style.setProperty('--gradient-full-refresh', theme.colors.gradientFullRefresh);
     document.body.style.backgroundColor = backgroundColor;
 
     // Cleanup function to reset on unmount (though this component rarely unmounts)
     return () => {
       document.documentElement.style.removeProperty('--theme-background');
+      document.documentElement.style.removeProperty('--gradient-full-refresh');
       document.body.style.backgroundColor = '';
     };
-  }, [isDarkModeEnabled]);
+  }, [isDarkModeEnabled, colorScheme]);
 
   // Only show loading indicator if we're not on the AllQuestions page or Login page
   if (isFetchingQuestions && !isAllQuestionsPage && !isLoginPage) {
     return <FullScreenLoader show />;
   }
 
+  const currentTheme = createTheme(isDarkModeEnabled ? 'dark' : 'light', colorScheme);
+
   return (
-    <ThemeProvider theme={isDarkModeEnabled ? darkTheme : lightTheme}>
+    <ThemeProvider theme={currentTheme}>
       <AppWrapper>
-        <Navbar />
-        <Container width="calc(100% - 2rem)" padding="0 1rem">
-          <CodeSection />
-          <AllRoutes />
-        </Container>
+        <MainContent>
+          <Navbar />
+          <Container width="calc(100% - 2rem)" padding="0 1rem">
+            <CodeSection />
+            <AllRoutes />
+          </Container>
+        </MainContent>
+        <Footer />
       </AppWrapper>
     </ThemeProvider>
   );
@@ -175,17 +191,15 @@ function App() {
   }, [isAuthenticated, removeCookie, dispatch]);
 
   return (
-    <ThemeProvider theme={isDarkModeEnabled ? darkTheme : lightTheme}>
-      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
-        <TestUserProvider>
-          <Router>
-            <QuestionsLoader>
-              <AppContent />
-            </QuestionsLoader>
-          </Router>
-        </TestUserProvider>
-      </GoogleOAuthProvider>
-    </ThemeProvider>
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+      <TestUserProvider>
+        <Router>
+          <QuestionsLoader>
+            <AppContent />
+          </QuestionsLoader>
+        </Router>
+      </TestUserProvider>
+    </GoogleOAuthProvider>
   );
 }
 

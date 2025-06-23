@@ -26,13 +26,13 @@ function DifficultyDot(props) {
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case 'Easy':
-        return theme.colors.difficulty.easy;
+        return theme.colors.difficultyEasy;
       case 'Medium':
-        return theme.colors.difficulty.medium;
+        return theme.colors.difficultyMedium;
       case 'Hard':
-        return theme.colors.difficulty.hard;
+        return theme.colors.difficultyHard;
       default:
-        return theme.colors.difficulty.unknown;
+        return theme.colors.difficultyUnknown;
     }
   };
 

@@ -47,7 +47,7 @@ const TestCaseTitle = styled.h4`
 `;
 
 const TestCaseStatus = styled.span`
-  color: ${props => props.passed ? props.theme.colors.success : props.theme.colors.error};
+  color: ${props => props.passed ? props.theme.colors.statusSuccess : props.theme.colors.statusError};
   font-weight: 500;
 `;
 
@@ -68,61 +68,61 @@ const DebugOutput = styled.pre`
 `;
 
 const TestResults = ({ results, type }) => {
-    const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
 
-    if (!results || !results.results || results.results.length === 0) {
-        return null;
-    }
+  if (!results || !results.results || results.results.length === 0) {
+    return null;
+  }
 
-    return (
-        <TabsContainer>
-            <h4>{type === 'example' ? 'Example Test Results' : 'Final Test Results'}</h4>
-            <p>
-                Passed: {results.summary.passed}/{results.summary.total} (
-                {Math.round((results.summary.passed / results.summary.total) * 100)}%)
-            </p>
+  return (
+    <TabsContainer>
+      <h4>{type === 'example' ? 'Example Test Results' : 'Final Test Results'}</h4>
+      <p>
+        Passed: {results.summary.passed}/{results.summary.total} (
+        {Math.round((results.summary.passed / results.summary.total) * 100)}%)
+      </p>
 
-            <TabList>
-                {results.results.map((_, index) => (
-                    <Tab
-                        key={index}
-                        active={activeTab === index}
-                        onClick={() => setActiveTab(index)}
-                    >
-                        Test {index + 1}
-                    </Tab>
-                ))}
-            </TabList>
+      <TabList>
+        {results.results.map((_, index) => (
+          <Tab
+            key={index}
+            active={activeTab === index}
+            onClick={() => setActiveTab(index)}
+          >
+            Test {index + 1}
+          </Tab>
+        ))}
+      </TabList>
 
-            {results.results.map((result, index) => (
-                <TestCaseContent key={index} style={{ display: activeTab === index ? 'block' : 'none' }}>
-                    <TestCaseHeader>
-                        <TestCaseTitle>Test Case {index + 1}</TestCaseTitle>
-                        <TestCaseStatus passed={result.passed}>
-                            {result.passed ? 'Passed' : 'Failed'}
-                        </TestCaseStatus>
-                    </TestCaseHeader>
+      {results.results.map((result, index) => (
+        <TestCaseContent key={index} style={{ display: activeTab === index ? 'block' : 'none' }}>
+          <TestCaseHeader>
+            <TestCaseTitle>Test Case {index + 1}</TestCaseTitle>
+            <TestCaseStatus passed={result.passed}>
+              {result.passed ? 'Passed' : 'Failed'}
+            </TestCaseStatus>
+          </TestCaseHeader>
 
-                    <TestCaseDetails>
-                        <p><strong>Input:</strong> {JSON.stringify(result.testCase)}</p>
-                        <p><strong>Expected:</strong> {JSON.stringify(result.expectedOutput)}</p>
-                        <p><strong>Output:</strong> {JSON.stringify(result.output)}</p>
-                    </TestCaseDetails>
+          <TestCaseDetails>
+            <p><strong>Input:</strong> {JSON.stringify(result.testCase)}</p>
+            <p><strong>Expected:</strong> {JSON.stringify(result.expectedOutput)}</p>
+            <p><strong>Output:</strong> {JSON.stringify(result.output)}</p>
+          </TestCaseDetails>
 
-                    {result.error && (
-                        <p style={{ color: 'red' }}>Error: {result.error}</p>
-                    )}
+          {result.error && (
+            <p style={{ color: 'red' }}>Error: {result.error}</p>
+          )}
 
-                    {result.debugOutput && (
-                        <DebugOutput>
-                            <strong>Debug Output:</strong>
-                            {result.debugOutput}
-                        </DebugOutput>
-                    )}
-                </TestCaseContent>
-            ))}
-        </TabsContainer>
-    );
+          {result.debugOutput && (
+            <DebugOutput>
+              <strong>Debug Output:</strong>
+              {result.debugOutput}
+            </DebugOutput>
+          )}
+        </TestCaseContent>
+      ))}
+    </TabsContainer>
+  );
 };
 
 export default TestResults; 

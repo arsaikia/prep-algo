@@ -14,20 +14,20 @@ const TableContainer = styled.div`
 
 const QuestionCard = styled.div`
   background: ${props => props.solved
-    ? props.theme.colors.difficulty.easy + '08'  // Very subtle green background tint
-    : props.theme.colors.recommendations.cardBackground
+    ? props.theme.colors.difficultyEasy + '08'  // Very subtle green background tint
+    : props.theme.colors.background
   };
-  border: 2px solid ${props => props.theme.colors.recommendations.cardBorder};
+      border: 2px solid ${props => props.theme.colors.border};
   border-radius: 12px;
   padding: 16px 20px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: ${props => props.theme.colors.recommendations.cardShadow};
+      box-shadow: ${props => props.theme.colors.shadowCard};
   position: relative;
   
   &:hover {
-    border-color: ${props => props.theme.colors.recommendations.cardBorderHover};
-    box-shadow: ${props => props.theme.colors.recommendations.cardShadowHover};
+          border-color: ${props => props.theme.colors.primary};
+          box-shadow: ${props => props.theme.colors.shadowCard};
     transform: translateY(-2px);
   }
 `;
@@ -36,13 +36,13 @@ const SolvedIndicator = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  color: ${props => props.theme.colors.difficulty.easy};
+  color: ${props => props.theme.colors.difficultyEasy};
   font-size: 12px;
   font-weight: 600;
-  background: ${props => props.theme.colors.difficulty.easy}15;
+  background: ${props => props.theme.colors.difficultyEasy}15;
   padding: 4px 8px;
   border-radius: 12px;
-  border: 1px solid ${props => props.theme.colors.difficulty.easy}30;
+  border: 1px solid ${props => props.theme.colors.difficultyEasy}30;
 `;
 
 const QuestionHeader = styled.div`
@@ -57,11 +57,11 @@ const QuestionNumber = styled.div`
   height: 32px;
   border-radius: 50%;
   background: ${props => props.solved
-    ? props.theme.colors.difficulty.easy + '20'
+    ? props.theme.colors.difficultyEasy + '20'
     : props.theme.colors.backgroundTertiary
   };
   color: ${props => props.solved
-    ? props.theme.colors.difficulty.easy
+    ? props.theme.colors.difficultyEasy
     : props.theme.colors.text
   };
   display: flex;
@@ -71,7 +71,7 @@ const QuestionNumber = styled.div`
   font-size: 14px;
   flex-shrink: 0;
   border: ${props => props.solved
-    ? `2px solid ${props.theme.colors.difficulty.easy}40`
+    ? `2px solid ${props.theme.colors.difficultyEasy}40`
     : 'none'
   };
   position: relative;
@@ -108,13 +108,13 @@ const DifficultyBadge = styled.span`
   color: ${props => {
     switch (props.difficulty) {
       case 'Easy':
-        return props.theme.colors.difficulty.easy;
+        return props.theme.colors.difficultyEasy;
       case 'Medium':
-        return props.theme.colors.difficulty.medium;
+        return props.theme.colors.difficultyMedium;
       case 'Hard':
-        return props.theme.colors.difficulty.hard;
+        return props.theme.colors.difficultyHard;
       default:
-        return props.theme.colors.difficulty.unknown;
+        return props.theme.colors.difficultyUnknown;
     }
   }};
 `;
@@ -127,16 +127,16 @@ const QuestionActions = styled.div`
 
 const QuestionLink = styled.a`
   text-decoration: none;
-  color: ${props => props.theme.colors.brand.primary};
+  color: ${props => props.theme.colors.primary};
   font-weight: 500;
   font-size: 14px;
   padding: 6px 12px;
-  border: 1px solid ${props => props.theme.colors.brand.primary};
+  border: 1px solid ${props => props.theme.colors.primary};
   border-radius: 8px;
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.theme.colors.brand.primary};
+    background: ${props => props.theme.colors.primary};
     color: #ffffff;
     text-decoration: none;
   }
@@ -148,7 +148,7 @@ const SolveButton = styled.button`
   justify-content: center;
   gap: 6px;
   padding: 6px 12px;
-  background-color: ${props => props.theme.colors.brand.primary};
+  background-color: ${props => props.theme.colors.primary};
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -158,7 +158,7 @@ const SolveButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${props => props.theme.colors.brand.secondary};
+    background-color: ${props => props.theme.colors.secondary};
     transform: scale(1.05);
   }
 

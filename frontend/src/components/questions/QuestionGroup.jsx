@@ -83,7 +83,7 @@ const CombinedCountBadge = styled.div`
     height: 100%;
     background: linear-gradient(90deg, 
       transparent, 
-      ${({ theme }) => theme.colors.brand.primary}20, 
+      ${({ theme }) => theme.colors.primary}20, 
       transparent
     );
     transition: left 0.5s ease;
@@ -91,8 +91,8 @@ const CombinedCountBadge = styled.div`
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px ${({ theme }) => theme.colors.brand.primary}20;
-    border-color: ${({ theme }) => theme.colors.brand.primary}40;
+    box-shadow: 0 4px 12px ${({ theme }) => theme.colors.primary}20;
+    border-color: ${({ theme }) => theme.colors.primary}40;
     
     &::before {
       left: 100%;
@@ -129,13 +129,13 @@ const PercentageDisplay = styled.div`
   position: ${({ show }) => show ? 'static' : 'absolute'};
   font-size: 16px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.brand.primary};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const SolvedNumber = styled.span`
   font-size: 16px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.difficulty.easy};
+      color: ${({ theme }) => theme.colors.difficultyEasy};
   line-height: 1;
 `;
 
@@ -149,7 +149,7 @@ const Separator = styled.span`
 const TotalNumber = styled.span`
   font-size: 16px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.brand.primary};
+  color: ${({ theme }) => theme.colors.primary};
   line-height: 1;
 `;
 

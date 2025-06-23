@@ -11,13 +11,13 @@ const Container = styled.div`
 const LoadingText = styled.h2`
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: ${({ theme }) => theme.colors.brand.primary};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const Spinner = styled.div`
   border: 4px solid ${({ theme }) => theme.colors.border};
   border-radius: 50%;
-  border-top: 4px solid ${({ theme }) => theme.colors.brand.primary};
+  border-top: 4px solid ${({ theme }) => theme.colors.primary};
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;

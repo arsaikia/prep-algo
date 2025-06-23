@@ -13,7 +13,7 @@ import submission from './routes/submission.js';
 import codeExecution from './routes/code.js';
 import testRoute from './routes/test.js';
 import { solveHistory } from './routes/solveHistory.js';
-import adaptiveRecommendations from './routes/adaptiveRecommendations.js';
+
 import smartRecommendations from './routes/smartRecommendations.js';
 
 // Load environment variables
@@ -84,8 +84,7 @@ app.use('/api/v1/submission', submission);
 app.use('/api/v1/code', codeExecution);
 app.use('/api/v1/test', testRoute);
 app.use('/api/v1/solveHistory', solveHistory);
-app.use('/api/v1/adaptive-recommendations', adaptiveRecommendations);
-app.use('/api/v1/smart-recommendations', smartRecommendations);
+app.use('/api/v1/recommendations', smartRecommendations); // Unified recommendation endpoint
 
 // Error handling for unhandled routes
 app.use('*', (req, res) => {

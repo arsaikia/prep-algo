@@ -17,52 +17,7 @@ const Container = styled.div`
   min-height: 100vh;
 `;
 
-const Title = styled.h1`
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  text-align: center;
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: 700;
-`;
 
-const Subtitle = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: 3rem;
-  text-align: center;
-  font-size: 1.1rem;
-`;
-
-const QuickLinks = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 3rem;
-  flex-wrap: wrap;
-`;
-
-const QuickLinkButton = styled.button`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 2px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
-  padding: 12px 24px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  color: ${({ theme }) => theme.colors.text};
-  
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundHover};
-    border-color: ${({ theme }) => theme.colors.brand.primary};
-    transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.colors.shadows.button};
-  }
-  
-  &:focus {
-    outline: 2px solid ${({ theme }) => theme.colors.brand.primary};
-    outline-offset: 2px;
-  }
-`;
 
 const UserDebugInfo = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
@@ -121,17 +76,7 @@ const Home = () => {
 
   return (
     <Container>
-      <Title>🎯 Daily Problems</Title>
-      <Subtitle>Smart recommendations tailored to accelerate your progress</Subtitle>
 
-      <QuickLinks>
-        <QuickLinkButton onClick={() => navigate('/all')}>
-          📚 Browse All Questions
-        </QuickLinkButton>
-        <QuickLinkButton onClick={() => navigate('/codesandbox')}>
-          💻 Code Sandbox
-        </QuickLinkButton>
-      </QuickLinks>
 
       {/* Smart Daily Recommendations Section - Show for authenticated users OR test mode */}
       {recommendationUserId ? (
