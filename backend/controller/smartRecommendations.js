@@ -485,15 +485,21 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+    // Standard analysis
     const groupStats = {};
     const difficultyStats = { Easy: 0, Medium: 0, Hard: 0 };
     const recentActivity = [];
     const strugglingQuestions = [];
 
+    // NEW: Streak and mastery analysis
+    const dailyActivity = {};
+    const topicMastery = {};
+
     userHistory.forEach(history => {
         const question = history.questionId;
         if (!question) return;
 
+        // Standard group and difficulty analysis
         if (!groupStats[question.group]) {
             groupStats[question.group] = { count: 0, avgSolveCount: 0 };
         }
@@ -501,10 +507,12 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
         groupStats[question.group].avgSolveCount += history.solveCount;
         difficultyStats[question.difficulty]++;
 
+        // Recent activity
         if (history.lastUpdatedAt >= oneWeekAgo) {
             recentActivity.push(history);
         }
 
+        // Struggling questions
         if (history.solveCount > 2 && history.lastUpdatedAt >= oneMonthAgo) {
             strugglingQuestions.push({
                 question,
@@ -512,24 +520,101 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
                 lastSolved: history.lastUpdatedAt
             });
         }
+
+        // NEW: Daily activity tracking for streaks
+        const dateKey = history.lastUpdatedAt.toISOString().split('T')[0];
+        if (!dailyActivity[dateKey]) {
+            dailyActivity[dateKey] = {
+                date: dateKey,
+                questionsCompleted: 0,
+                topics: [],
+                difficulties: { Easy: 0, Medium: 0, Hard: 0 }
+            };
+        }
+        dailyActivity[dateKey].questionsCompleted++;
+        if (!dailyActivity[dateKey].topics.includes(question.group)) {
+            dailyActivity[dateKey].topics.push(question.group);
+        }
+        dailyActivity[dateKey].difficulties[question.difficulty]++;
+
+        // NEW: Topic mastery tracking
+        if (!topicMastery[question.group]) {
+            topicMastery[question.group] = {
+                topic: question.group,
+                totalQuestions: 0,
+                solvedQuestions: 0, // Changed: Count all solved questions, not just first-attempt
+                difficulties: { Easy: 0, Medium: 0, Hard: 0 },
+                averageAttempts: 0,
+                firstStudied: history.firstSolvedAt,
+                lastStudied: history.lastUpdatedAt
+            };
+        }
+
+        const topicData = topicMastery[question.group];
+        topicData.totalQuestions++;
+        topicData.solvedQuestions++; // Count all solved questions
+        topicData.difficulties[question.difficulty]++;
+        topicData.averageAttempts = (topicData.averageAttempts * (topicData.totalQuestions - 1) + history.solveCount) / topicData.totalQuestions;
+        topicData.lastStudied = history.lastUpdatedAt;
     });
 
+    // Calculate averages for standard analysis
     Object.keys(groupStats).forEach(group => {
         groupStats[group].avgSolveCount =
             groupStats[group].avgSolveCount / groupStats[group].count;
     });
 
+    // NEW: Calculate current streak
+    const streakInfo = calculateCurrentStreak(dailyActivity);
+
+    // NEW: Calculate topic mastery levels
+    const masteryLevels = await calculateTopicMastery(topicMastery);
+
+    // Determine user level based on both difficulty distribution AND topic mastery breadth
     const totalSolved = userHistory.length;
     const hardPercentage = (difficultyStats.Hard / totalSolved) * 100;
     const mediumPercentage = (difficultyStats.Medium / totalSolved) * 100;
 
+    // Count mastery levels and calculate percentages
+    const masteredTopics = masteryLevels.filter(t => t.level === 'mastered').length;
+    const proficientTopics = masteryLevels.filter(t => t.level === 'proficient').length;
+    const practicingTopics = masteryLevels.filter(t => t.level === 'practicing').length;
+    const totalTopicsAttempted = masteryLevels.length;
+
+    // Get total available topics from database
+    const topicQuestionCounts = await getTopicQuestionCounts();
+    const totalAvailableTopics = Object.keys(topicQuestionCounts).length;
+
+    // Calculate percentages for dynamic thresholds
+    const topicBreadthPercentage = (totalTopicsAttempted / totalAvailableTopics) * 100;
+    const masteredPercentage = (masteredTopics / totalTopicsAttempted) * 100;
+    const proficientPlusPercentage = ((proficientTopics + masteredTopics) / totalTopicsAttempted) * 100;
+
     let userLevel = 'beginner';
-    if (totalSolved > 50 && hardPercentage > 20) {
+
+    if (totalSolved >= 60 && topicBreadthPercentage >= 40 &&
+        ((masteredPercentage >= 25 && proficientPlusPercentage >= 50) ||
+            (masteredTopics >= 2 && proficientTopics >= 3) ||
+            (hardPercentage >= 15 && masteredTopics >= 2))) {
+        // Advanced: Significant breadth (40%+ of all topics) AND depth
+        // - 25%+ of attempted topics mastered with 50%+ proficient+mastered
+        // - OR at least 2 mastered + 3 proficient topics
+        // - OR strong hard problem performance with some mastery
         userLevel = 'advanced';
-    } else if (totalSolved > 20 && mediumPercentage > 40) {
+    } else if (totalSolved >= 25 && topicBreadthPercentage >= 25 &&
+        ((masteredTopics >= 1 && (proficientTopics + practicingTopics) >= 3) ||
+            (mediumPercentage >= 35 && topicBreadthPercentage >= 30) ||
+            (hardPercentage >= 8 && topicBreadthPercentage >= 20))) {
+        // Intermediate: Some breadth (25%+ of all topics) with demonstrated competency
+        // - At least 1 mastered topic with 3+ proficient/practicing topics
+        // - OR good medium performance across 30%+ of topics
+        // - OR some hard problems across 20%+ of topics
         userLevel = 'intermediate';
     }
 
+    // Beginner: Everything else (< 25 questions OR < 25% topic breadth OR no mastery)
+
+    // Find weak and strong areas
     const weakAreas = Object.entries(groupStats)
         .filter(([group, stats]) => stats.count < 3 || stats.avgSolveCount > 2)
         .map(([group]) => group);
@@ -547,6 +632,10 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
         recentActivity: recentActivity.length,
         strugglingQuestions,
         totalSolved,
+        // NEW: Enhanced analytics
+        streakInfo,
+        topicMastery: masteryLevels,
+        dailyActivity: Object.values(dailyActivity).sort((a, b) => new Date(b.date) - new Date(a.date)),
         adaptiveFeatures: {
             enabled: totalSolved >= 3,
             level: totalSolved >= 20 ? 'full' : 'basic'
@@ -613,6 +702,139 @@ const generateAdaptiveRecommendations = async (userId, analysis, userProfile, co
     return recommendations
         .sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority])
         .slice(0, count);
+};
+
+// NEW: Calculate current learning streak
+const calculateCurrentStreak = (dailyActivity) => {
+    const today = new Date();
+    const sortedDays = Object.keys(dailyActivity).sort((a, b) => new Date(b) - new Date(a));
+
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+    let lastActivityDate = null;
+
+    // Calculate current streak (consecutive days from today backwards)
+    for (let i = 0; i < 365; i++) { // Check last year maximum
+        const checkDate = new Date(today);
+        checkDate.setDate(checkDate.getDate() - i);
+        const dateKey = checkDate.toISOString().split('T')[0];
+
+        if (dailyActivity[dateKey] && dailyActivity[dateKey].questionsCompleted > 0) {
+            if (i === 0 || currentStreak > 0) { // Today or continuing streak
+                currentStreak++;
+                if (!lastActivityDate) lastActivityDate = dateKey;
+            }
+        } else {
+            if (i === 0) {
+                // No activity today, check if yesterday had activity
+                continue;
+            } else {
+                break; // Streak broken
+            }
+        }
+    }
+
+    // Calculate longest streak ever
+    let currentTempStreak = 0;
+    const allDates = sortedDays.sort((a, b) => new Date(a) - new Date(b));
+
+    for (let i = 0; i < allDates.length; i++) {
+        const currentDate = new Date(allDates[i]);
+        const nextDate = i < allDates.length - 1 ? new Date(allDates[i + 1]) : null;
+
+        currentTempStreak++;
+
+        if (!nextDate || (nextDate - currentDate) > 24 * 60 * 60 * 1000) {
+            // End of streak or last day
+            longestStreak = Math.max(longestStreak, currentTempStreak);
+            currentTempStreak = 0;
+        }
+    }
+
+    return {
+        currentStreak,
+        longestStreak,
+        lastActivityDate,
+        totalActiveDays: sortedDays.length
+    };
+};
+
+// NEW: Get dynamic topic question counts from database
+const getTopicQuestionCounts = async () => {
+    try {
+        const topicCounts = await Question.aggregate([
+            {
+                $group: {
+                    _id: '$group',
+                    totalQuestions: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const countMap = {};
+        topicCounts.forEach(item => {
+            countMap[item._id] = item.totalQuestions;
+        });
+
+        return countMap;
+    } catch (error) {
+        console.error('Error fetching topic question counts:', error);
+        return {};
+    }
+};
+
+// NEW: Calculate topic mastery levels using percentage of available questions
+const calculateTopicMastery = async (topicMasteryData) => {
+    // Get dynamic topic counts from database
+    const topicQuestionCounts = await getTopicQuestionCounts();
+
+    return Object.values(topicMasteryData).map(topic => {
+        const solveRate = topic.solvedQuestions / topic.totalQuestions; // User's solve rate
+        const { Easy, Medium, Hard } = topic.difficulties;
+        const avgAttempts = topic.averageAttempts || 1;
+
+        // Get total questions available in this topic from database
+        const totalAvailable = topicQuestionCounts[topic.topic] || topic.totalQuestions;
+        const topicCoveragePercentage = (topic.totalQuestions / totalAvailable) * 100;
+
+        // Determine mastery level using percentage of topic coverage + performance
+        let level = 'beginner';
+
+        if (topicCoveragePercentage >= 80 && solveRate >= 0.9 && avgAttempts <= 2.5) {
+            // Mastered: 80%+ of topic covered, 90%+ solved, reasonably efficient solving
+            level = 'mastered';
+        } else if (topicCoveragePercentage >= 60 && solveRate >= 0.85 && avgAttempts <= 3.0) {
+            // Proficient: 60%+ of topic covered, 85%+ solved, good performance
+            level = 'proficient';
+        } else if (topicCoveragePercentage >= 40 && solveRate >= 0.75) {
+            // Practicing: 40%+ of topic covered, 75%+ solved
+            level = 'practicing';
+        } else if (topicCoveragePercentage >= 15 || topic.totalQuestions >= 3) {
+            // Learning: 15%+ of topic covered OR 3+ questions attempted
+            level = 'learning';
+        }
+
+        return {
+            ...topic,
+            level,
+            solveRate,
+            topicCoveragePercentage: Math.round(topicCoveragePercentage),
+            totalAvailable,
+            progress: {
+                completed: topic.solvedQuestions,
+                total: topic.totalQuestions,
+                percentage: Math.round(solveRate * 100),
+                topicCoverage: Math.round(topicCoveragePercentage)
+            }
+        };
+    }).sort((a, b) => {
+        // Sort by topic coverage percentage first, then by solve rate
+        const aCoverage = a.topicCoveragePercentage;
+        const bCoverage = b.topicCoveragePercentage;
+        if (aCoverage !== bCoverage) return bCoverage - aCoverage;
+        return b.solveRate - a.solveRate;
+    });
 };
 
 const getDifficultyForLevel = (userLevel) => {

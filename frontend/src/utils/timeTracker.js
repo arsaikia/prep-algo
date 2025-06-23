@@ -238,11 +238,11 @@ export const useTimeTracker = () => {
             // Update solve history
             await updateSolveHistoryWithTracking(sessionData);
 
-            // If successful, also mark as complete in Smart Hybrid Recommendation system
+            // If successful, also mark as complete in recommendation system
             if (success && sessionData.userId && sessionData.questionId) {
                 const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/v1';
                 try {
-                    await fetch(`${apiBaseUrl}/smart-recommendations/${sessionData.userId}/complete`, {
+                    await fetch(`${apiBaseUrl}/recommendations/${sessionData.userId}/complete`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -253,9 +253,9 @@ export const useTimeTracker = () => {
                             success: true
                         })
                     });
-                    console.log('✅ Question marked as complete in Smart Hybrid system');
+                    console.log('✅ Question marked as complete in recommendation system');
                 } catch (error) {
-                    console.error('❌ Error marking question complete in Smart Hybrid system:', error);
+                    console.error('❌ Error marking question complete in recommendation system:', error);
                     console.error('   API URL:', apiBaseUrl);
                     console.error('   User ID:', sessionData.userId);
                     console.error('   Question ID:', sessionData.questionId);

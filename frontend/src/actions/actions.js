@@ -20,6 +20,8 @@ import {
   FETCH_USER_INFO,
   FETCH_USER_INFO_SUCCESS,
   FETCH_USER_INFO_FAILURE,
+  SET_COLOR_SCHEME,
+  INITIALIZE_COLOR_SCHEME,
 } from './types';
 
 export const getQuestions = (value) => ({
@@ -116,4 +118,13 @@ export const setSystemTheme = (isDark) => ({
 export const setUserThemePreference = (preference) => ({
   type: SET_USER_THEME_PREFERENCE,
   payload: preference, // 'light', 'dark', or null (for system)
+});
+
+export const setColorScheme = (scheme) => ({
+  type: SET_COLOR_SCHEME,
+  payload: scheme, // 'original', 'complementary', 'triadic'
+});
+
+export const initializeColorScheme = () => ({
+  type: INITIALIZE_COLOR_SCHEME,
 });

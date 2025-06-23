@@ -1,25 +1,25 @@
 import React, {
-    useEffect,
-    useState,
-    useCallback,
-    useMemo,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
 } from 'react';
 
 import {
-    useSelector,
-    useDispatch,
+  useSelector,
+  useDispatch,
 } from 'react-redux';
 import styled from 'styled-components';
 import { Search, Filter, X, ChevronDown, ChevronUp } from 'react-feather';
 
 import FullScreenLoader from '../components/Loader/FullScreenLoader';
 import {
-    QuestionGroup,
-    ListTabs,
+  QuestionGroup,
+  ListTabs,
 } from '../components/questions';
 import {
-    getListNamesAndCounts,
-    filterQuestionsByList,
+  getListNamesAndCounts,
+  filterQuestionsByList,
 } from '../utils/questions';
 import { getQuestions } from '../actions/actions';
 import { useTestUser } from '../contexts/TestUserContext';
@@ -58,12 +58,12 @@ const TabsCardContainer = styled.div`
   border: 2px solid ${({ theme }) => theme.colors.border};
   border-radius: 12px;
   padding: 20px;
-  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  box-shadow: ${({ theme }) => theme.colors.shadowCard};
   transition: all 0.3s ease;
   margin-bottom: 2rem;
   
   &:hover {
-    box-shadow: ${({ theme }) => theme.colors.shadows.cardHover};
+    box-shadow: ${({ theme }) => theme.colors.shadowCardHover};
     transform: translateY(-1px);
   }
 `;
@@ -100,7 +100,7 @@ const CircularProgress = styled.div`
   height: 80px;
   border-radius: 50%;
   background: conic-gradient(
-    ${({ theme, percentage }) => theme.colors.brand.primary} ${props => props.percentage * 3.6}deg,
+    ${({ theme, percentage }) => theme.colors.primary} ${props => props.percentage * 3.6}deg,
     ${({ theme }) => theme.colors.backgroundTertiary} ${props => props.percentage * 3.6}deg
   );
   display: flex;
@@ -129,7 +129,7 @@ const CircularProgressContent = styled.div`
 const CircularProgressNumber = styled.span`
   font-size: 16px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.brand.primary};
+  color: ${({ theme }) => theme.colors.primary};
   line-height: 1;
 `;
 
@@ -173,9 +173,9 @@ const Tab = styled.button`
   border: none;
   border-radius: 8px;
   background: ${props => props.isActive
-        ? `linear-gradient(135deg, ${props.theme.colors.brand.primary}, ${props.theme.colors.brand.secondary || props.theme.colors.brand.primary}dd)`
-        : 'transparent'
-    };
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}, ${props.theme.colors.secondary || props.theme.colors.primary}dd)`
+    : 'transparent'
+  };
   color: ${props => props.isActive ? '#ffffff' : props.theme.colors.text};
   cursor: pointer;
   font-size: 14px;
@@ -193,9 +193,9 @@ const Tab = styled.button`
     right: 0;
     bottom: 0;
     background: ${props => props.isActive
-        ? 'transparent'
-        : `linear-gradient(135deg, ${props.theme.colors.brand.primary}10, ${props.theme.colors.brand.secondary || props.theme.colors.brand.primary}05)`
-    };
+    ? 'transparent'
+    : `linear-gradient(135deg, ${props.theme.colors.primary}10, ${props.theme.colors.secondary || props.theme.colors.primary}05)`
+  };
     opacity: 0;
     transition: opacity 0.3s ease;
     border-radius: 8px;
@@ -208,9 +208,9 @@ const Tab = styled.button`
   &:hover {
     transform: translateY(-2px) scale(1.02);
     box-shadow: ${props => props.isActive
-        ? `0 12px 30px ${props.theme.colors.brand.primary}50`
-        : `0 6px 20px ${props.theme.colors.brand.primary}25`
-    };
+    ? `0 12px 30px ${props.theme.colors.primary}50`
+    : `0 6px 20px ${props.theme.colors.primary}25`
+  };
   }
 
   &:active {
@@ -236,9 +236,9 @@ const Tab = styled.button`
 
   .tab-count {
     background: ${props => props.isActive
-        ? 'rgba(255, 255, 255, 0.25)'
-        : props.theme.colors.backgroundTertiary
-    };
+    ? 'rgba(255, 255, 255, 0.25)'
+    : props.theme.colors.backgroundTertiary
+  };
     color: ${props => props.isActive ? '#ffffff' : props.theme.colors.textSecondary};
     padding: 3px 8px;
     border-radius: 12px;
@@ -247,9 +247,9 @@ const Tab = styled.button`
     min-width: 24px;
     text-align: center;
     border: 1px solid ${props => props.isActive
-        ? 'rgba(255, 255, 255, 0.3)'
-        : props.theme.colors.border
-    };
+    ? 'rgba(255, 255, 255, 0.3)'
+    : props.theme.colors.border
+  };
     transition: all 0.3s ease;
     backdrop-filter: blur(4px);
   }
@@ -257,9 +257,9 @@ const Tab = styled.button`
   &:hover .tab-count {
     transform: scale(1.05);
     background: ${props => props.isActive
-        ? 'rgba(255, 255, 255, 0.3)'
-        : props.theme.colors.brand.primary + '15'
-    };
+    ? 'rgba(255, 255, 255, 0.3)'
+    : props.theme.colors.primary + '15'
+  };
   }
 `;
 
@@ -272,7 +272,7 @@ const FiltersContainer = styled.div`
   border: 2px solid ${({ theme }) => theme.colors.border};
   border-radius: 12px;
   padding: 20px;
-  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  box-shadow: ${({ theme }) => theme.colors.shadowCard};
   
   @media (max-width: 768px) {
     flex-direction: column;
@@ -328,8 +328,8 @@ const SearchInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.brand.primary};
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.brand.primary}20;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
   }
 
   &::placeholder {
@@ -377,21 +377,21 @@ const FilterLabel = styled.span`
 const DifficultyFilter = styled.button`
   padding: 6px 12px;
   border: 2px solid ${({ theme, isActive }) =>
-        isActive ? theme.colors.brand.primary : theme.colors.border};
+    isActive ? theme.colors.primary : theme.colors.border};
   border-radius: 6px;
   background: ${({ theme, isActive }) =>
-        isActive ? theme.colors.brand.primary : theme.colors.background};
+    isActive ? theme.colors.primary : theme.colors.background};
   color: ${({ theme, isActive }) =>
-        isActive ? '#ffffff' : theme.colors.text};
+    isActive ? '#ffffff' : theme.colors.text};
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: ${({ theme }) => theme.colors.brand.primary};
+    border-color: ${({ theme }) => theme.colors.primary};
     background: ${({ theme, isActive }) =>
-        isActive ? theme.colors.brand.primary : theme.colors.backgroundHover};
+    isActive ? theme.colors.primary : theme.colors.backgroundHover};
   }
 `;
 
@@ -404,11 +404,11 @@ const StatsContainer = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 2px solid ${({ theme }) => theme.colors.border};
   border-radius: 12px;
-  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  box-shadow: ${({ theme }) => theme.colors.shadowCard};
   transition: all 0.3s ease;
   
   &:hover {
-    box-shadow: ${({ theme }) => theme.colors.shadows.cardHover};
+    box-shadow: ${({ theme }) => theme.colors.shadowCardHover};
     transform: translateY(-1px);
   }
   
@@ -423,21 +423,21 @@ const TotalStat = styled.div`
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: ${({ theme }) => theme.colors.brand.primary}10;
-  border: 2px solid ${({ theme }) => theme.colors.brand.primary}20;
+  background: ${({ theme }) => theme.colors.primary}10;
+  border: 2px solid ${({ theme }) => theme.colors.primary}20;
   border-radius: 8px;
   transition: all 0.2s ease;
   
   &:hover {
-    background: ${({ theme }) => theme.colors.brand.primary}15;
-    border-color: ${({ theme }) => theme.colors.brand.primary}30;
+    background: ${({ theme }) => theme.colors.primary}15;
+    border-color: ${({ theme }) => theme.colors.primary}30;
   }
 `;
 
 const TotalNumber = styled.span`
   font-size: 1.5rem;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.brand.primary};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const TotalLabel = styled.span`
@@ -475,17 +475,17 @@ const DifficultyLabel = styled.span`
   font-size: 13px;
   font-weight: 600;
   color: ${({ theme, difficulty }) => {
-        switch (difficulty) {
-            case 'easy':
-                return theme.colors.difficulty.easy;
-            case 'medium':
-                return theme.colors.difficulty.medium;
-            case 'hard':
-                return theme.colors.difficulty.hard;
-            default:
-                return theme.colors.text;
-        }
-    }};
+    switch (difficulty) {
+      case 'easy':
+        return theme.colors.difficultyEasy;
+      case 'medium':
+        return theme.colors.difficultyMedium;
+      case 'hard':
+        return theme.colors.difficultyHard;
+      default:
+        return theme.colors.text;
+    }
+  }};
 `;
 
 const DifficultyCount = styled.span`
@@ -505,17 +505,17 @@ const ProgressBar = styled.div`
 const ProgressFill = styled.div`
   height: 100%;
   background: ${({ theme, difficulty }) => {
-        switch (difficulty) {
-            case 'easy':
-                return theme.colors.difficulty.easy;
-            case 'medium':
-                return theme.colors.difficulty.medium;
-            case 'hard':
-                return theme.colors.difficulty.hard;
-            default:
-                return theme.colors.brand.primary;
-        }
-    }};
+    switch (difficulty) {
+      case 'easy':
+        return theme.colors.difficultyEasy;
+      case 'medium':
+        return theme.colors.difficultyMedium;
+      case 'hard':
+        return theme.colors.difficultyHard;
+      default:
+        return theme.colors.primary;
+    }
+  }};
   width: ${({ percentage }) => percentage}%;
   transition: width 0.3s ease;
   border-radius: 2px;
@@ -570,8 +570,8 @@ const ClearFiltersButton = styled.button`
   white-space: nowrap;
 
   &:hover {
-    border-color: ${({ theme }) => theme.colors.brand.primary};
-    color: ${({ theme }) => theme.colors.brand.primary};
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
   }
   
   @media (max-width: 768px) {
@@ -585,24 +585,24 @@ const ExpandAllButton = styled.button`
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  border: 2px solid ${({ theme }) => theme.colors.brand.primary};
+  border: 2px solid ${({ theme }) => theme.colors.primary};
   border-radius: 8px;
   background: ${({ theme }) => theme.colors.background};
-  color: ${({ theme }) => theme.colors.brand.primary};
+  color: ${({ theme }) => theme.colors.primary};
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.brand.primary};
+    background: ${({ theme }) => theme.colors.primary};
     color: #ffffff;
     transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.colors.shadows.button};
+    box-shadow: ${({ theme }) => theme.colors.shadowButton};
   }
 
   &:focus {
-    outline: 2px solid ${({ theme }) => theme.colors.brand.primary};
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
     outline-offset: 2px;
   }
 `;
@@ -616,402 +616,402 @@ const QuestionsContainer = styled.div`
   border: 2px solid ${({ theme }) => theme.colors.border};
   border-radius: 12px;
   padding: 20px;
-  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  box-shadow: ${({ theme }) => theme.colors.shadowCard};
   transition: all 0.3s ease;
   
   &:hover {
-    box-shadow: ${({ theme }) => theme.colors.shadows.cardHover};
+    box-shadow: ${({ theme }) => theme.colors.shadowCardHover};
   }
 `;
 
 const AllQuestions = () => {
-    const dispatch = useDispatch();
-    const {
-        allQuestions,
-        isFetchingQuestions,
-    } = useSelector((state) => state.questions);
+  const dispatch = useDispatch();
+  const {
+    allQuestions,
+    isFetchingQuestions,
+  } = useSelector((state) => state.questions);
 
-    // Get authenticated user from Redux store
-    const authUser = useSelector(state => state.auth);
-    const { isAuthenticated, userId: authUserId } = authUser;
+  // Get authenticated user from Redux store
+  const authUser = useSelector(state => state.auth);
+  const { isAuthenticated, userId: authUserId } = authUser;
 
-    // Get selected user from context (for test mode)
-    const { selectedUserId } = useTestUser();
+  // Get selected user from context (for test mode)
+  const { selectedUserId } = useTestUser();
 
-    // State to track active list tab
-    const [activeList, setActiveList] = useState('TOP 150');
+  // State to track active list tab
+  const [activeList, setActiveList] = useState('TOP 150');
 
-    // State for search and filters
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  // State for search and filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('All');
 
-    // State to track expanded groups
-    const [expandedGroups, setExpandedGroups] = useState({});
+  // State to track expanded groups
+  const [expandedGroups, setExpandedGroups] = useState({});
 
-    // Determine which user ID to use for fetching questions
-    const getUserIdForQuestions = () => {
-        // DEV MODE OVERRIDE: When dev mode is active and a test user is selected,
-        // prioritize the test user over the authenticated user. This allows developers
-        // to test different user scenarios even when they're logged in.
-        if (isDevMode() && selectedUserId) {
-            return selectedUserId;
-        }
-
-        // AUTHENTICATED USER: Use the real user's ID when they're properly logged in
-        if (isAuthenticated && authUserId && authUserId !== 'guest') {
-            return authUserId;
-        }
-
-        // LOGIN BUG FALLBACK: Handle edge case where userId is "guest" but 
-        // we have the actual user ID in the 'id' field (from auth reducer bug)
-        if (isAuthenticated && authUser.id) {
-            return authUser.id;
-        }
-
-        // GUEST FALLBACK: Use 'guest' as default for unauthenticated users
-        return 'guest';
-    };
-
-    const questionUserId = getUserIdForQuestions();
-
-    // Fetch questions with user data when component mounts or user changes
-    useEffect(() => {
-        dispatch(getQuestions(questionUserId));
-    }, [dispatch, questionUserId]);
-
-    // Get all unique list names and their counts from questions
-    const listNamesAndCounts = useMemo(() => {
-        // Check if we have the correct data structure
-        if (!allQuestions?.questions) {
-            return {};
-        }
-        return getListNamesAndCounts(allQuestions);
-    }, [allQuestions]);
-
-    // Filter questions based on active list
-    const filteredQuestions = useMemo(() => {
-        // Check if we have the correct data structure
-        if (!allQuestions?.questions) {
-            return {};
-        }
-        return filterQuestionsByList(allQuestions, activeList);
-    }, [allQuestions, activeList]);
-
-    // Apply search and difficulty filters
-    const finalFilteredQuestions = useMemo(() => {
-        const result = {};
-
-        Object.keys(filteredQuestions).forEach(groupName => {
-            const groupQuestions = filteredQuestions[groupName] || [];
-
-            const filtered = groupQuestions.filter(question => {
-                // Search filter
-                const matchesSearch = !searchTerm ||
-                    question.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-                // Difficulty filter
-                const matchesDifficulty = selectedDifficulty === 'All' ||
-                    question.difficulty === selectedDifficulty;
-
-                return matchesSearch && matchesDifficulty;
-            });
-
-            if (filtered.length > 0) {
-                result[groupName] = filtered;
-            }
-        });
-
-        return result;
-    }, [filteredQuestions, searchTerm, selectedDifficulty]);
-
-    // Calculate stats with real completion data
-    const stats = useMemo(() => {
-        const allQuestions = Object.values(finalFilteredQuestions).flat();
-        const totalQuestions = allQuestions.length;
-        const easyCount = allQuestions.filter(q => q.difficulty === 'Easy').length;
-        const mediumCount = allQuestions.filter(q => q.difficulty === 'Medium').length;
-        const hardCount = allQuestions.filter(q => q.difficulty === 'Hard').length;
-
-        // Calculate actual completion based on solved questions
-        const easyCompleted = allQuestions.filter(q => q.difficulty === 'Easy' && q.solved).length;
-        const mediumCompleted = allQuestions.filter(q => q.difficulty === 'Medium' && q.solved).length;
-        const hardCompleted = allQuestions.filter(q => q.difficulty === 'Hard' && q.solved).length;
-        const totalCompleted = easyCompleted + mediumCompleted + hardCompleted;
-
-        const easyCompletionPercentage = easyCount > 0 ? Math.round((easyCompleted / easyCount) * 100) : 0;
-        const mediumCompletionPercentage = mediumCount > 0 ? Math.round((mediumCompleted / mediumCount) * 100) : 0;
-        const hardCompletionPercentage = hardCount > 0 ? Math.round((hardCompleted / hardCount) * 100) : 0;
-        const totalCompletionPercentage = totalQuestions > 0 ? Math.round((totalCompleted / totalQuestions) * 100) : 0;
-
-        return {
-            totalQuestions,
-            totalCompleted,
-            totalCompletionPercentage,
-            easyCount,
-            mediumCount,
-            hardCount,
-            easyCompleted,
-            mediumCompleted,
-            hardCompleted,
-            easyCompletionPercentage,
-            mediumCompletionPercentage,
-            hardCompletionPercentage
-        };
-    }, [finalFilteredQuestions]);
-
-    // Handle difficulty filter change
-    const handleDifficultyFilter = useCallback((difficulty) => {
-        setSelectedDifficulty(prev => prev === difficulty ? 'All' : difficulty);
-    }, []);
-
-    // Toggle group expansion
-    const toggleGroup = useCallback((groupName) => {
-        setExpandedGroups(prev => ({
-            ...prev,
-            [groupName]: !prev[groupName]
-        }));
-    }, []);
-
-    // Expand or collapse all groups
-    const toggleAllGroups = useCallback(() => {
-        const allGroupNames = Object.keys(finalFilteredQuestions);
-        const allExpanded = allGroupNames.every(name => expandedGroups[name]);
-
-        if (allExpanded) {
-            // Collapse all
-            setExpandedGroups({});
-        } else {
-            // Expand all
-            const newState = {};
-            allGroupNames.forEach(name => {
-                newState[name] = true;
-            });
-            setExpandedGroups(newState);
-        }
-    }, [finalFilteredQuestions, expandedGroups]);
-
-    // Check if all groups are expanded
-    const allGroupsExpanded = useMemo(() => {
-        const allGroupNames = Object.keys(finalFilteredQuestions);
-        return allGroupNames.length > 0 && allGroupNames.every(name => expandedGroups[name]);
-    }, [finalFilteredQuestions, expandedGroups]);
-
-    // Auto-expand groups when search is active (better UX for searching)
-    const shouldShowExpanded = useCallback((groupName) => {
-        // If there's a search term or difficulty filter, auto-expand for better visibility
-        if (searchTerm || selectedDifficulty !== 'All') {
-            return true;
-        }
-        // Otherwise, use the manual expand/collapse state
-        return expandedGroups[groupName] || false;
-    }, [searchTerm, selectedDifficulty, expandedGroups]);
-
-    // Show loading indicator when fetching questions
-    if (isFetchingQuestions) {
-        return <FullScreenLoader show={true} />;
+  // Determine which user ID to use for fetching questions
+  const getUserIdForQuestions = () => {
+    // DEV MODE OVERRIDE: When dev mode is active and a test user is selected,
+    // prioritize the test user over the authenticated user. This allows developers
+    // to test different user scenarios even when they're logged in.
+    if (isDevMode() && selectedUserId) {
+      return selectedUserId;
     }
 
-    return (
-        <Container>
-            <Header>
-                <Title>📚 All Questions</Title>
-                <Subtitle>Browse and filter questions by list</Subtitle>
-            </Header>
+    // AUTHENTICATED USER: Use the real user's ID when they're properly logged in
+    if (isAuthenticated && authUserId && authUserId !== 'guest') {
+      return authUserId;
+    }
 
-            <ContentSection>
-                <TabsCardContainer>
-                    <TabsAndStatsHeader>
-                        <TabsSection>
-                            <TabsContainer>
-                                {listNamesAndCounts.map(({ name, count }) => {
-                                    // Get icon and display name for each tab
-                                    const getTabInfo = (tabName) => {
-                                        switch (tabName.toUpperCase()) {
-                                            case 'TOP 150':
-                                                return { icon: '🏆', displayName: 'Top 150', description: 'Most Popular' };
-                                            case 'BLIND 75':
-                                                return { icon: '🎯', displayName: 'Blind 75', description: 'Essential' };
-                                            case 'NEETCODE 150':
-                                                return { icon: '🚀', displayName: 'NeetCode 150', description: 'Comprehensive' };
-                                            case 'LEETCODE 75':
-                                                return { icon: '⚡', displayName: 'LeetCode 75', description: 'Study Plan' };
-                                            case 'GRIND 75':
-                                                return { icon: '💎', displayName: 'Grind 75', description: 'Curated' };
-                                            case 'ALL':
-                                                return { icon: '📚', displayName: 'All Questions', description: 'Complete' };
-                                            default:
-                                                return { icon: '📝', displayName: tabName, description: 'Collection' };
-                                        }
-                                    };
+    // LOGIN BUG FALLBACK: Handle edge case where userId is "guest" but 
+    // we have the actual user ID in the 'id' field (from auth reducer bug)
+    if (isAuthenticated && authUser.id) {
+      return authUser.id;
+    }
 
-                                    const tabInfo = getTabInfo(name);
+    // GUEST FALLBACK: Use 'guest' as default for unauthenticated users
+    return 'guest';
+  };
 
-                                    return (
-                                        <Tab
-                                            key={name}
-                                            isActive={activeList === name}
-                                            onClick={() => setActiveList(name)}
-                                            title={`${tabInfo.displayName} - ${tabInfo.description} (${count} questions)`}
-                                        >
-                                            <span className="tab-icon">{tabInfo.icon}</span>
-                                            <span className="tab-name">{tabInfo.displayName}</span>
-                                            <span className="tab-count">{count}</span>
-                                        </Tab>
-                                    );
-                                })}
-                            </TabsContainer>
-                        </TabsSection>
+  const questionUserId = getUserIdForQuestions();
 
-                        <StatsSection>
-                            <CircularProgress percentage={stats.totalCompletionPercentage}>
-                                <CircularProgressContent>
-                                    <CircularProgressNumber>{stats.totalCompletionPercentage}%</CircularProgressNumber>
-                                    <CircularProgressLabel>Total</CircularProgressLabel>
-                                </CircularProgressContent>
-                            </CircularProgress>
+  // Fetch questions with user data when component mounts or user changes
+  useEffect(() => {
+    dispatch(getQuestions(questionUserId));
+  }, [dispatch, questionUserId]);
 
-                            <DifficultyStats>
-                                <DifficultyItem>
-                                    <DifficultyHeader>
-                                        <DifficultyLabel difficulty="easy">Easy</DifficultyLabel>
-                                        <DifficultyCount>{stats.easyCount}</DifficultyCount>
-                                    </DifficultyHeader>
-                                    <ProgressBar>
-                                        <ProgressFill difficulty="easy" percentage={stats.easyCompletionPercentage} />
-                                    </ProgressBar>
-                                    <CompletionLabel>
-                                        {stats.easyCompleted}/{stats.easyCount} solved
-                                    </CompletionLabel>
-                                </DifficultyItem>
-                                <DifficultyItem>
-                                    <DifficultyHeader>
-                                        <DifficultyLabel difficulty="medium">Medium</DifficultyLabel>
-                                        <DifficultyCount>{stats.mediumCount}</DifficultyCount>
-                                    </DifficultyHeader>
-                                    <ProgressBar>
-                                        <ProgressFill difficulty="medium" percentage={stats.mediumCompletionPercentage} />
-                                    </ProgressBar>
-                                    <CompletionLabel>
-                                        {stats.mediumCompleted}/{stats.mediumCount} solved
-                                    </CompletionLabel>
-                                </DifficultyItem>
-                                <DifficultyItem>
-                                    <DifficultyHeader>
-                                        <DifficultyLabel difficulty="hard">Hard</DifficultyLabel>
-                                        <DifficultyCount>{stats.hardCount}</DifficultyCount>
-                                    </DifficultyHeader>
-                                    <ProgressBar>
-                                        <ProgressFill difficulty="hard" percentage={stats.hardCompletionPercentage} />
-                                    </ProgressBar>
-                                    <CompletionLabel>
-                                        {stats.hardCompleted}/{stats.hardCount} solved
-                                    </CompletionLabel>
-                                </DifficultyItem>
-                            </DifficultyStats>
-                        </StatsSection>
-                    </TabsAndStatsHeader>
-                </TabsCardContainer>
-            </ContentSection>
+  // Get all unique list names and their counts from questions
+  const listNamesAndCounts = useMemo(() => {
+    // Check if we have the correct data structure
+    if (!allQuestions?.questions) {
+      return {};
+    }
+    return getListNamesAndCounts(allQuestions);
+  }, [allQuestions]);
 
-            <ContentSection>
-                <FiltersContainer>
-                    <FiltersRow>
-                        <LeftFilters>
-                            <SearchContainer>
-                                <SearchIcon />
-                                <SearchInput
-                                    type="text"
-                                    placeholder="Search questions..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </SearchContainer>
-                            <FilterGroup>
-                                <FilterLabel>
-                                    <Filter size={16} />
-                                </FilterLabel>
-                                <DifficultyFilter
-                                    isActive={selectedDifficulty === 'Easy'}
-                                    onClick={() => handleDifficultyFilter('Easy')}
-                                >
-                                    Easy
-                                </DifficultyFilter>
-                                <DifficultyFilter
-                                    isActive={selectedDifficulty === 'Medium'}
-                                    onClick={() => handleDifficultyFilter('Medium')}
-                                >
-                                    Medium
-                                </DifficultyFilter>
-                                <DifficultyFilter
-                                    isActive={selectedDifficulty === 'Hard'}
-                                    onClick={() => handleDifficultyFilter('Hard')}
-                                >
-                                    Hard
-                                </DifficultyFilter>
-                            </FilterGroup>
-                        </LeftFilters>
+  // Filter questions based on active list
+  const filteredQuestions = useMemo(() => {
+    // Check if we have the correct data structure
+    if (!allQuestions?.questions) {
+      return {};
+    }
+    return filterQuestionsByList(allQuestions, activeList);
+  }, [allQuestions, activeList]);
 
-                        <RightActions>
-                            {/* Show expand/collapse button only when not searching/filtering */}
-                            {!searchTerm && selectedDifficulty === 'All' && Object.keys(finalFilteredQuestions).length > 0 && (
-                                <ExpandAllButton onClick={toggleAllGroups}>
-                                    {allGroupsExpanded ? (
-                                        <>
-                                            <ChevronUp size={16} />
-                                            Collapse All
-                                        </>
-                                    ) : (
-                                        <>
-                                            <ChevronDown size={16} />
-                                            Expand All
-                                        </>
-                                    )}
-                                </ExpandAllButton>
-                            )}
+  // Apply search and difficulty filters
+  const finalFilteredQuestions = useMemo(() => {
+    const result = {};
 
-                            {(searchTerm || selectedDifficulty !== 'All') && (
-                                <ClearFiltersButton
-                                    onClick={() => {
-                                        setSearchTerm('');
-                                        setSelectedDifficulty('All');
-                                    }}
-                                >
-                                    <X size={14} />
-                                    Clear Filters
-                                </ClearFiltersButton>
-                            )}
-                        </RightActions>
-                    </FiltersRow>
-                </FiltersContainer>
-            </ContentSection>
+    Object.keys(filteredQuestions).forEach(groupName => {
+      const groupQuestions = filteredQuestions[groupName] || [];
 
-            {Object.keys(finalFilteredQuestions).length === 0 ? (
-                <EmptyState>
-                    <EmptyStateIcon>🔍</EmptyStateIcon>
-                    <EmptyStateTitle>No questions found</EmptyStateTitle>
-                    <EmptyStateText>
-                        {searchTerm || selectedDifficulty !== 'All'
-                            ? 'Try adjusting your search or filter criteria'
-                            : 'No questions available for the selected list'
-                        }
-                    </EmptyStateText>
-                </EmptyState>
-            ) : (
-                <QuestionsContainer>
-                    {Object.keys(finalFilteredQuestions).map((groupName) => (
-                        <QuestionGroup
-                            key={groupName}
-                            groupName={groupName}
-                            questions={finalFilteredQuestions[groupName]}
-                            isExpanded={shouldShowExpanded(groupName)}
-                            onToggle={() => toggleGroup(groupName)}
-                            showToggle={!searchTerm && selectedDifficulty === 'All'}
-                        />
-                    ))}
-                </QuestionsContainer>
-            )}
-        </Container>
-    );
+      const filtered = groupQuestions.filter(question => {
+        // Search filter
+        const matchesSearch = !searchTerm ||
+          question.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+        // Difficulty filter
+        const matchesDifficulty = selectedDifficulty === 'All' ||
+          question.difficulty === selectedDifficulty;
+
+        return matchesSearch && matchesDifficulty;
+      });
+
+      if (filtered.length > 0) {
+        result[groupName] = filtered;
+      }
+    });
+
+    return result;
+  }, [filteredQuestions, searchTerm, selectedDifficulty]);
+
+  // Calculate stats with real completion data
+  const stats = useMemo(() => {
+    const allQuestions = Object.values(finalFilteredQuestions).flat();
+    const totalQuestions = allQuestions.length;
+    const easyCount = allQuestions.filter(q => q.difficulty === 'Easy').length;
+    const mediumCount = allQuestions.filter(q => q.difficulty === 'Medium').length;
+    const hardCount = allQuestions.filter(q => q.difficulty === 'Hard').length;
+
+    // Calculate actual completion based on solved questions
+    const easyCompleted = allQuestions.filter(q => q.difficulty === 'Easy' && q.solved).length;
+    const mediumCompleted = allQuestions.filter(q => q.difficulty === 'Medium' && q.solved).length;
+    const hardCompleted = allQuestions.filter(q => q.difficulty === 'Hard' && q.solved).length;
+    const totalCompleted = easyCompleted + mediumCompleted + hardCompleted;
+
+    const easyCompletionPercentage = easyCount > 0 ? Math.round((easyCompleted / easyCount) * 100) : 0;
+    const mediumCompletionPercentage = mediumCount > 0 ? Math.round((mediumCompleted / mediumCount) * 100) : 0;
+    const hardCompletionPercentage = hardCount > 0 ? Math.round((hardCompleted / hardCount) * 100) : 0;
+    const totalCompletionPercentage = totalQuestions > 0 ? Math.round((totalCompleted / totalQuestions) * 100) : 0;
+
+    return {
+      totalQuestions,
+      totalCompleted,
+      totalCompletionPercentage,
+      easyCount,
+      mediumCount,
+      hardCount,
+      easyCompleted,
+      mediumCompleted,
+      hardCompleted,
+      easyCompletionPercentage,
+      mediumCompletionPercentage,
+      hardCompletionPercentage
+    };
+  }, [finalFilteredQuestions]);
+
+  // Handle difficulty filter change
+  const handleDifficultyFilter = useCallback((difficulty) => {
+    setSelectedDifficulty(prev => prev === difficulty ? 'All' : difficulty);
+  }, []);
+
+  // Toggle group expansion
+  const toggleGroup = useCallback((groupName) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  }, []);
+
+  // Expand or collapse all groups
+  const toggleAllGroups = useCallback(() => {
+    const allGroupNames = Object.keys(finalFilteredQuestions);
+    const allExpanded = allGroupNames.every(name => expandedGroups[name]);
+
+    if (allExpanded) {
+      // Collapse all
+      setExpandedGroups({});
+    } else {
+      // Expand all
+      const newState = {};
+      allGroupNames.forEach(name => {
+        newState[name] = true;
+      });
+      setExpandedGroups(newState);
+    }
+  }, [finalFilteredQuestions, expandedGroups]);
+
+  // Check if all groups are expanded
+  const allGroupsExpanded = useMemo(() => {
+    const allGroupNames = Object.keys(finalFilteredQuestions);
+    return allGroupNames.length > 0 && allGroupNames.every(name => expandedGroups[name]);
+  }, [finalFilteredQuestions, expandedGroups]);
+
+  // Auto-expand groups when search is active (better UX for searching)
+  const shouldShowExpanded = useCallback((groupName) => {
+    // If there's a search term or difficulty filter, auto-expand for better visibility
+    if (searchTerm || selectedDifficulty !== 'All') {
+      return true;
+    }
+    // Otherwise, use the manual expand/collapse state
+    return expandedGroups[groupName] || false;
+  }, [searchTerm, selectedDifficulty, expandedGroups]);
+
+  // Show loading indicator when fetching questions
+  if (isFetchingQuestions) {
+    return <FullScreenLoader show={true} />;
+  }
+
+  return (
+    <Container>
+      <Header>
+        <Title>📚 All Questions</Title>
+        <Subtitle>Browse and filter questions by list</Subtitle>
+      </Header>
+
+      <ContentSection>
+        <TabsCardContainer>
+          <TabsAndStatsHeader>
+            <TabsSection>
+              <TabsContainer>
+                {listNamesAndCounts.map(({ name, count }) => {
+                  // Get icon and display name for each tab
+                  const getTabInfo = (tabName) => {
+                    switch (tabName.toUpperCase()) {
+                      case 'TOP 150':
+                        return { icon: '🏆', displayName: 'Top 150', description: 'Most Popular' };
+                      case 'BLIND 75':
+                        return { icon: '🎯', displayName: 'Blind 75', description: 'Essential' };
+                      case 'NEETCODE 150':
+                        return { icon: '🚀', displayName: 'NeetCode 150', description: 'Comprehensive' };
+                      case 'LEETCODE 75':
+                        return { icon: '⚡', displayName: 'LeetCode 75', description: 'Study Plan' };
+                      case 'GRIND 75':
+                        return { icon: '💎', displayName: 'Grind 75', description: 'Curated' };
+                      case 'ALL':
+                        return { icon: '📚', displayName: 'All Questions', description: 'Complete' };
+                      default:
+                        return { icon: '📝', displayName: tabName, description: 'Collection' };
+                    }
+                  };
+
+                  const tabInfo = getTabInfo(name);
+
+                  return (
+                    <Tab
+                      key={name}
+                      isActive={activeList === name}
+                      onClick={() => setActiveList(name)}
+                      title={`${tabInfo.displayName} - ${tabInfo.description} (${count} questions)`}
+                    >
+                      <span className="tab-icon">{tabInfo.icon}</span>
+                      <span className="tab-name">{tabInfo.displayName}</span>
+                      <span className="tab-count">{count}</span>
+                    </Tab>
+                  );
+                })}
+              </TabsContainer>
+            </TabsSection>
+
+            <StatsSection>
+              <CircularProgress percentage={stats.totalCompletionPercentage}>
+                <CircularProgressContent>
+                  <CircularProgressNumber>{stats.totalCompletionPercentage}%</CircularProgressNumber>
+                  <CircularProgressLabel>Total</CircularProgressLabel>
+                </CircularProgressContent>
+              </CircularProgress>
+
+              <DifficultyStats>
+                <DifficultyItem>
+                  <DifficultyHeader>
+                    <DifficultyLabel difficulty="easy">Easy</DifficultyLabel>
+                    <DifficultyCount>{stats.easyCount}</DifficultyCount>
+                  </DifficultyHeader>
+                  <ProgressBar>
+                    <ProgressFill difficulty="easy" percentage={stats.easyCompletionPercentage} />
+                  </ProgressBar>
+                  <CompletionLabel>
+                    {stats.easyCompleted}/{stats.easyCount} solved
+                  </CompletionLabel>
+                </DifficultyItem>
+                <DifficultyItem>
+                  <DifficultyHeader>
+                    <DifficultyLabel difficulty="medium">Medium</DifficultyLabel>
+                    <DifficultyCount>{stats.mediumCount}</DifficultyCount>
+                  </DifficultyHeader>
+                  <ProgressBar>
+                    <ProgressFill difficulty="medium" percentage={stats.mediumCompletionPercentage} />
+                  </ProgressBar>
+                  <CompletionLabel>
+                    {stats.mediumCompleted}/{stats.mediumCount} solved
+                  </CompletionLabel>
+                </DifficultyItem>
+                <DifficultyItem>
+                  <DifficultyHeader>
+                    <DifficultyLabel difficulty="hard">Hard</DifficultyLabel>
+                    <DifficultyCount>{stats.hardCount}</DifficultyCount>
+                  </DifficultyHeader>
+                  <ProgressBar>
+                    <ProgressFill difficulty="hard" percentage={stats.hardCompletionPercentage} />
+                  </ProgressBar>
+                  <CompletionLabel>
+                    {stats.hardCompleted}/{stats.hardCount} solved
+                  </CompletionLabel>
+                </DifficultyItem>
+              </DifficultyStats>
+            </StatsSection>
+          </TabsAndStatsHeader>
+        </TabsCardContainer>
+      </ContentSection>
+
+      <ContentSection>
+        <FiltersContainer>
+          <FiltersRow>
+            <LeftFilters>
+              <SearchContainer>
+                <SearchIcon />
+                <SearchInput
+                  type="text"
+                  placeholder="Search questions..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </SearchContainer>
+              <FilterGroup>
+                <FilterLabel>
+                  <Filter size={16} />
+                </FilterLabel>
+                <DifficultyFilter
+                  isActive={selectedDifficulty === 'Easy'}
+                  onClick={() => handleDifficultyFilter('Easy')}
+                >
+                  Easy
+                </DifficultyFilter>
+                <DifficultyFilter
+                  isActive={selectedDifficulty === 'Medium'}
+                  onClick={() => handleDifficultyFilter('Medium')}
+                >
+                  Medium
+                </DifficultyFilter>
+                <DifficultyFilter
+                  isActive={selectedDifficulty === 'Hard'}
+                  onClick={() => handleDifficultyFilter('Hard')}
+                >
+                  Hard
+                </DifficultyFilter>
+              </FilterGroup>
+            </LeftFilters>
+
+            <RightActions>
+              {/* Show expand/collapse button only when not searching/filtering */}
+              {!searchTerm && selectedDifficulty === 'All' && Object.keys(finalFilteredQuestions).length > 0 && (
+                <ExpandAllButton onClick={toggleAllGroups}>
+                  {allGroupsExpanded ? (
+                    <>
+                      <ChevronUp size={16} />
+                      Collapse All
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown size={16} />
+                      Expand All
+                    </>
+                  )}
+                </ExpandAllButton>
+              )}
+
+              {(searchTerm || selectedDifficulty !== 'All') && (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedDifficulty('All');
+                  }}
+                >
+                  <X size={14} />
+                  Clear Filters
+                </ClearFiltersButton>
+              )}
+            </RightActions>
+          </FiltersRow>
+        </FiltersContainer>
+      </ContentSection>
+
+      {Object.keys(finalFilteredQuestions).length === 0 ? (
+        <EmptyState>
+          <EmptyStateIcon>🔍</EmptyStateIcon>
+          <EmptyStateTitle>No questions found</EmptyStateTitle>
+          <EmptyStateText>
+            {searchTerm || selectedDifficulty !== 'All'
+              ? 'Try adjusting your search or filter criteria'
+              : 'No questions available for the selected list'
+            }
+          </EmptyStateText>
+        </EmptyState>
+      ) : (
+        <QuestionsContainer>
+          {Object.keys(finalFilteredQuestions).map((groupName) => (
+            <QuestionGroup
+              key={groupName}
+              groupName={groupName}
+              questions={finalFilteredQuestions[groupName]}
+              isExpanded={shouldShowExpanded(groupName)}
+              onToggle={() => toggleGroup(groupName)}
+              showToggle={!searchTerm && selectedDifficulty === 'All'}
+            />
+          ))}
+        </QuestionsContainer>
+      )}
+    </Container>
+  );
 };
 
 export default AllQuestions; 

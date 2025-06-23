@@ -9,9 +9,9 @@ const GodModeButton = styled.button`
   gap: 6px;
   padding: 6px 10px;
   background: ${({ $isActive, theme }) =>
-    $isActive ? theme.colors.status.warning : theme.colors.backgroundSecondary};
+    $isActive ? theme.colors.statusWarning : theme.colors.backgroundSecondary};
   border: 1px solid ${({ $isActive, theme }) =>
-    $isActive ? theme.colors.status.warning : theme.colors.border};
+    $isActive ? theme.colors.statusWarning : theme.colors.border};
   border-radius: 4px;
   color: ${({ $isActive, theme }) =>
     $isActive ? '#000000' : theme.colors.textSecondary};
@@ -24,7 +24,7 @@ const GodModeButton = styled.button`
 
   &:hover {
     background: ${({ $isActive, theme }) =>
-    $isActive ? theme.colors.status.warningHover : theme.colors.backgroundTertiary};
+    $isActive ? theme.colors.statusWarning : theme.colors.backgroundTertiary};
     transform: translateY(-1px);
   }
 

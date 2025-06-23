@@ -1,3 +1,35 @@
+# ⚠️ DEPRECATED - See UNIFIED_RECOMMENDATION_SYSTEM.md
+
+This document describes the previous smart hybrid recommendation system. 
+
+**The system has been unified and improved. Please refer to:**
+- **[UNIFIED_RECOMMENDATION_SYSTEM.md](UNIFIED_RECOMMENDATION_SYSTEM.md)** - Current unified system documentation
+- **[README.md](README.md)** - Updated main documentation
+
+## Key Changes in Unified System
+
+### **Improvements Made**
+- ✅ Single `/api/v1/recommendations` endpoint (was `/smart-recommendations`)
+- ✅ Enhanced analytics with learning streaks and topic mastery
+- ✅ Percentage-based topic mastery (scales with content)
+- ✅ Sophisticated user classification (breadth + depth)
+- ✅ 294+ comprehensive tests
+- ✅ Dynamic database-driven calculations
+
+### **Removed Complexity**
+- ❌ Multiple competing endpoints
+- ❌ Hardcoded topic counts and thresholds
+- ❌ Separate analytics calculations
+- ❌ Complex hybrid fallback logic
+
+---
+
+# Legacy Documentation (For Reference Only)
+
+*The content below represents the deprecated smart hybrid system and is preserved for historical reference only.*
+
+---
+
 # 🧠 Smart Hybrid Recommendations System
 
 ## Overview

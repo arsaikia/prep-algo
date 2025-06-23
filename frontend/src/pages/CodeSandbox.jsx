@@ -43,7 +43,7 @@ const Title = styled.h1`
 `;
 
 const TitleText = styled.span`
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.brand.primary}, ${({ theme }) => theme.colors.brand.secondary || theme.colors.brand.primary}dd);
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.secondary || theme.colors.primary}dd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -82,11 +82,11 @@ const Card = styled.div`
   border: 2px solid ${({ theme }) => theme.colors.border};
   border-radius: 12px;
   padding: 20px;
-  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  box-shadow: ${({ theme }) => theme.colors.shadowCard};
   transition: all 0.3s ease;
   
   &:hover {
-    box-shadow: ${({ theme }) => theme.colors.shadows.cardHover};
+    box-shadow: ${({ theme }) => theme.colors.shadowCardHover};
     transform: translateY(-1px);
   }
 `;
@@ -143,8 +143,8 @@ const QuestionInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.brand.primary};
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.brand.primary}20;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
   }
 
   &::placeholder {
@@ -160,7 +160,7 @@ const ModernButton = styled.button`
   border: none;
   border-radius: 8px;
   background: ${props => props.variant === 'primary'
-    ? `linear-gradient(135deg, ${props.theme.colors.brand.primary}, ${props.theme.colors.brand.secondary || props.theme.colors.brand.primary}dd)`
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}, ${props.theme.colors.secondary || props.theme.colors.primary}dd)`
     : props.variant === 'success'
       ? `linear-gradient(135deg, #28a745, #20c997)`
       : props.variant === 'danger'
@@ -192,7 +192,7 @@ const ModernButton = styled.button`
     bottom: 0;
     background: ${props => props.variant === 'primary' || props.variant === 'success' || props.variant === 'danger'
     ? 'rgba(255, 255, 255, 0.1)'
-    : `linear-gradient(135deg, ${props.theme.colors.brand.primary}10, ${props.theme.colors.brand.secondary || props.theme.colors.brand.primary}05)`
+    : `linear-gradient(135deg, ${props.theme.colors.primary}10, ${props.theme.colors.secondary || props.theme.colors.primary}05)`
   };
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -206,12 +206,12 @@ const ModernButton = styled.button`
   &:hover {
     transform: translateY(-2px) scale(1.02);
     box-shadow: ${props => props.variant === 'primary'
-    ? `0 12px 30px ${props.theme.colors.brand.primary}50`
+    ? `0 12px 30px ${props.theme.colors.primary}50`
     : props.variant === 'success'
       ? `0 12px 30px #28a74550`
       : props.variant === 'danger'
         ? `0 12px 30px #dc354550`
-        : `0 6px 20px ${props.theme.colors.brand.primary}25`
+        : `0 6px 20px ${props.theme.colors.primary}25`
   };
   }
 
@@ -259,23 +259,23 @@ const QuickTestGrid = styled.div`
 const QuickTestButton = styled.button`
   padding: 6px 12px;
   font-size: 12px;
-  background: ${props => props.isActive ? props.theme.colors.brand.primary : 'transparent'};
+  background: ${props => props.isActive ? props.theme.colors.primary : 'transparent'};
   color: ${props => props.isActive ? '#ffffff' : props.theme.colors.text};
-  border: 1px solid ${props => props.isActive ? props.theme.colors.brand.primary : props.theme.colors.border};
+  border: 1px solid ${props => props.isActive ? props.theme.colors.primary : props.theme.colors.border};
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 
   &:hover {
-    background: ${props => props.isActive ? props.theme.colors.brand.primary : props.theme.colors.backgroundHover};
-    border-color: ${({ theme }) => theme.colors.brand.primary};
+    background: ${props => props.isActive ? props.theme.colors.primary : props.theme.colors.backgroundHover};
+    border-color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
 const TimerCard = styled.div`
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.brand.primary}12, ${({ theme }) => theme.colors.brand.secondary || theme.colors.brand.primary}06);
-  border: 1px solid ${({ theme }) => theme.colors.brand.primary}30;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}12, ${({ theme }) => theme.colors.secondary || theme.colors.primary}06);
+  border: 1px solid ${({ theme }) => theme.colors.primary}30;
   border-radius: 16px;
   padding: 16px 24px;
   margin-bottom: 1.5rem;
@@ -290,7 +290,7 @@ const TimerCard = styled.div`
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, ${({ theme }) => theme.colors.brand.primary}15, transparent);
+    background: linear-gradient(90deg, transparent, ${({ theme }) => theme.colors.primary}15, transparent);
     animation: shimmer 4s infinite;
   }
   
@@ -301,7 +301,7 @@ const TimerCard = styled.div`
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, ${({ theme }) => theme.colors.brand.primary}, ${({ theme }) => theme.colors.brand.secondary || theme.colors.brand.primary});
+    background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.secondary || theme.colors.primary});
     border-radius: 2px;
   }
   
@@ -312,8 +312,8 @@ const TimerCard = styled.div`
   
   &:hover {
     transform: translateY(-1px);
-    border-color: ${({ theme }) => theme.colors.brand.primary}50;
-    box-shadow: 0 4px 20px ${({ theme }) => theme.colors.brand.primary}20;
+    border-color: ${({ theme }) => theme.colors.primary}50;
+    box-shadow: 0 4px 20px ${({ theme }) => theme.colors.primary}20;
   }
 `;
 
@@ -343,7 +343,7 @@ const TimerTime = styled.div`
   font-family: 'Fira Code', monospace;
   font-size: 1.3rem;
   font-weight: 600;
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.brand.primary}, ${({ theme }) => theme.colors.brand.secondary || theme.colors.brand.primary}dd);
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.secondary || theme.colors.primary}dd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -367,19 +367,19 @@ const TimerControls = styled.div`
 `;
 
 const TimerIcon = styled(Timer)`
-  color: ${({ theme }) => theme.colors.brand.primary};
+  color: ${({ theme }) => theme.colors.primary};
   animation: tick 1.5s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 6px ${({ theme }) => theme.colors.brand.primary}50);
+  filter: drop-shadow(0 0 6px ${({ theme }) => theme.colors.primary}50);
   margin-right: 8px;
   
   @keyframes tick {
     0% { 
       transform: scale(1) rotate(-3deg);
-      filter: drop-shadow(0 0 6px ${({ theme }) => theme.colors.brand.primary}50);
+      filter: drop-shadow(0 0 6px ${({ theme }) => theme.colors.primary}50);
     }
     100% { 
       transform: scale(1.1) rotate(3deg);
-      filter: drop-shadow(0 0 10px ${({ theme }) => theme.colors.brand.primary}70);
+      filter: drop-shadow(0 0 10px ${({ theme }) => theme.colors.primary}70);
     }
   }
 `;
@@ -458,16 +458,16 @@ const RatingButton = styled.button`
   gap: 4px;
   padding: 6px 10px;
   font-size: 12px;
-  background: ${props => props.selected ? props.theme.colors.brand.primary : 'transparent'};
+  background: ${props => props.selected ? props.theme.colors.primary : 'transparent'};
   color: ${props => props.selected ? '#ffffff' : props.theme.colors.textSecondary};
-  border: 1px solid ${props => props.selected ? props.theme.colors.brand.primary : props.theme.colors.border};
+  border: 1px solid ${props => props.selected ? props.theme.colors.primary : props.theme.colors.border};
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.selected ? props.theme.colors.brand.primary : props.theme.colors.backgroundHover};
-    border-color: ${({ theme }) => theme.colors.brand.primary};
+    background: ${props => props.selected ? props.theme.colors.primary : props.theme.colors.backgroundHover};
+    border-color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
@@ -542,8 +542,8 @@ const LanguageSelector = styled.select`
 
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.brand.primary};
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.brand.primary}20;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
   }
 
   &:hover {
@@ -632,7 +632,7 @@ const LoadingSpinner = styled.div`
   width: 40px;
   height: 40px;
   border: 3px solid ${({ theme }) => theme.colors.border};
-  border-top: 3px solid ${({ theme }) => theme.colors.brand.primary};
+  border-top: 3px solid ${({ theme }) => theme.colors.primary};
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -668,7 +668,7 @@ const ModalContent = styled.div`
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: ${({ theme }) => theme.colors.shadows.modal || '0 25px 50px rgba(0, 0, 0, 0.3)'};
+  box-shadow: ${({ theme }) => theme.colors.shadowDropdown || '0 25px 50px rgba(0, 0, 0, 0.3)'};
 `;
 
 const ModalTitle = styled.h3`

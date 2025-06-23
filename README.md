@@ -1,211 +1,266 @@
-# PrepAlgo
+# RemindMe - Intelligent Coding Practice Platform
 
-A comprehensive platform for practicing algorithm problems with real-time code execution and test case validation. Built with modern web technologies to provide an interactive coding experience.
+A personalized coding practice platform that provides smart daily question recommendations based on your learning patterns, progress tracking, and adaptive difficulty adjustment.
 
 ## 🚀 Features
 
-- **Interactive Code Editor**: Monaco Editor integration for a professional coding experience
-- **Real-time Code Execution**: Execute code in multiple programming languages
-- **Test Case Validation**: Automatic testing with custom test cases
-- **User Authentication**: Secure login with Google OAuth integration
-- **Progress Tracking**: Monitor your algorithm practice progress
-- **Problem Categories**: Organized problem sets by difficulty and topic
-- **Smart Recommendations**: AI-powered daily problem recommendations with adaptive learning
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+### 🎯 **Unified Smart Recommendation System**
+- **Dynamic Learning Analytics**: Real-time progress tracking with streak calculation and topic mastery levels
+- **Percentage-Based Topic Mastery**: 5-level progression system (Beginner → Learning → Practicing → Proficient → Mastered)
+- **Adaptive User Classification**: Dynamic skill assessment based on topic breadth and mastery depth
+- **Personalized Recommendations**: AI-driven question selection using multiple strategies:
+  - Weak Area Reinforcement
+  - Progressive Difficulty
+  - Spaced Repetition
+  - Topic Exploration
+  - General Practice
 
-## 📚 Documentation
+### 📊 **Enhanced Analytics Dashboard**
+- **Learning Streaks**: Current and longest streak tracking with daily activity monitoring
+- **Topic Mastery Progress**: Visual progress bars with coverage percentages for each topic
+- **Focus Areas**: Intelligent identification of weak areas needing attention
+- **Performance Insights**: Comprehensive analytics including solve rates, attempt efficiency, and learning velocity
 
-- **[Smart Hybrid Recommendations](SMART_HYBRID_README.md)** - Advanced AI recommendation system ⭐ **Active**
-- **[System Migration Guide](SYSTEM_MIGRATION.md)** - Migration from legacy systems
-- **[Daily Recommendations](DAILY_RECOMMENDATIONS_README.md)** - Basic daily problem system (Legacy)
-- **[Recommendation Improvements](RECOMMENDATION_IMPROVEMENTS.md)** - System enhancement notes
-- **[Color System](COLOR_SYSTEM_README.md)** - UI design guidelines
-- **[Tracking Implementation](TRACKING_IMPLEMENTATION.md)** - Progress tracking details
+### 🎨 **Modern UI/UX**
+- **Responsive Design**: Optimized for desktop and mobile devices
+- **Dark/Light Theme**: Seamless theme switching with user preferences
+- **Interactive Components**: Animated progress indicators and smooth transitions
+- **Color-Coded Progress**: Intuitive visual feedback for different mastery levels
 
-## 🛠️ Tech Stack
+### 🔧 **Technical Features**
+- **Real-time Updates**: Live progress tracking and recommendation updates
+- **Smart Caching**: Efficient batch processing with selective refresh capabilities
+- **Dynamic Scaling**: Database-driven topic counts that automatically adapt to new content
+- **Comprehensive Testing**: 296+ automated tests ensuring system reliability
 
-### Frontend
-- **React 18** - Modern React with hooks and functional components
-- **Redux Toolkit** - State management
-- **Monaco Editor** - Professional code editor
-- **Styled Components** - CSS-in-JS styling
-- **React Router** - Client-side routing
-- **Axios** - HTTP client for API calls
+## 🏗️ Architecture
 
-### Backend
-- **Node.js** - JavaScript runtime
-- **Express.js** - Web application framework
-- **MongoDB** - NoSQL database with Mongoose ODM
-- **JWT** - JSON Web Tokens for authentication
-- **bcryptjs** - Password hashing
-- **Helmet** - Security middleware
-- **CORS** - Cross-origin resource sharing
+### Backend (Node.js/Express)
+- **Unified API**: Single `/api/v1/recommendations` endpoint for all recommendation needs
+- **Dynamic Analytics**: Database-driven calculations for scalable topic management
+- **Smart Caching**: Intelligent batch management with selective refresh strategies
+- **MongoDB Integration**: Efficient data storage and aggregation pipelines
 
-### DevOps
-- **Docker** - Containerization
-- **Google Cloud Platform** - Deployment and hosting
-- **ESLint** - Code linting
-- **Nodemon** - Development server with auto-reload
+### Frontend (React)
+- **Component-Based**: Modular design with reusable analytics components
+- **State Management**: Redux for consistent application state
+- **API Integration**: Seamless communication with recommendation engine
+- **Theme System**: Comprehensive color system with dynamic theming
 
-## 📋 Prerequisites
+## 📈 User Classification System
 
-- Node.js (>= 18.0.0)
-- npm or yarn
-- MongoDB instance
-- Google OAuth credentials (for authentication)
+The platform uses a sophisticated classification system that considers both **breadth** and **depth** of knowledge:
 
-## 🚀 Installation
+### 🔥 **Advanced Users**
+- 60+ questions solved across 40%+ of available topics
+- Multiple mastered topics (25%+ mastery rate) with 50%+ proficient+mastered topics
+- OR 2+ mastered + 3+ proficient topics
+- OR 15%+ hard problems with 2+ mastered topics
+
+### ⚡ **Intermediate Users**  
+- 25+ questions solved across 25%+ of available topics
+- 1+ mastered topic with 3+ proficient/practicing topics
+- OR 35%+ medium performance across 30%+ topics
+- OR 8%+ hard problems across 20%+ topics
+
+### 🌱 **Beginner Users**
+- < 25 questions OR < 25% topic breadth OR no topic mastery
+
+## 🎯 Topic Mastery Levels
+
+### **Mastered** (🏆)
+- 80%+ topic coverage + 90%+ solve rate + ≤2.5 avg attempts
+
+### **Proficient** (⭐)
+- 60%+ topic coverage + 85%+ solve rate + ≤3.0 avg attempts
+
+### **Practicing** (📈)
+- 40%+ topic coverage + 75%+ solve rate
+
+### **Learning** (📚)
+- 15%+ topic coverage OR 3+ questions attempted
+
+### **Beginner** (🌱)
+- < 15% topic coverage AND < 3 questions attempted
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 16+ 
+- MongoDB 4.4+
+- React 18+
+
+### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/arsaikia/prep-algo.git
-   cd prep-algo
+   git clone https://github.com/your-username/remind-me.git
+   cd remind-me
    ```
 
-2. **Install dependencies**
+2. **Backend Setup**
    ```bash
-   # Install root dependencies
+   cd backend
    npm install
-   
-   # Install backend dependencies
-   npm run install-server
-   
-   # Install frontend dependencies
-   npm run install-client
-   ```
-
-3. **Environment Setup**
-   
-   Create a `.env` file in the backend directory:
-   ```env
-   PORT=8080
-   MONGODB_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret
-   GOOGLE_CLIENT_ID=your_google_oauth_client_id
-   GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
-   BASE_URI=http://localhost:3000
-   CORS_ORIGINS=http://localhost:3000,http://192.168.1.234:3000
-   ```
-
-4. **Start the development servers**
-   ```bash
-   # Start both frontend and backend in development mode
+   cp .env.example .env  # Configure your environment variables
    npm run dev
-   
-   # Or start them separately:
-   # Backend only
-   npm run server
-   
-   # Frontend only
-   npm run client
    ```
 
-## 🎯 Usage
+3. **Frontend Setup**
+   ```bash
+   cd frontend
+   npm install
+   npm start
+   ```
 
-1. **Access the Application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8080
+4. **Database Setup**
+   ```bash
+   # Sync questions from JSON data
+   cd backend
+   node scripts/syncQuestionsFromJson.js
+   
+   # Create test users with realistic learning patterns
+   node scripts/createTestUsers.js
+   ```
 
-2. **Authentication**
-   - Sign in using your Google account
-   - Or create a new account with email/password
+## 📚 API Documentation
 
-3. **Practice Algorithms**
-   - Browse available problems by category
-   - Write your solution in the code editor
-   - Submit your code for execution
-   - View test case results and performance metrics
+### **Unified Recommendation Endpoint**
 
-## 📁 Project Structure
-
-```
-prep-algo/
-├── backend/                 # Backend server
-│   ├── config/             # Database and app configuration
-│   ├── controller/         # Request handlers
-│   ├── middleware/         # Custom middleware
-│   ├── models/             # MongoDB schemas
-│   ├── routes/             # API routes
-│   ├── utils/              # Utility functions
-│   └── server.js           # Main server file
-├── frontend/               # React application
-│   ├── public/             # Static assets
-│   ├── src/                # Source code
-│   │   ├── components/     # React components
-│   │   ├── pages/          # Page components
-│   │   ├── redux/          # Redux store and slices
-│   │   └── utils/          # Utility functions
-│   └── package.json
-├── package.json            # Root package.json
-└── README.md
+#### Get Daily Recommendations
+```http
+GET /api/v1/recommendations/{userId}/daily?count=5&forceRefresh=false
 ```
 
-## 🚀 Deployment
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "recommendations": [...],
+    "analysis": {
+      "userLevel": "advanced",
+      "totalSolved": 85,
+      "streakInfo": {
+        "currentStreak": 7,
+        "longestStreak": 12,
+        "totalActiveDays": 45
+      },
+      "topicMastery": [
+        {
+          "topic": "Two Pointers",
+          "level": "mastered",
+          "topicCoveragePercentage": 100,
+          "progress": {
+            "percentage": 100,
+            "completed": 5,
+            "total": 5
+          }
+        }
+      ],
+      "weakAreas": ["Dynamic Programming", "Graphs"],
+      "strongAreas": ["Arrays & Hashing", "Binary Search"]
+    },
+    "batchInfo": {
+      "canRefresh": true,
+      "canReplaceCompleted": true,
+      "lastRefreshAt": "2024-01-15T10:30:00Z"
+    }
+  }
+}
+```
 
-### Using Docker
+#### Mark Question Completed
+```http
+POST /api/v1/recommendations/{userId}/complete
+Content-Type: application/json
 
-1. **Build the Docker image**
-   ```bash
-   docker build -t prep-algo .
-   ```
+{
+  "questionId": "question_id_here",
+  "timeSpent": 1200,
+  "attempts": 2
+}
+```
 
-2. **Run the container**
-   ```bash
-   docker run -p 8080:8080 prep-algo
-   ```
+#### Replace Completed Questions
+```http
+POST /api/v1/recommendations/{userId}/replace-completed
+```
 
-### Google Cloud Platform
+## 🧪 Testing
 
-The project includes Google Cloud Build configuration. Deploy using:
+Run the comprehensive test suite:
 
 ```bash
-gcloud builds submit --config backend/cloudbuild.yaml
+cd backend
+node scripts/validateRecommendationEngine.js
 ```
 
-## 📝 Available Scripts
+**Test Coverage:**
+- ✅ 296+ automated tests
+- API functionality and response validation
+- User classification accuracy
+- Topic mastery calculations
+- Streak tracking logic
+- Recommendation strategy distribution
 
-### Root Level
-- `npm run dev` - Start both frontend and backend in development mode
-- `npm run server` - Start backend server with nodemon
-- `npm run client` - Start frontend development server
-- `npm run install-server` - Install backend dependencies
-- `npm run install-client` - Install frontend dependencies
-- `npm run build-client` - Build frontend for production
+## 🎨 Theming
 
-### Backend
-- `npm start` - Start production server
-- `npm run dev` - Start development server with nodemon
+The platform includes a comprehensive theming system with:
+- **Dynamic Color Schemes**: Seamless dark/light mode switching
+- **Consistent Design Language**: Unified color palette across all components
+- **Accessibility**: WCAG compliant contrast ratios
+- **Customizable**: Easy theme extension and modification
 
-### Frontend
-- `npm start` - Start development server
-- `npm run build` - Build for production
-- `npm test` - Run tests
+## 📊 Analytics & Insights
+
+### **Learning Streaks**
+- Real-time streak calculation based on daily activity
+- Historical streak tracking with longest streak records
+- Activity pattern analysis for engagement insights
+
+### **Topic Mastery Tracking**
+- Percentage-based progress calculation
+- Dynamic mastery level progression
+- Visual progress indicators with color coding
+
+### **Performance Analytics**
+- Solve rate tracking per topic
+- Attempt efficiency monitoring
+- Learning velocity insights
+- Weak area identification and recommendations
+
+## 🔄 System Architecture
+
+### **Dynamic Scaling**
+- Database-driven topic counts (no hardcoded values)
+- Automatic adaptation to new questions/topics
+- Percentage-based thresholds for consistent difficulty
+
+### **Smart Caching**
+- Intelligent batch management
+- Selective refresh strategies
+- Performance optimization with minimal API calls
+
+### **Comprehensive Analytics**
+- Real-time calculation of learning metrics
+- Adaptive user classification
+- Personalized recommendation strategies
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👨‍💻 Author
+## 🙏 Acknowledgments
 
-**Arunabh Saikia**
-- GitHub: [@arsaikia](https://github.com/arsaikia)
-
-## 🐛 Issues
-
-If you find any bugs or have feature requests, please [open an issue](https://github.com/arsaikia/prep-algo/issues) on GitHub.
-
-## 📞 Support
-
-For support, email support@prepalgo.com or join our Slack channel.
-
----
-
-**Happy Coding! 🎉**
+- LeetCode for inspiration on coding practice platforms
+- The open-source community for excellent tools and libraries
+- Contributors who helped shape this intelligent learning platform

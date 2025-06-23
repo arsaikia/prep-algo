@@ -54,7 +54,50 @@ const dailyRecommendationBatchSchema = new mongoose.Schema({
         strugglingQuestions: Array,
         adaptiveWeights: Object,
         timePreferences: Object,
-        adaptiveFeatures: Object
+        adaptiveFeatures: Object,
+        // NEW: Enhanced analytics for Learning Streaks & Topic Mastery
+        streakInfo: {
+            currentStreak: Number,
+            longestStreak: Number,
+            lastActivityDate: String,
+            totalActiveDays: Number
+        },
+        topicMastery: [{
+            topic: String,
+            level: {
+                type: String,
+                enum: ['beginner', 'learning', 'practicing', 'proficient', 'mastered']
+            },
+            totalQuestions: Number,
+            solvedQuestions: Number, // Updated field name for clarity
+            difficulties: {
+                Easy: Number,
+                Medium: Number,
+                Hard: Number
+            },
+            averageAttempts: Number,
+            solveRate: Number, // Updated field name for clarity
+            totalAvailable: Number, // NEW: Total questions available in this topic
+            topicCoveragePercentage: Number, // NEW: Percentage of topic covered
+            firstStudied: Date,
+            lastStudied: Date,
+            progress: {
+                completed: Number,
+                total: Number,
+                percentage: Number,
+                topicCoverage: Number // NEW: Percentage of available questions attempted
+            }
+        }],
+        dailyActivity: [{
+            date: String,
+            questionsCompleted: Number,
+            topics: [String],
+            difficulties: {
+                Easy: Number,
+                Medium: Number,
+                Hard: Number
+            }
+        }]
     },
     generatedAt: {
         type: Date,
@@ -160,6 +203,17 @@ dailyRecommendationBatchSchema.methods.shouldRefresh = function (userId) {
 };
 
 dailyRecommendationBatchSchema.methods.markQuestionCompleted = function (questionId, completionData = {}) {
+    // Check if this question is part of the daily recommendations
+    const isRecommendedQuestion = this.recommendations.some(rec =>
+        (rec.question._id && rec.question._id.toString() === questionId) ||
+        (rec.question && rec.question.toString() === questionId)
+    );
+
+    if (!isRecommendedQuestion) {
+        console.log(`⚠️ Question ${questionId} is not part of daily recommendations - skipping completion tracking`);
+        return Promise.resolve(this); // Return resolved promise without saving
+    }
+
     // Remove if already exists (prevent duplicates)
     this.questionsCompleted = this.questionsCompleted.filter(
         q => q.questionId !== questionId
@@ -176,6 +230,7 @@ dailyRecommendationBatchSchema.methods.markQuestionCompleted = function (questio
     // Update metadata
     this.metadata.userSatisfactionScore = this.questionsCompleted.length / this.recommendations.length;
 
+    console.log(`✅ Question ${questionId} marked as completed in daily recommendations`);
     return this.save();
 };
 

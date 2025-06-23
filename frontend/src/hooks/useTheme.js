@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSystemTheme, setUserThemePreference } from '../actions/actions';
+import { setSystemTheme, setUserThemePreference, setColorScheme, initializeColorScheme } from '../actions/actions';
 
 export const useTheme = () => {
   const dispatch = useDispatch();
-  const { isDarkModeEnabled, userPreference, systemPrefersDark } = useSelector(
+  const { isDarkModeEnabled, userPreference, systemPrefersDark, colorScheme } = useSelector(
     (state) => state.theme
   );
 
@@ -12,7 +12,7 @@ export const useTheme = () => {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      
+
       const handleSystemThemeChange = (e) => {
         dispatch(setSystemTheme(e.matches));
       };
@@ -28,6 +28,11 @@ export const useTheme = () => {
         mediaQuery.removeEventListener('change', handleSystemThemeChange);
       };
     }
+  }, [dispatch]);
+
+  // Initialize color scheme on first load
+  useEffect(() => {
+    dispatch(initializeColorScheme());
   }, [dispatch]);
 
   // Theme control functions
@@ -51,19 +56,32 @@ export const useTheme = () => {
     setTheme(null);
   };
 
+  // Color scheme control functions
+  const setScheme = (scheme) => {
+    // scheme can be 'original', 'complementary', or 'triadic'
+    dispatch(setColorScheme(scheme));
+  };
+
   return {
     // State
     isDarkModeEnabled,
     userPreference, // null = system, 'light' = light, 'dark' = dark
     systemPrefersDark,
     isFollowingSystem: userPreference === null,
-    
-    // Actions
+    colorScheme, // 'original', 'complementary', 'triadic'
+
+    // Theme Actions
     setTheme,
     toggleTheme,
     followSystem,
     setLight: () => setTheme('light'),
     setDark: () => setTheme('dark'),
+
+    // Color Scheme Actions
+    setColorScheme: setScheme,
+    setOriginal: () => setScheme('original'),
+    setComplementary: () => setScheme('complementary'),
+    setTriadic: () => setScheme('triadic'),
   };
 };
 

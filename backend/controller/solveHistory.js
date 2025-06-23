@@ -11,73 +11,102 @@ import User from '../models/User.js';
  * @route    GET /api/v1/solveHistory/:userId
  * @access   Public
  */
-
 const getSolveHistory = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
-    const solveHistory = await SolveHistory.find({ userId });
+    const solveHistory = await SolveHistory.find({ userId }).populate('questionId');
 
     if (!solveHistory) {
         return next(new ErrorResponse(`No SolveHistory found!`, 404));
     }
-    res.status(200).json({ success: true, data: solveHistory });
+    res.status(200).json({
+        success: true,
+        count: solveHistory.length,
+        data: solveHistory,
+    });
 });
 
 /*
- * @desc     updateSolveHistory
- * @route    POST /api/v1/question
+ * @desc     Update solve history when user solves a question
+ * @route    POST /api/v1/solveHistory
  * @access   Public
  */
-
 const updateSolveHistory = asyncHandler(async (req, res, next) => {
     const {
         userId,
         questionId,
-        timeSpent, // in minutes
-        difficultyRating, // 1-5 scale
-        tags, // array of strings
-        success = true, // boolean
-        strategy, // which recommendation strategy suggested this question
-        sessionNumber = 1, // question number in this session
-        previousQuestionResult // success of previous question in session
+        timeSpent,
+        difficultyRating,
+        tags,
+        success = true,
+        sessionNumber = 1,
+        previousQuestionResult,
+        strategy
     } = req.body;
 
-    console.log('📊 updateSolveHistory received:', { userId, questionId, timeSpent, difficultyRating, tags, success, strategy });
-
-    const question = await Question.findById(questionId);
-    const user = await User.findById(userId);
-
-    console.log('📊 Found question:', question ? question.name : 'null');
-    console.log('📊 Found user:', user ? user.firstName : 'null');
-
-    if (!user || !question) {
-        return next(new Error(`Incorrect data to update solve history`, 400));
+    if (!userId || !questionId) {
+        return next(new Error(`userId and questionId are required`, 400));
     }
 
-    const lastSolve = await SolveHistory.findOne({ userId, questionId });
+    // Get question details for analytics
+    const question = await Question.findById(questionId);
+    if (!question) {
+        return next(new Error(`Question not found`, 404));
+    }
 
-    // NEW: Get or create user profile for adaptive features
+    // Get or create user profile for adaptive recommendations
     let userProfile = await UserProfile.findByUserId(userId);
     if (!userProfile) {
-        console.log('📊 Creating user profile for adaptive recommendations...');
         const existingHistory = await SolveHistory.find({ userId }).populate('questionId');
         userProfile = await UserProfile.createFromSolveHistory(userId, existingHistory);
         await userProfile.save();
     }
 
-    let response;
     const currentTimestamp = new Date();
 
-    if (lastSolve) {
-        // Calculate new average time if timeSpent is provided
-        let newAverageTime = lastSolve.averageTimeToSolve;
-        if (timeSpent && typeof timeSpent === 'number') {
-            const totalSessions = lastSolve.solveHistory?.length || lastSolve.solveCount;
-            const currentTotal = (lastSolve.averageTimeToSolve || 0) * totalSessions;
-            newAverageTime = (currentTotal + timeSpent) / (totalSessions + 1);
+    // Helper functions for session context
+    const getTimeOfDay = () => {
+        const hour = currentTimestamp.getHours();
+        if (hour >= 5 && hour < 12) return 'morning';
+        if (hour >= 12 && hour < 18) return 'afternoon';
+        return 'evening';
+    };
+
+    const getDayOfWeek = () => {
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        return days[currentTimestamp.getDay()];
+    };
+
+    // Check if solve history already exists for this user-question pair
+    let response = await SolveHistory.findOne({ userId, questionId });
+
+    if (response) {
+        // Update existing record
+        response.solveCount += 1;
+        response.lastUpdatedAt = currentTimestamp;
+
+        // Update average time to solve
+        if (timeSpent) {
+            const currentAverage = response.averageTimeToSolve || 0;
+            const totalSessions = response.solveHistory.length;
+            response.averageTimeToSolve = (currentAverage * totalSessions + timeSpent) / (totalSessions + 1);
         }
 
-        // Prepare solve session data with adaptive context
-        const newSolveSession = {
+        // Update difficulty rating if provided
+        if (difficultyRating) {
+            response.difficulty_rating = difficultyRating;
+        }
+
+        // Add new tags if provided
+        if (tags && Array.isArray(tags)) {
+            tags.forEach(tag => {
+                if (!response.tags.includes(tag)) {
+                    response.tags.push(tag);
+                }
+            });
+        }
+
+        // Add to solve history array
+        response.solveHistory.push({
             solvedAt: currentTimestamp,
             timeSpent: timeSpent || null,
             success: success,
@@ -88,21 +117,9 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
                 previousQuestionResult: previousQuestionResult,
                 recommendationStrategy: strategy
             }
-        };
+        });
 
-        // Update existing record
-        response = await SolveHistory.findByIdAndUpdate(
-            lastSolve._id,
-            {
-                solveCount: lastSolve.solveCount + 1,
-                lastUpdatedAt: currentTimestamp,
-                averageTimeToSolve: newAverageTime,
-                difficulty_rating: difficultyRating || lastSolve.difficulty_rating,
-                tags: tags || lastSolve.tags,
-                $push: { solveHistory: newSolveSession }
-            },
-            { new: true }
-        );
+        await response.save();
     } else {
         // Create new record
         response = await SolveHistory.create({
@@ -133,7 +150,7 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
         return next(new Error(`SolveHistory update error`, 500));
     }
 
-    // NEW: Update user profile with this solve session for adaptive recommendations
+    // Update user profile with this solve session for adaptive recommendations
     if (userProfile) {
         try {
             userProfile.updateRecentPerformance({
@@ -399,16 +416,17 @@ const generateRecommendations = async (userId, analysis, count) => {
         .slice(0, count);
 };
 
-// Helper functions
+// Helper function to determine difficulty for user level
 const getDifficultyForLevel = (userLevel) => {
     switch (userLevel) {
-        case 'beginner': return { $in: ['Easy'] };
-        case 'intermediate': return { $in: ['Easy', 'Medium'] };
-        case 'advanced': return { $in: ['Medium', 'Hard'] };
-        default: return { $in: ['Easy'] };
+        case 'beginner': return 'Easy';
+        case 'intermediate': return 'Medium';
+        case 'advanced': return 'Hard';
+        default: return 'Easy';
     }
 };
 
+// Helper function to get next difficulty level
 const getNextDifficulty = (userLevel, difficultyStats) => {
     const total = difficultyStats.Easy + difficultyStats.Medium + difficultyStats.Hard;
     const easyPercentage = (difficultyStats.Easy / total) * 100;
@@ -419,20 +437,7 @@ const getNextDifficulty = (userLevel, difficultyStats) => {
     } else if (userLevel === 'intermediate' && mediumPercentage > 60) {
         return 'Hard';
     }
-    return null;
-};
-
-// Helper functions for session context
-const getTimeOfDay = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return 'morning';
-    if (hour >= 12 && hour < 18) return 'afternoon';
-    return 'evening';
-};
-
-const getDayOfWeek = () => {
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    return days[new Date().getDay()];
+    return getDifficultyForLevel(userLevel);
 };
 
 export {

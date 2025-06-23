@@ -10,7 +10,7 @@ export const getSmartDailyRecommendations = async (userId, options = {}) => {
         });
 
         const response = await fetch(
-            `${API_BASE_URL}/smart-recommendations/${userId}/daily?${queryParams}`,
+            `${API_BASE_URL}/recommendations/${userId}/daily?${queryParams}`,
             {
                 method: 'GET',
                 headers: {
@@ -39,7 +39,7 @@ export const getSmartDailyRecommendations = async (userId, options = {}) => {
 export const markQuestionCompleted = async (userId, questionId, completionData = {}) => {
     try {
         const response = await fetch(
-            `${API_BASE_URL}/smart-recommendations/${userId}/complete`,
+            `${API_BASE_URL}/recommendations/${userId}/complete`,
             {
                 method: 'POST',
                 headers: {
@@ -72,7 +72,7 @@ export const markQuestionCompleted = async (userId, questionId, completionData =
 export const replaceCompletedQuestions = async (userId) => {
     try {
         const response = await fetch(
-            `${API_BASE_URL}/smart-recommendations/${userId}/replace-completed`,
+            `${API_BASE_URL}/recommendations/${userId}/replace-completed`,
             {
                 method: 'POST',
                 headers: {

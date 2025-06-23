@@ -29,8 +29,8 @@ import { isDevMode } from '../utils/featureFlags';
 
 // Styled components
 const NavContainer = styled.nav`
-  background-color: ${({ theme }) => theme.colors.navbarBackground || theme.colors.background};
-  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  background-color: ${({ theme }) => theme.colors.background};
+  box-shadow: ${({ theme }) => theme.colors.shadowCard};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   position: fixed;
   top: 0;
@@ -62,7 +62,7 @@ const Logo = styled(NavLink)`
   
   &:hover {
     transform: scale(1.05);
-    color: ${({ theme }) => theme.colors.brand.primary};
+    color: ${({ theme }) => theme.colors.primary};
   }
   
   &:hover .logo-icon-container .brain-icon {
@@ -91,7 +91,7 @@ const Logo = styled(NavLink)`
     font-size: 2rem;
     animation: brainPulse 3s ease-in-out infinite;
     transform-origin: center;
-    filter: drop-shadow(0 0 4px ${({ theme }) => theme.colors.algorithm.brain}66);
+    filter: drop-shadow(0 0 4px ${({ theme }) => theme.colors.primary}66);
     z-index: 3;
   }
   
@@ -111,7 +111,7 @@ const Logo = styled(NavLink)`
     position: absolute;
     width: 3px;
     height: 3px;
-    background: linear-gradient(45deg, ${({ theme }) => theme.colors.algorithm.spark}, ${({ theme }) => theme.colors.algorithm.flow});
+    background: linear-gradient(45deg, ${({ theme }) => theme.colors.secondary}, ${({ theme }) => theme.colors.accent});
     border-radius: 50%;
     animation: algorithmFlow 2s linear infinite;
   }
@@ -143,7 +143,7 @@ const Logo = styled(NavLink)`
     left: 0;
     width: 6px;
     height: 6px;
-    background: ${({ theme }) => theme.colors.brand.gradient};
+    background: ${({ theme }) => theme.colors.gradientPrimary};
     border-radius: 50%;
     animation: recommend 3s ease-in-out infinite;
     z-index: 2;
@@ -152,7 +152,7 @@ const Logo = styled(NavLink)`
   .logo-text {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     letter-spacing: -0.02em;
-    color: ${({ theme }) => theme.colors.brand.text};
+    color: ${({ theme }) => theme.colors.text};
     font-weight: 700;
     font-size: 1.5rem;
     position: relative;
@@ -166,18 +166,18 @@ const Logo = styled(NavLink)`
     left: 0;
     width: 0;
     height: 2px;
-    background: ${({ theme }) => theme.colors.brand.gradientHorizontal};
+    background: ${({ theme }) => theme.colors.gradientPrimary};
     animation: underlineGrow 4s ease-in-out infinite;
   }
   
   @keyframes brainPulse {
     0%, 100% {
       transform: scale(1);
-      filter: drop-shadow(0 0 4px ${({ theme }) => theme.colors.algorithm.brain}66);
+      filter: drop-shadow(0 0 4px ${({ theme }) => theme.colors.primary}66);
     }
     50% {
       transform: scale(1.1);
-      filter: drop-shadow(0 0 8px ${({ theme }) => theme.colors.algorithm.brain}99);
+      filter: drop-shadow(0 0 8px ${({ theme }) => theme.colors.primary}99);
     }
   }
   
@@ -251,7 +251,7 @@ const NavLinkItem = styled(NavLink)`
   }
   
   &.active {
-    color: ${({ theme }) => theme.colors.brand.primary};
+    color: ${({ theme }) => theme.colors.primary};
     font-weight: 600;
   }
 `;
@@ -317,7 +317,7 @@ const DropdownMenu = styled.div`
   background-color: ${({ theme }) => theme.colors.background};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 8px;
-  box-shadow: ${({ theme }) => theme.colors.shadows.dropdown};
+  box-shadow: ${({ theme }) => theme.colors.shadowDropdown};
   width: 160px;
   z-index: 1001;
   overflow: hidden;
@@ -369,7 +369,7 @@ const SignOutButton = styled.button`
 `;
 
 const LoginButton = styled(NavLink)`
-  background-color: ${({ theme }) => theme.colors.brand.primary};
+  background-color: ${({ theme }) => theme.colors.primary};
   color: white;
   border: none;
   border-radius: 4px;
@@ -381,7 +381,7 @@ const LoginButton = styled(NavLink)`
   transition: background-color 0.3s;
   
   &:hover {
-    background-color: ${({ theme }) => theme.colors.brand.primaryDark};
+    opacity: 0.9;
   }
 `;
 
@@ -429,9 +429,9 @@ const MobileMenuContainer = styled.div`
   top: 70px;
   left: 0;
   right: 0;
-  background-color: ${({ theme }) => theme.colors.navbarBackground || theme.colors.background};
+  background-color: ${({ theme }) => theme.colors.background};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  box-shadow: ${({ theme }) => theme.colors.shadowCard};
   z-index: 999;
   
   @media (max-width: 768px) {
@@ -452,7 +452,7 @@ const MobileNavLink = styled(NavLink)`
   }
   
   &.active {
-    color: ${({ theme }) => theme.colors.brand.primary};
+    color: ${({ theme }) => theme.colors.primary};
     font-weight: 600;
   }
 `;
@@ -523,7 +523,7 @@ const LoadingSpinner = styled.div`
   width: 40px;
   height: 40px;
   border: 3px solid ${({ theme }) => theme.colors.border};
-  border-top: 3px solid ${({ theme }) => theme.colors.brand.primary};
+  border-top: 3px solid ${({ theme }) => theme.colors.primary};
   border-radius: 50%;
   animation: spin 1s linear infinite;
   
@@ -537,11 +537,11 @@ const Toast = styled.div`
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: ${({ theme }) => theme.colors.status.success};
+  background-color: ${({ theme }) => theme.colors.statusSuccess};
   color: white;
   padding: 12px 20px;
   border-radius: 4px;
-  box-shadow: ${({ theme }) => theme.colors.shadows.button};
+  box-shadow: ${({ theme }) => theme.colors.shadowButton};
   z-index: 2000;
   animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
   animation-fill-mode: forwards;
@@ -586,19 +586,19 @@ const DevModeIndicator = styled.div`
   gap: 8px;
   padding: 6px 10px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1.5px solid ${({ theme }) => theme.colors.brand.primary};
+  border: 1.5px solid ${({ theme }) => theme.colors.primary};
   border-radius: 8px;
   font-size: 12px;
   font-weight: 500;
   color: ${({ theme }) => theme.colors.text};
   margin-right: 8px;
-  box-shadow: ${({ theme }) => theme.colors.shadows.card};
+  box-shadow: ${({ theme }) => theme.colors.shadowCard};
   
   .dev-icon {
-    color: ${({ theme }) => theme.colors.brand.primary};
+    color: ${({ theme }) => theme.colors.primary};
     font-size: 14px;
     font-weight: bold;
-    filter: drop-shadow(0 1px 2px ${({ theme }) => theme.colors.brand.primary}40);
+    filter: drop-shadow(0 1px 2px ${({ theme }) => theme.colors.primary}40);
   }
   
   .user-info {
@@ -610,7 +610,7 @@ const DevModeIndicator = styled.div`
     font-weight: 500;
     
     .user-type {
-      color: ${({ theme }) => theme.colors.brand.primary};
+      color: ${({ theme }) => theme.colors.primary};
       font-weight: 700;
       text-transform: uppercase;
       font-size: 10px;
@@ -630,8 +630,8 @@ const DevModeIndicator = styled.div`
   
   &:hover {
     background: ${({ theme }) => theme.colors.backgroundHover};
-    border-color: ${({ theme }) => theme.colors.brand.secondary};
-    box-shadow: ${({ theme }) => theme.colors.shadows.cardHover};
+    border-color: ${({ theme }) => theme.colors.secondary};
+    box-shadow: ${({ theme }) => theme.colors.shadowCard};
     transform: translateY(-1px);
   }
   
@@ -825,6 +825,11 @@ function Navbar() {
           </Logo>
 
           <NavLinks>
+            {isDevMode() && (
+              <NavLinkItem to="/codesandbox">
+                💻 Code Sandbox
+              </NavLinkItem>
+            )}
           </NavLinks>
 
           <UserSection>

@@ -5,6 +5,8 @@ import {
   INITIALIZE_THEME,
   SET_SYSTEM_THEME,
   SET_USER_THEME_PREFERENCE,
+  SET_COLOR_SCHEME,
+  INITIALIZE_COLOR_SCHEME,
 } from '../actions/types';
 
 // Helper functions for localStorage
@@ -29,6 +31,23 @@ const setStoredThemePreference = (preference) => {
   }
 };
 
+const getStoredColorScheme = () => {
+  try {
+    return localStorage.getItem('colorScheme') || 'original';
+  } catch (error) {
+    console.warn('Failed to read color scheme from localStorage:', error);
+    return 'original';
+  }
+};
+
+const setStoredColorScheme = (scheme) => {
+  try {
+    localStorage.setItem('colorScheme', scheme);
+  } catch (error) {
+    console.warn('Failed to save color scheme to localStorage:', error);
+  }
+};
+
 // Detect system theme preference
 const getSystemThemePreference = () => {
   if (typeof window !== 'undefined' && window.matchMedia) {
@@ -40,11 +59,12 @@ const getSystemThemePreference = () => {
 // Determine initial theme state
 const getInitialThemeState = () => {
   const storedPreference = getStoredThemePreference();
+  const storedColorScheme = getStoredColorScheme();
   const systemPrefersDark = getSystemThemePreference();
-  
+
   let isDarkModeEnabled;
   let userPreference = storedPreference;
-  
+
   if (storedPreference === null) {
     // No user preference stored, use system preference
     isDarkModeEnabled = systemPrefersDark;
@@ -53,11 +73,12 @@ const getInitialThemeState = () => {
     // User has a stored preference
     isDarkModeEnabled = storedPreference === 'dark';
   }
-  
+
   return {
     isDarkModeEnabled,
     userPreference, // null = system, 'light' = light, 'dark' = dark
     systemPrefersDark,
+    colorScheme: storedColorScheme, // 'original', 'complementary', 'triadic'
   };
 };
 
@@ -80,21 +101,21 @@ const themeReducer = (state = initialState, action) => {
         ...state,
         systemPrefersDark,
       };
-      
+
       // If user preference is null (follow system), update isDarkModeEnabled
       if (state.userPreference === null) {
         newState.isDarkModeEnabled = systemPrefersDark;
       }
-      
+
       return newState;
     }
 
     case SET_USER_THEME_PREFERENCE: {
       const preference = action.payload; // 'light', 'dark', or null
-      
+
       // Save to localStorage
       setStoredThemePreference(preference);
-      
+
       let isDarkModeEnabled;
       if (preference === null) {
         // Follow system preference
@@ -103,7 +124,7 @@ const themeReducer = (state = initialState, action) => {
         // Use user preference
         isDarkModeEnabled = preference === 'dark';
       }
-      
+
       return {
         ...state,
         userPreference: preference,
@@ -128,6 +149,27 @@ const themeReducer = (state = initialState, action) => {
         ...state,
         isDarkModeEnabled: false,
         userPreference: 'light',
+      };
+    }
+
+    case INITIALIZE_COLOR_SCHEME: {
+      // Re-initialize color scheme state
+      const storedColorScheme = getStoredColorScheme();
+      return {
+        ...state,
+        colorScheme: storedColorScheme,
+      };
+    }
+
+    case SET_COLOR_SCHEME: {
+      const scheme = action.payload; // 'original', 'complementary', 'triadic'
+
+      // Save to localStorage
+      setStoredColorScheme(scheme);
+
+      return {
+        ...state,
+        colorScheme: scheme,
       };
     }
 
