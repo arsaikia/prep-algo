@@ -40,6 +40,7 @@ const originalPalette = {
     violet: '#8B5CF6',
     blue: '#3B82F6',
     emerald: '#10B981',
+    cyan: '#00D9FF', // Vibrant cyan for beginner level
     // Semantic Colors
     success: '#10B981',
     warning: '#f39c12',
@@ -65,6 +66,7 @@ const originalDarkPalette = {
     violet: '#a78bfa',
     blue: '#60a5fa',
     emerald: '#4ade80',
+    cyan: '#1BFCFF', // Even brighter cyan for dark theme
     success: '#4ade80',
     warning: '#fbbf24',
     error: '#f87171',
@@ -90,7 +92,7 @@ const createColorScheme = (basePalette, transformFn = null) => {
 
     if (transformFn) {
         // Only transform brand and semantic colors, keep grays unchanged
-        const colorsToTransform = ['violet', 'blue', 'emerald', 'success', 'warning', 'error', 'info'];
+        const colorsToTransform = ['violet', 'blue', 'emerald', 'cyan', 'success', 'warning', 'error', 'info'];
         colorsToTransform.forEach(color => {
             if (transformed[color]) {
                 transformed[color] = transformFn(transformed[color]);
@@ -164,26 +166,26 @@ const createFlatColors = (isDark, colorScheme) => {
         priorityLowBg: `${colors.info}20`,
 
         // Level colors (using transformed semantics)
-        levelBeginner: colors.info,
+        levelBeginner: colors.cyan,
         levelIntermediate: colors.warning,
         levelAdvanced: colors.error,
 
         // Progress/Mastery colors (using semantic colors for consistency)
-        progressBeginner: colors.info,        // Blue - just starting
+        progressBeginner: colors.cyan,        // Vibrant cyan - just starting
         progressLearning: colors.violet,      // Purple - actively learning  
         progressPracticing: colors.warning,   // Orange - practicing skills
         progressProficient: colors.success,   // Green - proficient level
         progressMastered: colors.emerald,     // Emerald - fully mastered
 
         // Progress backgrounds (with transparency)
-        progressBeginnerBg: `${colors.info}15`,
+        progressBeginnerBg: `${colors.cyan}15`,
         progressLearningBg: `${colors.violet}15`,
         progressPracticingBg: `${colors.warning}15`,
         progressProficientBg: `${colors.success}15`,
         progressMasteredBg: `${colors.emerald}15`,
 
         // Progress borders (with transparency)
-        progressBeginnerBorder: `${colors.info}30`,
+        progressBeginnerBorder: `${colors.cyan}30`,
         progressLearningBorder: `${colors.violet}30`,
         progressPracticingBorder: `${colors.warning}30`,
         progressProficientBorder: `${colors.success}30`,

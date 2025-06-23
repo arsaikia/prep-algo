@@ -231,7 +231,7 @@ const ProgressLabel = styled.div`
 
 const AnalyticsGrid = styled.div`
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     gap: 32px;
     margin-bottom: 36px;
     position: relative;
@@ -471,74 +471,246 @@ const BrowseAllLink = styled.button`
 
 // Mobile responsive styles
 const MobileWrapper = styled.div`
+    /* Tablet styles */
+    @media (max-width: 1024px) {
+        ${AnalyticsGrid} {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+    }
+    
+    /* Mobile tablet styles */
     @media (max-width: 768px) {
         ${AnalyticsCard} {
-            padding: 24px;
+            padding: 20px;
             border-radius: 16px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         
         ${AnalyticsHeader} {
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
             margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        ${AnalyticsTitleMain} {
+            font-size: 22px;
+            justify-content: center;
+        }
+        
+        ${AnalyticsTitleSub} {
+            margin-bottom: 0;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        ${BrowseAllLink} {
+            margin: 0;
+            align-self: center;
+            padding: 10px 20px;
+            font-size: 12px;
+        }
+        
+        ${AnalyticsGrid} {
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        ${AnalyticsMetric} {
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            text-align: center;
+            min-height: 100px;
+            justify-content: center;
+        }
+        
+        ${TodayProgressRing} {
+            width: 60px;
+            height: 60px;
+        }
+        
+        ${ProgressPercentage} {
+            font-size: 16px;
+        }
+        
+        ${ProgressLabel} {
+            font-size: 8px;
+        }
+        
+        ${MetricIcon} {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        ${MetricValue} {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        ${MetricLabel} {
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+        
+        ${MetricSubtext} {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        
+        ${InsightsSection} {
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        ${WeakAreasInsight} {
+            text-align: center;
+        }
+        
+        ${InsightTitle} {
+            font-size: 13px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        ${WeakAreasList} {
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        ${WeakAreaTag} {
+            font-size: 11px;
+            padding: 5px 10px;
+            border-radius: 14px;
+        }
+        
+        ${BatchInfo} {
+            text-align: center;
+            margin-top: 12px;
+        }
+        
+        ${BatchDate} {
+            font-size: 12px;
+        }
+        
+        ${BatchStatus} {
+            font-size: 11px;
+        }
+    }
+    
+    /* Mobile phone styles */
+    @media (max-width: 480px) {
+        ${AnalyticsCard} {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        
+        ${AnalyticsHeader} {
+            gap: 12px;
+            margin-bottom: 20px;
         }
         
         ${AnalyticsTitleMain} {
             font-size: 20px;
         }
         
+        ${SparkleIcon} {
+            font-size: 28px;
+        }
+        
         ${AnalyticsTitleSub} {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            font-size: 13px;
         }
         
         ${BrowseAllLink} {
-            margin-left: 0;
-            align-self: flex-start;
+            padding: 8px 16px;
+            font-size: 11px;
+        }
+        
+        ${AnalyticsGrid} {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        ${AnalyticsMetric} {
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            min-height: auto;
+            text-align: left;
         }
         
         ${TodayProgressRing} {
-            width: 60px;
-            height: 60px;
-            align-self: center;
+            width: 50px;
+            height: 50px;
+            flex-shrink: 0;
         }
         
         ${ProgressPercentage} {
             font-size: 14px;
         }
         
-        ${AnalyticsGrid} {
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-        
-        ${AnalyticsMetric} {
-            flex-direction: row;
-            align-items: center;
-            gap: 16px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+        ${ProgressLabel} {
+            font-size: 7px;
         }
         
         ${MetricIcon} {
-            font-size: 32px;
+            font-size: 20px;
+            margin-bottom: 0;
+            flex-shrink: 0;
         }
         
         ${MetricValue} {
-            font-size: 24px;
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+        
+        ${MetricLabel} {
+            font-size: 10px;
+            margin-bottom: 1px;
+        }
+        
+        ${MetricSubtext} {
+            font-size: 9px;
         }
         
         ${InsightsSection} {
-            flex-direction: column;
             gap: 16px;
         }
         
+        ${InsightTitle} {
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        
+        ${WeakAreasList} {
+            gap: 4px;
+        }
+        
+        ${WeakAreaTag} {
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        
         ${BatchInfo} {
-            text-align: left;
+            margin-top: 8px;
+        }
+        
+        ${BatchDate} {
+            font-size: 11px;
+        }
+        
+        ${BatchStatus} {
+            font-size: 10px;
         }
     }
 `;
@@ -565,26 +737,31 @@ const AnalyticsDashboard = ({ analysis, progress, batchInfo }) => {
                         </AnalyticsTitleMain>
                         <AnalyticsTitleSub>
                             Your personalized learning insights and today's progress
-                            <BrowseAllLink onClick={() => navigate('/all')}>
-                                📚 Browse All Questions
-                            </BrowseAllLink>
                         </AnalyticsTitleSub>
                     </AnalyticsTitle>
 
-                    {progress && (
-                        <TodayProgressRing percentage={(progress.completed / progress.total) * 100}>
-                            <ProgressRingText>
-                                <ProgressPercentage>
-                                    {Math.round((progress.completed / progress.total) * 100)}%
-                                </ProgressPercentage>
-                                <ProgressLabel>Today</ProgressLabel>
-                            </ProgressRingText>
-                        </TodayProgressRing>
-                    )}
+                    <BrowseAllLink onClick={() => navigate('/all')}>
+                        📚 Browse All Questions
+                    </BrowseAllLink>
                 </AnalyticsHeader>
 
                 {analysis && (
                     <AnalyticsGrid>
+                        {progress && (
+                            <AnalyticsMetric>
+                                <TodayProgressRing percentage={(progress.completed / progress.total) * 100}>
+                                    <ProgressRingText>
+                                        <ProgressPercentage>
+                                            {Math.round((progress.completed / progress.total) * 100)}%
+                                        </ProgressPercentage>
+                                        <ProgressLabel>Today</ProgressLabel>
+                                    </ProgressRingText>
+                                </TodayProgressRing>
+                                <MetricLabel>Today's Progress</MetricLabel>
+                                <MetricSubtext>{progress.completed}/{progress.total} completed</MetricSubtext>
+                            </AnalyticsMetric>
+                        )}
+
                         <AnalyticsMetric>
                             <MetricIcon>🎯</MetricIcon>
                             <MetricValue className={`level-${analysis.userLevel}`}>
@@ -644,12 +821,12 @@ const AnalyticsDashboard = ({ analysis, progress, batchInfo }) => {
                             </InsightTitle>
                             <WeakAreasList>
                                 {topicMastery
-                                    .filter(topic => topic.progress && topic.progress.percentage > 0)
+                                    .filter(topic => topic.progress && topic.progress.topicCoverage > 0)
                                     .slice(0, 3)
                                     .map((topic, index) => (
                                         <WeakAreaTag
                                             key={`topic-${index}`}
-                                            $progress={topic.progress.percentage}
+                                            $progress={topic.progress.topicCoverage}
                                         >
                                             <span>{topic.topic}</span>
                                         </WeakAreaTag>
