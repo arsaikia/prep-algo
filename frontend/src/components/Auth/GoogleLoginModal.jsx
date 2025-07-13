@@ -3,78 +3,38 @@ import { GoogleLogin } from '@react-oauth/google';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginWithGoogle } from '../../actions/actions';
-import { ExternalLink, ChevronDown, ChevronRight } from 'react-feather';
+import {
+  ModalOverlay,
+  GlassCard,
+  ModernCloseButton,
+  AppIcon,
+  ModernTitle,
+  ModernSubtitle,
+  GoogleButtonContainer,
+  slideUp
+} from './loginStyles';
 
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background-color: ${({ theme }) => theme.colors.background};
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+// Modal-specific styled components
+const ModalContent = styled(GlassCard)`
+  padding: 40px 32px;
   text-align: center;
-  max-width: 350px;
-  width: 90%;
-  position: relative;
-  border: 1px solid ${({ theme }) => theme.colors.border || 'rgba(0, 0, 0, 0.1)'};
+  max-width: 400px;
+  width: 100%;
+  animation: ${slideUp} 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   
   @media (max-width: 480px) {
-    width: 95%;
-    padding: 1.5rem;
+    padding: 32px 24px;
+    border-radius: 20px;
+    margin: 0 16px;
   }
 `;
 
-const CloseButton = styled.button`
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background: none;
-  border: none;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
+const ModalGoogleContainer = styled(GoogleButtonContainer)`
+  margin-top: 24px;
   
-  &:hover {
-    opacity: 1;
-    color: ${({ theme }) => theme.colors.primary};
+  @media (max-width: 480px) {
+    margin-top: 20px;
   }
-`;
-
-const GoogleLoginContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-top: 0.5rem;
-  
-  > div {
-    width: 100% !important;
-    max-width: 300px;
-    
-    @media (max-width: 480px) {
-      max-width: 250px;
-    }
-  }
-`;
-
-const ModalTitle = styled.h2`
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
 `;
 
 const GoogleLoginModal = ({ isOpen, onClose }) => {
@@ -83,8 +43,6 @@ const GoogleLoginModal = ({ isOpen, onClose }) => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-
-
       // The credential token is in credentialResponse.credential
       // We need to pass just the token string, not the entire response object
       if (!credentialResponse.credential) {
@@ -109,18 +67,23 @@ const GoogleLoginModal = ({ isOpen, onClose }) => {
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={e => e.stopPropagation()}>
-        <CloseButton onClick={onClose}>×</CloseButton>
-        <ModalTitle>Login to Remind Me</ModalTitle>
-        <GoogleLoginContainer>
+        <ModernCloseButton onClick={onClose}>×</ModernCloseButton>
+        <AppIcon size={56}>✨</AppIcon>
+        <ModernTitle size="medium">Welcome Back!</ModernTitle>
+        <ModernSubtitle>
+          Continue your coding journey with RemindMe
+        </ModernSubtitle>
+        <ModalGoogleContainer>
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
-            useOneTap
-            theme={isDarkMode ? "filled_black" : "filled_blue"}
+            theme={isDarkMode ? "filled_black" : "outline"}
             size="large"
             width="100%"
+            text="continue_with"
+            shape="rectangular"
           />
-        </GoogleLoginContainer>
+        </ModalGoogleContainer>
       </ModalContent>
     </ModalOverlay>
   );
