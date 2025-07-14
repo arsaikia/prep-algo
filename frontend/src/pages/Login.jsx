@@ -5,13 +5,43 @@ import {
   useDispatch, useSelector,
 } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
 import GoogleAuth from '../components/Auth/GoogleAuth';
 import {
+  GlassBackground,
+  GlassCard,
+  AppIcon,
+  ModernTitle,
+  fadeIn
+} from '../components/Auth/loginStyles';
+import {
   CenteredFlex,
-  Container,
-  Flex,
 } from '../styles';
+
+// Login-specific styled components
+const LoginCard = styled(GlassCard)`
+  padding: 48px 40px;
+  min-width: 400px;
+  
+  @media (max-width: 768px) {
+    padding: 36px 28px;
+    min-width: 320px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 28px 20px;
+    min-width: auto;
+    margin: 0 16px;
+  }
+`;
+
+const LoginSection = styled.div`
+  position: relative;
+  z-index: 1;
+  animation: ${fadeIn} 1s ease 0.8s both;
+  margin-top: 20px;
+`;
 
 function Login() {
   const navigate = useNavigate();
@@ -26,19 +56,17 @@ function Login() {
   }, [isAuthenticated, navigate]);
 
   return (
-    <CenteredFlex minHeight="60vh">
-      <Container minWidth="auto" border="1px solid grey" padding="20px">
-        <h1>Login</h1>
-        <Flex
-          direction="column"
-          alignItems="center"
-          justifyContent="center"
-          style={{ marginTop: '20px' }}
-        >
-          <GoogleAuth />
-        </Flex>
-      </Container>
-    </CenteredFlex>
+    <GlassBackground>
+      <CenteredFlex minHeight="100vh">
+        <LoginCard>
+          <AppIcon>✨</AppIcon>
+          <ModernTitle>Welcome to RemindMe</ModernTitle>
+          <LoginSection>
+            <GoogleAuth />
+          </LoginSection>
+        </LoginCard>
+      </CenteredFlex>
+    </GlassBackground>
   );
 }
 

@@ -1,20 +1,15 @@
 import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 
 import { loginWithGoogle } from '../../actions/actions';
-
-const GoogleButtonContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  width: 100%;
-`;
+import { GoogleButtonContainer } from './loginStyles';
 
 const GoogleAuth = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
 
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
@@ -44,9 +39,11 @@ const GoogleAuth = () => {
             <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleError}
-                theme="outline"
+                theme={isDarkMode ? "filled_black" : "outline"}
                 size="large"
                 width="100%"
+                text="continue_with"
+                shape="rectangular"
             />
         </GoogleButtonContainer>
     );

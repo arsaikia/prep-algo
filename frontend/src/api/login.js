@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-export function login(payload) {
-  return axios.post(`${process.env.REACT_APP_API_BASE_URI}/authentication/login`, payload);
-}
+// Removed unused login function since only Google authentication is supported
 
 export const googleLogin = async (token) => {
   try {

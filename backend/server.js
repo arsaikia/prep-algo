@@ -96,10 +96,18 @@ app.use('*', (req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
+    console.error('Unhandled error:', err);
+    console.error('Error stack:', err.stack);
+
+    // Don't expose internal errors in production
+    const errorMessage = process.env.NODE_ENV === 'production'
+        ? 'Internal Server Error'
+        : err.message;
+
+    res.status(err.status || 500).json({
         success: false,
-        error: 'Internal Server Error'
+        error: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
     });
 });
 

@@ -98,9 +98,16 @@ const submitCode = async (req, res) => {
                 { link: `${questionId}/` }
             ]
         });
+
         if (!question) {
             return res.status(404).json({ error: 'Question not found' });
         }
+
+        if (!question.testCases || question.testCases.length === 0) {
+            console.error(`No test cases for question: ${questionId}`);
+            return res.status(400).json({ error: 'No test cases available for this question' });
+        }
+
 
         // Run the code against test cases
         const results = await runPythonCode(code, question.testCases);
@@ -118,7 +125,10 @@ const submitCode = async (req, res) => {
         });
     } catch (error) {
         console.error('Error in submitCode:', error);
-        res.status(500).json({ error: 'Failed to execute code' });
+        res.status(500).json({
+            error: 'Failed to execute code',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 

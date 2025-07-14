@@ -7,8 +7,6 @@ import { launchCodeModal, closeCodeModal } from './launchCodeModal';
 import { markQuestionAsDoneWatcher } from './markQuestionAsDone';
 import { resetAuthSagaWatcher } from './resetAuthSaga';
 import { setThemeWatcher } from './themeSaga';
-import { userLoginWatcher } from './userLoginSaga';
-import { userSignupWatcher } from './userSignupSaga';
 import fetchUserInfoWatcher from './fetchUserInfoSaga';
 
 // Root saga combines all watchers
@@ -16,8 +14,6 @@ export default function* rootSaga() {
   yield all([
     getAllQuestionsWatcher(),
     getAllQuestionsWithoutHistoryWatcher(),
-    userLoginWatcher(),
-    userSignupWatcher(),
     googleLoginWatcher(),
     launchCodeModal(),
     closeCodeModal(),

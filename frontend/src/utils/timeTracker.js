@@ -171,7 +171,7 @@ export const timeTracker = new TimeTracker();
  */
 export const updateSolveHistoryWithTracking = async (sessionData) => {
     try {
-        const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/v1';
+        const apiBaseUrl = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
 
         const response = await fetch(`${apiBaseUrl}/solveHistory`, {
             method: 'POST',
@@ -240,7 +240,7 @@ export const useTimeTracker = () => {
 
             // If successful, also mark as complete in recommendation system
             if (success && sessionData.userId && sessionData.questionId) {
-                const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/v1';
+                const apiBaseUrl = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
                 try {
                     await fetch(`${apiBaseUrl}/recommendations/${sessionData.userId}/complete`, {
                         method: 'POST',
