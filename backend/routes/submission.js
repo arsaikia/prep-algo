@@ -176,7 +176,7 @@ router.put('/question/:questionId', async (req, res) => {
         // List of allowed fields to update
         const allowedFields = [
             'name', 'link', 'group', 'difficulty', 'description',
-            'list', 'order', 'exampleTestCases', 'testCases', 'templates'
+            'list', 'order', 'exampleTestCases', 'testCases', 'templates', 'types'
         ];
 
         // Filter out any fields that are not in the allowed list
@@ -262,7 +262,7 @@ router.post('/submit', async (req, res) => {
                 { link: questionId },
                 { link: `${questionId}/` }
             ]
-        });
+        }).select('_id name description difficulty group exampleTestCases testCases templates types');
 
         if (!question) {
             return res.status(404).json({
@@ -292,8 +292,8 @@ router.post('/submit', async (req, res) => {
                 }
             });
 
-            // Run the code
-            results = await runPythonCode(code, formattedTestCases);
+            // Run the code with question types if available
+            results = await runPythonCode(code, formattedTestCases, question.types);
         } else {
             return res.status(400).json({
                 error: 'Unsupported language',

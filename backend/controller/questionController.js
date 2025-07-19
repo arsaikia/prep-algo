@@ -11,15 +11,23 @@ import { runPythonCode } from '../utils/codeExecution.js';
  * @access   Public
  */
 const getQuestions = asyncHandler(async (req, res, next) => {
-    // Get all questions without any filters
+    // Get all questions with test case info to determine availability
     const questions = await Question.find()
-        .select('_id name link group difficulty list order')
+        .select('_id name link group difficulty list order testCases exampleTestCases description')
         .sort({ order: 1 });
+
+    // Add comprehensive availability flag based on description, example test cases, and test cases
+    const questionsWithAvailability = questions.map(question => ({
+        ...question.toObject(),
+        availableForSolve: (question.description && question.description.trim() !== '') &&
+            ((question.testCases && question.testCases.length > 0) ||
+                (question.exampleTestCases && question.exampleTestCases.length > 0))
+    }));
 
     return res.status(200).json({
         success: true,
         count: questions.length,
-        data: questions
+        data: questionsWithAvailability
     });
 });
 
@@ -38,7 +46,7 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
             { link: questionId },
             { link: `${questionId}/` }
         ]
-    }).select('_id name description difficulty group exampleTestCases testCases templates');
+    }).select('_id name description difficulty group exampleTestCases testCases templates types');
 
     if (!question) {
         console.error('Question not found in database');
@@ -97,10 +105,16 @@ const submitCode = async (req, res) => {
                 { link: questionId },
                 { link: `${questionId}/` }
             ]
-        });
+        }).select('_id name description difficulty group exampleTestCases testCases templates types');
 
         if (!question) {
             return res.status(404).json({ error: 'Question not found' });
+        }
+
+        // Check if question is complete (has description and test cases)
+        if (!question.description || question.description.trim() === '') {
+            console.error(`No description for question: ${questionId}`);
+            return res.status(400).json({ error: 'Question description is not available' });
         }
 
         if (!question.testCases || question.testCases.length === 0) {
@@ -108,9 +122,8 @@ const submitCode = async (req, res) => {
             return res.status(400).json({ error: 'No test cases available for this question' });
         }
 
-
         // Run the code against test cases
-        const results = await runPythonCode(code, question.testCases);
+        const results = await runPythonCode(code, question.testCases, question.types);
 
         // Calculate score
         const passedTests = results.filter(r => r.passed).length;
@@ -141,9 +154,9 @@ const getAllQuestionsWithUserProgress = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
 
     try {
-        // Get all questions (don't filter - always show all questions)
+        // Get all questions with test case info to determine availability
         const questions = await Question.find()
-            .select('_id name link group difficulty list order')
+            .select('_id name link group difficulty list order testCases exampleTestCases description')
             .sort({ order: 1 });
 
         // Get user's solve history
@@ -173,13 +186,16 @@ const getAllQuestionsWithUserProgress = asyncHandler(async (req, res, next) => {
                 groups.push(group);
             }
 
-            // Add solve status to question
+            // Add solve status and availability to question
             const questionWithStatus = {
                 ...question.toObject(),
                 solved: solvedQuestionsMap[question._id.toString()]?.solved || false,
                 solveCount: solvedQuestionsMap[question._id.toString()]?.solveCount || 0,
                 lastSolved: solvedQuestionsMap[question._id.toString()]?.lastSolved || null,
-                firstSolved: solvedQuestionsMap[question._id.toString()]?.firstSolved || null
+                firstSolved: solvedQuestionsMap[question._id.toString()]?.firstSolved || null,
+                availableForSolve: (question.description && question.description.trim() !== '') &&
+                    ((question.testCases && question.testCases.length > 0) ||
+                        (question.exampleTestCases && question.exampleTestCases.length > 0))
             };
 
             groupedQuestions[group].push(questionWithStatus);

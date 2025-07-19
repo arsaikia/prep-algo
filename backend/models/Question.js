@@ -74,6 +74,19 @@ const questionSchema = new mongoose.Schema({
             default: true
         }
     }],
+    // Type metadata defined once per question
+    types: {
+        inputs: {
+            type: [String], // Array of input types (ARRAY, TREE, STRING, NUMBER, BOOLEAN, LINKEDLIST, GRAPH)
+            required: false,
+            enum: ['ARRAY', 'TREE', 'STRING', 'NUMBER', 'BOOLEAN', 'LINKEDLIST', 'GRAPH']
+        },
+        output: {
+            type: String,
+            required: false,
+            enum: ['ARRAY', 'TREE', 'STRING', 'NUMBER', 'BOOLEAN', 'LINKEDLIST', 'GRAPH']
+        }
+    },
     templates: {
         python: {
             type: String,
