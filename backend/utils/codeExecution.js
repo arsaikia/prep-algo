@@ -58,8 +58,21 @@ const getRequiredTypingImports = (code) => {
  * Detect input type based on content and context
  * @param {string} input - The input string
  * @param {string} code - The user's code (for context)
- * @returns {string} - The detected type ('array', 'tree', 'string', 'number', 'boolean')
+ * @returns {string} - The detected type ('ARRAY', 'TREE', 'STRING', 'NUMBER', 'BOOLEAN', 'LINKEDLIST')
  */
+/**
+ * Convert question types to internal type format
+ * @param {Array<string>} questionInputTypes - Array of input types from question
+ * @param {string} questionOutputType - Output type from question
+ * @returns {Object} - Object with inputTypes and outputType
+ */
+const convertQuestionTypes = (questionInputTypes, questionOutputType) => {
+    return {
+        inputTypes: questionInputTypes || [],
+        outputType: questionOutputType || 'STRING'
+    };
+};
+
 const detectInputType = (input, code) => {
     try {
         // Check if it's a JSON array
@@ -69,46 +82,46 @@ const detectInputType = (input, code) => {
             if (Array.isArray(parsed)) {
                 // Check for tree data (contains null values or "null" strings)
                 if (parsed.includes(null) || input.includes('null')) {
-                    return 'tree';
+                    return 'TREE';
                 }
 
                 // Check if this is likely a tree problem based on code context
                 if (code.includes('TreeNode') || code.includes('root') ||
                     code.includes('left') || code.includes('right')) {
-                    return 'tree';
+                    return 'TREE';
                 }
 
                 // Check for linked list data (all numbers, no nulls)
                 if (parsed.every(item => typeof item === 'number') &&
                     (code.includes('ListNode') || code.includes('next'))) {
-                    return 'linkedlist';
+                    return 'LINKEDLIST';
                 }
 
                 // Default to array
-                return 'array';
+                return 'ARRAY';
             }
         }
 
         // Check for string (if it's not a JSON array and contains letters)
         if (input.startsWith('"') && input.endsWith('"')) {
-            return 'string';
+            return 'STRING';
         }
 
         // Check for boolean
         if (input.toLowerCase() === 'true' || input.toLowerCase() === 'false') {
-            return 'boolean';
+            return 'BOOLEAN';
         }
 
         // Check for number
         if (!isNaN(input) && input.trim() !== '') {
-            return 'number';
+            return 'NUMBER';
         }
 
         // Default to string
-        return 'string';
+        return 'STRING';
     } catch (e) {
         // If JSON parsing fails, treat as string
-        return 'string';
+        return 'STRING';
     }
 };
 
@@ -120,17 +133,17 @@ const detectInputType = (input, code) => {
  */
 const generateInputParser = (input, type) => {
     switch (type) {
-        case 'array':
+        case 'ARRAY':
             return `json.loads(${JSON.stringify(input)})`;
-        case 'tree':
+        case 'TREE':
             return `buildTree(json.loads(${JSON.stringify(input)}))`;
-        case 'linkedlist':
+        case 'LINKEDLIST':
             return `buildLinkedList(json.loads(${JSON.stringify(input)}))`;
-        case 'string':
+        case 'STRING':
             return `json.loads(${JSON.stringify(input)})`; // Remove quotes
-        case 'boolean':
+        case 'BOOLEAN':
             return `json.loads(${JSON.stringify(input)})`;
-        case 'number':
+        case 'NUMBER':
             return `json.loads(${JSON.stringify(input)})`;
         default:
             return `eval(${JSON.stringify(input)})`;
@@ -144,14 +157,14 @@ const generateInputParser = (input, type) => {
  */
 const generateOutputNormalizer = (type) => {
     switch (type) {
-        case 'tree':
+        case 'TREE':
             return 'treeToList(result) if result else []';
-        case 'linkedlist':
+        case 'LINKEDLIST':
             return 'linkedListToList(result) if result else []';
-        case 'array':
-        case 'string':
-        case 'boolean':
-        case 'number':
+        case 'ARRAY':
+        case 'STRING':
+        case 'BOOLEAN':
+        case 'NUMBER':
         default:
             return 'result';
     }
@@ -161,9 +174,10 @@ const generateOutputNormalizer = (type) => {
  * Run Python code against test cases
  * @param {string} code - The Python code to execute
  * @param {Array<{inputs: Array<string>, expectedOutput: string}>} testCases - Array of test cases
+ * @param {Object} questionTypes - Optional question types object with inputs and output arrays
  * @returns {Promise<Array<{input: string, expectedOutput: string, actualOutput: string, isCorrect: boolean, error: string|null, debugOutput: string}>>}
  */
-export const runPythonCode = async (code, testCases) => {
+export const runPythonCode = async (code, testCases, questionTypes = null) => {
     const results = [];
 
     for (const testCase of testCases) {
@@ -171,16 +185,29 @@ export const runPythonCode = async (code, testCases) => {
             // Create a temporary Python file with the user's code and test case
             const tempFile = join(tmpdir(), `code_${Date.now()}.py`);
 
-            // Detect input types for each input
-            const inputTypes = testCase.inputs.map(input => detectInputType(input, code));
+            // Determine input and output types
+            let inputTypes, expectedOutputType;
+
+            if (questionTypes && questionTypes.inputs && questionTypes.output) {
+                // Use question types if available
+                const convertedTypes = convertQuestionTypes(questionTypes.inputs, questionTypes.output);
+                inputTypes = convertedTypes.inputTypes;
+                expectedOutputType = convertedTypes.outputType;
+
+                // Ensure we have enough input types for all inputs
+                while (inputTypes.length < testCase.inputs.length) {
+                    inputTypes.push('STRING'); // fallback to string
+                }
+            } else {
+                // Fall back to type inference
+                inputTypes = testCase.inputs.map(input => detectInputType(input, code));
+                expectedOutputType = detectInputType(testCase.expectedOutput, code);
+            }
 
             // Generate input parsing code
             const inputArgs = testCase.inputs.map((input, index) =>
                 generateInputParser(input, inputTypes[index])
             );
-
-            // Detect expected output type
-            const expectedOutputType = detectInputType(testCase.expectedOutput, code);
 
             // Generate output normalization code
             const outputNormalizer = generateOutputNormalizer(expectedOutputType);

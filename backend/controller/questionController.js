@@ -46,7 +46,7 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
             { link: questionId },
             { link: `${questionId}/` }
         ]
-    }).select('_id name description difficulty group exampleTestCases testCases templates');
+    }).select('_id name description difficulty group exampleTestCases testCases templates types');
 
     if (!question) {
         console.error('Question not found in database');
@@ -105,7 +105,7 @@ const submitCode = async (req, res) => {
                 { link: questionId },
                 { link: `${questionId}/` }
             ]
-        });
+        }).select('_id name description difficulty group exampleTestCases testCases templates types');
 
         if (!question) {
             return res.status(404).json({ error: 'Question not found' });
@@ -123,7 +123,7 @@ const submitCode = async (req, res) => {
         }
 
         // Run the code against test cases
-        const results = await runPythonCode(code, question.testCases);
+        const results = await runPythonCode(code, question.testCases, question.types);
 
         // Calculate score
         const passedTests = results.filter(r => r.passed).length;
