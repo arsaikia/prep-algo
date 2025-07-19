@@ -236,21 +236,8 @@ const QuestionTable = ({
   };
 
   const isQuestionAvailable = (question) => {
-    // For now, we'll consider a question available if it can be found in our database
-    // In the future, we can add more sophisticated checks based on whether the question
-    // has description, test cases, and templates when we fetch individual question details
-
-    // You can add specific question links that you know have full data
-    const availableQuestions = [
-      'rotting-oranges',
-      'two-sum',
-      'valid-anagram',
-      // Add more question links here as they become available
-    ];
-
-    // Remove trailing slash for comparison
-    const questionLink = question.link.replace(/\/$/, '');
-    return availableQuestions.includes(questionLink);
+    // Check if the question has test cases (either regular or example test cases)
+    return question.availableForSolve === true;
   };
 
   return (
