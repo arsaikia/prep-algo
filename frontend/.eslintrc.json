@@ -1,14 +1,19 @@
 {
+	"env": {
+		"browser": true,
+		"es2021": true
+	},
 	"extends": [
-		"react-app"
+		"eslint:recommended",
+		"plugin:react/recommended",
+		"plugin:react-hooks/recommended"
 	],
 	"plugins": [
 		"react",
 		"react-hooks"
 	],
 	"parserOptions": {
-		// Required for certain syntax usages
-		"ecmaVersion": 2020,
+		"ecmaVersion": "latest",
 		"sourceType": "module",
 		"ecmaFeatures": {
 			"jsx": true
@@ -16,20 +21,16 @@
 	},
 	"ignorePatterns": [
 		"*.png",
-		"*.css"
+		"*.css",
+		"build/"
 	],
 	"rules": {
-		"max-len": "off",
-		"import/order": "off",
-		"import/prefer-default-export": "off",
-		"object-curly-newline": "off",
-		"object-property-newline": "off",
-		"sort-keys": "off",
-		"comma-dangle": "off",
 		"react/react-in-jsx-scope": "off",
 		"react/prop-types": "off",
-		"react-hooks/rules-of-hooks": "off",
-		"react-hooks/exhaustive-deps": "off"
+		"react-hooks/rules-of-hooks": "error",
+		"react-hooks/exhaustive-deps": "warn",
+		"no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+		"no-console": "off"
 	},
 	"settings": {
 		"react": {

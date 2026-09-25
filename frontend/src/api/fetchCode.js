@@ -3,7 +3,7 @@ import axios from 'axios';
 export function fetchCode({
   login, url, codeOnly = false,
 }) {
-  return axios.post(`${process.env.REACT_APP_API_BASE_URI}/code`, {
+  return axios.post(`${import.meta.env.VITE_API_BASE_URI}/code`, {
     login,
     url,
     codeOnly,

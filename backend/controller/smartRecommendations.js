@@ -4,6 +4,7 @@ import UserProfile from '../models/UserProfile.js';
 import Question from '../models/Question.js';
 import asyncHandler from '../middleware/async.js';
 import ErrorResponse from '../utils/errorResponse.js';
+import { invalidateUserCache } from '../middleware/cache.js';
 
 /*
  * @desc     Get smart daily recommendations with hybrid caching
@@ -109,6 +110,7 @@ const markQuestionCompleted = asyncHandler(async (req, res, next) => {
 
         // Mark question as completed
         await batch.markQuestionCompleted(questionId, { timeSpent, success });
+        invalidateUserCache(userId);
 
         // Get updated progress
         const progress = batch.getProgress();
@@ -267,13 +269,13 @@ const createFreshDailyBatch = async (userId, count) => {
     // Get or create user profile
     let userProfile = await UserProfile.findByUserId(userId);
     if (!userProfile) {
-        const existingHistory = await SolveHistory.find({ userId }).populate('questionId');
+        const existingHistory = await SolveHistory.find({ userId });
         userProfile = await UserProfile.createFromSolveHistory(userId, existingHistory);
         await userProfile.save();
     }
 
-    // Get user's solve history
-    const userHistory = await SolveHistory.find({ userId }).populate('questionId');
+    // Get user's solve history (no populate needed — uses denormalized fields)
+    const userHistory = await SolveHistory.find({ userId });
 
     // Analyze patterns with adaptive enhancements
     const analysis = await analyzeUserPatternsAdaptive(userId, userHistory, userProfile);
@@ -307,8 +309,8 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
     console.log(`   📊 Remaining questions: ${remainingRecommendations.length}`);
     console.log(`   ✅ Completed questions: ${completedQuestionIds.length}`);
 
-    // Get fresh analysis
-    const userHistory = await SolveHistory.find({ userId }).populate('questionId');
+    // Get fresh analysis (no populate needed — uses denormalized fields)
+    const userHistory = await SolveHistory.find({ userId });
     let userProfile = await UserProfile.findByUserId(userId);
     const freshAnalysis = await analyzeUserPatternsAdaptive(userId, userHistory, userProfile);
 
@@ -496,16 +498,17 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
     const topicMastery = {};
 
     userHistory.forEach(history => {
-        const question = history.questionId;
-        if (!question) return;
+        const group = history.questionGroup || (history.questionId && history.questionId.group);
+        const difficulty = history.questionDifficulty || (history.questionId && history.questionId.difficulty);
+        if (!group || !difficulty) return;
 
         // Standard group and difficulty analysis
-        if (!groupStats[question.group]) {
-            groupStats[question.group] = { count: 0, avgSolveCount: 0 };
+        if (!groupStats[group]) {
+            groupStats[group] = { count: 0, avgSolveCount: 0 };
         }
-        groupStats[question.group].count++;
-        groupStats[question.group].avgSolveCount += history.solveCount;
-        difficultyStats[question.difficulty]++;
+        groupStats[group].count++;
+        groupStats[group].avgSolveCount += history.solveCount;
+        difficultyStats[difficulty]++;
 
         // Recent activity
         if (history.lastUpdatedAt >= oneWeekAgo) {
@@ -515,7 +518,9 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
         // Struggling questions
         if (history.solveCount > 2 && history.lastUpdatedAt >= oneMonthAgo) {
             strugglingQuestions.push({
-                question,
+                questionId: history.questionId,
+                group,
+                difficulty,
                 solveCount: history.solveCount,
                 lastSolved: history.lastUpdatedAt
             });
@@ -532,15 +537,15 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
             };
         }
         dailyActivity[dateKey].questionsCompleted++;
-        if (!dailyActivity[dateKey].topics.includes(question.group)) {
-            dailyActivity[dateKey].topics.push(question.group);
+        if (!dailyActivity[dateKey].topics.includes(group)) {
+            dailyActivity[dateKey].topics.push(group);
         }
-        dailyActivity[dateKey].difficulties[question.difficulty]++;
+        dailyActivity[dateKey].difficulties[difficulty]++;
 
         // NEW: Topic mastery tracking
-        if (!topicMastery[question.group]) {
-            topicMastery[question.group] = {
-                topic: question.group,
+        if (!topicMastery[group]) {
+            topicMastery[group] = {
+                topic: group,
                 totalQuestions: 0,
                 solvedQuestions: 0, // Changed: Count all solved questions, not just first-attempt
                 difficulties: { Easy: 0, Medium: 0, Hard: 0 },
@@ -550,10 +555,10 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
             };
         }
 
-        const topicData = topicMastery[question.group];
+        const topicData = topicMastery[group];
         topicData.totalQuestions++;
-        topicData.solvedQuestions++; // Count all solved questions
-        topicData.difficulties[question.difficulty]++;
+        topicData.solvedQuestions++;
+        topicData.difficulties[difficulty]++;
         topicData.averageAttempts = (topicData.averageAttempts * (topicData.totalQuestions - 1) + history.solveCount) / topicData.totalQuestions;
         topicData.lastStudied = history.lastUpdatedAt;
     });
@@ -760,27 +765,27 @@ const calculateCurrentStreak = (dailyActivity) => {
     };
 };
 
-// NEW: Get dynamic topic question counts from database
+let _topicCountsCache = null;
+let _topicCountsCacheTime = 0;
+const TOPIC_COUNTS_TTL = 3600000; // 1 hour
+
 const getTopicQuestionCounts = async () => {
+    const now = Date.now();
+    if (_topicCountsCache && (now - _topicCountsCacheTime) < TOPIC_COUNTS_TTL) {
+        return _topicCountsCache;
+    }
     try {
         const topicCounts = await Question.aggregate([
-            {
-                $group: {
-                    _id: '$group',
-                    totalQuestions: { $sum: 1 }
-                }
-            }
+            { $group: { _id: '$group', totalQuestions: { $sum: 1 } } }
         ]);
-
         const countMap = {};
-        topicCounts.forEach(item => {
-            countMap[item._id] = item.totalQuestions;
-        });
-
+        topicCounts.forEach(item => { countMap[item._id] = item.totalQuestions; });
+        _topicCountsCache = countMap;
+        _topicCountsCacheTime = now;
         return countMap;
     } catch (error) {
         console.error('Error fetching topic question counts:', error);
-        return {};
+        return _topicCountsCache || {};
     }
 };
 

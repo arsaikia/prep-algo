@@ -15,6 +15,21 @@ const solveHistorySchema = new mongoose.Schema({
         ref: 'Question',
         required: true,
     },
+    questionGroup: {
+        type: String,
+        required: false,
+        index: true,
+    },
+    questionDifficulty: {
+        type: String,
+        required: false,
+        enum: ['Easy', 'Medium', 'Hard'],
+    },
+    domain: {
+        type: String,
+        enum: ['algorithms', 'frontend', 'system_design'],
+        default: 'algorithms',
+    },
     solveCount: {
         type: Number,
         required: true,
@@ -98,10 +113,11 @@ const solveHistorySchema = new mongoose.Schema({
     }]
 });
 
-// Create compound index for faster queries
 solveHistorySchema.index({ userId: 1, questionId: 1 }, { unique: true });
 solveHistorySchema.index({ userId: 1, lastUpdatedAt: -1 });
 solveHistorySchema.index({ userId: 1, 'solveHistory.solvedAt': -1 });
+solveHistorySchema.index({ userId: 1, questionGroup: 1 });
+solveHistorySchema.index({ userId: 1, domain: 1 });
 
 // Pre-save middleware to update firstSolvedAt
 solveHistorySchema.pre('save', function (next) {

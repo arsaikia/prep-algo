@@ -1,66 +1,56 @@
 import NodeCache from 'node-cache';
 
-// Initialize cache with 60 minutes standard TTL
-const cache = new NodeCache({ stdTTL: 3600 });
+const cache = new NodeCache({ stdTTL: 3600, checkperiod: 120 });
 
-// Cache middleware
-const cacheMiddleware = async (req, res, next) => {
-    // Only cache GET requests
-    if (req.method !== 'GET') {
-        return next();
-    }
-
-    const key = `__express__${req.originalUrl || req.url}`;
-    const cachedResponse = cache.get(key);
-
-    if (cachedResponse) {
-        console.log(`Cache hit for ${req.originalUrl}`);
-
-        // Check if this is a user endpoint response
-        if (req.originalUrl.includes('/authentication/user/')) {
-            return res.status(200).json({
-                success: true,
-                user: cachedResponse
-            });
-        }
-
-        // Format the cached response to match the database response structure
-        return res.status(200).json({
-            success: true,
-            count: cachedResponse.length,
-            data: cachedResponse
-        });
-    }
-
-    console.log(`Cache miss for ${req.originalUrl}`);
-
-    // Store the original send
-    const originalSend = res.send;
-
-    // Override send
-    res.send = function (body) {
-        // Only cache successful responses
-        if (res.statusCode === 200) {
-            try {
-                // Parse the response body if it's a string
-                const parsedBody = typeof body === 'string' ? JSON.parse(body) : body;
-
-                // Check if this is a user endpoint response
-                if (req.originalUrl.includes('/authentication/user/') && parsedBody && parsedBody.user) {
-                    cache.set(key, parsedBody.user, 3600);
-                }
-                // Store only the data array from the response
-                else if (parsedBody && parsedBody.data) {
-                    cache.set(key, parsedBody.data, 3600);
-                }
-            } catch (error) {
-                console.error('Error caching response:', error);
-            }
-        }
-        originalSend.call(this, body);
-    };
-
-    next();
+const TTL_CONFIG = {
+  questions: 86400,       // 24 hours — question data rarely changes
+  recommendations: 300,   // 5 minutes — recommendations are personalized and refresh often
+  user: 1800,             // 30 minutes — user profile data
+  default: 3600,          // 1 hour fallback
 };
 
-export default cacheMiddleware; 
+function getTTL(url) {
+  if (url.includes('/questions')) return TTL_CONFIG.questions;
+  if (url.includes('/recommendations') || url.includes('/smart-recommendations')) return TTL_CONFIG.recommendations;
+  if (url.includes('/authentication/user/')) return TTL_CONFIG.user;
+  return TTL_CONFIG.default;
+}
+
+const cacheMiddleware = (req, res, next) => {
+  if (req.method !== 'GET') return next();
+
+  const key = `__express__${req.originalUrl || req.url}`;
+  const cachedBody = cache.get(key);
+
+  if (cachedBody) {
+    return res.status(200).send(cachedBody);
+  }
+
+  const originalSend = res.send;
+  res.send = function (body) {
+    if (res.statusCode === 200) {
+      cache.set(key, body, getTTL(req.originalUrl));
+    }
+    originalSend.call(this, body);
+  };
+
+  next();
+};
+
+export function invalidateCache(pattern) {
+  const keys = cache.keys();
+  for (const key of keys) {
+    if (key.includes(pattern)) {
+      cache.del(key);
+    }
+  }
+}
+
+export function invalidateUserCache(userId) {
+  invalidateCache(`/recommendations/${userId}`);
+  invalidateCache(`/smart-recommendations/${userId}`);
+  invalidateCache(`/solveHistory/${userId}`);
+  invalidateCache(`/get-questions/${userId}`);
+}
+
+export default cacheMiddleware;

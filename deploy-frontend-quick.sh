@@ -15,8 +15,7 @@ FRONTEND_DIR="frontend"
 if [ ! -f "$FRONTEND_DIR/.env.production" ]; then
     echo "Creating .env.production..."
     cat > "$FRONTEND_DIR/.env.production" << EOF
-REACT_APP_API_BASE_URI=https://prep-algo-backend-419917211939.us-central1.run.app/api/v1
-REACT_APP_ENVIRONMENT=production
+VITE_API_BASE_URI=https://prep-algo-backend-419917211939.us-central1.run.app/api/v1
 EOF
 fi
 

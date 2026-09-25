@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URI = process.env.REACT_APP_API_BASE_URI;
+const API_BASE_URI = import.meta.env.VITE_API_BASE_URI;
 
 export const getQuestions = async () => {
   try {

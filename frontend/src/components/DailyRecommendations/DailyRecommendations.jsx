@@ -534,7 +534,56 @@ const MobileContainer = styled.div`
     }
 `;
 
-const DailyRecommendations = ({ userId, onQuestionSelect }) => {
+const GUEST_SAMPLE_RECOMMENDATIONS = [
+    {
+        question: { _id: 'guest-1', name: 'Two Sum', group: 'Array', difficulty: 'Easy', link: 'two-sum' },
+        reason: '🚀 Classic starter — every interview starts here',
+        priority: 'high',
+        strategy: 'general_practice',
+        completed: false,
+    },
+    {
+        question: { _id: 'guest-2', name: 'Valid Parentheses', group: 'Stack', difficulty: 'Easy', link: 'valid-parentheses' },
+        reason: '🎯 Core pattern: stack-based matching',
+        priority: 'high',
+        strategy: 'topic_exploration',
+        completed: false,
+    },
+    {
+        question: { _id: 'guest-3', name: 'Merge Two Sorted Lists', group: 'Linked List', difficulty: 'Easy', link: 'merge-two-sorted-lists' },
+        reason: '📈 Linked list fundamentals',
+        priority: 'medium',
+        strategy: 'progressive_difficulty',
+        completed: false,
+    },
+    {
+        question: { _id: 'guest-4', name: 'Best Time to Buy and Sell Stock', group: 'Array', difficulty: 'Easy', link: 'best-time-to-buy-and-sell-stock' },
+        reason: '⭐ Sliding window / greedy essential',
+        priority: 'medium',
+        strategy: 'general_practice',
+        completed: false,
+    },
+    {
+        question: { _id: 'guest-5', name: 'Maximum Subarray', group: 'Dynamic Programming', difficulty: 'Medium', link: 'maximum-subarray' },
+        reason: '💪 Kadane\'s algorithm — DP gateway problem',
+        priority: 'medium',
+        strategy: 'weak_area_reinforcement',
+        completed: false,
+    },
+];
+
+const GUEST_ANALYSIS = {
+    userLevel: 'beginner',
+    totalSolved: 0,
+    recentActivity: 0,
+    weakAreas: [],
+    strongAreas: [],
+    streakInfo: { currentStreak: 0, longestStreak: 0, totalActiveDays: 0 },
+    topicMastery: [],
+    adaptiveFeatures: { enabled: false, level: 'basic' },
+};
+
+const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => {
     const [recommendations, setRecommendations] = useState([]);
     const [analysis, setAnalysis] = useState(null);
     const [progress, setProgress] = useState(null);
@@ -545,16 +594,23 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
     const [replacingCompleted, setReplacingCompleted] = useState(false);
 
     useEffect(() => {
+        if (isGuest) {
+            setRecommendations(GUEST_SAMPLE_RECOMMENDATIONS);
+            setAnalysis(GUEST_ANALYSIS);
+            setProgress({ completed: 0, total: 5, isComplete: false });
+            setBatchInfo(null);
+            setLoading(false);
+            return;
+        }
         if (userId) {
             fetchRecommendations();
         }
-    }, [userId]);
+    }, [userId, isGuest]);
 
     const fetchRecommendations = async () => {
         try {
             setLoading(true);
 
-            // Use Smart Hybrid recommendations (no fallback needed - this is our primary system)
             const data = await getSmartDailyRecommendations(userId, {
                 count: 5,
                 forceRefresh: false
@@ -565,7 +621,6 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
             setProgress(data.progress || null);
             setBatchInfo(data.batchInfo || null);
 
-            // Handle legacy format for new users
             if (!data.analysis && data.strategy) {
                 setAnalysis({
                     userLevel: data.strategy,
@@ -590,6 +645,7 @@ const DailyRecommendations = ({ userId, onQuestionSelect }) => {
 
 
     const canReplaceCompleted = () => {
+        if (isGuest) return false;
         return batchInfo?.canReplaceCompleted || false;
     };
 

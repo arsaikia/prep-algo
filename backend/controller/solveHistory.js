@@ -5,6 +5,7 @@ import ErrorResponse from '../middleware/error.js';
 import { v4 as uuid } from 'uuid';
 import Question from '../models/Question.js';
 import User from '../models/User.js';
+import { invalidateUserCache } from '../middleware/cache.js';
 
 /*
  * @desc     Get solve history for a user
@@ -80,6 +81,10 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
     let response = await SolveHistory.findOne({ userId, questionId });
 
     if (response) {
+        // Backfill denormalized fields if missing
+        if (!response.questionGroup) response.questionGroup = question.group;
+        if (!response.questionDifficulty) response.questionDifficulty = question.difficulty;
+
         // Update existing record
         response.solveCount += 1;
         response.lastUpdatedAt = currentTimestamp;
@@ -125,6 +130,8 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
         response = await SolveHistory.create({
             userId,
             questionId,
+            questionGroup: question.group,
+            questionDifficulty: question.difficulty,
             solveCount: 1,
             lastUpdatedAt: currentTimestamp,
             firstSolvedAt: currentTimestamp,
@@ -168,6 +175,7 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
         }
     }
 
+    invalidateUserCache(userId);
     res.status(201).json({ success: true, data: response });
 });
 

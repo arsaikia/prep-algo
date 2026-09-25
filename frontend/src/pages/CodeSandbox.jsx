@@ -608,6 +608,33 @@ const QuestionDescription = styled(Card)`
   }
 `;
 
+const GuestBanner = styled.div`
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}15, ${({ theme }) => theme.colors.secondary || theme.colors.primary}08);
+  border: 1px solid ${({ theme }) => theme.colors.primary}40;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.95rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const GuestSignInButton = styled.button`
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.secondary || theme.colors.primary}dd);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  &:hover { transform: translateY(-1px); opacity: 0.9; }
+`;
+
 const ErrorAlert = styled.div`
   padding: 16px;
   background: linear-gradient(135deg, #dc354510, #e83e8c10);
@@ -781,6 +808,7 @@ const CodeSandbox = () => {
   };
 
   const user = getEffectiveUser();
+  const isGuest = !user.isAuthenticated || user.userId === 'guest';
 
   // Initialize time tracker
   const {
@@ -972,7 +1000,7 @@ const CodeSandbox = () => {
       setOutput('');
       setTestResults(null);
 
-      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5005/api/v1';
+      const apiBaseUri = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
       const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
 
       // Submit code to the backend
@@ -1054,7 +1082,7 @@ const CodeSandbox = () => {
 
     try {
       // Use our backend endpoint to fetch question details
-      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5005/api/v1';
+      const apiBaseUri = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
       // Using configured API base URI
 
       const response = await axios.get(`${apiBaseUri}/questions/${questionToFetch}`);
@@ -1112,7 +1140,7 @@ const CodeSandbox = () => {
       setDebugOutput('');
       setExampleTestResults(null);
 
-      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5005/api/v1';
+      const apiBaseUri = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
       // API Base URI configuration
       const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
 
@@ -1170,7 +1198,12 @@ const CodeSandbox = () => {
 
   return (
     <Container>
-
+      {isGuest && (
+        <GuestBanner>
+          <span>👀 Viewing in read-only mode. Sign in to run and submit code.</span>
+          <GuestSignInButton onClick={() => navigate('/login')}>Sign In</GuestSignInButton>
+        </GuestBanner>
+      )}
 
       {isDevMode() && (
         <QuestionCard>
@@ -1294,13 +1327,13 @@ const CodeSandbox = () => {
                   <option value="python">Python</option>
                   <option value="javascript">JavaScript</option>
                 </LanguageSelector>
-                <ModernButton onClick={runExampleTests} disabled={isLoading || isRunningExampleTests}>
+                <ModernButton onClick={runExampleTests} disabled={isGuest || isLoading || isRunningExampleTests}>
                   <PlayLucide size={16} style={{ marginRight: '6px' }} />
-                  {isRunningExampleTests ? 'Running Examples...' : 'Run Example Tests'}
+                  {isGuest ? 'Sign in to Run' : isRunningExampleTests ? 'Running Examples...' : 'Run Example Tests'}
                 </ModernButton>
-                <ModernButton onClick={runCode} disabled={isLoading || isRunningExampleTests} variant="primary">
+                <ModernButton onClick={runCode} disabled={isGuest || isLoading || isRunningExampleTests} variant="primary">
                   <Zap size={16} style={{ marginRight: '6px' }} />
-                  {isLoading ? 'Running...' : 'Submit Code'}
+                  {isGuest ? 'Sign in to Submit' : isLoading ? 'Running...' : 'Submit Code'}
                 </ModernButton>
               </EditorActions>
             </EditorHeader>
@@ -1318,7 +1351,7 @@ const CodeSandbox = () => {
                   lineNumbers: 'on',
                   roundedSelection: false,
                   scrollBeyondLastLine: false,
-                  readOnly: false,
+                  readOnly: isGuest,
                   automaticLayout: true,
                 }}
               />
@@ -1448,7 +1481,7 @@ const CodeSandbox = () => {
                       };
 
                       // Send to backend
-                      const apiBaseUrl = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5005/api/v1';
+                      const apiBaseUrl = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
                       const response = await fetch(`${apiBaseUrl}/solveHistory`, {
                         method: 'POST',
                         headers: {

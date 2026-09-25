@@ -6,6 +6,7 @@ import compression from 'compression';
 import helmet from 'helmet';
 import { connectDB } from './config/db.js';
 import performanceMonitor from './middleware/performance.js';
+import { generalLimiter, authLimiter, codeExecutionLimiter, recommendationLimiter } from './middleware/rateLimiter.js';
 
 import questions from './routes/questions.js';
 import authentication from './routes/authentication.js';
@@ -37,20 +38,18 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 // Allow CORS with specific options
 const corsOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
-    : ["http://localhost:3000", "https://prepalgo.web.app"]; // Development fallback
+    : ["http://localhost:3000", "http://localhost:5173", "https://prepalgo.web.app"]; // Development fallback
 
 console.log('CORS Origins configured:', corsOrigins);
 
 const corsOptions = {
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
 
-        if (corsOrigins.includes(origin)) {
-            console.log('CORS: Origin allowed:', origin);
+        const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
+        if (corsOrigins.includes(origin) || isLocalhost) {
             callback(null, true);
         } else {
-            console.log('CORS: Origin blocked:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -77,14 +76,17 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
-// Mount routers
-app.use('/api/v1/authentication', authentication);
+// Global rate limit
+app.use('/api/', generalLimiter);
+
+// Mount routers with route-specific rate limits
+app.use('/api/v1/authentication', authLimiter, authentication);
 app.use('/api/v1/questions', questions);
 app.use('/api/v1/submission', submission);
-app.use('/api/v1/code', codeExecution);
+app.use('/api/v1/code', codeExecutionLimiter, codeExecution);
 app.use('/api/v1/test', testRoute);
 app.use('/api/v1/solveHistory', solveHistory);
-app.use('/api/v1/recommendations', smartRecommendations); // Unified recommendation endpoint
+app.use('/api/v1/recommendations', recommendationLimiter, smartRecommendations);
 
 // Error handling for unhandled routes
 app.use('*', (req, res) => {

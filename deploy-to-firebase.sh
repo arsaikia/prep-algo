@@ -75,20 +75,19 @@ setup_environment() {
         print_warning "Creating .env.production file..."
         cat > "$FRONTEND_DIR/.env.production" << EOF
 # Production environment variables
-REACT_APP_API_BASE_URI=https://prep-algo-backend-419917211939.us-central1.run.app/api/v1
-REACT_APP_ENVIRONMENT=production
+VITE_API_BASE_URI=https://prep-algo-backend-419917211939.us-central1.run.app/api/v1
 EOF
         print_success "Created .env.production file"
     else
         print_success ".env.production file already exists"
     fi
-    
+
     # Verify the API base URI is set correctly
-    if grep -q "REACT_APP_API_BASE_URI" "$FRONTEND_DIR/.env.production"; then
-        API_URI=$(grep "REACT_APP_API_BASE_URI" "$FRONTEND_DIR/.env.production" | cut -d'=' -f2)
+    if grep -q "VITE_API_BASE_URI" "$FRONTEND_DIR/.env.production"; then
+        API_URI=$(grep "VITE_API_BASE_URI" "$FRONTEND_DIR/.env.production" | cut -d'=' -f2)
         print_status "API Base URI: $API_URI"
     else
-        print_warning "REACT_APP_API_BASE_URI not found in .env.production"
+        print_warning "VITE_API_BASE_URI not found in .env.production"
     fi
 }
 
@@ -160,8 +159,8 @@ test_build() {
         exit 1
     fi
     
-    if [ ! -d "$BUILD_DIR/static" ]; then
-        print_error "Build test failed: static directory not found"
+    if [ ! -d "$BUILD_DIR/assets" ]; then
+        print_error "Build test failed: assets directory not found"
         exit 1
     fi
     

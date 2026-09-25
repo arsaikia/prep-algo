@@ -109,9 +109,9 @@ const questionSchema = new mongoose.Schema({
     }
 });
 
-// Compound index for common query combinations
 questionSchema.index({ group: 1, difficulty: 1 });
 questionSchema.index({ list: 1, difficulty: 1 });
+questionSchema.index({ domain: 1, group: 1, difficulty: 1 });
 
 // Update the updatedAt field before saving
 questionSchema.pre('save', function (next) {

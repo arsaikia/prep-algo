@@ -19,18 +19,24 @@ const Container = styled.div`
 
 
 
-const UserDebugInfo = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+const GuestBanner = styled.div`
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.backgroundSecondary}, ${({ theme }) => theme.colors.background});
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 2rem;
-  font-size: 0.9rem;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
   color: ${({ theme }) => theme.colors.textSecondary};
-  
-  strong {
-    color: ${({ theme }) => theme.colors.text};
-  }
+`;
+
+const GuestBannerLink = styled.span`
+  color: ${({ theme }) => theme.colors.primary || '#7c3aed'};
+  cursor: pointer;
+  font-weight: 500;
+  &:hover { text-decoration: underline; }
 `;
 
 const Home = () => {
@@ -68,27 +74,28 @@ const Home = () => {
       return authUser.id;
     }
 
-    // NO VALID USER: Return null if no authenticated or test user is available
-    return null;
+    // GUEST: Show default recommendations (read-only)
+    return 'guest';
   };
 
   const recommendationUserId = getUserIdForRecommendations();
+  const isGuest = recommendationUserId === 'guest';
 
   return (
     <Container>
-
-
-      {/* Smart Daily Recommendations Section - Show for authenticated users OR test mode */}
-      {recommendationUserId ? (
-        <DailyRecommendations
-          userId={recommendationUserId}
-          onQuestionSelect={handleQuestionSelect}
-        />
-      ) : (
-        <UserDebugInfo>
-          <strong>Please log in to see personalized recommendations</strong>
-        </UserDebugInfo>
+      {isGuest && (
+        <GuestBanner>
+          <span>👋 Browsing as guest.</span>
+          <GuestBannerLink onClick={() => navigate('/login')}>
+            Sign in to track progress and get personalized recommendations
+          </GuestBannerLink>
+        </GuestBanner>
       )}
+      <DailyRecommendations
+        userId={recommendationUserId}
+        onQuestionSelect={handleQuestionSelect}
+        isGuest={isGuest}
+      />
     </Container>
   );
 };
