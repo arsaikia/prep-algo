@@ -972,7 +972,7 @@ const CodeSandbox = () => {
       setOutput('');
       setTestResults(null);
 
-      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5005/api/v1';
       const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
 
       // Submit code to the backend
@@ -1054,7 +1054,7 @@ const CodeSandbox = () => {
 
     try {
       // Use our backend endpoint to fetch question details
-      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5005/api/v1';
       // Using configured API base URI
 
       const response = await axios.get(`${apiBaseUri}/questions/${questionToFetch}`);
@@ -1112,7 +1112,7 @@ const CodeSandbox = () => {
       setDebugOutput('');
       setExampleTestResults(null);
 
-      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+      const apiBaseUri = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5005/api/v1';
       // API Base URI configuration
       const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
 
@@ -1448,7 +1448,7 @@ const CodeSandbox = () => {
                       };
 
                       // Send to backend
-                      const apiBaseUrl = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+                      const apiBaseUrl = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5005/api/v1';
                       const response = await fetch(`${apiBaseUrl}/solveHistory`, {
                         method: 'POST',
                         headers: {

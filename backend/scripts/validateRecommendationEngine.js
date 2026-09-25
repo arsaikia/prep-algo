@@ -20,7 +20,7 @@ import axios from 'axios';
 import { performance } from 'perf_hooks';
 
 // Configuration
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000/api/v1';
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5005/api/v1';
 const VERBOSE = process.argv.includes('--verbose');
 
 // Test users with different profiles

@@ -63,7 +63,7 @@ Create a `.env` file in the frontend root:
 
 ```env
 REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id
-REACT_APP_API_BASE_URI=http://localhost:5000/api/v1
+REACT_APP_API_BASE_URI=http://localhost:5005/api/v1
 REACT_APP_ENABLE_TEST_FEATURES=false
 ```
 

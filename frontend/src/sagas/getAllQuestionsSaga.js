@@ -12,7 +12,7 @@ import {
     SHOW_FETCH_LOADING,
 } from '../actions/types';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5005/api/v1';
 
 function* fetchAllQuestions(action) {
     // Make loading true

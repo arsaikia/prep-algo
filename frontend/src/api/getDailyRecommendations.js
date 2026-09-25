@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5000/api/v1';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URI || 'http://localhost:5005/api/v1';
 
 export const getDailyRecommendations = async (userId, count = 5) => {
     try {
