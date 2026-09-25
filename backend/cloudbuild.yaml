@@ -36,7 +36,7 @@ steps:
       - '--env-vars-file'
       - 'env.yaml'
       - '--set-secrets'
-      - 'MONGO_URI=MONGO_URI:latest,JWT_SECRET=JWT_SECRET:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest'
+      - 'MONGO_URI=MONGO_URI:latest,JWT_SECRET=JWT_SECRET:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,REDIS_URL=REDIS_URL:latest'
 
 images:
   - 'gcr.io/$PROJECT_ID/prep-algo-backend' 

@@ -1,26 +1,11 @@
-import axios from 'axios';
-
-// Removed unused login function since only Google authentication is supported
+import apiClient from './client.js';
 
 export const googleLogin = async (token) => {
-  try {
-    // Send user data to our backend
-    const response = await axios.post(`${import.meta.env.VITE_API_BASE_URI}/authentication/google`, {
-      token,
-    });
-
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  const response = await apiClient.post('/authentication/google', { token });
+  return response;
 };
 
 export const getUserInfo = async (userId) => {
-  try {
-    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URI}/authentication/user/${userId}`);
-
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  const response = await apiClient.get(`/authentication/user/${userId}`);
+  return response;
 };

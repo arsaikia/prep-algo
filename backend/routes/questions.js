@@ -1,5 +1,6 @@
 import express from 'express';
 import cacheMiddleware from '../middleware/cache.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -10,25 +11,12 @@ import {
     getAllQuestionsWithUserProgress
 } from '../controller/questionController.js';
 
-// Apply cache middleware to GET routes
-router.get('/', (req, res, next) => {
-    console.log('Route: GET /api/v1/questions/');
-    next();
-}, cacheMiddleware, getQuestions);
+router.get('/', cacheMiddleware, getQuestions);
 
-// Get questions with user progress
-router.get('/get-questions/:userId', (req, res, next) => {
-    console.log(`Route: GET /api/v1/questions/get-questions/${req.params.userId}`);
-    next();
-}, getAllQuestionsWithUserProgress);
+router.get('/get-questions/:userId', protect, getAllQuestionsWithUserProgress);
 
-// Get question by ID
-router.get('/:questionId', (req, res, next) => {
-    console.log(`Route: GET /api/v1/questions/${req.params.questionId}`);
-    next();
-}, cacheMiddleware, getQuestionById);
+router.get('/:questionId', cacheMiddleware, getQuestionById);
 
-// Submit code for a question
-router.post('/:questionId/submit', submitCode);
+router.post('/:questionId/submit', protect, submitCode);
 
 export default router; 

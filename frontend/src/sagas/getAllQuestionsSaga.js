@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
-import axios from 'axios';
 import {
     call, put, takeEvery,
 } from 'redux-saga/effects';
+import apiClient from '../api/client.js';
 
 import {
     GET_QUESTIONS,
@@ -11,8 +11,6 @@ import {
     HIDE_FETCH_LOADING,
     SHOW_FETCH_LOADING,
 } from '../actions/types';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
 
 function* fetchAllQuestions(action) {
     // Make loading true
@@ -24,7 +22,7 @@ function* fetchAllQuestions(action) {
         const userId = action.userId; // Action structure: { type: GET_QUESTIONS, userId }
 
 
-        const response = yield call(axios.get, `${API_BASE_URL}/questions/get-questions/${userId}`);
+        const response = yield call([apiClient, 'get'], `/questions/get-questions/${userId}`);
 
         if (response.status === 200) {
             const { data } = response.data; // API returns { success, count, data }

@@ -1,9 +1,9 @@
-import axios from 'axios';
+import apiClient from './client.js';
 
 export function fetchCode({
   login, url, codeOnly = false,
 }) {
-  return axios.post(`${import.meta.env.VITE_API_BASE_URI}/code`, {
+  return apiClient.post('/code', {
     login,
     url,
     codeOnly,

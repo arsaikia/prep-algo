@@ -1,10 +1,8 @@
-import axios from 'axios';
-
-const API_BASE_URI = import.meta.env.VITE_API_BASE_URI;
+import apiClient from './client.js';
 
 export const getQuestions = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URI}/questions`);
+    const response = await apiClient.get('/questions');
 
 
     if (!response?.data?.success || !Array.isArray(response.data.data)) {

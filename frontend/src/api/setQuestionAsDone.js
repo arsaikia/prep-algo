@@ -1,9 +1,9 @@
-import axios from 'axios';
+import apiClient from './client.js';
 
 export function setQuestionAsDone({
   userId, questionId,
 }) {
-  return axios.post(`${import.meta.env.VITE_API_BASE_URI}/solveHistory`, {
+  return apiClient.post('/solveHistory', {
     questionId,
     userId,
   });

@@ -3,6 +3,7 @@
  * Tracks time spent, difficulty ratings, and tags
  */
 import React from 'react';
+import apiClient from '../api/client.js';
 
 class TimeTracker {
     constructor() {
@@ -170,33 +171,15 @@ export const timeTracker = new TimeTracker();
  * Enhanced API call to update solve history with tracking data
  */
 export const updateSolveHistoryWithTracking = async (sessionData) => {
-    try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
-
-        const response = await fetch(`${apiBaseUrl}/solveHistory`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userId: sessionData.userId,
-                questionId: sessionData.questionId,
-                timeSpent: sessionData.timeSpent,
-                difficultyRating: sessionData.difficultyRating,
-                tags: sessionData.tags,
-                success: sessionData.success
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        return result;
-    } catch (error) {
-        throw error;
-    }
+    const response = await apiClient.post('/solveHistory', {
+        userId: sessionData.userId,
+        questionId: sessionData.questionId,
+        timeSpent: sessionData.timeSpent,
+        difficultyRating: sessionData.difficultyRating,
+        tags: sessionData.tags,
+        success: sessionData.success,
+    });
+    return response.data;
 };
 
 /**
@@ -240,26 +223,14 @@ export const useTimeTracker = () => {
 
             // If successful, also mark as complete in recommendation system
             if (success && sessionData.userId && sessionData.questionId) {
-                const apiBaseUrl = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
                 try {
-                    await fetch(`${apiBaseUrl}/recommendations/${sessionData.userId}/complete`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            questionId: sessionData.questionId,
-                            timeSpent: sessionData.timeSpent,
-                            success: true
-                        })
+                    await apiClient.post(`/recommendations/${sessionData.userId}/complete`, {
+                        questionId: sessionData.questionId,
+                        timeSpent: sessionData.timeSpent,
+                        success: true,
                     });
-                    console.log('✅ Question marked as complete in recommendation system');
                 } catch (error) {
-                    console.error('❌ Error marking question complete in recommendation system:', error);
-                    console.error('   API URL:', apiBaseUrl);
-                    console.error('   User ID:', sessionData.userId);
-                    console.error('   Question ID:', sessionData.questionId);
-                    // Don't fail the whole operation if this fails
+                    console.error('Error marking question complete:', error);
                 }
             }
         }

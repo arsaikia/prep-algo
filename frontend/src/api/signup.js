@@ -1,5 +1,5 @@
-import axios from 'axios';
+import apiClient from './client.js';
 
 export function signup(payload) {
-  return axios.post(`${import.meta.env.VITE_API_BASE_URI}/authentication/signup`, payload);
+  return apiClient.post('/authentication/signup', payload);
 }

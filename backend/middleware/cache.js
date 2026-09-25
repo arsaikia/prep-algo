@@ -1,13 +1,18 @@
 import NodeCache from 'node-cache';
+import { getRedis } from '../config/redis.js';
 
-const cache = new NodeCache({ stdTTL: 3600, checkperiod: 120 });
+const localCache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
 const TTL_CONFIG = {
-  questions: 86400,       // 24 hours — question data rarely changes
-  recommendations: 300,   // 5 minutes — recommendations are personalized and refresh often
-  user: 1800,             // 30 minutes — user profile data
-  default: 3600,          // 1 hour fallback
+  questions: 86400,
+  recommendations: 300,
+  user: 1800,
+  default: 3600,
 };
+
+const CACHE_PREFIX = 'prepalgo:cache:';
+const LOCK_PREFIX = 'prepalgo:lock:';
+const LOCK_TTL_MS = 5000;
 
 function getTTL(url) {
   if (url.includes('/questions')) return TTL_CONFIG.questions;
@@ -16,41 +21,112 @@ function getTTL(url) {
   return TTL_CONFIG.default;
 }
 
+async function getFromRedis(key) {
+  const redis = getRedis();
+  if (!redis) return null;
+  try {
+    return await redis.get(key);
+  } catch {
+    return null;
+  }
+}
+
+async function setInRedis(key, value, ttlSeconds) {
+  const redis = getRedis();
+  if (!redis) return;
+  try {
+    await redis.set(key, value, 'EX', ttlSeconds);
+  } catch (err) {
+    console.warn('Redis cache set error:', err.message);
+  }
+}
+
+async function acquireLock(key) {
+  const redis = getRedis();
+  if (!redis) return true;
+  try {
+    const result = await redis.set(key, '1', 'PX', LOCK_TTL_MS, 'NX');
+    return result === 'OK';
+  } catch {
+    return true;
+  }
+}
+
+async function releaseLock(key) {
+  const redis = getRedis();
+  if (!redis) return;
+  try {
+    await redis.del(key);
+  } catch {}
+}
+
 const cacheMiddleware = (req, res, next) => {
   if (req.method !== 'GET') return next();
 
-  const key = `__express__${req.originalUrl || req.url}`;
-  const cachedBody = cache.get(key);
+  const cacheKey = `${CACHE_PREFIX}${req.originalUrl || req.url}`;
+  const lockKey = `${LOCK_PREFIX}${req.originalUrl || req.url}`;
+  const ttl = getTTL(req.originalUrl);
 
-  if (cachedBody) {
-    return res.status(200).send(cachedBody);
-  }
-
-  const originalSend = res.send;
-  res.send = function (body) {
-    if (res.statusCode === 200) {
-      cache.set(key, body, getTTL(req.originalUrl));
+  (async () => {
+    const redisValue = await getFromRedis(cacheKey);
+    if (redisValue) {
+      return res.status(200).type('json').send(redisValue);
     }
-    originalSend.call(this, body);
-  };
 
-  next();
+    const localValue = localCache.get(cacheKey);
+    if (localValue) {
+      return res.status(200).send(localValue);
+    }
+
+    const gotLock = await acquireLock(lockKey);
+    if (!gotLock) {
+      await new Promise(r => setTimeout(r, 100));
+      const retryValue = await getFromRedis(cacheKey);
+      if (retryValue) {
+        return res.status(200).type('json').send(retryValue);
+      }
+    }
+
+    const originalSend = res.send;
+    res.send = function (body) {
+      if (res.statusCode === 200) {
+        localCache.set(cacheKey, body, Math.min(ttl, 300));
+        setInRedis(cacheKey, typeof body === 'string' ? body : JSON.stringify(body), ttl);
+        releaseLock(lockKey);
+      }
+      originalSend.call(this, body);
+    };
+
+    next();
+  })();
 };
 
-export function invalidateCache(pattern) {
-  const keys = cache.keys();
-  for (const key of keys) {
+export async function invalidateCache(pattern) {
+  const localKeys = localCache.keys();
+  for (const key of localKeys) {
     if (key.includes(pattern)) {
-      cache.del(key);
+      localCache.del(key);
+    }
+  }
+
+  const redis = getRedis();
+  if (redis) {
+    try {
+      const keys = await redis.keys(`${CACHE_PREFIX}*${pattern}*`);
+      if (keys.length > 0) {
+        await redis.del(...keys);
+      }
+    } catch (err) {
+      console.warn('Redis cache invalidation error:', err.message);
     }
   }
 }
 
-export function invalidateUserCache(userId) {
-  invalidateCache(`/recommendations/${userId}`);
-  invalidateCache(`/smart-recommendations/${userId}`);
-  invalidateCache(`/solveHistory/${userId}`);
-  invalidateCache(`/get-questions/${userId}`);
+export async function invalidateUserCache(userId) {
+  await invalidateCache(`/recommendations/${userId}`);
+  await invalidateCache(`/smart-recommendations/${userId}`);
+  await invalidateCache(`/solveHistory/${userId}`);
+  await invalidateCache(`/get-questions/${userId}`);
 }
 
 export default cacheMiddleware;

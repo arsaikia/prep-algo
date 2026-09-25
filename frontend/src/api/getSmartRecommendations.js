@@ -1,99 +1,38 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
+import apiClient from './client.js';
 
 export const getSmartDailyRecommendations = async (userId, options = {}) => {
-    try {
-        const { count = 5, forceRefresh = false } = options;
+    const { count = 5, forceRefresh = false } = options;
 
-        const queryParams = new URLSearchParams({
-            count: count.toString(),
-            forceRefresh: forceRefresh.toString()
-        });
+    const response = await apiClient.get(`/recommendations/${userId}/daily`, {
+        params: { count, forceRefresh },
+    });
 
-        const response = await fetch(
-            `${API_BASE_URL}/recommendations/${userId}/daily?${queryParams}`,
-            {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to fetch smart recommendations');
-        }
-
-        return data.data;
-    } catch (error) {
-        console.error('Error fetching smart recommendations:', error);
-        throw error;
+    if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch smart recommendations');
     }
+
+    return response.data.data;
 };
 
 export const markQuestionCompleted = async (userId, questionId, completionData = {}) => {
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}/recommendations/${userId}/complete`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    questionId,
-                    ...completionData
-                })
-            }
-        );
+    const response = await apiClient.post(`/recommendations/${userId}/complete`, {
+        questionId,
+        ...completionData,
+    });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to mark question as completed');
-        }
-
-        return data.data;
-    } catch (error) {
-        console.error('Error marking question completed:', error);
-        throw error;
+    if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to mark question as completed');
     }
+
+    return response.data.data;
 };
 
 export const replaceCompletedQuestions = async (userId) => {
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}/recommendations/${userId}/replace-completed`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            }
-        );
+    const response = await apiClient.post(`/recommendations/${userId}/replace-completed`);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to replace completed questions');
-        }
-
-        return data.data;
-    } catch (error) {
-        console.error('Error replacing completed questions:', error);
-        throw error;
+    if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to replace completed questions');
     }
-}; 
+
+    return response.data.data;
+};

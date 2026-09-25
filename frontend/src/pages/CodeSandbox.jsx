@@ -5,8 +5,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Play, Save, Download, Link, Shuffle, Clock, Star, Code, Terminal, Eye, Settings } from 'react-feather';
 import { Timer, Pause, Play as PlayLucide, Square, Zap, Monitor, FileDown, FileText, Shuffle as ShuffleLucide, Code2, Terminal as TerminalLucide, Eye as EyeLucide, Settings as SettingsLucide } from 'lucide-react';
 import Editor from '@monaco-editor/react';
-import axios from 'axios';
 import { useSelector } from 'react-redux';
+import apiClient from '../api/client.js';
 import TestResults from '../components/TestResults.jsx';
 import { useTimeTracker } from '../utils/timeTracker.js';
 import { useTestUser } from '../contexts/TestUserContext';
@@ -1000,11 +1000,9 @@ const CodeSandbox = () => {
       setOutput('');
       setTestResults(null);
 
-      const apiBaseUri = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
-      const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
+      const questionId = leetcodeUrl.replace(/\/$/, '');
 
-      // Submit code to the backend
-      const response = await axios.post(`${apiBaseUri}/questions/${questionId}/submit`, {
+      const response = await apiClient.post(`/questions/${questionId}/submit`, {
         code
       });
 
@@ -1081,11 +1079,7 @@ const CodeSandbox = () => {
     setDebugOutput('');
 
     try {
-      // Use our backend endpoint to fetch question details
-      const apiBaseUri = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
-      // Using configured API base URI
-
-      const response = await axios.get(`${apiBaseUri}/questions/${questionToFetch}`);
+      const response = await apiClient.get(`/questions/${questionToFetch}`);
 
       if (!response.data) {
         setError('Question not found');
@@ -1140,15 +1134,9 @@ const CodeSandbox = () => {
       setDebugOutput('');
       setExampleTestResults(null);
 
-      const apiBaseUri = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
-      // API Base URI configuration
-      const questionId = leetcodeUrl.replace(/\/$/, ''); // Remove trailing slash if present
+      const questionId = leetcodeUrl.replace(/\/$/, '');
 
-      const fullUrl = `${apiBaseUri}/code/execute/example`;
-      // Making API request to fetch question details
-
-      // Submit code to the backend for example test cases
-      const response = await axios.post(fullUrl, {
+      const response = await apiClient.post('/code/execute/example', {
         code,
         questionId
       });
@@ -1480,21 +1468,7 @@ const CodeSandbox = () => {
                         previousQuestionResult: null // Could be enhanced to track previous question
                       };
 
-                      // Send to backend
-                      const apiBaseUrl = import.meta.env.VITE_API_BASE_URI || 'http://localhost:5005/api/v1';
-                      const response = await fetch(`${apiBaseUrl}/solveHistory`, {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(updatedSessionData)
-                      });
-
-                      if (response.ok) {
-                        // Session data sent successfully
-                      } else {
-                        // Failed to send session data
-                      }
+                      await apiClient.post('/solveHistory', updatedSessionData);
                     }
                   } catch (error) {
                     // Error sending session data
