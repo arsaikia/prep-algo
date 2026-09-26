@@ -26,14 +26,16 @@ const getQuestions = asyncHandler(async (req, res, next) => {
     const questionsWithAvailability = questions.map(question => {
         const obj = question.toObject();
         const isCode = obj.answerFormat === 'code' || !obj.answerFormat;
-        return {
-            ...obj,
-            availableForSolve: isCode
-                ? (question.description && question.description.trim() !== '') &&
-                  ((question.testCases && question.testCases.length > 0) ||
-                      (question.exampleTestCases && question.exampleTestCases.length > 0))
-                : true
-        };
+        const availableForSolve = isCode
+            ? (question.description && question.description.trim() !== '') &&
+              ((question.testCases && question.testCases.length > 0) ||
+                  (question.exampleTestCases && question.exampleTestCases.length > 0))
+            : true;
+
+        // testCases are only needed to derive availability — never expose the
+        // grading set (hidden cases included) on a list endpoint.
+        const { testCases, ...safe } = obj;
+        return { ...safe, availableForSolve };
     });
 
     return res.status(200).json({
@@ -77,11 +79,16 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
             expectedOutput: tc.expectedOutput || '',
             explanation: tc.explanation || ''
         })) || [],
-        testCases: question.testCases?.map(tc => ({
-            inputs: tc.inputs || [],
-            expectedOutput: tc.expectedOutput || '',
-            isHidden: tc.isHidden ?? true
-        })) || [],
+        // isHidden defaults to true in the schema; treat anything not
+        // explicitly false as hidden so legacy docs never leak.
+        testCases: question.testCases
+            ?.filter(tc => tc.isHidden === false)
+            .map(tc => ({
+                inputs: tc.inputs || [],
+                expectedOutput: tc.expectedOutput || '',
+                isHidden: false
+            })) || [],
+        hiddenTestCaseCount: question.testCases?.filter(tc => tc.isHidden !== false).length || 0,
         topics: [question.group],
         templates: question.templates || { python: '', javascript: '' }
     };
@@ -235,8 +242,9 @@ const getAllQuestionsWithUserProgress = asyncHandler(async (req, res, next) => {
             }
 
             // Add solve status and availability to question
+            const { testCases, ...safeQuestion } = question.toObject();
             const questionWithStatus = {
-                ...question.toObject(),
+                ...safeQuestion,
                 solved: solvedQuestionsMap[question._id.toString()]?.solved || false,
                 solveCount: solvedQuestionsMap[question._id.toString()]?.solveCount || 0,
                 lastSolved: solvedQuestionsMap[question._id.toString()]?.lastSolved || null,
