@@ -1,6 +1,7 @@
 import express from 'express';
 import cacheMiddleware from '../middleware/cache.js';
 import { protect } from '../middleware/auth.js';
+import { requireSelf } from '../middleware/ownership.js';
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ import { submitMcqSchema } from '../schemas/code.js';
 
 router.get('/', cacheMiddleware, getQuestions);
 
-router.get('/get-questions/:userId', protect, getAllQuestionsWithUserProgress);
+router.get('/get-questions/:userId', protect, requireSelf(), getAllQuestionsWithUserProgress);
 
 router.get('/:questionId', cacheMiddleware, getQuestionById);
 

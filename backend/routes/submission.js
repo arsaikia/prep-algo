@@ -3,10 +3,12 @@ import Question from '../models/Question.js';
 import logger from '../config/logger.js';
 import { validate } from '../middleware/validate.js';
 import { updateTestCasesSchema, updateTemplatesSchema, updateQuestionSchema, submitCodeSchema } from '../schemas/code.js';
+import { authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.put('/question/:questionId/test-cases', validate(updateTestCasesSchema), async (req, res) => {
+// These mutate global question content, so they are admin-only.
+router.put('/question/:questionId/test-cases', authorize('admin'), validate(updateTestCasesSchema), async (req, res) => {
     try {
         const { questionId } = req.params;
         const { exampleTestCases, testCases } = req.body;
@@ -43,7 +45,7 @@ router.put('/question/:questionId/test-cases', validate(updateTestCasesSchema), 
     }
 });
 
-router.put('/question/:questionId/templates', validate(updateTemplatesSchema), async (req, res) => {
+router.put('/question/:questionId/templates', authorize('admin'), validate(updateTemplatesSchema), async (req, res) => {
     try {
         const { questionId } = req.params;
         const { templates } = req.body;
@@ -72,7 +74,7 @@ router.put('/question/:questionId/templates', validate(updateTemplatesSchema), a
     }
 });
 
-router.put('/question/:questionId', validate(updateQuestionSchema), async (req, res) => {
+router.put('/question/:questionId', authorize('admin'), validate(updateQuestionSchema), async (req, res) => {
     try {
         const { questionId } = req.params;
 
