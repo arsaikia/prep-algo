@@ -622,7 +622,7 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
 
     const trackRecommendationClick = (questionId) => {
         if (isGuest || !userId) return;
-        apiClient.post(`/smart-recommendations/${userId}/track`, {
+        apiClient.post(`/recommendations/${userId}/track`, {
             questionId,
             action: 'attempted',
             clickedAt: new Date().toISOString(),

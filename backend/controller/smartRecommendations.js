@@ -9,8 +9,8 @@ import logger from '../config/logger.js';
 
 /*
  * @desc     Get smart daily recommendations with hybrid caching
- * @route    GET /api/v1/smart-recommendations/:userId/daily
- * @access   Public
+ * @route    GET /api/v1/recommendations/:userId/daily
+ * @access   Private
  */
 const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
@@ -92,8 +92,8 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
 
 /*
  * @desc     Mark question as completed in daily batch
- * @route    POST /api/v1/smart-recommendations/:userId/complete
- * @access   Public
+ * @route    POST /api/v1/recommendations/:userId/complete
+ * @access   Private
  */
 const markQuestionCompleted = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
@@ -135,8 +135,8 @@ const markQuestionCompleted = asyncHandler(async (req, res, next) => {
 
 /*
  * @desc     Replace completed questions with fresh ones (keep incomplete)
- * @route    POST /api/v1/smart-recommendations/:userId/replace-completed
- * @access   Public
+ * @route    POST /api/v1/recommendations/:userId/replace-completed
+ * @access   Private
  */
 const replaceCompletedQuestions = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
@@ -205,8 +205,8 @@ const replaceCompletedQuestions = asyncHandler(async (req, res, next) => {
 
 /*
  * @desc     Force refresh recommendations (with validation)
- * @route    POST /api/v1/smart-recommendations/:userId/refresh
- * @access   Public
+ * @route    POST /api/v1/recommendations/:userId/refresh
+ * @access   Private
  */
 const forceRefreshRecommendations = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
@@ -1050,8 +1050,8 @@ const getDifficultyForLevel = (userLevel) => {
 
 /*
  * @desc     Track recommendation action (attempted/skipped)
- * @route    POST /api/v1/smart-recommendations/:userId/track
- * @access   Public
+ * @route    POST /api/v1/recommendations/:userId/track
+ * @access   Private
  */
 const trackRecommendationAction = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
