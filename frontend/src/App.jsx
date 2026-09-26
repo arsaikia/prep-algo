@@ -48,7 +48,7 @@ const MainContent = styled.div`
 // Wrapper component to access location
 function AppContent() {
   const location = useLocation();
-  const isAllQuestionsPage = location.pathname === '/all' || location.pathname === '/questions';
+  const isAllQuestionsPage = ['/all', '/questions', '/algorithms', '/system-design', '/frontend'].includes(location.pathname);
   const isLoginPage = location.pathname === '/login';
   const { isDarkModeEnabled, colorScheme } = useTheme();
 

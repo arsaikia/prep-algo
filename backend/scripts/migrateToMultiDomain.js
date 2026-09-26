@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const run = async () => {
-    const uri = process.env.MONGO_URI || process.env.MONGO_URI_DEV;
+    const uri = process.env.MONGO_URI_DEV || process.env.MONGO_URI;
     if (!uri) {
         console.error('No MONGO_URI found in environment');
         process.exit(1);

@@ -825,13 +825,13 @@ function Navbar() {
           </Logo>
 
           <NavLinks>
-            <NavLinkItem to="/questions?domain=algorithms">
+            <NavLinkItem to="/algorithms">
               Algorithms
             </NavLinkItem>
-            <NavLinkItem to="/questions?domain=system_design">
+            <NavLinkItem to="/system-design">
               System Design
             </NavLinkItem>
-            <NavLinkItem to="/questions?domain=frontend">
+            <NavLinkItem to="/frontend">
               Frontend
             </NavLinkItem>
             {isDevMode() && (
@@ -923,9 +923,9 @@ function Navbar() {
       </NavContainer>
 
       <MobileMenuContainer isOpen={isMobileMenuOpen}>
-        <MobileNavLink to="/questions?domain=algorithms">Algorithms</MobileNavLink>
-        <MobileNavLink to="/questions?domain=system_design">System Design</MobileNavLink>
-        <MobileNavLink to="/questions?domain=frontend">Frontend</MobileNavLink>
+        <MobileNavLink to="/algorithms">Algorithms</MobileNavLink>
+        <MobileNavLink to="/system-design">System Design</MobileNavLink>
+        <MobileNavLink to="/frontend">Frontend</MobileNavLink>
         {isUserAuthenticated ? (
           <>
             <MobileUserSection>

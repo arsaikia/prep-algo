@@ -20,6 +20,9 @@ function AllRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/all" element={<AllQuestions />} />
       <Route path="/questions" element={<AllQuestions />} />
+      <Route path="/algorithms" element={<AllQuestions domain="algorithms" />} />
+      <Route path="/system-design" element={<AllQuestions domain="system_design" />} />
+      <Route path="/frontend" element={<AllQuestions domain="frontend" />} />
       <Route path="/login" element={<Login />} />
       <Route path="/codesandbox" element={<CodeSandbox />} />
       <Route path="/404" element={<Error />} />

@@ -9,7 +9,7 @@ import {
   useSelector,
   useDispatch,
 } from 'react-redux';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Search, Filter, X, ChevronDown, ChevronUp } from 'react-feather';
 
@@ -631,12 +631,14 @@ const DOMAIN_TITLES = {
   frontend: 'Frontend Questions',
 };
 
-const AllQuestions = () => {
+const AllQuestions = ({ domain: domainProp }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const domain = searchParams.get('domain') || null;
+  const domain = domainProp || searchParams.get('domain') || null;
   const {
     allQuestions,
+    allQuestionsWithoutHistory,
     isFetchingQuestions,
   } = useSelector((state) => state.questions);
 
@@ -647,8 +649,13 @@ const AllQuestions = () => {
   // Get selected user from context (for test mode)
   const { selectedUserId } = useTestUser();
 
+  const isGuest = !isAuthenticated || !authUserId || authUserId === 'guest';
+
   // State to track active list tab
-  const [activeList, setActiveList] = useState('TOP 150');
+  const defaultList = domain === 'system_design' ? 'SD TOP 25'
+    : domain === 'frontend' ? 'FE ESSENTIALS'
+    : 'TOP 150';
+  const [activeList, setActiveList] = useState(defaultList);
 
   // State for search and filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -683,28 +690,46 @@ const AllQuestions = () => {
 
   const questionUserId = getUserIdForQuestions();
 
-  // Fetch questions with user data when component mounts or user/domain changes
+  // For guests, build question data from the public store (already loaded by QuestionsLoader)
+  const guestQuestions = useMemo(() => {
+    if (!isGuest || !allQuestionsWithoutHistory?.questions) return null;
+    if (!domain) return allQuestionsWithoutHistory;
+    const filtered = {};
+    Object.entries(allQuestionsWithoutHistory.questions).forEach(([group, questions]) => {
+      const matching = questions.filter(q => (q.domain || 'algorithms') === domain);
+      if (matching.length > 0) filtered[group] = matching;
+    });
+    return {
+      groups: Object.keys(filtered),
+      questions: filtered,
+    };
+  }, [isGuest, domain, allQuestionsWithoutHistory]);
+
+  // Use guest data when available, otherwise fetch from protected endpoint
+  const questionsData = guestQuestions || allQuestions;
+
+  // Fetch questions with user data when authenticated
   useEffect(() => {
-    dispatch(getQuestions(questionUserId, domain));
-  }, [dispatch, questionUserId, domain]);
+    if (!isGuest) {
+      dispatch(getQuestions(questionUserId, domain));
+    }
+  }, [dispatch, questionUserId, domain, isGuest]);
 
   // Get all unique list names and their counts from questions
   const listNamesAndCounts = useMemo(() => {
-    // Check if we have the correct data structure
-    if (!allQuestions?.questions) {
+    if (!questionsData?.questions) {
       return {};
     }
-    return getListNamesAndCounts(allQuestions);
-  }, [allQuestions]);
+    return getListNamesAndCounts(questionsData);
+  }, [questionsData]);
 
   // Filter questions based on active list
   const filteredQuestions = useMemo(() => {
-    // Check if we have the correct data structure
-    if (!allQuestions?.questions) {
+    if (!questionsData?.questions) {
       return {};
     }
-    return filterQuestionsByList(allQuestions, activeList);
-  }, [allQuestions, activeList]);
+    return filterQuestionsByList(questionsData, activeList);
+  }, [questionsData, activeList]);
 
   // Apply search and difficulty filters
   const finalFilteredQuestions = useMemo(() => {
@@ -815,8 +840,8 @@ const AllQuestions = () => {
     return expandedGroups[groupName] || false;
   }, [searchTerm, selectedDifficulty, expandedGroups]);
 
-  // Show loading indicator when fetching questions
-  if (isFetchingQuestions) {
+  // Show loading indicator when fetching questions (skip for guests using cached data)
+  if (isFetchingQuestions && !guestQuestions) {
     return <FullScreenLoader show={true} />;
   }
 
