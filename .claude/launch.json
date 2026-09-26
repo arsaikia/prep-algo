@@ -8,6 +8,14 @@
       "port": 5173,
       "autoPort": false,
       "cwd": "frontend"
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server.js"],
+      "port": 5000,
+      "autoPort": true,
+      "cwd": "backend"
     }
   ]
 }

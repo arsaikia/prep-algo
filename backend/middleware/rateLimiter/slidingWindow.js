@@ -55,7 +55,7 @@ export function createSlidingWindowLimiter({ windowMs, max, keyPrefix }) {
           resetMs: result[2],
         };
       } catch (err) {
-        console.warn('Redis rate limit error, falling back to in-memory:', err.message);
+        // Redis rate limit error — falling back to in-memory
       }
     }
 

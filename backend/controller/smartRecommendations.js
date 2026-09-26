@@ -5,6 +5,7 @@ import Question from '../models/Question.js';
 import asyncHandler from '../middleware/async.js';
 import ErrorResponse from '../utils/errorResponse.js';
 import { invalidateUserCache } from '../middleware/cache.js';
+import logger from '../config/logger.js';
 
 /*
  * @desc     Get smart daily recommendations with hybrid caching
@@ -15,7 +16,7 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
     const { count = 5, forceRefresh = false } = req.query;
 
-    console.log(`🧠 Getting smart recommendations for user: ${userId}`);
+    logger.debug({ userId }, 'getting smart recommendations');
 
     try {
         // Check for existing batch today
@@ -23,18 +24,17 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
 
         if (!batch) {
             // No batch exists - create fresh daily batch
-            console.log('📅 No batch found - creating fresh daily batch');
+            logger.debug('no batch found — creating fresh daily batch');
             batch = await createFreshDailyBatch(userId, parseInt(count));
         } else {
             // Batch exists - check if refresh is needed/allowed
             const refreshCheck = batch.shouldRefresh(userId);
 
             if (forceRefresh === 'true' || refreshCheck.allowed) {
-                console.log('🔄 Refreshing batch - conditions met:', refreshCheck.reasons);
+                logger.debug({ reasons: refreshCheck.reasons }, 'refreshing batch');
                 batch = await performSmartRefresh(batch, userId, parseInt(count));
             } else {
-                console.log('📋 Serving cached batch - refresh not allowed');
-                console.log('   Next refresh available:', refreshCheck.nextRefreshAvailable);
+                logger.debug({ nextRefresh: refreshCheck.nextRefreshAvailable }, 'serving cached batch');
             }
         }
 
@@ -84,7 +84,7 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
         res.status(200).json(response);
 
     } catch (error) {
-        console.error('❌ Error in smart recommendations:', error);
+        logger.error({ err: error }, 'error in smart recommendations');
         return next(new ErrorResponse('Failed to generate smart recommendations', 500));
     }
 });
@@ -98,7 +98,7 @@ const markQuestionCompleted = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
     const { questionId, timeSpent, success = true } = req.body;
 
-    console.log(`✅ Marking question completed: ${questionId} for user: ${userId}`);
+    logger.debug({ questionId, userId }, 'marking question completed');
 
     try {
         // Find today's batch
@@ -127,7 +127,7 @@ const markQuestionCompleted = asyncHandler(async (req, res, next) => {
         });
 
     } catch (error) {
-        console.error('❌ Error marking question completed:', error);
+        logger.error({ err: error }, 'error marking question completed');
         return next(new ErrorResponse('Failed to update completion status', 500));
     }
 });
@@ -140,7 +140,7 @@ const markQuestionCompleted = asyncHandler(async (req, res, next) => {
 const replaceCompletedQuestions = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
 
-    console.log(`🔄 Replace completed questions requested for user: ${userId}`);
+    logger.debug({ userId }, 'replace completed questions requested');
 
     try {
         const batch = await DailyRecommendationBatch.findTodaysBatch(userId);
@@ -197,7 +197,7 @@ const replaceCompletedQuestions = asyncHandler(async (req, res, next) => {
         });
 
     } catch (error) {
-        console.error('❌ Error replacing completed questions:', error);
+        logger.error({ err: error }, 'error replacing completed questions');
         return next(new ErrorResponse('Failed to replace completed questions', 500));
     }
 });
@@ -210,7 +210,7 @@ const replaceCompletedQuestions = asyncHandler(async (req, res, next) => {
 const forceRefreshRecommendations = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
 
-    console.log(`🔄 Force refresh requested for user: ${userId}`);
+    logger.debug({ userId }, 'force refresh requested');
 
     try {
         const batch = await DailyRecommendationBatch.findTodaysBatch(userId);
@@ -256,7 +256,7 @@ const forceRefreshRecommendations = asyncHandler(async (req, res, next) => {
         });
 
     } catch (error) {
-        console.error('❌ Error in force refresh:', error);
+        logger.error({ err: error }, 'error in force refresh');
         return next(new ErrorResponse('Failed to refresh recommendations', 500));
     }
 });
@@ -264,7 +264,7 @@ const forceRefreshRecommendations = asyncHandler(async (req, res, next) => {
 // Helper Functions
 
 const createFreshDailyBatch = async (userId, count) => {
-    console.log(`🌅 Creating fresh daily batch for user: ${userId}`);
+    logger.debug({ userId }, 'creating fresh daily batch');
 
     // Get or create user profile
     let userProfile = await UserProfile.findByUserId(userId);
@@ -291,12 +291,12 @@ const createFreshDailyBatch = async (userId, count) => {
     // Create and save batch
     const batch = await DailyRecommendationBatch.createDailyBatch(userId, recommendations, analysis);
 
-    console.log(`✅ Created fresh batch with ${recommendations.length} recommendations`);
+    logger.debug({ count: recommendations.length }, 'created fresh batch');
     return batch;
 };
 
 const performSmartRefresh = async (currentBatch, userId, count) => {
-    console.log(`🔄 Performing smart refresh for user: ${userId}`);
+    logger.debug({ userId }, 'performing smart refresh');
 
     // Get completed question IDs
     const completedQuestionIds = currentBatch.questionsCompleted.map(q => q.questionId);
@@ -306,8 +306,7 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
         rec => !completedQuestionIds.includes(rec.question._id || rec.question.id)
     );
 
-    console.log(`   📊 Remaining questions: ${remainingRecommendations.length}`);
-    console.log(`   ✅ Completed questions: ${completedQuestionIds.length}`);
+    logger.debug({ remaining: remainingRecommendations.length, completed: completedQuestionIds.length }, 'smart refresh stats');
 
     // Get fresh analysis (no populate needed — uses denormalized fields)
     const userHistory = await SolveHistory.find({ userId });
@@ -319,7 +318,7 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
         isStillRelevant(rec, freshAnalysis)
     );
 
-    console.log(`   🎯 Relevant remaining: ${relevantRemaining.length}`);
+    logger.debug({ relevant: relevantRemaining.length }, 'relevant remaining');
 
     // Mark carried-over questions
     const carriedOverRecommendations = relevantRemaining.map(rec => ({
@@ -336,7 +335,7 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
     let newRecommendations = [];
 
     if (newQuestionsNeeded > 0) {
-        console.log(`   🆕 Generating ${newQuestionsNeeded} new questions`);
+        logger.debug({ count: newQuestionsNeeded }, 'generating new questions');
 
         // Get already recommended question IDs (from current batch + carried over)
         const existingQuestionIds = [
@@ -371,12 +370,12 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
 
     await currentBatch.save();
 
-    console.log(`✅ Smart refresh completed - ${carriedOverRecommendations.length} carried over, ${newRecommendations.length} new`);
+    logger.debug({ carriedOver: carriedOverRecommendations.length, new: newRecommendations.length }, 'smart refresh completed');
     return currentBatch;
 };
 
 const performSelectiveRefresh = async (currentBatch, userId) => {
-    console.log(`🎯 Performing selective refresh for user: ${userId}`);
+    logger.debug({ userId }, 'performing selective refresh');
 
     // Get user profile and fresh analysis
     let userProfile = await UserProfile.findByUserId(userId);
@@ -400,8 +399,7 @@ const performSelectiveRefresh = async (currentBatch, userId) => {
 
     const completedCount = currentBatch.recommendations.length - incompleteRecommendations.length;
 
-    console.log(`   📋 Keeping ${incompleteRecommendations.length} incomplete questions`);
-    console.log(`   🔄 Replacing ${completedCount} completed questions`);
+    logger.debug({ keeping: incompleteRecommendations.length, replacing: completedCount }, 'selective refresh stats');
 
     // Generate new questions to replace completed ones
     let newRecommendations = [];
@@ -438,7 +436,7 @@ const performSelectiveRefresh = async (currentBatch, userId) => {
 
     await currentBatch.save();
 
-    console.log(`✅ Selective refresh completed - ${completedCount} questions replaced`);
+    logger.debug({ replaced: completedCount }, 'selective refresh completed');
     return currentBatch;
 };
 
@@ -784,7 +782,7 @@ const getTopicQuestionCounts = async () => {
         _topicCountsCacheTime = now;
         return countMap;
     } catch (error) {
-        console.error('Error fetching topic question counts:', error);
+        logger.error({ err: error }, 'error fetching topic question counts');
         return _topicCountsCache || {};
     }
 };

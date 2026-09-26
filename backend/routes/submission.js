@@ -1,5 +1,6 @@
 import express from 'express';
 import Question from '../models/Question.js';
+import logger from '../config/logger.js';
 
 const router = express.Router();
 
@@ -77,7 +78,7 @@ router.put('/question/:questionId/test-cases', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error updating test cases:', error);
+        logger.error({ err: error }, 'error updating test cases');
         res.status(500).json({
             error: 'Internal server error',
             message: error.message || 'An unexpected error occurred while updating the test cases.'
@@ -151,7 +152,7 @@ router.put('/question/:questionId/templates', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error updating templates:', error);
+        logger.error({ err: error }, 'error updating templates');
         res.status(500).json({
             error: 'Internal server error',
             message: error.message || 'An unexpected error occurred while updating the templates.'
@@ -221,7 +222,7 @@ router.put('/question/:questionId', async (req, res) => {
             data: updatedQuestion
         });
     } catch (error) {
-        console.error('Error updating question:', error);
+        logger.error({ err: error }, 'error updating question');
         res.status(500).json({
             error: 'Internal server error',
             message: error.message || 'An unexpected error occurred while updating the question.'
@@ -314,7 +315,7 @@ router.post('/submit', async (req, res) => {
             score
         });
     } catch (error) {
-        console.error('Error executing code:', error);
+        logger.error({ err: error }, 'error executing code');
         res.status(500).json({
             error: 'Internal server error',
             message: error.message || 'An unexpected error occurred while executing the code.'

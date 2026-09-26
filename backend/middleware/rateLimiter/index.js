@@ -1,3 +1,4 @@
+import logger from '../../config/logger.js';
 import { createSlidingWindowLimiter } from './slidingWindow.js';
 import { createTokenBucketLimiter } from './tokenBucket.js';
 
@@ -26,7 +27,7 @@ function createRateLimitMiddleware(checkLimit, { windowMs, max, message }) {
 
       next();
     } catch (err) {
-      console.error('Rate limiter error:', err.message);
+      logger.error({ err }, 'rate limiter error');
       next();
     }
   };

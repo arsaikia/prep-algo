@@ -6,6 +6,7 @@ import { v4 as uuid } from 'uuid';
 import Question from '../models/Question.js';
 import User from '../models/User.js';
 import { invalidateUserCache } from '../middleware/cache.js';
+import logger from '../config/logger.js';
 
 /*
  * @desc     Get solve history for a user
@@ -168,9 +169,9 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
                 strategy: strategy || 'general_practice'
             });
             await userProfile.save();
-            console.log('📊 Updated user profile for adaptive recommendations');
+            logger.debug({ userId }, 'updated user profile for adaptive recommendations');
         } catch (profileError) {
-            console.error('📊 Error updating user profile:', profileError);
+            logger.error({ err: profileError }, 'error updating user profile');
             // Don't fail the main request if profile update fails
         }
     }

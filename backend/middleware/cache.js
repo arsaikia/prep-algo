@@ -37,7 +37,7 @@ async function setInRedis(key, value, ttlSeconds) {
   try {
     await redis.set(key, value, 'EX', ttlSeconds);
   } catch (err) {
-    console.warn('Redis cache set error:', err.message);
+    // Redis cache set failed — silent fallback to local cache
   }
 }
 
@@ -117,7 +117,7 @@ export async function invalidateCache(pattern) {
         await redis.del(...keys);
       }
     } catch (err) {
-      console.warn('Redis cache invalidation error:', err.message);
+      // Redis cache invalidation failed — local cache already cleared
     }
   }
 }

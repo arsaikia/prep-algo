@@ -210,7 +210,7 @@ dailyRecommendationBatchSchema.methods.markQuestionCompleted = function (questio
     );
 
     if (!isRecommendedQuestion) {
-        console.log(`⚠️ Question ${questionId} is not part of daily recommendations - skipping completion tracking`);
+        // Question not part of daily recommendations — skipping completion tracking
         return Promise.resolve(this); // Return resolved promise without saving
     }
 
@@ -230,7 +230,7 @@ dailyRecommendationBatchSchema.methods.markQuestionCompleted = function (questio
     // Update metadata
     this.metadata.userSatisfactionScore = this.questionsCompleted.length / this.recommendations.length;
 
-    console.log(`✅ Question ${questionId} marked as completed in daily recommendations`);
+    // Question marked as completed in daily recommendations
     return this.save();
 };
 

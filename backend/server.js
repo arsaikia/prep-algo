@@ -1,12 +1,16 @@
-import colors from 'colors';
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
+import mongoose from 'mongoose';
+import logger from './config/logger.js';
 import { connectDB } from './config/db.js';
-import { connectRedis, disconnectRedis } from './config/redis.js';
-import performanceMonitor from './middleware/performance.js';
+import { connectRedis, disconnectRedis, isRedisAvailable } from './config/redis.js';
+import { getAllCircuitBreakerStats } from './config/circuitBreakers.js';
+import { getCodeExecutionQueue, getQueueEvents, getQueueStats, closeQueue } from './config/queue.js';
+import { startCodeExecutionWorker, stopCodeExecutionWorker } from './workers/codeExecution.js';
+import correlationId from './middleware/correlationId.js';
 import { protect } from './middleware/auth.js';
 import { generalLimiter, authLimiter, codeExecutionLimiter, recommendationLimiter } from './middleware/rateLimiter/index.js';
 
@@ -22,7 +26,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(performanceMonitor);
+app.use(correlationId);
 app.use(helmet());
 app.use(compression());
 
@@ -33,7 +37,7 @@ const corsOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
     : ["http://localhost:3000", "http://localhost:5173", "https://prepalgo.web.app"];
 
-console.log('CORS Origins configured:', corsOrigins);
+logger.info({ origins: corsOrigins }, 'CORS origins configured');
 
 const corsOptions = {
     origin: function (origin, callback) {
@@ -62,9 +66,29 @@ app.use((req, res, next) => {
     next();
 });
 
-// Health check — no auth, no rate limit
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
+app.get('/health', async (req, res) => {
+    const mongoStatus = mongoose.connection.readyState === 1 ? 'ok' : 'down';
+    const redisStatus = isRedisAvailable() ? 'ok' : 'down';
+    const breakers = getAllCircuitBreakerStats();
+    const mongoBreaker = breakers.mongodb.state;
+    const queueStats = await getQueueStats();
+
+    let status = 'ok';
+    if (mongoStatus === 'down' || mongoBreaker === 'OPEN') status = 'unhealthy';
+    else if (redisStatus === 'down') status = 'degraded';
+
+    const code = status === 'unhealthy' ? 503 : 200;
+    res.status(code).json({
+        status,
+        timestamp: new Date().toISOString(),
+        uptime: Math.floor(process.uptime()),
+        components: {
+            mongodb: { status: mongoStatus, circuitBreaker: mongoBreaker },
+            redis: { status: redisStatus },
+            queue: queueStats ? { status: 'ok', ...queueStats } : { status: 'down' },
+            circuitBreakers: breakers,
+        },
+    });
 });
 
 // Global rate limit on all API routes
@@ -89,8 +113,8 @@ app.use('*', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
-    console.error('Error stack:', err.stack);
+    const log = req.log || logger;
+    log.error({ err }, 'unhandled error');
 
     const statusCode = err.statusCode || err.status || 500;
     const errorMessage = process.env.NODE_ENV === 'production'
@@ -109,19 +133,31 @@ const startServer = async () => {
         await connectDB();
         await connectRedis();
 
+        if (isRedisAvailable()) {
+            getCodeExecutionQueue();
+            getQueueEvents();
+            startCodeExecutionWorker();
+        }
+
         const PORT = process.env.PORT || 8080;
         app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Server started on PORT ${PORT}`.yellow.bold);
+            logger.info({ port: PORT }, 'server started');
         });
     } catch (error) {
-        console.error('Failed to start server:', error);
+        logger.fatal({ err: error }, 'failed to start server');
         process.exit(1);
     }
 };
 
-process.on('SIGINT', async () => {
+async function gracefulShutdown(signal) {
+    logger.info({ signal }, 'shutting down');
+    await stopCodeExecutionWorker();
+    await closeQueue();
     await disconnectRedis();
     process.exit(0);
-});
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 startServer();

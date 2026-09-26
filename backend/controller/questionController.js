@@ -4,6 +4,8 @@ import ErrorResponse from '../middleware/error.js';
 import { v4 as uuid } from 'uuid';
 import SolveHistory from '../models/SolveHistory.js';
 import { runPythonCode } from '../utils/codeExecution.js';
+import logger from '../config/logger.js';
+import { mongoCircuitBreaker } from '../config/circuitBreakers.js';
 
 /*
  * @desc     Get All Questions (without solve history)
@@ -11,10 +13,11 @@ import { runPythonCode } from '../utils/codeExecution.js';
  * @access   Public
  */
 const getQuestions = asyncHandler(async (req, res, next) => {
-    // Get all questions with test case info to determine availability
-    const questions = await Question.find()
-        .select('_id name link group difficulty list order testCases exampleTestCases description')
-        .sort({ order: 1 });
+    const questions = await mongoCircuitBreaker.execute(() =>
+        Question.find()
+            .select('_id name link group difficulty list order testCases exampleTestCases description')
+            .sort({ order: 1 })
+    );
 
     // Add comprehensive availability flag based on description, example test cases, and test cases
     const questionsWithAvailability = questions.map(question => ({
@@ -38,23 +41,20 @@ const getQuestions = asyncHandler(async (req, res, next) => {
  */
 const getQuestionById = asyncHandler(async (req, res, next) => {
     const { questionId } = req.params;
-    console.log(`Fetching question by link: ${questionId}`);
+    logger.debug({ questionId }, 'fetching question by link');
 
-    // Try to find the question by either link format (with or without trailing slash)
-    const question = await Question.findOne({
-        $or: [
-            { link: questionId },
-            { link: `${questionId}/` }
-        ]
-    }).select('_id name description difficulty group exampleTestCases testCases templates types');
+    const question = await mongoCircuitBreaker.execute(() =>
+        Question.findOne({
+            $or: [
+                { link: questionId },
+                { link: `${questionId}/` }
+            ]
+        }).select('_id name description difficulty group exampleTestCases testCases templates types')
+    );
 
     if (!question) {
-        console.error('Question not found in database');
         return next(new ErrorResponse('Question not found', 404));
     }
-
-    console.log('Raw exampleTestCases:', question.exampleTestCases);
-    console.log('Raw testCases:', question.testCases);
 
     // Format the response to match the expected structure
     const response = {
@@ -78,9 +78,6 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
             javascript: ''
         }
     };
-
-    // Log the response for debugging
-    console.log('Response:', JSON.stringify(response, null, 2));
 
     return res.status(200).json(response);
 });
@@ -113,12 +110,12 @@ const submitCode = async (req, res) => {
 
         // Check if question is complete (has description and test cases)
         if (!question.description || question.description.trim() === '') {
-            console.error(`No description for question: ${questionId}`);
+            logger.warn({ questionId }, 'no description for question');
             return res.status(400).json({ error: 'Question description is not available' });
         }
 
         if (!question.testCases || question.testCases.length === 0) {
-            console.error(`No test cases for question: ${questionId}`);
+            logger.warn({ questionId }, 'no test cases for question');
             return res.status(400).json({ error: 'No test cases available for this question' });
         }
 
@@ -137,7 +134,7 @@ const submitCode = async (req, res) => {
             totalTests
         });
     } catch (error) {
-        console.error('Error in submitCode:', error);
+        logger.error({ err: error }, 'error in submitCode');
         res.status(500).json({
             error: 'Failed to execute code',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -214,7 +211,7 @@ const getAllQuestionsWithUserProgress = asyncHandler(async (req, res, next) => {
         });
 
     } catch (error) {
-        console.error('Error in getAllQuestionsWithUserProgress:', error);
+        logger.error({ err: error }, 'error in getAllQuestionsWithUserProgress');
         return next(new ErrorResponse('Server Error', 500));
     }
 });

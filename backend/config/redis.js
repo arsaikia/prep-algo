@@ -1,4 +1,5 @@
 import Redis from 'ioredis';
+import logger from './logger.js';
 
 let redisClient = null;
 let isConnected = false;
@@ -8,7 +9,7 @@ function createClient() {
   const url = process.env.REDIS_URL;
 
   if (!url) {
-    console.warn('REDIS_URL not set — running without Redis (in-memory fallback)');
+    logger.warn('REDIS_URL not set — running without Redis (in-memory fallback)');
     return null;
   }
 
@@ -24,11 +25,11 @@ function createClient() {
 
   client.on('connect', () => {
     isConnected = true;
-    console.log('Redis connected');
+    logger.info('Redis connected');
   });
 
   client.on('error', (err) => {
-    console.error('Redis error:', err.message);
+    logger.error({ err }, 'Redis error');
   });
 
   client.on('close', () => {
@@ -49,7 +50,7 @@ export async function connectRedis() {
     await redisClient.connect();
     return redisClient;
   } catch (err) {
-    console.warn('Redis connection failed — running without Redis:', err.message);
+    logger.warn({ err }, 'Redis connection failed — running without Redis');
     redisClient = null;
     return null;
   }

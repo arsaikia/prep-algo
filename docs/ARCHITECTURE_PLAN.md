@@ -6,7 +6,13 @@ Transform PrepAlgo from a working monolith into a properly architected distribut
 
 ---
 
-## Current Architecture (Post Phase 1)
+## Architecture Diagrams
+
+See [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) for Mermaid diagrams showing architecture evolution across all phases, request flows, and circuit breaker state machine.
+
+---
+
+## Current Architecture (Post Phase 2b)
 
 | Layer | Tech | Hosting | Status |
 |-------|------|---------|--------|
@@ -38,9 +44,9 @@ Transform PrepAlgo from a working monolith into a properly architected distribut
 
 Goal: Fix security gaps, add distributed primitives, document every decision. Each component gets an ADR in `docs/adr/`.
 
-### Phase 2a: Security + Redis Foundation
+### Phase 2a: Security + Redis Foundation ✅
 
-**Priority**: Fix the auth gap and replace in-memory primitives with Redis.
+**Status**: Complete (commit 699e355)
 
 #### 2a.1 — JWT Auth Middleware (Build Custom)
 **Why build**: Core security, must understand deeply.
@@ -99,7 +105,9 @@ Goal: Fix security gaps, add distributed primitives, document every decision. Ea
 - `backend/utils/cachePatterns.js` — write-through, cache-aside, stampede lock
 - `docs/adr/004-caching-strategy.md` — pattern comparison, invalidation strategy, TTL rationale
 
-### Phase 2b: Async Processing + Resilience
+### Phase 2b: Async Processing + Resilience ✅
+
+**Status**: Complete (2026-09-25)
 
 #### 2b.1 — Message Queue for Code Execution (Build Custom on Redis)
 **Why build**: Async job processing is core distributed systems knowledge.

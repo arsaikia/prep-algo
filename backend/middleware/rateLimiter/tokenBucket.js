@@ -52,7 +52,7 @@ export function createTokenBucketLimiter({ capacity, refillRate, keyPrefix }) {
           retryAfterMs: result[0] === 1 ? result[1] : 0,
         };
       } catch (err) {
-        console.warn('Redis token bucket error, falling back to in-memory:', err.message);
+        // Redis token bucket error — falling back to in-memory
       }
     }
 

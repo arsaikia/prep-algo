@@ -3,6 +3,8 @@ import asyncHandler from '../middleware/async.js';
 import ErrorResponse from '../utils/errorResponse.js';
 import axios from 'axios';
 import { OAuth2Client } from 'google-auth-library';
+import logger from '../config/logger.js';
+import { externalApiCircuitBreaker, mongoCircuitBreaker } from '../config/circuitBreakers.js';
 
 // Create a new OAuth2Client instance
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -20,11 +22,12 @@ export const googleAuth = asyncHandler(async (req, res, next) => {
     }
 
     try {
-        // Verify the token with Google
-        const ticket = await client.verifyIdToken({
-            idToken: token,
-            audience: process.env.GOOGLE_CLIENT_ID
-        });
+        const ticket = await externalApiCircuitBreaker.execute(() =>
+            client.verifyIdToken({
+                idToken: token,
+                audience: process.env.GOOGLE_CLIENT_ID
+            })
+        );
 
         // Get user info from the verified token
         const payload = ticket.getPayload();
@@ -66,7 +69,7 @@ export const googleAuth = asyncHandler(async (req, res, next) => {
             }
         });
     } catch (error) {
-        console.error('Google authentication error:', error);
+        logger.error({ err: error }, 'Google authentication error');
         return next(new ErrorResponse('Google authentication failed', 401));
     }
 });
