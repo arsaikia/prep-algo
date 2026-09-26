@@ -73,8 +73,9 @@ const userProfileSchema = new mongoose.Schema({
             success: Boolean,
             timeSpent: Number,
             difficulty: String,
+            domain: { type: String, default: 'algorithms' },
             solvedAt: Date,
-            strategy: String // Which strategy recommended this question
+            strategy: String
         }],
         currentStreak: {
             type: { type: String, enum: ['success', 'failure'], default: 'success' },
@@ -92,6 +93,25 @@ const userProfileSchema = new mongoose.Schema({
         optimalBatchSize: { type: Number, default: 3 }, // questions before taking a break
         lastSessionDate: Date,
         sessionFrequency: { type: Number, default: 3 } // sessions per week
+    },
+
+    // Domain Preferences (Phase 3)
+    domainPreferences: {
+        algorithms: {
+            weight: { type: Number, default: 0.6 },
+            questionsCompleted: { type: Number, default: 0 },
+            lastPracticed: Date
+        },
+        system_design: {
+            weight: { type: Number, default: 0.2 },
+            questionsCompleted: { type: Number, default: 0 },
+            lastPracticed: Date
+        },
+        frontend: {
+            weight: { type: Number, default: 0.2 },
+            questionsCompleted: { type: Number, default: 0 },
+            lastPracticed: Date
+        }
     },
 
     // Adaptation Metadata

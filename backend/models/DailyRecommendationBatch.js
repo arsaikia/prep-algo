@@ -19,6 +19,11 @@ const dailyRecommendationBatchSchema = new mongoose.Schema({
             ref: 'Question',
             required: true
         },
+        domain: {
+            type: String,
+            enum: ['algorithms', 'system_design', 'frontend'],
+            default: 'algorithms'
+        },
         reason: {
             type: String,
             required: true
@@ -37,9 +42,16 @@ const dailyRecommendationBatchSchema = new mongoose.Schema({
             weightUsed: Number,
             timeOptimized: String,
             personalizedReason: String,
-            isCarriedOver: { type: Boolean, default: false }, // Track if kept from previous batch
-            originalBatchTime: Date // When this recommendation was first generated
+            isCarriedOver: { type: Boolean, default: false },
+            originalBatchTime: Date
         },
+        userAction: {
+            type: String,
+            enum: ['attempted', 'skipped', 'ignored'],
+            default: 'ignored'
+        },
+        timeToFirstAction: Number,
+        clickedAt: Date,
         addedAt: {
             type: Date,
             default: Date.now
@@ -55,6 +67,11 @@ const dailyRecommendationBatchSchema = new mongoose.Schema({
         adaptiveWeights: Object,
         timePreferences: Object,
         adaptiveFeatures: Object,
+        domainDistribution: {
+            algorithms: { type: Number, default: 0 },
+            system_design: { type: Number, default: 0 },
+            frontend: { type: Number, default: 0 }
+        },
         // NEW: Enhanced analytics for Learning Streaks & Topic Mastery
         streakInfo: {
             currentStreak: Number,

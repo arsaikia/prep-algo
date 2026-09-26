@@ -1,0 +1,282 @@
+[
+  {
+    "name": "Design a URL Shortener",
+    "link": "design-url-shortener",
+    "group": "Distributed Systems",
+    "difficulty": "Medium",
+    "domain": "system_design",
+    "answerFormat": "design_doc",
+    "list": ["SD TOP 25"],
+    "order": 1,
+    "description": "Design a URL shortening service like bit.ly that can handle millions of URLs.",
+    "designPrompt": {
+      "scenario": "Design a URL shortening service that takes long URLs and creates short aliases. When users visit the short URL, they should be redirected to the original.",
+      "requirements": ["Generate unique short URLs from long URLs", "Redirect short URLs to original URLs with low latency", "Support custom short URLs", "Track click analytics (count, referrer, location)", "Handle 100M new URLs per month"],
+      "constraints": ["Short URL should be at most 7 characters", "URLs should not be guessable", "System should be highly available (99.9%)", "Redirects should complete in < 100ms"],
+      "evaluationCriteria": ["Hash/encoding strategy for short URL generation", "Database schema and sharding strategy", "Caching layer design", "Analytics pipeline", "Rate limiting and abuse prevention"],
+      "sampleAnswer": "Use Base62 encoding of an auto-incrementing counter (distributed via Zookeeper ranges). Store mappings in a sharded NoSQL database (key: shortUrl, value: longUrl). Add a Redis cache layer for hot URLs. Use Kafka for async analytics event processing. CDN for global low-latency redirects."
+    }
+  },
+  {
+    "name": "Design a Rate Limiter",
+    "link": "design-rate-limiter",
+    "group": "Distributed Systems",
+    "difficulty": "Medium",
+    "domain": "system_design",
+    "answerFormat": "mcq",
+    "list": ["SD TOP 25"],
+    "order": 2,
+    "description": "Understand the tradeoffs between different rate limiting algorithms.",
+    "mcqOptions": [
+      { "id": "a", "text": "Fixed window counter resets at fixed intervals and can allow 2x the rate at window boundaries", "isCorrect": true, "explanation": "Fixed window counters reset at interval boundaries. A burst at the end of one window and start of the next can allow double the intended rate." },
+      { "id": "b", "text": "Token bucket cannot handle burst traffic", "isCorrect": false, "explanation": "Token bucket explicitly supports burst traffic — tokens accumulate up to a max bucket size, allowing short bursts." },
+      { "id": "c", "text": "Sliding window log is the most memory-efficient algorithm", "isCorrect": false, "explanation": "Sliding window log stores every request timestamp, making it the LEAST memory-efficient. Sliding window counter is more efficient." },
+      { "id": "d", "text": "Leaky bucket processes requests at a variable rate", "isCorrect": false, "explanation": "Leaky bucket processes requests at a FIXED rate regardless of input rate, smoothing out bursts." }
+    ]
+  },
+  {
+    "name": "Design a Chat System",
+    "link": "design-chat-system",
+    "group": "Distributed Systems",
+    "difficulty": "Hard",
+    "domain": "system_design",
+    "answerFormat": "design_doc",
+    "list": ["SD TOP 25"],
+    "order": 3,
+    "description": "Design a real-time chat system supporting 1:1 and group messaging.",
+    "designPrompt": {
+      "scenario": "Design a chat application like WhatsApp or Slack that supports real-time messaging between users.",
+      "requirements": ["1:1 and group messaging", "Online/offline status indicators", "Message delivery receipts (sent, delivered, read)", "Message history and search", "Support 50M daily active users"],
+      "constraints": ["Messages delivered in < 500ms for online users", "Messages must never be lost", "Support offline message queuing", "End-to-end encryption for 1:1 chats"],
+      "evaluationCriteria": ["WebSocket vs long polling for real-time delivery", "Message storage and fanout strategy", "Presence service design", "Group message delivery optimization", "Handling network partitions"],
+      "sampleAnswer": "WebSocket connections through a gateway service. Message queue (Kafka) for reliable delivery. Chat service writes to a message store (Cassandra for write-heavy workload). Fan-out-on-write for small groups, fan-out-on-read for large channels. Presence service using heartbeats with Redis. Push notifications via FCM/APNs for offline users."
+    }
+  },
+  {
+    "name": "CAP Theorem",
+    "link": "cap-theorem-fundamentals",
+    "group": "Database Design",
+    "difficulty": "Easy",
+    "domain": "system_design",
+    "answerFormat": "mcq",
+    "list": ["SD TOP 25"],
+    "order": 4,
+    "description": "Understand the CAP theorem and its implications for distributed databases.",
+    "mcqOptions": [
+      { "id": "a", "text": "A system can guarantee all three: Consistency, Availability, and Partition tolerance", "isCorrect": false, "explanation": "The CAP theorem proves that in the presence of a network partition, a distributed system must choose between consistency and availability — it cannot guarantee all three simultaneously." },
+      { "id": "b", "text": "During a network partition, a CP system sacrifices availability to maintain consistency", "isCorrect": true, "explanation": "CP systems (like HBase, MongoDB) refuse to serve requests during partitions rather than risk returning stale data, sacrificing availability for consistency." },
+      { "id": "c", "text": "AP systems never return stale data", "isCorrect": false, "explanation": "AP systems (like Cassandra, DynamoDB) prioritize availability during partitions and may return stale data, achieving eventual consistency." },
+      { "id": "d", "text": "The CAP theorem only applies to SQL databases", "isCorrect": false, "explanation": "CAP applies to ALL distributed data stores regardless of data model — SQL, NoSQL, key-value, document, etc." }
+    ]
+  },
+  {
+    "name": "Design a Key-Value Store",
+    "link": "design-key-value-store",
+    "group": "Database Design",
+    "difficulty": "Medium",
+    "domain": "system_design",
+    "answerFormat": "design_doc",
+    "list": ["SD TOP 25"],
+    "order": 5,
+    "description": "Design a distributed key-value store like DynamoDB or Redis Cluster.",
+    "designPrompt": {
+      "scenario": "Design a distributed key-value store that supports put(key, value) and get(key) operations with high availability.",
+      "requirements": ["Automatic data partitioning across nodes", "Data replication for fault tolerance", "Consistency tuning (strong vs eventual)", "Automatic failure detection and recovery", "Support for 1M operations/second"],
+      "constraints": ["Each value up to 1MB", "Read latency p99 < 10ms", "No single point of failure", "Handle node additions/removals gracefully"],
+      "evaluationCriteria": ["Consistent hashing for partitioning", "Replication strategy (quorum reads/writes)", "Conflict resolution (vector clocks vs LWW)", "Failure detection (gossip protocol)", "Merkle trees for anti-entropy"],
+      "sampleAnswer": "Consistent hashing with virtual nodes for even distribution. N=3 replicas with configurable W and R quorum. Vector clocks for conflict detection, application-level resolution. Gossip protocol for membership and failure detection. Merkle trees per partition for background sync. Hinted handoff for temporary failures."
+    }
+  },
+  {
+    "name": "Database Indexing Strategies",
+    "link": "database-indexing-strategies",
+    "group": "Database Design",
+    "difficulty": "Easy",
+    "domain": "system_design",
+    "answerFormat": "mcq",
+    "list": ["SD TOP 25"],
+    "order": 6,
+    "description": "Understand when and how to use database indexes effectively.",
+    "mcqOptions": [
+      { "id": "a", "text": "Adding more indexes always improves query performance", "isCorrect": false, "explanation": "Indexes speed up reads but slow down writes — every INSERT/UPDATE must also update all indexes. Over-indexing can degrade overall performance." },
+      { "id": "b", "text": "A compound index on (A, B) can satisfy queries filtering on A alone but not B alone", "isCorrect": true, "explanation": "Compound indexes follow the leftmost prefix rule. An index on (A, B) can serve queries on A or (A, B), but not B alone — B is only sorted within each A value." },
+      { "id": "c", "text": "B-tree indexes are ideal for full-text search", "isCorrect": false, "explanation": "B-tree indexes are optimized for equality and range queries. Full-text search requires inverted indexes (like those in Elasticsearch or PostgreSQL's GIN indexes)." },
+      { "id": "d", "text": "Covering indexes are indexes that span all tables in a database", "isCorrect": false, "explanation": "A covering index includes all columns needed by a query, allowing the database to serve the query entirely from the index without accessing the table (index-only scan)." }
+    ]
+  },
+  {
+    "name": "Design a REST API",
+    "link": "design-rest-api",
+    "group": "API Design",
+    "difficulty": "Easy",
+    "domain": "system_design",
+    "answerFormat": "mcq",
+    "list": ["SD TOP 25"],
+    "order": 7,
+    "description": "Understand REST API design principles and best practices.",
+    "mcqOptions": [
+      { "id": "a", "text": "REST APIs should use verbs in URL paths (e.g., /getUsers, /deletePost)", "isCorrect": false, "explanation": "REST uses nouns for resources (/users, /posts) and HTTP methods (GET, DELETE) for actions. Verbs in URLs is an anti-pattern." },
+      { "id": "b", "text": "Idempotency means calling an operation multiple times produces the same result as calling it once", "isCorrect": true, "explanation": "GET, PUT, and DELETE should be idempotent. POST is typically not idempotent. Idempotency is crucial for retry safety in distributed systems." },
+      { "id": "c", "text": "HTTP 200 is the correct status code for a successful resource creation", "isCorrect": false, "explanation": "201 Created is the correct status for successful resource creation. 200 OK is for successful retrieval or update operations." },
+      { "id": "d", "text": "GraphQL is a type of REST API", "isCorrect": false, "explanation": "GraphQL is a distinct query language and runtime — it uses a single endpoint with POST requests, while REST uses multiple endpoints with HTTP methods." }
+    ]
+  },
+  {
+    "name": "Design an API Rate Limiting Service",
+    "link": "design-api-rate-limiting-service",
+    "group": "API Design",
+    "difficulty": "Medium",
+    "domain": "system_design",
+    "answerFormat": "design_doc",
+    "list": ["SD TOP 25"],
+    "order": 8,
+    "description": "Design a centralized rate limiting service for a microservices architecture.",
+    "designPrompt": {
+      "scenario": "Design a rate limiting service that multiple backend services can use to enforce per-user and per-API rate limits.",
+      "requirements": ["Support multiple rate limiting algorithms (fixed window, sliding window, token bucket)", "Per-user, per-API, and global rate limits", "Sub-millisecond decision latency", "Dashboard for monitoring and configuration", "Graceful degradation when rate limiter is unavailable"],
+      "constraints": ["Must handle 1M+ decisions per second", "Decision latency < 1ms at p99", "No false negatives (never allow over-limit requests)", "Minimal false positives (< 0.1% wrongly rejected)"],
+      "evaluationCriteria": ["Choice of data store (Redis, in-memory)", "Synchronization strategy across instances", "Rule configuration and hot-reload", "Client library design", "Failure mode design"],
+      "sampleAnswer": "Redis-backed with Lua scripts for atomic operations. Sliding window counter as default algorithm. Client library with local token bucket as first-line defense, Redis check as second line. Rules stored in Redis with pub/sub for hot reload. If Redis unavailable, fall back to local rate limiting with conservative limits. Return rate limit headers (X-RateLimit-*) for client visibility."
+    }
+  },
+  {
+    "name": "Caching Strategies",
+    "link": "caching-strategies-deep-dive",
+    "group": "Caching",
+    "difficulty": "Medium",
+    "domain": "system_design",
+    "answerFormat": "mcq",
+    "list": ["SD TOP 25"],
+    "order": 9,
+    "description": "Understand different caching strategies and their tradeoffs.",
+    "mcqOptions": [
+      { "id": "a", "text": "Write-through cache has higher write latency but ensures cache consistency", "isCorrect": true, "explanation": "Write-through writes to both cache and database synchronously. Higher write latency (two writes) but cache always has latest data. Good for read-heavy workloads where consistency matters." },
+      { "id": "b", "text": "Cache-aside (lazy loading) prevents cache stampede by default", "isCorrect": false, "explanation": "Cache-aside is vulnerable to cache stampede — when a popular key expires, many requests simultaneously hit the database. Stampede protection (mutex locks, probabilistic early expiry) must be added explicitly." },
+      { "id": "c", "text": "Write-behind cache guarantees zero data loss", "isCorrect": false, "explanation": "Write-behind (write-back) buffers writes and flushes asynchronously. If the cache node crashes before flushing, buffered writes are lost. It trades durability for write performance." },
+      { "id": "d", "text": "TTL-based expiry is the only way to invalidate cached data", "isCorrect": false, "explanation": "Other strategies include explicit invalidation (delete on write), event-driven invalidation (pub/sub), and versioned keys. TTL is the simplest but can serve stale data." }
+    ]
+  },
+  {
+    "name": "Design a CDN",
+    "link": "design-cdn",
+    "group": "Caching",
+    "difficulty": "Hard",
+    "domain": "system_design",
+    "answerFormat": "design_doc",
+    "list": ["SD TOP 25"],
+    "order": 10,
+    "description": "Design a Content Delivery Network for global content distribution.",
+    "designPrompt": {
+      "scenario": "Design a CDN that distributes static and dynamic content to users worldwide with minimal latency.",
+      "requirements": ["Global edge server network", "Content caching with intelligent invalidation", "Origin shielding to protect backend", "Support for static files, streaming, and dynamic content", "Real-time analytics on cache hit rates and latency"],
+      "constraints": ["Cache hit ratio > 95% for static content", "First byte time < 50ms for cached content", "Purge propagation < 30 seconds globally", "Handle 10M requests/second globally"],
+      "evaluationCriteria": ["Edge server placement strategy", "Cache hierarchy (edge, regional, origin shield)", "Cache key design and vary headers", "Purge/invalidation mechanism", "DNS-based vs anycast routing"],
+      "sampleAnswer": "Two-tier cache hierarchy: edge PoPs in major cities + regional aggregation nodes. Anycast DNS for routing to nearest PoP. Consistent hashing within each PoP for cache distribution. Origin shield as a reverse proxy cache before the origin. Cache keys include URL + relevant Vary headers. Purge via fan-out from control plane to all PoPs. Tiered TTLs: immutable assets (1 year), API responses (configurable). Streaming via chunked transfer with edge buffering."
+    }
+  },
+  {
+    "name": "Horizontal vs Vertical Scaling",
+    "link": "horizontal-vs-vertical-scaling",
+    "group": "Scaling",
+    "difficulty": "Easy",
+    "domain": "system_design",
+    "answerFormat": "mcq",
+    "list": ["SD TOP 25"],
+    "order": 11,
+    "description": "Understand when to scale horizontally vs vertically.",
+    "mcqOptions": [
+      { "id": "a", "text": "Vertical scaling requires application code changes", "isCorrect": false, "explanation": "Vertical scaling (adding more CPU/RAM to existing server) typically requires NO code changes — the application runs on the same machine with more resources." },
+      { "id": "b", "text": "Horizontal scaling adds complexity around data consistency and session management", "isCorrect": true, "explanation": "With multiple servers, you need load balancing, sticky sessions or externalized session stores, distributed caching, and strategies for data consistency across nodes." },
+      { "id": "c", "text": "Vertical scaling has no upper limit", "isCorrect": false, "explanation": "Vertical scaling is bounded by the maximum hardware available — there's a ceiling on how much CPU/RAM a single machine can have." },
+      { "id": "d", "text": "Horizontal scaling is always cheaper than vertical scaling", "isCorrect": false, "explanation": "For small to medium workloads, a single larger server can be cheaper than managing multiple smaller ones (no load balancer, simpler ops). Horizontal becomes cost-effective at scale." }
+    ]
+  },
+  {
+    "name": "Design a Load Balancer",
+    "link": "design-load-balancer",
+    "group": "Scaling",
+    "difficulty": "Medium",
+    "domain": "system_design",
+    "answerFormat": "design_doc",
+    "list": ["SD TOP 25"],
+    "order": 12,
+    "description": "Design a Layer 7 load balancer for a web application.",
+    "designPrompt": {
+      "scenario": "Design a load balancer that distributes HTTP traffic across backend servers with health checking and session affinity.",
+      "requirements": ["Multiple load balancing algorithms (round robin, least connections, weighted)", "Health checking with automatic server removal/addition", "Session affinity (sticky sessions) support", "SSL termination", "Request rate limiting per client IP"],
+      "constraints": ["Handle 100K concurrent connections", "Add/remove backend servers with zero downtime", "Failover in < 5 seconds", "No single point of failure for the load balancer itself"],
+      "evaluationCriteria": ["L4 vs L7 load balancing tradeoffs", "Health check design (active vs passive)", "Consistent hashing for session affinity", "High availability of the load balancer itself", "Connection draining during server removal"],
+      "sampleAnswer": "L7 reverse proxy (like Nginx/HAProxy). Active health checks every 5s + passive monitoring of response errors. Consistent hashing on session cookie for affinity (falls back to round-robin for new sessions). SSL termination at LB with certificate management. HA via active-passive pair with VRRP/keepalived. Connection draining: stop sending new requests to removed server, wait for in-flight to complete (30s timeout). Rate limiting via token bucket per client IP in shared memory."
+    }
+  },
+  {
+    "name": "Consistent Hashing",
+    "link": "consistent-hashing",
+    "group": "Distributed Systems",
+    "difficulty": "Medium",
+    "domain": "system_design",
+    "answerFormat": "mcq",
+    "list": ["SD TOP 25"],
+    "order": 13,
+    "description": "Understand consistent hashing and its use in distributed systems.",
+    "mcqOptions": [
+      { "id": "a", "text": "When a node is added to a consistent hash ring, all keys must be redistributed", "isCorrect": false, "explanation": "Only keys in the range between the new node and its predecessor need to move — on average K/N keys (where K is total keys, N is total nodes). This is the key advantage over simple modular hashing." },
+      { "id": "b", "text": "Virtual nodes help solve the problem of uneven key distribution across physical nodes", "isCorrect": true, "explanation": "Without virtual nodes, nodes may be unevenly spaced on the ring, causing hot spots. Virtual nodes (multiple points per physical node) ensure more uniform distribution — each physical node owns many small ranges instead of one large one." },
+      { "id": "c", "text": "Consistent hashing guarantees perfectly equal load distribution", "isCorrect": false, "explanation": "Even with virtual nodes, consistent hashing only provides approximately equal distribution. Perfect equality would require dynamic rebalancing based on actual load, not just key count." },
+      { "id": "d", "text": "Consistent hashing is only used for cache distribution", "isCorrect": false, "explanation": "Consistent hashing is used in many distributed systems: database sharding (DynamoDB, Cassandra), load balancing, distributed caches, CDNs, and distributed file systems." }
+    ]
+  },
+  {
+    "name": "Design a Notification System",
+    "link": "design-notification-system",
+    "group": "Distributed Systems",
+    "difficulty": "Medium",
+    "domain": "system_design",
+    "answerFormat": "design_doc",
+    "list": ["SD TOP 25"],
+    "order": 14,
+    "description": "Design a scalable notification system supporting push, SMS, and email.",
+    "designPrompt": {
+      "scenario": "Design a notification system that can send push notifications, SMS, and emails to millions of users.",
+      "requirements": ["Support multiple channels: push (iOS/Android), SMS, email", "User notification preferences (opt-in/out per channel and type)", "Template-based notifications with personalization", "Scheduled and triggered notifications", "Delivery tracking and analytics"],
+      "constraints": ["Send 10M notifications per day", "Push notification delivery < 5 seconds", "At-least-once delivery guarantee", "Rate limiting per user (max 5 notifications per hour)"],
+      "evaluationCriteria": ["Message queue architecture for reliability", "Priority queue for urgent notifications", "Template rendering pipeline", "Third-party service integration (APNs, FCM, Twilio, SendGrid)", "De-duplication strategy"],
+      "sampleAnswer": "Event-driven architecture with Kafka as the message backbone. Notification service receives events, resolves user preferences, and fans out to channel-specific queues. Each channel has dedicated workers with provider SDKs. Priority queue (separate Kafka topic) for urgent notifications. Template service with variable substitution. Redis for rate limiting and de-duplication (message ID tracking). DLQ for failed deliveries with exponential backoff retry. Analytics via event streaming to data warehouse."
+    }
+  },
+  {
+    "name": "SQL vs NoSQL",
+    "link": "sql-vs-nosql-tradeoffs",
+    "group": "Database Design",
+    "difficulty": "Easy",
+    "domain": "system_design",
+    "answerFormat": "mcq",
+    "list": ["SD TOP 25"],
+    "order": 15,
+    "description": "Understand when to choose SQL vs NoSQL databases.",
+    "mcqOptions": [
+      { "id": "a", "text": "NoSQL databases cannot perform joins", "isCorrect": false, "explanation": "Some NoSQL databases support joins (MongoDB $lookup, Couchbase N1QL). The distinction is that NoSQL databases typically don't enforce referential integrity and denormalization is preferred over joins for performance." },
+      { "id": "b", "text": "SQL databases are better suited when you need ACID transactions across multiple entities", "isCorrect": true, "explanation": "SQL databases provide native ACID transactions across tables. While some NoSQL databases support transactions (MongoDB multi-document), SQL databases are purpose-built for complex transactional workloads with referential integrity." },
+      { "id": "c", "text": "NoSQL databases are always faster than SQL databases", "isCorrect": false, "explanation": "Speed depends on access patterns. SQL with proper indexes can outperform NoSQL for complex queries with joins. NoSQL excels at simple key-value lookups and document retrieval at scale." },
+      { "id": "d", "text": "You should always start with NoSQL for new projects", "isCorrect": false, "explanation": "SQL is often the better default — it provides flexibility for evolving schemas, built-in data integrity, and powerful querying. Choose NoSQL when you have specific needs: massive scale, flexible schema, or access patterns that don't fit relational models." }
+    ]
+  },
+  {
+    "name": "Design a Search Autocomplete System",
+    "link": "design-search-autocomplete",
+    "group": "Distributed Systems",
+    "difficulty": "Hard",
+    "domain": "system_design",
+    "answerFormat": "design_doc",
+    "list": ["SD TOP 25"],
+    "order": 16,
+    "description": "Design a real-time search autocomplete/typeahead system.",
+    "designPrompt": {
+      "scenario": "Design a typeahead suggestion system that shows top search suggestions as users type, similar to Google Search autocomplete.",
+      "requirements": ["Return top 5 suggestions within 100ms of each keystroke", "Rank suggestions by popularity/relevance", "Support personalized suggestions based on user history", "Handle 10K queries per second", "Update suggestion rankings as search trends change"],
+      "constraints": ["Response time < 100ms at p99", "Suggestions must be safe (no offensive content)", "Support multiple languages", "Graceful degradation under load"],
+      "evaluationCriteria": ["Trie vs inverted index for prefix matching", "Ranking algorithm (frequency, recency, personalization)", "Data collection and aggregation pipeline", "Caching strategy for popular prefixes", "Real-time vs batch index updates"],
+      "sampleAnswer": "Trie data structure with frequency counts at each node. Top-K results cached at each prefix node. Two-tier architecture: real-time trie in Redis for hot queries, batch-rebuilt trie from Hadoop/Spark for comprehensive coverage. Zookeeper for trie version management across replicas. Sampling collector aggregates search queries into frequency counts hourly. Content filter service screens suggestions before indexing. Client-side debounce (200ms) + browser caching of recent prefixes."
+    }
+  }
+]

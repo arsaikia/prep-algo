@@ -83,6 +83,9 @@ export const initializeExpandedState = (questionsData) => {
  * @returns {string} Formatted LeetCode URL
  */
 export const formatLeetCodeUrl = (question) => {
+    if (question.domain && question.domain !== 'algorithms') {
+        return question.link || null;
+    }
     if (question.link && question.link.includes('leetcode.com')) {
         return question.link;
     }

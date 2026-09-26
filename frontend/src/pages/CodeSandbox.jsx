@@ -8,6 +8,8 @@ import Editor from '@monaco-editor/react';
 import { useSelector } from 'react-redux';
 import apiClient from '../api/client.js';
 import TestResults from '../components/TestResults.jsx';
+import McqSolver from '../components/McqSolver/McqSolver.jsx';
+import DesignDocSolver from '../components/DesignDocSolver/DesignDocSolver.jsx';
 import { useTimeTracker } from '../utils/timeTracker.js';
 import { useTestUser } from '../contexts/TestUserContext';
 import { isFeatureEnabled, isDevMode } from '../utils/featureFlags';
@@ -1183,6 +1185,14 @@ const CodeSandbox = () => {
       setCode(getDefaultTemplate(language, currentQuestion));
     }
   }, [language, currentQuestion]);
+
+  if (currentQuestion?.answerFormat === 'mcq') {
+    return <McqSolver question={currentQuestion} />;
+  }
+
+  if (currentQuestion?.answerFormat === 'design_doc') {
+    return <DesignDocSolver question={currentQuestion} />;
+  }
 
   return (
     <Container>

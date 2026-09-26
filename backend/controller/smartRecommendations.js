@@ -57,6 +57,7 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
 
                     return {
                         question: rec.question,
+                        domain: rec.domain || 'algorithms',
                         reason: rec.reason,
                         priority: rec.priority,
                         strategy: rec.strategy,
@@ -288,6 +289,50 @@ const createFreshDailyBatch = async (userId, count) => {
         count
     );
 
+    // Wire up weight adjustment
+    if (userProfile.shouldAdjustWeights()) {
+        const successRate = userProfile.recentPerformance.recentSuccessRate;
+        const prev = { ...userProfile.adaptiveWeights.toObject() };
+        delete prev.adjustmentHistory;
+
+        let reason;
+        if (successRate < 0.4) {
+            userProfile.adaptiveWeights.weak_area_reinforcement = Math.min(0.7, userProfile.adaptiveWeights.weak_area_reinforcement + 0.05);
+            userProfile.adaptiveWeights.progressive_difficulty = Math.max(0.1, userProfile.adaptiveWeights.progressive_difficulty - 0.03);
+            userProfile.adaptiveWeights.spaced_repetition = Math.min(0.5, userProfile.adaptiveWeights.spaced_repetition + 0.02);
+            reason = 'poor_performance';
+        } else {
+            userProfile.adaptiveWeights.progressive_difficulty = Math.min(0.6, userProfile.adaptiveWeights.progressive_difficulty + 0.05);
+            userProfile.adaptiveWeights.weak_area_reinforcement = Math.max(0.1, userProfile.adaptiveWeights.weak_area_reinforcement - 0.03);
+            userProfile.adaptiveWeights.topic_exploration = Math.min(0.2, userProfile.adaptiveWeights.topic_exploration + 0.02);
+            reason = 'good_performance';
+        }
+
+        // Normalize weights to sum to 1.0
+        const sum = userProfile.adaptiveWeights.weak_area_reinforcement +
+            userProfile.adaptiveWeights.progressive_difficulty +
+            userProfile.adaptiveWeights.spaced_repetition +
+            userProfile.adaptiveWeights.topic_exploration +
+            userProfile.adaptiveWeights.general_practice;
+        for (const key of ['weak_area_reinforcement', 'progressive_difficulty', 'spaced_repetition', 'topic_exploration', 'general_practice']) {
+            userProfile.adaptiveWeights[key] = Number((userProfile.adaptiveWeights[key] / sum).toFixed(3));
+        }
+
+        userProfile.adaptiveWeights.adjustmentHistory.push({
+            previousWeights: prev,
+            reason,
+            performanceScore: successRate
+        });
+        userProfile.adaptationMetadata.lastWeightAdjustment = new Date();
+        await userProfile.save();
+        logger.info({ userId, reason, successRate }, 'adjusted adaptive weights');
+    }
+
+    // Build domain distribution for analysis
+    const domainDistribution = { algorithms: 0, system_design: 0, frontend: 0 };
+    recommendations.forEach(r => { domainDistribution[r.domain || 'algorithms']++; });
+    analysis.domainDistribution = domainDistribution;
+
     // Create and save batch
     const batch = await DailyRecommendationBatch.createDailyBatch(userId, recommendations, analysis);
 
@@ -495,10 +540,27 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
     const dailyActivity = {};
     const topicMastery = {};
 
+    const domainStats = {
+        algorithms: { groupStats: {}, weakAreas: [], count: 0 },
+        system_design: { groupStats: {}, weakAreas: [], count: 0 },
+        frontend: { groupStats: {}, weakAreas: [], count: 0 }
+    };
+
     userHistory.forEach(history => {
         const group = history.questionGroup || (history.questionId && history.questionId.group);
         const difficulty = history.questionDifficulty || (history.questionId && history.questionId.difficulty);
+        const domain = history.domain || 'algorithms';
         if (!group || !difficulty) return;
+
+        // Per-domain tracking
+        if (domainStats[domain]) {
+            domainStats[domain].count++;
+            if (!domainStats[domain].groupStats[group]) {
+                domainStats[domain].groupStats[group] = { count: 0, avgSolveCount: 0 };
+            }
+            domainStats[domain].groupStats[group].count++;
+            domainStats[domain].groupStats[group].avgSolveCount += history.solveCount;
+        }
 
         // Standard group and difficulty analysis
         if (!groupStats[group]) {
@@ -566,6 +628,18 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
         groupStats[group].avgSolveCount =
             groupStats[group].avgSolveCount / groupStats[group].count;
     });
+
+    // Calculate per-domain averages and weak areas
+    for (const domain of Object.keys(domainStats)) {
+        const ds = domainStats[domain];
+        Object.keys(ds.groupStats).forEach(group => {
+            ds.groupStats[group].avgSolveCount =
+                ds.groupStats[group].avgSolveCount / ds.groupStats[group].count;
+        });
+        ds.weakAreas = Object.entries(ds.groupStats)
+            .filter(([, stats]) => stats.count < 3 || stats.avgSolveCount > 2)
+            .map(([group]) => group);
+    }
 
     // NEW: Calculate current streak
     const streakInfo = calculateCurrentStreak(dailyActivity);
@@ -642,63 +716,185 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
         adaptiveFeatures: {
             enabled: totalSolved >= 3,
             level: totalSolved >= 20 ? 'full' : 'basic'
-        }
+        },
+        domainStats
     };
+};
+
+const allocateDomainSlots = (count, domainPreferences, availablePerDomain) => {
+    const domains = ['algorithms', 'system_design', 'frontend'];
+    const slots = {};
+    let remaining = count;
+
+    const availableDomains = domains.filter(d => (availablePerDomain[d] || 0) > 0);
+    if (availableDomains.length === 0) return { algorithms: count };
+
+    availableDomains.forEach(d => {
+        const weight = domainPreferences?.[d]?.weight || (1 / availableDomains.length);
+        slots[d] = Math.max(1, Math.round(count * weight));
+    });
+
+    const total = Object.values(slots).reduce((s, v) => s + v, 0);
+    if (total > count) {
+        const sorted = Object.entries(slots).sort((a, b) => b[1] - a[1]);
+        let excess = total - count;
+        for (const [d] of sorted) {
+            if (excess <= 0) break;
+            if (slots[d] > 1) { slots[d]--; excess--; }
+        }
+    } else if (total < count) {
+        const sorted = Object.entries(slots).sort((a, b) => a[1] - b[1]);
+        let deficit = count - total;
+        for (const [d] of sorted) {
+            if (deficit <= 0) break;
+            if ((availablePerDomain[d] || 0) > slots[d]) { slots[d]++; deficit--; }
+        }
+    }
+
+    return slots;
+};
+
+const getNextDifficultyAdaptive = (userLevel, difficultyStats) => {
+    const total = (difficultyStats.Easy || 0) + (difficultyStats.Medium || 0) + (difficultyStats.Hard || 0);
+    if (total === 0) return 'Easy';
+    const easyPct = ((difficultyStats.Easy || 0) / total) * 100;
+    const medPct = ((difficultyStats.Medium || 0) / total) * 100;
+
+    if (userLevel === 'beginner' && easyPct > 70) return 'Medium';
+    if (userLevel === 'intermediate' && medPct > 60) return 'Hard';
+    return getDifficultyForLevel(userLevel);
 };
 
 const generateAdaptiveRecommendations = async (userId, analysis, userProfile, count, excludeQuestionIds = []) => {
     const recommendations = [];
     const solvedQuestionIds = await SolveHistory.find({ userId }).distinct('questionId');
     const allExcludedIds = [...solvedQuestionIds, ...excludeQuestionIds];
+    const usedIds = new Set();
 
     const weights = userProfile.getAdaptiveWeights();
+    const domainPrefs = userProfile.domainPreferences || {};
 
-    // Strategy 1: Weak area reinforcement
-    const weakAreaCount = Math.ceil(count * weights.weak_area_reinforcement);
-    if (analysis.weakAreas.length > 0) {
-        const weakAreaQuestions = await Question.find({
+    const availablePerDomain = {};
+    for (const domain of ['algorithms', 'system_design', 'frontend']) {
+        availablePerDomain[domain] = await Question.countDocuments({
             _id: { $nin: allExcludedIds },
-            group: { $in: analysis.weakAreas },
-            difficulty: getDifficultyForLevel(analysis.userLevel)
-        }).limit(weakAreaCount);
-
-        weakAreaQuestions.forEach(question => {
-            recommendations.push({
-                question,
-                reason: `🎯 Strengthen weak area: ${question.group}`,
-                priority: 'high',
-                strategy: 'weak_area_reinforcement',
-                adaptiveContext: {
-                    weightUsed: weights.weak_area_reinforcement,
-                    isCarriedOver: false,
-                    originalBatchTime: new Date()
-                }
-            });
+            domain
         });
     }
 
-    // Fill remaining slots with general practice
-    const remainingCount = count - recommendations.length;
-    if (remainingCount > 0) {
-        const fillerQuestions = await Question.find({
-            _id: { $nin: [...allExcludedIds, ...recommendations.map(r => r.question._id)] },
-            list: { $in: ['TOP 150'] },
-            difficulty: getDifficultyForLevel(analysis.userLevel)
-        }).limit(remainingCount);
+    const domainSlots = allocateDomainSlots(count, domainPrefs, availablePerDomain);
 
-        fillerQuestions.forEach(question => {
-            recommendations.push({
-                question,
-                reason: `⭐ Quality practice question`,
-                priority: 'medium',
-                strategy: 'general_practice',
-                adaptiveContext: {
-                    weightUsed: weights.general_practice,
-                    isCarriedOver: false,
-                    originalBatchTime: new Date()
-                }
-            });
+    const addRec = (question, reason, priority, strategy, weight) => {
+        if (usedIds.has(question._id)) return;
+        usedIds.add(question._id);
+        recommendations.push({
+            question,
+            domain: question.domain || 'algorithms',
+            reason,
+            priority,
+            strategy,
+            adaptiveContext: {
+                weightUsed: weight,
+                isCarriedOver: false,
+                originalBatchTime: new Date()
+            }
         });
+    };
+
+    for (const [domain, slotCount] of Object.entries(domainSlots)) {
+        if (slotCount <= 0) continue;
+        const domainExcluded = [...allExcludedIds, ...Array.from(usedIds)];
+        let filled = 0;
+
+        // Strategy 1: weak_area_reinforcement
+        const weakCount = Math.max(1, Math.ceil(slotCount * weights.weak_area_reinforcement));
+        const domainWeakAreas = (analysis.domainStats?.[domain]?.weakAreas || analysis.weakAreas || []);
+        if (domainWeakAreas.length > 0) {
+            const weakQ = await Question.find({
+                _id: { $nin: domainExcluded },
+                domain,
+                group: { $in: domainWeakAreas },
+                difficulty: getDifficultyForLevel(analysis.userLevel)
+            }).limit(weakCount);
+            weakQ.forEach(q => {
+                if (filled >= slotCount) return;
+                addRec(q, `Strengthen weak area: ${q.group}`, 'high', 'weak_area_reinforcement', weights.weak_area_reinforcement);
+                filled++;
+            });
+        }
+
+        // Strategy 2: progressive_difficulty
+        const progCount = Math.max(1, Math.ceil(slotCount * weights.progressive_difficulty));
+        if (filled < slotCount) {
+            const nextDiff = getNextDifficultyAdaptive(analysis.userLevel, analysis.difficultyStats);
+            const progQ = await Question.find({
+                _id: { $nin: [...domainExcluded, ...Array.from(usedIds)] },
+                domain,
+                difficulty: nextDiff
+            }).limit(progCount);
+            progQ.forEach(q => {
+                if (filled >= slotCount) return;
+                addRec(q, `Progressive difficulty: ${nextDiff}`, 'medium', 'progressive_difficulty', weights.progressive_difficulty);
+                filled++;
+            });
+        }
+
+        // Strategy 3: spaced_repetition (review solved questions)
+        const spacedCount = Math.max(1, Math.ceil(slotCount * weights.spaced_repetition));
+        if (filled < slotCount) {
+            const solvedInDomain = await SolveHistory.find({
+                userId,
+                domain,
+                solveCount: { $gte: 2 },
+                lastUpdatedAt: { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+            })
+                .sort({ solveCount: -1, lastUpdatedAt: 1 })
+                .limit(spacedCount)
+                .select('questionId questionGroup solveCount lastUpdatedAt');
+
+            for (const item of solvedInDomain) {
+                if (filled >= slotCount || usedIds.has(item.questionId)) continue;
+                const q = await Question.findById(item.questionId);
+                if (!q) continue;
+                addRec(q, `Review: solved ${item.solveCount} times`, 'high', 'spaced_repetition', weights.spaced_repetition);
+                filled++;
+            }
+        }
+
+        // Strategy 4: topic_exploration
+        if (filled < slotCount) {
+            const allDomainGroups = await Question.distinct('group', { domain });
+            const solvedGroups = Object.keys(analysis.domainStats?.[domain]?.groupStats || analysis.groupStats || {});
+            const unexplored = allDomainGroups.filter(g => !solvedGroups.includes(g) || (analysis.groupStats?.[g]?.count || 0) < 2);
+
+            if (unexplored.length > 0) {
+                const exploreQ = await Question.find({
+                    _id: { $nin: [...domainExcluded, ...Array.from(usedIds)] },
+                    domain,
+                    group: { $in: unexplored },
+                    difficulty: 'Easy'
+                }).limit(slotCount - filled);
+                exploreQ.forEach(q => {
+                    if (filled >= slotCount) return;
+                    addRec(q, `Explore new topic: ${q.group}`, 'low', 'topic_exploration', weights.topic_exploration);
+                    filled++;
+                });
+            }
+        }
+
+        // Strategy 5: general_practice (fill remaining)
+        if (filled < slotCount) {
+            const fillerQ = await Question.find({
+                _id: { $nin: [...domainExcluded, ...Array.from(usedIds)] },
+                domain,
+                difficulty: getDifficultyForLevel(analysis.userLevel)
+            }).limit(slotCount - filled);
+            fillerQ.forEach(q => {
+                if (filled >= slotCount) return;
+                addRec(q, 'Quality practice question', 'medium', 'general_practice', weights.general_practice);
+                filled++;
+            });
+        }
     }
 
     const priorityOrder = { high: 3, medium: 2, low: 1 };
@@ -774,10 +970,13 @@ const getTopicQuestionCounts = async () => {
     }
     try {
         const topicCounts = await Question.aggregate([
-            { $group: { _id: '$group', totalQuestions: { $sum: 1 } } }
+            { $group: { _id: { domain: '$domain', group: '$group' }, totalQuestions: { $sum: 1 } } }
         ]);
         const countMap = {};
-        topicCounts.forEach(item => { countMap[item._id] = item.totalQuestions; });
+        topicCounts.forEach(item => {
+            const key = item._id.group;
+            countMap[key] = (countMap[key] || 0) + item.totalQuestions;
+        });
         _topicCountsCache = countMap;
         _topicCountsCacheTime = now;
         return countMap;
@@ -849,9 +1048,48 @@ const getDifficultyForLevel = (userLevel) => {
     }
 };
 
+/*
+ * @desc     Track recommendation action (attempted/skipped)
+ * @route    POST /api/v1/smart-recommendations/:userId/track
+ * @access   Public
+ */
+const trackRecommendationAction = asyncHandler(async (req, res, next) => {
+    const { userId } = req.params;
+    const { questionId, action, clickedAt } = req.body;
+
+    if (!questionId || !action) {
+        return next(new ErrorResponse('questionId and action required', 400));
+    }
+
+    const batch = await DailyRecommendationBatch.findTodaysBatch(userId);
+    if (!batch) {
+        return next(new ErrorResponse('No active daily batch found', 404));
+    }
+
+    const rec = batch.recommendations.find(r => {
+        const qId = r.question._id || r.question.toString();
+        return qId === questionId;
+    });
+
+    if (!rec) {
+        return res.status(404).json({ success: false, message: 'Question not in batch' });
+    }
+
+    rec.userAction = action;
+    rec.clickedAt = clickedAt ? new Date(clickedAt) : new Date();
+    if (!rec.timeToFirstAction) {
+        rec.timeToFirstAction = rec.clickedAt - batch.generatedAt;
+    }
+
+    await batch.save();
+
+    res.status(200).json({ success: true });
+});
+
 export {
     getSmartDailyRecommendations,
     markQuestionCompleted,
     forceRefreshRecommendations,
-    replaceCompletedQuestions
+    replaceCompletedQuestions,
+    trackRecommendationAction
 }; 

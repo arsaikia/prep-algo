@@ -107,8 +107,11 @@ const solveHistorySchema = new mongoose.Schema({
             recommendationStrategy: {
                 type: String,
                 enum: ['weak_area_reinforcement', 'progressive_difficulty', 'spaced_repetition', 'topic_exploration', 'general_practice'],
-                required: false // Which strategy recommended this question
-            }
+                required: false
+            },
+            hintsUsed: { type: Number, default: 0 },
+            codeSubmissions: { type: Number, default: 0 },
+            wasRecommended: { type: Boolean, default: false }
         }
     }]
 });

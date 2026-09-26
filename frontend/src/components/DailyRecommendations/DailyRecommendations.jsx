@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { CheckCircle } from 'react-feather';
 import { getSmartDailyRecommendations, replaceCompletedQuestions } from '../../api/getSmartRecommendations';
+import apiClient from '../../api/client.js';
 import AnalyticsDashboard from './AnalyticsCard';
 
 /*
@@ -413,6 +414,30 @@ const LastSolved = styled.span`
 
 
 
+const DomainBadge = styled.span`
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: ${({ domain, theme }) =>
+        domain === 'system_design' ? theme.colors.statusWarning + '20' :
+        domain === 'frontend' ? theme.colors.statusInfo ? theme.colors.statusInfo + '20' : theme.colors.primary + '20' :
+        theme.colors.statusSuccess + '20'};
+    color: ${({ domain, theme }) =>
+        domain === 'system_design' ? theme.colors.statusWarning :
+        domain === 'frontend' ? theme.colors.statusInfo || theme.colors.primary :
+        theme.colors.statusSuccess};
+`;
+
+const DOMAIN_LABELS = {
+    algorithms: 'ALGO',
+    system_design: 'SD',
+    frontend: 'FE',
+};
+
 const InlineStrategyTag = styled.div`
     flex-shrink: 0;
     align-self: flex-start;
@@ -557,17 +582,19 @@ const GUEST_SAMPLE_RECOMMENDATIONS = [
         completed: false,
     },
     {
-        question: { _id: 'guest-4', name: 'Best Time to Buy and Sell Stock', group: 'Array', difficulty: 'Easy', link: 'best-time-to-buy-and-sell-stock' },
-        reason: '⭐ Sliding window / greedy essential',
+        question: { _id: 'guest-4', name: 'CAP Theorem', group: 'Database Design', difficulty: 'Easy', link: 'cap-theorem-fundamentals', domain: 'system_design', answerFormat: 'mcq' },
+        reason: '🏗️ System design fundamental',
         priority: 'medium',
-        strategy: 'general_practice',
+        strategy: 'topic_exploration',
+        domain: 'system_design',
         completed: false,
     },
     {
-        question: { _id: 'guest-5', name: 'Maximum Subarray', group: 'Dynamic Programming', difficulty: 'Medium', link: 'maximum-subarray' },
-        reason: '💪 Kadane\'s algorithm — DP gateway problem',
+        question: { _id: 'guest-5', name: 'Event Loop and Call Stack', group: 'DOM & Browser', difficulty: 'Easy', link: 'event-loop-call-stack', domain: 'frontend', answerFormat: 'mcq' },
+        reason: '🌐 Frontend essential — how JS runs',
         priority: 'medium',
-        strategy: 'weak_area_reinforcement',
+        strategy: 'topic_exploration',
+        domain: 'frontend',
         completed: false,
     },
 ];
@@ -592,6 +619,15 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
     const [error, setError] = useState(null);
 
     const [replacingCompleted, setReplacingCompleted] = useState(false);
+
+    const trackRecommendationClick = (questionId) => {
+        if (isGuest || !userId) return;
+        apiClient.post(`/smart-recommendations/${userId}/track`, {
+            questionId,
+            action: 'attempted',
+            clickedAt: new Date().toISOString(),
+        }).catch(() => {});
+    };
 
     useEffect(() => {
         if (isGuest) {
@@ -744,7 +780,10 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
                                                 $isCompleted={false}
                                                 priority={rec.priority}
                                                 data-completed={false}
-                                                onClick={() => onQuestionSelect && onQuestionSelect(rec.question)}
+                                                onClick={() => {
+                                                    trackRecommendationClick(rec.question._id);
+                                                    onQuestionSelect && onQuestionSelect(rec.question);
+                                                }}
                                             >
                                                 <RecommendationHeader>
                                                     <PriorityIndicator
@@ -759,6 +798,11 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
                                                             {rec.question.name}
                                                         </QuestionName>
                                                         <QuestionMeta>
+                                                            {(rec.domain || rec.question.domain) && (
+                                                                <DomainBadge domain={rec.domain || rec.question.domain}>
+                                                                    {DOMAIN_LABELS[rec.domain || rec.question.domain] || 'ALGO'}
+                                                                </DomainBadge>
+                                                            )}
                                                             <QuestionGroup>
                                                                 {rec.question.group}
                                                             </QuestionGroup>
@@ -840,6 +884,11 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
                                                                     {rec.question.name}
                                                                 </QuestionName>
                                                                 <QuestionMeta>
+                                                                    {(rec.domain || rec.question.domain) && (
+                                                                        <DomainBadge domain={rec.domain || rec.question.domain}>
+                                                                            {DOMAIN_LABELS[rec.domain || rec.question.domain] || 'ALGO'}
+                                                                        </DomainBadge>
+                                                                    )}
                                                                     <QuestionGroup>
                                                                         {rec.question.group}
                                                                     </QuestionGroup>

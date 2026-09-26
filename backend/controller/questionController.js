@@ -13,19 +13,28 @@ import { mongoCircuitBreaker } from '../config/circuitBreakers.js';
  * @access   Public
  */
 const getQuestions = asyncHandler(async (req, res, next) => {
+    const filter = {};
+    if (req.query.domain) filter.domain = req.query.domain;
+
     const questions = await mongoCircuitBreaker.execute(() =>
-        Question.find()
-            .select('_id name link group difficulty list order testCases exampleTestCases description')
+        Question.find(filter)
+            .select('_id name link group difficulty list order testCases exampleTestCases description domain answerFormat')
             .sort({ order: 1 })
     );
 
     // Add comprehensive availability flag based on description, example test cases, and test cases
-    const questionsWithAvailability = questions.map(question => ({
-        ...question.toObject(),
-        availableForSolve: (question.description && question.description.trim() !== '') &&
-            ((question.testCases && question.testCases.length > 0) ||
-                (question.exampleTestCases && question.exampleTestCases.length > 0))
-    }));
+    const questionsWithAvailability = questions.map(question => {
+        const obj = question.toObject();
+        const isCode = obj.answerFormat === 'code' || !obj.answerFormat;
+        return {
+            ...obj,
+            availableForSolve: isCode
+                ? (question.description && question.description.trim() !== '') &&
+                  ((question.testCases && question.testCases.length > 0) ||
+                      (question.exampleTestCases && question.exampleTestCases.length > 0))
+                : true
+        };
+    });
 
     return res.status(200).json({
         success: true,
@@ -49,19 +58,20 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
                 { link: questionId },
                 { link: `${questionId}/` }
             ]
-        }).select('_id name description difficulty group exampleTestCases testCases templates types')
+        }).select('_id name description difficulty group exampleTestCases testCases templates types domain answerFormat mcqOptions designPrompt')
     );
 
     if (!question) {
         return next(new ErrorResponse('Question not found', 404));
     }
 
-    // Format the response to match the expected structure
     const response = {
         id: question._id,
         title: question.name,
         description: question.description || 'No description available',
         difficulty: question.difficulty,
+        domain: question.domain || 'algorithms',
+        answerFormat: question.answerFormat || 'code',
         exampleTestCases: question.exampleTestCases?.map(tc => ({
             inputs: tc.inputs || [],
             expectedOutput: tc.expectedOutput || '',
@@ -73,11 +83,24 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
             isHidden: tc.isHidden ?? true
         })) || [],
         topics: [question.group],
-        templates: question.templates || {
-            python: '',
-            javascript: ''
-        }
+        templates: question.templates || { python: '', javascript: '' }
     };
+
+    if (question.answerFormat === 'mcq' && question.mcqOptions?.length > 0) {
+        response.mcqOptions = question.mcqOptions.map(opt => ({
+            id: opt.id,
+            text: opt.text
+        }));
+    }
+
+    if (question.answerFormat === 'design_doc' && question.designPrompt) {
+        response.designPrompt = {
+            scenario: question.designPrompt.scenario,
+            requirements: question.designPrompt.requirements,
+            constraints: question.designPrompt.constraints,
+            evaluationCriteria: question.designPrompt.evaluationCriteria
+        };
+    }
 
     return res.status(200).json(response);
 });
@@ -147,13 +170,41 @@ const submitCode = async (req, res) => {
  * @route    GET /api/v1/questions/get-questions/:userId
  * @access   Public
  */
+const submitMcqAnswer = asyncHandler(async (req, res, next) => {
+    const { questionId } = req.params;
+    const { selectedOptionId } = req.body;
+
+    const question = await Question.findOne({
+        $or: [{ link: questionId }, { link: `${questionId}/` }]
+    }).select('mcqOptions answerFormat');
+
+    if (!question) return next(new ErrorResponse('Question not found', 404));
+    if (question.answerFormat !== 'mcq') return next(new ErrorResponse('Not an MCQ question', 400));
+
+    const correctOption = question.mcqOptions.find(o => o.isCorrect);
+    const selected = question.mcqOptions.find(o => o.id === selectedOptionId);
+
+    if (!selected) return next(new ErrorResponse('Invalid option', 400));
+
+    res.status(200).json({
+        success: true,
+        data: {
+            correct: selected.isCorrect,
+            correctOptionId: correctOption?.id,
+            explanation: correctOption?.explanation || ''
+        }
+    });
+});
+
 const getAllQuestionsWithUserProgress = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
 
     try {
-        // Get all questions with test case info to determine availability
-        const questions = await Question.find()
-            .select('_id name link group difficulty list order testCases exampleTestCases description')
+        const filter = {};
+        if (req.query.domain) filter.domain = req.query.domain;
+
+        const questions = await Question.find(filter)
+            .select('_id name link group difficulty list order testCases exampleTestCases description domain answerFormat')
             .sort({ order: 1 });
 
         // Get user's solve history
@@ -220,5 +271,6 @@ export {
     getQuestions,
     getQuestionById,
     submitCode,
+    submitMcqAnswer,
     getAllQuestionsWithUserProgress
 }; 

@@ -52,6 +52,16 @@ export const updateQuestionSchema = z.object({
   types: z.array(z.string()).optional(),
 }).strict();
 
+export const submitMcqSchema = z.object({
+  selectedOptionId: z.string().min(1, 'Option ID is required'),
+});
+
+export const trackRecommendationSchema = z.object({
+  questionId: z.string().min(1),
+  action: z.enum(['attempted', 'skipped']),
+  clickedAt: z.string().datetime().optional(),
+});
+
 export const solveHistorySchema = z.object({
   userId: z.string().min(1),
   questionId: z.string().min(1),

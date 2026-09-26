@@ -9,6 +9,7 @@ import {
   useSelector,
   useDispatch,
 } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { Search, Filter, X, ChevronDown, ChevronUp } from 'react-feather';
 
@@ -624,8 +625,16 @@ const QuestionsContainer = styled.div`
   }
 `;
 
+const DOMAIN_TITLES = {
+  algorithms: 'Algorithm Questions',
+  system_design: 'System Design Questions',
+  frontend: 'Frontend Questions',
+};
+
 const AllQuestions = () => {
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+  const domain = searchParams.get('domain') || null;
   const {
     allQuestions,
     isFetchingQuestions,
@@ -674,10 +683,10 @@ const AllQuestions = () => {
 
   const questionUserId = getUserIdForQuestions();
 
-  // Fetch questions with user data when component mounts or user changes
+  // Fetch questions with user data when component mounts or user/domain changes
   useEffect(() => {
-    dispatch(getQuestions(questionUserId));
-  }, [dispatch, questionUserId]);
+    dispatch(getQuestions(questionUserId, domain));
+  }, [dispatch, questionUserId, domain]);
 
   // Get all unique list names and their counts from questions
   const listNamesAndCounts = useMemo(() => {
@@ -814,7 +823,7 @@ const AllQuestions = () => {
   return (
     <Container>
       <Header>
-        <Title>📚 All Questions</Title>
+        <Title>{domain ? DOMAIN_TITLES[domain] || 'All Questions' : '📚 All Questions'}</Title>
         <Subtitle>Browse and filter questions by list</Subtitle>
       </Header>
 
@@ -837,6 +846,10 @@ const AllQuestions = () => {
                         return { icon: '⚡', displayName: 'LeetCode 75', description: 'Study Plan' };
                       case 'GRIND 75':
                         return { icon: '💎', displayName: 'Grind 75', description: 'Curated' };
+                      case 'SD TOP 25':
+                        return { icon: '🏗️', displayName: 'SD Top 25', description: 'System Design' };
+                      case 'FE ESSENTIALS':
+                        return { icon: '🌐', displayName: 'FE Essentials', description: 'Frontend' };
                       case 'ALL':
                         return { icon: '📚', displayName: 'All Questions', description: 'Complete' };
                       default:

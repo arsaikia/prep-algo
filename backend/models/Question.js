@@ -3,6 +3,32 @@ import { v4 as UUID_V4 } from 'uuid';
 
 const questionSchema = new mongoose.Schema({
     _id: { type: String, default: UUID_V4 },
+    domain: {
+        type: String,
+        enum: ['algorithms', 'system_design', 'frontend'],
+        default: 'algorithms',
+        required: true,
+        index: true
+    },
+    answerFormat: {
+        type: String,
+        enum: ['code', 'mcq', 'design_doc'],
+        default: 'code',
+        required: true
+    },
+    mcqOptions: [{
+        id: { type: String, required: true },
+        text: { type: String, required: true },
+        isCorrect: { type: Boolean, required: true },
+        explanation: { type: String, default: '' }
+    }],
+    designPrompt: {
+        scenario: String,
+        requirements: [String],
+        constraints: [String],
+        evaluationCriteria: [String],
+        sampleAnswer: String
+    },
     name: {
         type: String,
         required: [true, 'Please add a name'],
@@ -112,6 +138,7 @@ const questionSchema = new mongoose.Schema({
 questionSchema.index({ group: 1, difficulty: 1 });
 questionSchema.index({ list: 1, difficulty: 1 });
 questionSchema.index({ domain: 1, group: 1, difficulty: 1 });
+questionSchema.index({ domain: 1, list: 1, difficulty: 1 });
 
 // Update the updatedAt field before saving
 questionSchema.pre('save', function (next) {

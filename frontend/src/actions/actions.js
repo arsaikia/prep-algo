@@ -24,9 +24,10 @@ import {
   INITIALIZE_COLOR_SCHEME,
 } from './types';
 
-export const getQuestions = (value) => ({
+export const getQuestions = (value, domain) => ({
   type: GET_QUESTIONS,
   userId: value,
+  domain,
 });
 
 export const getAllQuestionsWithoutHistory = () => ({

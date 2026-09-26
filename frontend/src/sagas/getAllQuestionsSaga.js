@@ -19,10 +19,13 @@ function* fetchAllQuestions(action) {
     });
 
     try {
-        const userId = action.userId; // Action structure: { type: GET_QUESTIONS, userId }
+        const userId = action.userId;
+        const domain = action.domain;
 
-
-        const response = yield call([apiClient, 'get'], `/questions/get-questions/${userId}`);
+        const url = domain
+            ? `/questions/get-questions/${userId}?domain=${domain}`
+            : `/questions/get-questions/${userId}`;
+        const response = yield call([apiClient, 'get'], url);
 
         if (response.status === 200) {
             const { data } = response.data; // API returns { success, count, data }
