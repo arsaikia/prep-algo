@@ -175,7 +175,64 @@ graph TB
 
 ---
 
-## Phase 2c: Gateway + Service Extraction (Planned)
+## Phase 2c: Production Hardening (Complete)
+
+```mermaid
+graph TB
+    subgraph Client
+        Browser["React SPA<br/>(Vite + Redux)"]
+    end
+
+    subgraph Firebase["Firebase Hosting"]
+        CDN["CDN with Headers<br/>immutable assets +<br/>no-cache HTML +<br/>security headers"]
+    end
+
+    subgraph CloudRun["Cloud Run"]
+        subgraph RequestPipeline
+            CorrID["Correlation ID"]
+            JWT["JWT Auth"]
+            ZodVal["Zod Validation<br/>Middleware"]
+            RL["Rate Limiter"]
+            Cache["Cache"]
+        end
+
+        Routes["Route Handlers<br/>/api/v1/*"]
+
+        subgraph Resilience
+            CB["Circuit Breakers"]
+        end
+
+        subgraph Observability
+            Pino["Pino Logger"]
+            Health["Deep Health Check"]
+        end
+    end
+
+    subgraph Workers["BullMQ Worker"]
+        Worker["Code Execution"]
+    end
+
+    subgraph Cloud
+        MongoDB["MongoDB Atlas"]
+        Redis["Upstash Redis"]
+    end
+
+    Browser -->|HTTPS| CDN
+    Browser -->|API + JWT| CorrID
+    CorrID --> JWT --> ZodVal --> RL --> Cache --> Routes
+    Routes --> CB --> MongoDB
+    Routes --> Redis
+    Redis --> Worker
+
+    style ZodVal fill:#1abc9c,color:#fff
+    style CDN fill:#1abc9c,color:#fff
+```
+
+**What changed**: Firebase CDN headers (immutable for hashed assets, no-cache for HTML, security headers). Zod request validation on all mutation endpoints replacing ~80 lines of manual checks. API versioning already in place (`/api/v1/`).
+
+---
+
+## Phase 2c-deferred: Gateway + Service Extraction (When Needed)
 
 ```mermaid
 graph TB

@@ -1,68 +1,28 @@
 import express from 'express';
 import Question from '../models/Question.js';
 import logger from '../config/logger.js';
+import { validate } from '../middleware/validate.js';
+import { updateTestCasesSchema, updateTemplatesSchema, updateQuestionSchema, submitCodeSchema } from '../schemas/code.js';
 
 const router = express.Router();
 
-// Update test cases for a question
-router.put('/question/:questionId/test-cases', async (req, res) => {
+router.put('/question/:questionId/test-cases', validate(updateTestCasesSchema), async (req, res) => {
     try {
         const { questionId } = req.params;
         const { exampleTestCases, testCases } = req.body;
 
-        // Validate input
-        if (!Array.isArray(exampleTestCases) && !Array.isArray(testCases)) {
-            return res.status(400).json({
-                error: 'Invalid input',
-                message: 'Either exampleTestCases or testCases must be provided as arrays'
-            });
-        }
-
-        // Additional validation for array inputs
-        const validateTestCase = (tc, isExample = false) => {
-            if (!Array.isArray(tc.inputs)) {
-                throw new Error(`${isExample ? 'Example test' : 'Test'} case inputs must be an array`);
-            }
-            if (tc.inputs.length === 0) {
-                throw new Error(`${isExample ? 'Example test' : 'Test'} case must have at least one input`);
-            }
-            if (!tc.expectedOutput) {
-                throw new Error(`${isExample ? 'Example test' : 'Test'} case must have an expected output`);
-            }
-        };
-
-        if (Array.isArray(exampleTestCases)) {
-            exampleTestCases.forEach(tc => validateTestCase(tc, true));
-        }
-        if (Array.isArray(testCases)) {
-            testCases.forEach(tc => validateTestCase(tc));
-        }
-
-        // Find the question
         const question = await Question.findOne({
-            $or: [
-                { link: questionId },
-                { link: `${questionId}/` }
-            ]
+            $or: [{ link: questionId }, { link: `${questionId}/` }]
         });
 
         if (!question) {
-            return res.status(404).json({
-                error: 'Question not found',
-                message: 'The requested question could not be found in our database.'
-            });
+            return res.status(404).json({ error: 'Question not found' });
         }
 
-        // Update the test cases
         const updateData = {};
-        if (Array.isArray(exampleTestCases)) {
-            updateData.exampleTestCases = exampleTestCases;
-        }
-        if (Array.isArray(testCases)) {
-            updateData.testCases = testCases;
-        }
+        if (exampleTestCases) updateData.exampleTestCases = exampleTestCases;
+        if (testCases) updateData.testCases = testCases;
 
-        // Update the question
         const updatedQuestion = await Question.findByIdAndUpdate(
             question._id,
             { $set: updateData },
@@ -79,248 +39,103 @@ router.put('/question/:questionId/test-cases', async (req, res) => {
         });
     } catch (error) {
         logger.error({ err: error }, 'error updating test cases');
-        res.status(500).json({
-            error: 'Internal server error',
-            message: error.message || 'An unexpected error occurred while updating the test cases.'
-        });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Update templates for a question
-router.put('/question/:questionId/templates', async (req, res) => {
+router.put('/question/:questionId/templates', validate(updateTemplatesSchema), async (req, res) => {
     try {
         const { questionId } = req.params;
         const { templates } = req.body;
 
-        // Validate input
-        if (!templates || typeof templates !== 'object') {
-            return res.status(400).json({
-                error: 'Invalid input',
-                message: 'Templates must be provided as an object'
-            });
-        }
-
-        // Validate templates
-        if (templates.python && typeof templates.python !== 'string') {
-            return res.status(400).json({
-                error: 'Invalid input',
-                message: 'Python template must be a string'
-            });
-        }
-        if (templates.javascript && typeof templates.javascript !== 'string') {
-            return res.status(400).json({
-                error: 'Invalid input',
-                message: 'JavaScript template must be a string'
-            });
-        }
-
-        // Find the question
         const question = await Question.findOne({
-            $or: [
-                { link: questionId },
-                { link: `${questionId}/` }
-            ]
+            $or: [{ link: questionId }, { link: `${questionId}/` }]
         });
 
         if (!question) {
-            return res.status(404).json({
-                error: 'Question not found',
-                message: 'The requested question could not be found in our database.'
-            });
+            return res.status(404).json({ error: 'Question not found' });
         }
 
-        // Update the templates
-        const updateData = {
-            templates: {
-                ...question.templates,
-                ...templates
-            }
-        };
-
-        // Update the question
         const updatedQuestion = await Question.findByIdAndUpdate(
             question._id,
-            { $set: updateData },
+            { $set: { templates: { ...question.templates, ...templates } } },
             { new: true }
         );
 
         res.json({
             success: true,
-            data: {
-                id: updatedQuestion._id,
-                templates: updatedQuestion.templates
-            }
+            data: { id: updatedQuestion._id, templates: updatedQuestion.templates }
         });
     } catch (error) {
         logger.error({ err: error }, 'error updating templates');
-        res.status(500).json({
-            error: 'Internal server error',
-            message: error.message || 'An unexpected error occurred while updating the templates.'
-        });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Update any question fields
-router.put('/question/:questionId', async (req, res) => {
+router.put('/question/:questionId', validate(updateQuestionSchema), async (req, res) => {
     try {
         const { questionId } = req.params;
-        const updateData = req.body;
 
-        // Validate input
-        if (!updateData || typeof updateData !== 'object') {
-            return res.status(400).json({
-                error: 'Invalid input',
-                message: 'Update data must be provided as an object'
-            });
-        }
-
-        // List of allowed fields to update
-        const allowedFields = [
-            'name', 'link', 'group', 'difficulty', 'description',
-            'list', 'order', 'exampleTestCases', 'testCases', 'templates', 'types'
-        ];
-
-        // Filter out any fields that are not in the allowed list
-        const filteredUpdateData = Object.keys(updateData)
-            .filter(key => allowedFields.includes(key))
-            .reduce((obj, key) => {
-                obj[key] = updateData[key];
-                return obj;
-            }, {});
-
-        if (Object.keys(filteredUpdateData).length === 0) {
-            return res.status(400).json({
-                error: 'Invalid input',
-                message: 'No valid fields to update'
-            });
-        }
-
-        // Find the question
         const question = await Question.findOne({
-            $or: [
-                { link: questionId },
-                { link: `${questionId}/` }
-            ]
+            $or: [{ link: questionId }, { link: `${questionId}/` }]
         });
 
         if (!question) {
-            return res.status(404).json({
-                error: 'Question not found',
-                message: 'The requested question could not be found in our database.'
-            });
+            return res.status(404).json({ error: 'Question not found' });
         }
 
-        // Update the question
         const updatedQuestion = await Question.findByIdAndUpdate(
             question._id,
-            { $set: filteredUpdateData },
+            { $set: req.body },
             { new: true }
         );
 
-        res.json({
-            success: true,
-            data: updatedQuestion
-        });
+        res.json({ success: true, data: updatedQuestion });
     } catch (error) {
         logger.error({ err: error }, 'error updating question');
-        res.status(500).json({
-            error: 'Internal server error',
-            message: error.message || 'An unexpected error occurred while updating the question.'
-        });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Submit code for execution
-router.post('/submit', async (req, res) => {
+router.post('/submit', validate(submitCodeSchema), async (req, res) => {
     try {
         const { code, questionId, language, testCases } = req.body;
 
-        // Validate input
-        if (!code) {
-            return res.status(400).json({
-                error: 'Invalid input',
-                message: 'Code is required'
-            });
-        }
-
-        if (!questionId) {
-            return res.status(400).json({
-                error: 'Invalid input',
-                message: 'Question ID is required'
-            });
-        }
-
-        if (!language) {
-            return res.status(400).json({
-                error: 'Invalid input',
-                message: 'Language is required'
-            });
-        }
-
-        // Find the question
         const question = await Question.findOne({
-            $or: [
-                { link: questionId },
-                { link: `${questionId}/` }
-            ]
+            $or: [{ link: questionId }, { link: `${questionId}/` }]
         }).select('_id name description difficulty group exampleTestCases testCases templates types');
 
         if (!question) {
-            return res.status(404).json({
-                error: 'Question not found',
-                message: 'The requested question could not be found in our database.'
-            });
+            return res.status(404).json({ error: 'Question not found' });
         }
 
-        // Execute the code based on language
-        let results = [];
-
-        if (language === 'python') {
-            // Import the Python code execution function
-            const { runPythonCode } = await import('../utils/codeExecution.js');
-
-            // Format test cases for execution
-            const formattedTestCases = testCases.map(tc => {
-                try {
-                    // Try to parse as JSON if it's a string
-                    if (typeof tc === 'string') {
-                        return JSON.parse(tc);
-                    }
-                    return tc;
-                } catch (e) {
-                    // If parsing fails, use the string as input
-                    return { inputs: [tc], expectedOutput: '' };
-                }
-            });
-
-            // Run the code with question types if available
-            results = await runPythonCode(code, formattedTestCases, question.types);
-        } else {
-            return res.status(400).json({
-                error: 'Unsupported language',
-                message: `Language ${language} is not supported yet`
-            });
+        if (language !== 'python') {
+            return res.status(400).json({ error: `Language ${language} is not supported yet` });
         }
 
-        // Calculate score
+        const { runPythonCode } = await import('../utils/codeExecution.js');
+
+        const formattedTestCases = (testCases || []).map(tc => {
+            if (typeof tc === 'string') {
+                try { return JSON.parse(tc); } catch { return { inputs: [tc], expectedOutput: '' }; }
+            }
+            return tc;
+        });
+
+        const results = await runPythonCode(code, formattedTestCases, question.types);
         const passedTests = results.filter(r => r.passed).length;
-        const totalTests = results.length;
-        const score = (passedTests / totalTests) * 100;
 
         res.json({
             success: true,
             results,
             passedTests,
-            totalTests,
-            score
+            totalTests: results.length,
+            score: (passedTests / results.length) * 100
         });
     } catch (error) {
         logger.error({ err: error }, 'error executing code');
-        res.status(500).json({
-            error: 'Internal server error',
-            message: error.message || 'An unexpected error occurred while executing the code.'
-        });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-export default router; 
+export default router;

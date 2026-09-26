@@ -3,6 +3,8 @@ import Question from '../models/Question.js';
 import { runPythonCode } from '../utils/codeExecution.js';
 import logger from '../config/logger.js';
 import { isQueueAvailable, getCodeExecutionQueue, getQueueEvents } from '../config/queue.js';
+import { validate } from '../middleware/validate.js';
+import { executeCodeSchema } from '../schemas/code.js';
 
 const router = express.Router();
 
@@ -22,13 +24,10 @@ async function executeCode(code, testCases, questionTypes, log) {
     return runPythonCode(code, testCases, questionTypes);
 }
 
-router.post('/execute/example', async (req, res) => {
+router.post('/execute/example', validate(executeCodeSchema), async (req, res) => {
     try {
         const { code, questionId } = req.body;
-        req.log.debug({ questionId, codeLength: code?.length || 0 }, 'code execution request');
-
-        if (!code) return res.status(400).json({ error: 'Code is required' });
-        if (!questionId) return res.status(400).json({ error: 'Question ID is required' });
+        req.log.debug({ questionId, codeLength: code.length }, 'code execution request');
 
         const question = await Question.findOne({
             $or: [{ link: questionId }, { link: `${questionId}/` }]
@@ -55,12 +54,9 @@ router.post('/execute/example', async (req, res) => {
     }
 });
 
-router.post('/execute/submit', async (req, res) => {
+router.post('/execute/submit', validate(executeCodeSchema), async (req, res) => {
     try {
         const { code, questionId } = req.body;
-
-        if (!code) return res.status(400).json({ error: 'Code is required' });
-        if (!questionId) return res.status(400).json({ error: 'Question ID is required' });
 
         const question = await Question.findOne({
             $or: [{ link: questionId }, { link: `${questionId}/` }]

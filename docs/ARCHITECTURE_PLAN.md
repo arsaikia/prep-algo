@@ -156,53 +156,47 @@ Goal: Fix security gaps, add distributed primitives, document every decision. Ea
 - `backend/utils/logger.js` — pino logger setup
 - `docs/adr/007-observability.md`
 
-### Phase 2c: API Gateway + Service Extraction
+### Phase 2c: Production Hardening (Lightweight) ✅
 
-#### 2c.1 — API Gateway Service (Build Custom)
-**Why build**: Central staff-level concept. Show routing, auth, rate limiting, request transformation in one place.
-- Separate Express service that sits in front of backend services
-- **Responsibilities**: Authentication, rate limiting, request routing, request/response transformation, CORS, API versioning
-- **Request pipeline**: CORS → Correlation ID → Auth → Rate Limit → Route → Proxy → Response Transform
-- Route config as declarative YAML/JSON (not hardcoded)
-- API key support for programmatic access (alongside JWT for browser)
-- Request/response logging at gateway level
+**Decision**: Gateway + service extraction deferred — overkill at current scale (<100 DAU). Implemented production essentials instead. Full gateway plan preserved below for when traffic justifies it.
 
-**Files**:
-- `gateway/` — new service directory
-- `gateway/server.js` — Express gateway
-- `gateway/config/routes.yml` — declarative route config
-- `gateway/middleware/` — auth, rate limit, proxy
-- `gateway/Dockerfile`
-- `docs/adr/008-api-gateway.md` — why custom vs Kong/Envoy
+#### 2c.1 — CDN Headers ✅
+- Firebase Hosting headers: `immutable` for hashed Vite assets (JS/CSS/images/fonts), `no-cache` for index.html
+- Security headers: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`
 
-#### 2c.2 — Code Execution Service Extraction
-**Why**: Strongest isolation need. Security boundary. Different scaling profile.
-- Extract code execution into standalone service
-- **Sandboxing**: Run user code in Docker containers (or gVisor on Cloud Run)
-- Resource limits: CPU, memory, network (no network access for user code)
-- Separate Cloud Run service with independent scaling
-- Gateway routes `/code/*` to execution service
-- Communicates via HTTP (sync) or queue (async from 2b.1)
+#### 2c.2 — Request Validation (Zod) ✅
+- `backend/middleware/validate.js` — generic Zod validation middleware
+- `backend/schemas/code.js` — schemas for all mutation endpoints
+- Applied to: code execution, submission, test case updates, template updates, question updates, solve history
+- Replaces ~80 lines of manual validation with declarative schemas
+- Returns structured error responses with field-level details
 
-**Files**:
-- `services/code-execution/` — new service
-- `services/code-execution/server.js`
-- `services/code-execution/executor.js` — sandboxed runner
-- `services/code-execution/Dockerfile`
-- `services/code-execution/cloudbuild.yaml`
-- `docs/adr/009-code-execution-isolation.md`
+#### 2c.3 — API Versioning ✅
+- Already in place: all routes under `/api/v1/`
 
-#### 2c.3 — CDN + Frontend Optimization (Use Existing + Configure)
-**Why use existing**: CDN not worth building. Show you know proper configuration.
-- Firebase Hosting CDN headers: proper `Cache-Control` for static assets (hashed filenames = immutable)
-- API response caching headers (coordinate with Redis cache TTLs)
+---
+
+### Phase 2c-deferred: API Gateway + Service Extraction
+
+> Preserved for when traffic exceeds single-service capacity (~1,000+ DAU).
+
+#### Gateway Service (Build Custom)
+- Separate Express service: auth, rate limiting, routing, request transformation, CORS
+- Request pipeline: CORS → Correlation ID → Auth → Rate Limit → Route → Proxy → Response Transform
+- Declarative route config (YAML/JSON)
+- API key support for programmatic access
+- ADR: `docs/adr/008-api-gateway.md`
+
+#### Code Execution Service Extraction
+- Standalone sandboxed service (Docker/gVisor on Cloud Run)
+- Resource limits: CPU, memory, no network for user code
+- Independent scaling, gateway routes `/code/*` to it
+- ADR: `docs/adr/009-code-execution-isolation.md`
+
+#### CDN Optimization (Future)
+- Service Worker for offline question browsing
 - Preconnect hints for API domain
-- Service Worker for offline question browsing (optional)
-
-**Files**:
-- `firebase.json` — CDN cache headers config
-- `frontend/public/_headers` or firebase.json headers section
-- `docs/adr/010-cdn-strategy.md`
+- ADR: `docs/adr/010-cdn-strategy.md`
 
 ---
 
