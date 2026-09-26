@@ -57,11 +57,24 @@ const corsOptions = {
 }
 app.use(cors(corsOptions));
 
+// Cache policy: deny by default. Only the anonymous, non-user-specific
+// question catalog may sit in a browser or CDN cache — anything tied to a
+// user must never land in a shared cache, or one account's data can be
+// served to another.
+const PUBLIC_CACHE_MAX_AGE = 300;
+
 app.use((req, res, next) => {
-    if (req.method === 'GET') {
-        res.set('Cache-Control', 'public, max-age=3600');
+    const isPublicCatalog =
+        req.method === 'GET' &&
+        req.path.startsWith('/api/v1/questions') &&
+        !req.path.startsWith('/api/v1/questions/get-questions') &&
+        !req.headers.authorization;
+
+    if (isPublicCatalog) {
+        res.set('Cache-Control', `public, max-age=${PUBLIC_CACHE_MAX_AGE}`);
+        res.vary('Authorization');
     } else {
-        res.set('Cache-Control', 'no-store');
+        res.set('Cache-Control', 'no-store, private');
     }
     next();
 });

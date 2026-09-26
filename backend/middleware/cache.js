@@ -67,8 +67,6 @@ const cacheMiddleware = (req, res, next) => {
   const lockKey = `${LOCK_PREFIX}${req.originalUrl || req.url}`;
   const ttl = getTTL(req.originalUrl);
 
-  res.set('Cache-Control', 'no-store');
-
   (async () => {
     const redisValue = await getFromRedis(cacheKey);
     if (redisValue) {
