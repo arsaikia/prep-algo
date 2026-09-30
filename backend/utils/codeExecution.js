@@ -178,10 +178,57 @@ export const runPythonCode = async (code, testCases, questionTypes = null) => {
                 expectedOutputType = detectInputType(testCase.expectedOutput, code);
             }
 
+            // A design problem is graded by replaying a sequence of calls against
+            // one long-lived object rather than by calling a pure function once.
+            // The whole sequence is data, so a new design problem is content only.
+            const opsMode = inputTypes[0] === 'OPS';
+
+            if (opsMode) {
+                // Ops problems are always judged on the list of per-call return
+                // values, whatever the content happens to declare as the output.
+                expectedOutputType = 'ARRAY';
+            }
+
             // Generate input parsing code
             const inputArgs = testCase.inputs.map((input, index) =>
                 generateInputParser(input, inputTypes[index])
             );
+
+            const driverBlock = opsMode
+                ? `        # Replay a recorded call sequence against one instance.
+        calls = json.loads(${JSON.stringify(testCase.inputs[0] ?? '[]')})
+        call_args = json.loads(${JSON.stringify(testCase.inputs[1] ?? '[]')})
+
+        if not calls:
+            raise Exception("Ops test case has no calls")
+        if len(calls) != len(call_args):
+            raise Exception("Ops test case lists %d calls but %d argument groups" % (len(calls), len(call_args)))
+
+        class_name = calls[0]
+        target_class = globals().get(class_name)
+        if target_class is None:
+            raise Exception("Class '%s' is not defined. Name your class exactly '%s'." % (class_name, class_name))
+
+        instance = target_class(*call_args[0])
+        result = [None]
+
+        for call_index in range(1, len(calls)):
+            method_name = calls[call_index]
+            method = getattr(instance, method_name, None)
+            if method is None or not callable(method):
+                raise Exception("'%s' has no method '%s'" % (class_name, method_name))
+            result.append(method(*call_args[call_index]))`
+                : `        # Parse inputs based on detected types
+        args = [${inputArgs.join(', ')}]
+        solution = Solution()
+
+        method_name = next((attr_name for attr_name in dir(solution)
+            if not attr_name.startswith('_') and callable(getattr(solution, attr_name))), None)
+
+        if not method_name:
+            raise Exception("No solution method found in the Solution class")
+
+        result = getattr(solution, method_name)(*args)`;
 
             // Get existing imports and required typing imports
             const existingImports = extractImports(code);
@@ -304,17 +351,7 @@ if __name__ == "__main__":
         original_stdout = sys.stdout
         sys.stdout = print_capture
         
-        # Parse inputs based on detected types
-        args = [${inputArgs.join(', ')}]
-        solution = Solution()
-        
-        method_name = next((attr_name for attr_name in dir(solution) 
-            if not attr_name.startswith('_') and callable(getattr(solution, attr_name))), None)
-                
-        if not method_name:
-            raise Exception("No solution method found in the Solution class")
-            
-        result = getattr(solution, method_name)(*args)
+${driverBlock}
         
         # Handle expected output - parse it based on detected type
         expected_str = ${JSON.stringify(testCase.expectedOutput)}
