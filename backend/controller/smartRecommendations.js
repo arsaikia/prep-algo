@@ -723,34 +723,38 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
 
 const allocateDomainSlots = (count, domainPreferences, availablePerDomain) => {
     const domains = ['algorithms', 'system_design', 'frontend'];
-    const slots = {};
-    let remaining = count;
+    const capacityOf = d => (availablePerDomain?.[d] || 0);
 
-    const availableDomains = domains.filter(d => (availablePerDomain[d] || 0) > 0);
+    const availableDomains = domains.filter(d => capacityOf(d) > 0);
     if (availableDomains.length === 0) return { algorithms: count };
 
-    availableDomains.forEach(d => {
-        const weight = domainPreferences?.[d]?.weight || (1 / availableDomains.length);
-        slots[d] = Math.max(1, Math.round(count * weight));
-    });
+    // Never promise more questions than actually exist, in total or per domain.
+    const totalCapacity = availableDomains.reduce((s, d) => s + capacityOf(d), 0);
+    const target = Math.min(count, totalCapacity);
 
-    const total = Object.values(slots).reduce((s, v) => s + v, 0);
-    if (total > count) {
-        const sorted = Object.entries(slots).sort((a, b) => b[1] - a[1]);
-        let excess = total - count;
-        for (const [d] of sorted) {
-            if (excess <= 0) break;
-            if (slots[d] > 1) { slots[d]--; excess--; }
-        }
-    } else if (total < count) {
-        const sorted = Object.entries(slots).sort((a, b) => a[1] - b[1]);
-        let deficit = count - total;
-        for (const [d] of sorted) {
-            if (deficit <= 0) break;
-            if ((availablePerDomain[d] || 0) > slots[d]) { slots[d]++; deficit--; }
-        }
+    const slots = {};
+    availableDomains.forEach(d => { slots[d] = 0; });
+
+    // Seed one slot per domain so a shallow-but-relevant domain still shows up.
+    let assigned = 0;
+    for (const d of availableDomains) {
+        if (assigned >= target) break;
+        slots[d] = 1;
+        assigned++;
     }
 
+    // Hand out the remainder to whichever domain is furthest below its weighted
+    // share and still has questions left, so the allocation always sums to target.
+    const weightOf = d => domainPreferences?.[d]?.weight || (1 / availableDomains.length);
+    while (assigned < target) {
+        const candidates = availableDomains.filter(d => slots[d] < capacityOf(d));
+        if (candidates.length === 0) break;
+        candidates.sort((a, b) => (slots[a] / weightOf(a)) - (slots[b] / weightOf(b)));
+        slots[candidates[0]]++;
+        assigned++;
+    }
+
+    Object.keys(slots).forEach(d => { if (slots[d] === 0) delete slots[d]; });
     return slots;
 };
 
@@ -1091,5 +1095,8 @@ export {
     markQuestionCompleted,
     forceRefreshRecommendations,
     replaceCompletedQuestions,
-    trackRecommendationAction
+    trackRecommendationAction,
+    // Pure helpers exported for unit testing
+    allocateDomainSlots,
+    getNextDifficultyAdaptive
 }; 
