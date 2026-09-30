@@ -553,8 +553,9 @@ Steps 0–5 at once. It needs no Mongo migration and no Postgres:
 Order:
 
 1. `./deploy-to-cloudrun.sh`. Builds content, then deploys a `candidate` revision at 0%
-   traffic and smoke-tests its tag URL. `REDIS_URL` is wired only if that secret exists;
-   otherwise the in-memory fallback runs.
+   traffic and smoke-tests its tag URL. It sets no env vars or secrets: each revision
+   inherits the service's configuration from the Cloud Run console. Without `REDIS_URL`
+   the backend runs its in-memory fallback.
 2. `./deploy-to-cloudrun.sh --promote`. Moves 100% of traffic and prints the rollback
    command for the replaced revision.
 3. `./deploy-to-firebase.sh` immediately after, since the old frontend predates JWT auth.

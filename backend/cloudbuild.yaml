@@ -2,24 +2,13 @@
 # receives NO traffic. The revision is reachable at its tag URL
 # (https://<_TAG>---prep-algo-backend-...run.app) for smoke tests;
 # `deploy-to-cloudrun.sh --promote` then shifts traffic to it.
+# Environment variables and secrets are NOT set here. The new revision inherits
+# whatever the service already has, so configuration edited in the Cloud Run
+# console survives a deploy.
 substitutions:
   _TAG: candidate
-  # Set to "true" by deploy-to-cloudrun.sh when the REDIS_URL secret exists.
-  # Without Redis the backend runs its in-memory fallback.
-  _WITH_REDIS: "false"
 
 steps:
-  - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        cat > env.yaml << EOF
-        NODE_ENV: "production"
-        JWT_EXPIRE: "30d"
-        CORS_ORIGINS: "http://localhost:3000,https://prepalgo.web.app,https://www.prepalgo.com,https://prepalgo.com"
-        EOF
-
   # Tag with the build id so every revision pins an immutable image.
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/prep-algo-backend:$BUILD_ID', '-t', 'gcr.io/$PROJECT_ID/prep-algo-backend:latest', '.']
@@ -33,17 +22,11 @@ steps:
       - '-c'
       - |
         set -e
-        secrets="MONGO_URI=MONGO_URI:latest,JWT_SECRET=JWT_SECRET:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest"
-        if [ "${_WITH_REDIS}" = "true" ]; then
-          secrets="$$secrets,REDIS_URL=REDIS_URL:latest"
-        fi
         gcloud run deploy prep-algo-backend \
           --image "gcr.io/$PROJECT_ID/prep-algo-backend:$BUILD_ID" \
           --region us-central1 \
           --platform managed \
           --allow-unauthenticated \
-          --env-vars-file env.yaml \
-          --set-secrets "$$secrets" \
           --no-traffic \
           --tag "${_TAG}"
 

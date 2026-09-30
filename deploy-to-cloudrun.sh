@@ -7,7 +7,8 @@
 #   ./deploy-to-cloudrun.sh --promote  send 100% of traffic to the candidate
 #
 # Live traffic never moves until you promote, and the promote step prints the
-# command that rolls back to the revision it replaced.
+# command that rolls back to the revision it replaced. Env vars and secrets are
+# never set by this script; each revision inherits the service's configuration.
 
 set -e
 cd "$(dirname "$0")"
@@ -47,6 +48,13 @@ fi
 
 echo -e "${BLUE}📋 Project ID: $PROJECT_ID${NC}"
 
+# Env vars and secrets live on the service (Cloud Run console), and each deploy
+# inherits them. A service that does not exist yet would start with none.
+if ! gcloud run services describe "$SERVICE" --region="$REGION" &> /dev/null; then
+    echo -e "${RED}❌ Service $SERVICE not found in $REGION. Create it and set its env vars and secrets first.${NC}"
+    exit 1
+fi
+
 
 tag_url() {
     gcloud run services describe "$SERVICE" --region="$REGION" --format=json \
@@ -62,47 +70,6 @@ if [ "$MODE" = "promote" ]; then
         echo -e "Roll back with: ${YELLOW}gcloud run services update-traffic $SERVICE --region=$REGION --to-revisions=$PREVIOUS=100${NC}"
     fi
     exit 0
-fi
-
-# Check if secrets exist
-echo -e "${YELLOW}🔍 Checking required secrets...${NC}"
-
-check_secret() {
-    local secret_name=$1
-    if gcloud secrets describe $secret_name &> /dev/null; then
-        echo -e "${GREEN}✅ $secret_name exists${NC}"
-        return 0
-    else
-        echo -e "${RED}❌ $secret_name does not exist${NC}"
-        return 1
-    fi
-}
-
-# Check all required secrets
-SECRETS=("MONGO_URI" "JWT_SECRET" "GOOGLE_CLIENT_ID")
-MISSING_SECRETS=()
-
-for secret in "${SECRETS[@]}"; do
-    if ! check_secret $secret; then
-        MISSING_SECRETS+=($secret)
-    fi
-done
-
-# If secrets are missing, offer to create them
-if [ ${#MISSING_SECRETS[@]} -gt 0 ]; then
-    echo -e "${YELLOW}⚠️  Some secrets are missing. Would you like to create them now? (y/n)${NC}"
-    read -r response
-    if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-        for secret in "${MISSING_SECRETS[@]}"; do
-            echo -e "${BLUE}Enter value for $secret:${NC}"
-            read -s secret_value
-            echo "$secret_value" | gcloud secrets create $secret --data-file=-
-            echo -e "${GREEN}✅ Created secret: $secret${NC}"
-        done
-    else
-        echo -e "${RED}❌ Cannot deploy without required secrets. Please create them manually.${NC}"
-        exit 1
-    fi
 fi
 
 # Enable required APIs if not already enabled
@@ -121,16 +88,9 @@ if [ ! -f backend/content/catalog.json ]; then
     exit 1
 fi
 
-# Redis is optional: without it the backend uses its in-memory fallback.
-WITH_REDIS=false
-if gcloud secrets describe REDIS_URL &> /dev/null; then
-    WITH_REDIS=true
-fi
-echo -e "${BLUE}Redis: $WITH_REDIS${NC}"
-
 echo -e "${YELLOW}🚀 Building and deploying a $TAG revision (0% traffic)...${NC}"
 cd backend
-gcloud builds submit --config cloudbuild.yaml --substitutions="_TAG=$TAG,_WITH_REDIS=$WITH_REDIS" .
+gcloud builds submit --config cloudbuild.yaml --substitutions="_TAG=$TAG" .
 cd ..
 
 CANDIDATE_URL=$(tag_url)
