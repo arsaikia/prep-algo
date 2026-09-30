@@ -74,3 +74,4 @@ RECOMMENDATION_IMPROVEMENTS.md
 
 # Authoring scratch drafts (inputs to scripts/content/authoring/solve.mjs)
 .authoring-drafts/
+scripts/content/authoring/drafts/
