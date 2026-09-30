@@ -68,92 +68,228 @@ const readStoredFontSize = () => {
 const isMacPlatform = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || '');
 
 // Modern styled components with clean design
+/*
+ * The sandbox owns the viewport. It is a workspace, not an article: the
+ * previous shape stacked description, editor and output as three cards down a
+ * scrolling page, which put "Output & Results" several hundred pixels below the
+ * fold — you submitted code and then had to go looking for the verdict.
+ * Everything here is sized against the viewport so all three regions are
+ * visible at once and each scrolls independently.
+ */
 const Container = styled.div`
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 20px 12px;
-  background: ${({ theme }) => theme.colors.background};
-  color: ${({ theme }) => theme.colors.text};
-  min-height: 100vh;
-  
-  @media (min-width: 768px) {
-    padding: 20px 16px;
-  }
-`;
-
-const Header = styled.div`
-  text-align: center;
-  margin-bottom: 3rem;
-`;
-
-const Title = styled.h1`
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-`;
-
-const TitleText = styled.span`
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.secondary || theme.colors.primary}dd);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-`;
-
-const Subtitle = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
-`;
-
-const MainContent = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 3fr;
-  gap: 1rem;
-  margin-top: 2rem;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  @media (min-width: 768px) {
-    gap: 1.5rem;
-  }
-`;
-
-const Panel = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
-const Card = styled.div`
+const TopBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 2px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: ${({ theme }) => theme.colors.shadowCard};
-  transition: all 0.3s ease;
-  
-  &:hover {
-    box-shadow: ${({ theme }) => theme.colors.shadowCardHover};
-    transform: translateY(-1px);
+  flex-shrink: 0;
+`;
+
+const ProblemTitle = styled.h1`
+  font-size: 1rem;
+  font-weight: 650;
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40vw;
+`;
+
+const DIFFICULTY_COLOR = {
+  Easy: '#22c55e',
+  Medium: '#f59e0b',
+  Hard: '#ef4444'
+};
+
+const DifficultyPill = styled.span`
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  color: ${({ $level }) => DIFFICULTY_COLOR[$level] || '#8b95a5'};
+  background: ${({ $level }) => (DIFFICULTY_COLOR[$level] || '#8b95a5')}1f;
+`;
+
+const TopBarSpacer = styled.div`
+  flex: 1;
+`;
+
+const TopBarActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+`;
+
+/* The split row. Panes are sized by percentage so a drag survives a resize. */
+const MainContent = styled.div`
+  display: flex;
+  flex: 1;
+  min-height: 0;
+
+  /*
+   * Below the split point a side-by-side pane would be ~300px wide each, too
+   * narrow for either prose or code, so the panes stack and the page scrolls.
+   */
+  @media (max-width: 900px) {
+    flex-direction: column;
+    overflow-y: auto;
   }
 `;
 
-const CardHeader = styled.div`
+const LeftPane = styled.div`
+  width: ${({ $pct }) => $pct}%;
+  min-width: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  flex-direction: column;
+  overflow: hidden;
+
+  @media (max-width: 900px) {
+    width: 100%;
+    /*
+     * A definite height, not auto: the description's flex:1 child has no
+     * content-based basis, so an auto-height pane collapses it to nothing.
+     */
+    height: 55vh;
+    flex: none;
+  }
 `;
+
+const RightColumn = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  @media (max-width: 900px) {
+    height: 80vh;
+    flex: none;
+  }
+`;
+
+const EditorPane = styled.div`
+  height: ${({ $pct }) => $pct}%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+const ConsolePane = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+`;
+
+/*
+ * Drag handles. They are wider than they look: a 1px divider is the correct
+ * visual weight but an unhittable target, so the hit area is padded and the
+ * visible line is drawn inside it.
+ */
+const dragHandle = `
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border: none;
+  padding: 0;
+`;
+
+const VerticalHandle = styled.div`
+  ${dragHandle}
+  width: 9px;
+  margin: 0 -4px;
+  cursor: col-resize;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0 4px;
+    background: ${({ theme }) => theme.colors.border};
+    transition: background 0.15s ease;
+  }
+
+  &:hover::after, &[data-dragging='true']::after {
+    background: ${({ theme }) => theme.colors.primary};
+  }
+
+  @media (max-width: 900px) { display: none; }
+`;
+
+const HorizontalHandle = styled.div`
+  ${dragHandle}
+  height: 9px;
+  margin: -4px 0;
+  cursor: row-resize;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 4px 0;
+    background: ${({ theme }) => theme.colors.border};
+    transition: background 0.15s ease;
+  }
+
+  &:hover::after, &[data-dragging='true']::after {
+    background: ${({ theme }) => theme.colors.primary};
+  }
+
+  @media (max-width: 900px) { display: none; }
+`;
+
+const PaneTabBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0 0.5rem;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  flex-shrink: 0;
+`;
+
+const PaneTab = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.8rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid ${({ theme, $active }) => ($active ? theme.colors.primary : 'transparent')};
+  color: ${({ theme, $active }) => ($active ? theme.colors.text : theme.colors.textSecondary)};
+  font-size: 0.85rem;
+  font-weight: ${({ $active }) => ($active ? 600 : 500)};
+  cursor: pointer;
+
+  &:hover { color: ${({ theme }) => theme.colors.text}; }
+`;
+
+const TabBadge = styled.span`
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  color: ${({ theme, $tone }) => ($tone === 'error' ? '#ef4444' : $tone === 'success' ? '#22c55e' : theme.colors.textSecondary)};
+  background: ${({ theme, $tone }) => ($tone === 'error' ? '#ef444422' : $tone === 'success' ? '#22c55e22' : theme.colors.backgroundTertiary)};
+`;
+
+
 
 const CardTitle = styled.h3`
   font-size: 1.1rem;
@@ -164,20 +300,7 @@ const CardTitle = styled.h3`
   gap: 8px;
 `;
 
-const QuestionCard = styled(Card)`
-  margin-bottom: 2rem;
-`;
 
-const QuestionHeader = styled(CardHeader)`
-  flex-direction: column;
-  align-items: stretch;
-  gap: 12px;
-  
-  @media (min-width: 768px) {
-    flex-direction: row;
-    align-items: center;
-  }
-`;
 
 const QuestionInputSection = styled.div`
   display: flex;
@@ -287,23 +410,7 @@ const ModernButton = styled.button`
   }
 `;
 
-const QuickTestSection = styled.div`
-  margin-top: 16px;
-  padding: 16px;
-  background: ${({ theme }) => theme.colors.background};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
-`;
 
-const QuickTestTitle = styled.div`
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
 
 const QuickTestGrid = styled.div`
   display: flex;
@@ -328,97 +435,25 @@ const QuickTestButton = styled.button`
   }
 `;
 
-const TimerCard = styled.div`
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}12, ${({ theme }) => theme.colors.secondary || theme.colors.primary}06);
-  border: 1px solid ${({ theme }) => theme.colors.primary}30;
-  border-radius: 16px;
-  padding: 16px 24px;
-  margin-bottom: 1.5rem;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, ${({ theme }) => theme.colors.primary}15, transparent);
-    animation: shimmer 4s infinite;
-  }
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.secondary || theme.colors.primary});
-    border-radius: 2px;
-  }
-  
-  @keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
-  }
-  
-  &:hover {
-    transform: translateY(-1px);
-    border-color: ${({ theme }) => theme.colors.primary}50;
-    box-shadow: 0 4px 20px ${({ theme }) => theme.colors.primary}20;
-  }
-`;
 
-const TimerContent = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  position: relative;
-  z-index: 1;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-`;
 
-const TimerDisplay = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-`;
 
 const TimerTime = styled.div`
   font-family: 'Fira Code', monospace;
-  font-size: 1.3rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.secondary || theme.colors.primary}dd);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: ${({ theme }) => theme.colors.text};
   display: flex;
   align-items: center;
-  gap: 10px;
-  position: relative;
-`;
-
-const TimerInfo = styled.div`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  gap: 6px;
   white-space: nowrap;
 `;
 
+
 const TimerControls = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 4px;
   align-items: center;
-  flex-wrap: wrap;
 `;
 
 const TimerIcon = styled(Timer)`
@@ -440,10 +475,10 @@ const TimerIcon = styled(Timer)`
 `;
 
 const TimerButton = styled(ModernButton)`
-  padding: 6px 12px;
+  padding: 6px 10px;
   font-size: 12px;
-  min-width: 70px;
-  height: 32px;
+  min-width: 0;
+  height: 30px;
   border-radius: 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -472,21 +507,7 @@ const TimerButton = styled(ModernButton)`
   }
 `;
 
-const SessionFeedbackCard = styled(Card)`
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.background}, ${({ theme }) => theme.colors.backgroundSecondary});
-`;
 
-const FeedbackContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  
-  @media (min-width: 768px) {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-`;
 
 const RatingSection = styled.div`
   display: flex;
@@ -556,23 +577,14 @@ const TagButton = styled.button`
   }
 `;
 
-const EditorCard = styled(Card)`
-  /* Tracks the viewport instead of a hard 600px: short laptops no longer scroll the
-     editor off-screen and tall displays stop wasting half the panel. */
-  height: clamp(420px, 62vh, 780px);
+const EditorCard = styled.div`
+  /* Fills its split pane; the drag handle owns the height, not a clamp(). */
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  padding: 0;
   overflow: hidden;
-
-  /* Card lifts on hover; on the editor that reads as the code jittering while you type. */
-  &:hover {
-    transform: none;
-  }
-
-  @media (max-width: 1024px) {
-    height: clamp(380px, 55vh, 560px);
-  }
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
 `;
 
 const EditorHeader = styled.div`
@@ -580,11 +592,10 @@ const EditorHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 0.35rem 0.6rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.background};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
   flex-shrink: 0;
-  flex-wrap: wrap;
 `;
 
 const EditorActions = styled.div`
@@ -718,21 +729,24 @@ const EditorContainer = styled.div`
   background: ${({ theme }) => theme.colors.background};
 `;
 
-const OutputCard = styled(Card)`
-  min-height: 300px;
+const OutputCard = styled.div`
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 `;
 
 const OutputContent = styled.div`
   flex: 1;
+  min-height: 0;
+  padding: 0.85rem 1rem;
   font-family: 'Fira Code', monospace;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.6;
   color: ${({ theme }) => theme.colors.text};
   white-space: pre-wrap;
   overflow-y: auto;
-  max-height: 400px;
 `;
 
 const FEEDBACK_TONES = {
@@ -822,12 +836,14 @@ const SandboxActionButton = ({
   );
 };
 
-const QuestionDescription = styled(Card)`
-  height: 500px;
+const QuestionDescription = styled.div`
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  padding: 1.1rem 1.35rem 2.5rem;
   font-size: 14px;
-  line-height: 1.6;
-  
+  line-height: 1.7;
+  color: ${({ theme }) => theme.colors.text};
   pre {
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -856,17 +872,33 @@ const QuestionDescription = styled(Card)`
   }
 `;
 
+const DevLoader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed ${({ theme }) => theme.colors.border};
+`;
+
+const ConsoleHint = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-family: ${({ theme }) => theme?.fonts?.body || 'inherit'};
+  font-size: 0.85rem;
+  line-height: 1.6;
+`;
+
 const GuestBanner = styled.div`
   background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}15, ${({ theme }) => theme.colors.secondary || theme.colors.primary}08);
-  border: 1px solid ${({ theme }) => theme.colors.primary}40;
-  border-radius: 12px;
-  padding: 16px 20px;
-  margin-bottom: 1.5rem;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.primary}40;
+  padding: 0.6rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 0.95rem;
+  flex-shrink: 0;
+  font-size: 0.9rem;
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
@@ -884,12 +916,11 @@ const GuestSignInButton = styled.button`
 `;
 
 const ErrorAlert = styled.div`
-  padding: 16px;
-  background: linear-gradient(135deg, #dc354510, #e83e8c10);
-  border: 2px solid #dc354530;
-  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  background: #dc354512;
+  border-bottom: 1px solid #dc354540;
   color: #dc3545;
-  margin: 16px 0;
+  flex-shrink: 0;
   font-weight: 500;
 `;
 
@@ -1577,6 +1608,49 @@ const CodeSandbox = () => {
     clearTimeout(copyTimerRef.current);
   }, []);
 
+  /*
+   * Split-pane sizing. Percentages rather than pixels so a window resize keeps
+   * the proportions the user chose instead of stranding a pane at 1200px wide.
+   */
+  const splitRef = useRef(null);
+  const rightColRef = useRef(null);
+  const [leftPct, setLeftPct] = useState(42);
+  const [editorPct, setEditorPct] = useState(62);
+  const [dragAxis, setDragAxis] = useState(null);
+
+  useEffect(() => {
+    if (!dragAxis) return undefined;
+
+    const onMove = (event) => {
+      if (dragAxis === 'x' && splitRef.current) {
+        const rect = splitRef.current.getBoundingClientRect();
+        const pct = ((event.clientX - rect.left) / rect.width) * 100;
+        setLeftPct(Math.min(70, Math.max(22, pct)));
+      } else if (dragAxis === 'y' && rightColRef.current) {
+        const rect = rightColRef.current.getBoundingClientRect();
+        const pct = ((event.clientY - rect.top) / rect.height) * 100;
+        setEditorPct(Math.min(85, Math.max(20, pct)));
+      }
+    };
+    const onUp = () => setDragAxis(null);
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    // Without this a drag selects the description text it passes over.
+    const previousSelect = document.body.style.userSelect;
+    document.body.style.userSelect = 'none';
+
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      document.body.style.userSelect = previousSelect;
+    };
+  }, [dragAxis]);
+
+  const consoleTone = executionFeedback.status === 'success'
+    ? 'success'
+    : executionFeedback.status === 'error' ? 'error' : 'neutral';
+
   if (currentQuestion?.answerFormat === 'mcq') {
     return <McqSolver question={currentQuestion} />;
   }
@@ -1587,6 +1661,75 @@ const CodeSandbox = () => {
 
   return (
     <Container>
+      <TopBar>
+        <ProblemTitle title={currentQuestion?.title || 'Code Sandbox'}>
+          {currentQuestion?.title || 'Code Sandbox'}
+        </ProblemTitle>
+        {currentQuestion?.difficulty && (
+          <DifficultyPill $level={currentQuestion.difficulty}>
+            {currentQuestion.difficulty}
+          </DifficultyPill>
+        )}
+
+        <TopBarSpacer />
+
+        {currentQuestion && user.userId && user.userId !== 'guest' && (
+          <TimerControls>
+            <TimerTime>
+              <TimerIcon size={16} />
+              {formatTime(displayTime)}{isPaused && ' (paused)'}
+            </TimerTime>
+            <TimerButton onClick={pause} disabled={!isTracking || isPaused} title="Pause timer" aria-label="Pause timer">
+              <Pause size={12} />
+            </TimerButton>
+            <TimerButton onClick={resume} disabled={!isTracking || !isPaused} title="Resume timer" aria-label="Resume timer">
+              <PlayLucide size={12} />
+            </TimerButton>
+            <TimerButton
+              variant="danger"
+              onClick={() => handleSessionComplete(false)}
+              disabled={!isTracking}
+              title="End session"
+              aria-label="End session"
+            >
+              <Square size={12} />
+            </TimerButton>
+          </TimerControls>
+        )}
+
+        <TopBarActions>
+          <LanguageSelector value={language} onChange={handleLanguageChange}>
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript (editor only)</option>
+          </LanguageSelector>
+          <SandboxActionButton
+            gated={isGuest}
+            gatedLabel="Sign in to Run"
+            onGatedClick={() => navigate('/login')}
+            pending={isRunningExampleTests}
+            pendingLabel="Running..."
+            busy={isSubmitting || isRunningExampleTests}
+            onClick={runExampleTests}
+            icon={<PlayLucide size={15} style={{ marginRight: '6px' }} />}
+          >
+            Run
+          </SandboxActionButton>
+          <SandboxActionButton
+            variant="primary"
+            gated={isGuest}
+            gatedLabel="Sign in to Submit"
+            onGatedClick={() => navigate('/login')}
+            pending={isSubmitting}
+            pendingLabel="Submitting..."
+            busy={isSubmitting || isRunningExampleTests}
+            onClick={runCode}
+            icon={<Zap size={15} style={{ marginRight: '6px' }} />}
+          >
+            Submit
+          </SandboxActionButton>
+        </TopBarActions>
+      </TopBar>
+
       {isGuest && (
         <GuestBanner>
           <span>👀 Viewing in read-only mode. Sign in to run and submit code.</span>
@@ -1594,290 +1737,243 @@ const CodeSandbox = () => {
         </GuestBanner>
       )}
 
-      {isDevMode() && (
-        <QuestionCard>
-          <QuestionHeader>
-            <CardTitle>
-              <Code size={20} />
-              Load Question
-            </CardTitle>
-          </QuestionHeader>
-          <QuestionInputSection>
-            <QuestionInput
-              type="text"
-              value={leetcodeUrl}
-              onChange={(e) => setLeetcodeUrl(e.target.value)}
-              placeholder="Enter LeetCode question URL or ID"
-            />
-            <ModernButton variant="primary" onClick={() => fetchLeetCodeQuestion(leetcodeUrl)}>
-              <Link size={16} />
-              Load Question
-            </ModernButton>
-          </QuestionInputSection>
+      {error && <ErrorAlert>{error}</ErrorAlert>}
 
-          <QuickTestSection>
-            <QuickTestTitle>
-              🚀 Quick Test Questions
-            </QuickTestTitle>
-            <QuickTestGrid>
-              {[
-                { id: 'two-sum', name: 'Two Sum', difficulty: 'Easy' },
-                { id: 'add-two-numbers', name: 'Add Two Numbers', difficulty: 'Medium' },
-                { id: 'longest-substring-without-repeating-characters', name: 'Longest Substring', difficulty: 'Medium' },
-                { id: 'median-of-two-sorted-arrays', name: 'Median Arrays', difficulty: 'Hard' },
-                { id: 'reverse-integer', name: 'Reverse Integer', difficulty: 'Medium' }
-              ].map(q => (
-                <QuickTestButton
-                  key={q.id}
-                  isActive={leetcodeUrl === q.id}
-                  onClick={() => {
-                    setLeetcodeUrl(q.id);
-                    fetchLeetCodeQuestion(q.id);
-                  }}
-                >
-                  {q.name} <span style={{ opacity: 0.7 }}>({q.difficulty})</span>
-                </QuickTestButton>
-              ))}
-            </QuickTestGrid>
-          </QuickTestSection>
-        </QuestionCard>
-      )}
+      <MainContent ref={splitRef}>
+        <LeftPane $pct={leftPct}>
+          <PaneTabBar>
+            <PaneTab as="div" $active>
+              <EyeLucide size={15} />
+              Description
+            </PaneTab>
+          </PaneTabBar>
 
-      {/* Enhanced Timer Display with QuestionSolver Features */}
-      {currentQuestion && user.userId && user.userId !== 'guest' && (
-        <TimerCard>
-          <TimerContent>
-            <TimerDisplay>
-              <TimerTime>
-                <TimerIcon size={22} />
-                {formatTime(displayTime)} {isPaused && '(PAUSED)'}
-              </TimerTime>
-            </TimerDisplay>
-            <TimerControls>
-              <TimerButton onClick={pause} disabled={!isTracking || isPaused}>
-                <Pause size={12} style={{ marginRight: '4px' }} />
-                Pause
-              </TimerButton>
-              <TimerButton onClick={resume} disabled={!isTracking || !isPaused}>
-                <PlayLucide size={12} style={{ marginRight: '4px' }} />
-                Resume
-              </TimerButton>
-              <TimerButton
-                variant="danger"
-                onClick={() => handleSessionComplete(false)}
-                disabled={!isTracking}
-              >
-                <Square size={12} style={{ marginRight: '4px' }} />
-                Give Up
-              </TimerButton>
-            </TimerControls>
-          </TimerContent>
-        </TimerCard>
-      )}
+          <QuestionDescription>
+            {isDevMode() && (
+              <DevLoader>
+                <QuestionInputSection>
+                  <QuestionInput
+                    type="text"
+                    value={leetcodeUrl}
+                    onChange={(e) => setLeetcodeUrl(e.target.value)}
+                    placeholder="Load a question by slug or URL (dev only)"
+                  />
+                  <ModernButton variant="primary" onClick={() => fetchLeetCodeQuestion(leetcodeUrl)}>
+                    <Link size={16} />
+                    Load
+                  </ModernButton>
+                </QuestionInputSection>
+                <QuickTestGrid>
+                  {[
+                    { id: 'two-sum', name: 'Two Sum', difficulty: 'Easy' },
+                    { id: 'add-two-numbers', name: 'Add Two Numbers', difficulty: 'Medium' },
+                    { id: 'longest-substring-without-repeating-characters', name: 'Longest Substring', difficulty: 'Medium' },
+                    { id: 'median-of-two-sorted-arrays', name: 'Median Arrays', difficulty: 'Hard' },
+                    { id: 'reverse-integer', name: 'Reverse Integer', difficulty: 'Medium' }
+                  ].map(q => (
+                    <QuickTestButton
+                      key={q.id}
+                      isActive={leetcodeUrl === q.id}
+                      onClick={() => {
+                        setLeetcodeUrl(q.id);
+                        fetchLeetCodeQuestion(q.id);
+                      }}
+                    >
+                      {q.name} <span style={{ opacity: 0.7 }}>({q.difficulty})</span>
+                    </QuickTestButton>
+                  ))}
+                </QuickTestGrid>
+              </DevLoader>
+            )}
 
-      {/* User Debug Info */}
-      {isLoading && (
-        <LoadingState>
-          <LoadingSpinner />
-          <p>Loading question details...</p>
-        </LoadingState>
-      )}
+            {isLoading && (
+              <LoadingState>
+                <LoadingSpinner />
+                <p>Loading question details...</p>
+              </LoadingState>
+            )}
 
-      {error && (
-        <ErrorAlert>
-          {error}
-        </ErrorAlert>
-      )}
-
-      <MainContent>
-        <Panel>
-          {questionDescription && (
-            <QuestionDescription>
-              <CardHeader>
-                <CardTitle>
-                  <EyeLucide size={20} />
-                  Question Description
-                </CardTitle>
-              </CardHeader>
+            {questionDescription && (
               <div dangerouslySetInnerHTML={{ __html: questionDescription }} />
-            </QuestionDescription>
-          )}
-        </Panel>
+            )}
+          </QuestionDescription>
+        </LeftPane>
 
-        <Panel>
-          <EditorCard>
-            <EditorHeader>
-              <CardTitle>
-                <Code2 size={20} />
-                Code Editor
-              </CardTitle>
-              <EditorActions>
-                <EditorToolGroup>
-                  <IconButton
-                    type="button"
-                    onClick={() => changeFontSize(-1)}
-                    disabled={fontSize <= MIN_FONT_SIZE}
-                    title="Decrease font size"
-                    aria-label="Decrease font size"
-                  >
-                    <Minus size={14} />
-                  </IconButton>
-                  <IconButton
-                    type="button"
-                    onClick={() => changeFontSize(1)}
-                    disabled={fontSize >= MAX_FONT_SIZE}
-                    title="Increase font size"
-                    aria-label="Increase font size"
-                  >
-                    <Plus size={14} />
-                  </IconButton>
-                  <IconButton type="button" onClick={copyCode} title="Copy code" aria-label="Copy code">
-                    {copied ? <Check size={14} /> : <Copy size={14} />}
-                  </IconButton>
-                  <IconButton
-                    type="button"
-                    onClick={resetToTemplate}
-                    title="Reset to the starting template"
-                    aria-label="Reset to the starting template"
-                  >
-                    <RotateCcw size={14} />
-                  </IconButton>
-                </EditorToolGroup>
-                <LanguageSelector value={language} onChange={handleLanguageChange}>
-                  <option value="python">Python</option>
-                  <option value="javascript">JavaScript (editor only)</option>
-                </LanguageSelector>
-                <SandboxActionButton
-                  gated={isGuest}
-                  gatedLabel="Sign in to Run"
-                  onGatedClick={() => navigate('/login')}
-                  pending={isRunningExampleTests}
-                  pendingLabel="Running Examples..."
-                  busy={isSubmitting || isRunningExampleTests}
-                  onClick={runExampleTests}
-                  icon={<PlayLucide size={16} style={{ marginRight: '6px' }} />}
-                >
-                  Run Example Tests
-                </SandboxActionButton>
-                <SandboxActionButton
-                  variant="primary"
-                  gated={isGuest}
-                  gatedLabel="Sign in to Submit"
-                  onGatedClick={() => navigate('/login')}
-                  pending={isSubmitting}
-                  pendingLabel="Submitting..."
-                  busy={isSubmitting || isRunningExampleTests}
-                  onClick={runCode}
-                  icon={<Zap size={16} style={{ marginRight: '6px' }} />}
-                >
-                  Submit Code
-                </SandboxActionButton>
-              </EditorActions>
-            </EditorHeader>
-            <EditorContainer>
-              <Editor
-                height="100%"
-                defaultLanguage={getEditorLanguage()}
-                language={getEditorLanguage()}
-                theme={editorTheme}
-                value={code}
-                onChange={handleEditorChange}
-                onMount={handleEditorMount}
-                loading={<EditorLoading>Loading editor…</EditorLoading>}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize,
-                  fontFamily: "'Fira Code', 'JetBrains Mono', Menlo, monospace",
-                  fontLigatures: true,
-                  lineNumbers: 'on',
-                  lineHeight: 1.6,
-                  roundedSelection: false,
-                  scrollBeyondLastLine: false,
-                  readOnly: isGuest,
-                  automaticLayout: true,
-                  tabSize: 4,
-                  insertSpaces: true,
-                  padding: { top: 14, bottom: 14 },
-                  smoothScrolling: true,
-                  cursorBlinking: 'smooth',
-                  bracketPairColorization: { enabled: true },
-                  guides: { bracketPairs: true, indentation: true },
-                  renderLineHighlight: 'all',
-                  scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10 },
-                  suggestSelection: 'first',
-                  wordWrap: 'off'
-                }}
-              />
-            </EditorContainer>
-            <EditorStatusBar>
-              <StatusGroup>
-                <StatusItem>{language === 'python' ? 'Python' : 'JavaScript'}</StatusItem>
-                <StatusItem>Ln {cursor.line}, Col {cursor.column}</StatusItem>
-                <StatusItem>{fontSize}px</StatusItem>
-                {draftRestored && (
-                  <StatusItem title="Restored from your last unsaved edit">
-                    <DraftDot aria-hidden="true" />
-                    Draft restored
-                  </StatusItem>
-                )}
-                {isGuest && (
-                  <StatusItem>
-                    <Lock size={12} />
-                    Read-only — sign in to edit
-                  </StatusItem>
-                )}
-              </StatusGroup>
-              {!isGuest && isEditorReady && (
+        <VerticalHandle
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize description panel"
+          data-dragging={dragAxis === 'x'}
+          onPointerDown={(e) => { e.preventDefault(); setDragAxis('x'); }}
+        />
+
+        <RightColumn ref={rightColRef}>
+          <EditorPane $pct={editorPct}>
+            <EditorCard>
+              <EditorHeader>
+                <CardTitle>
+                  <Code2 size={16} />
+                  Code
+                </CardTitle>
+                <EditorActions>
+                  <EditorToolGroup>
+                    <IconButton
+                      type="button"
+                      onClick={() => changeFontSize(-1)}
+                      disabled={fontSize <= MIN_FONT_SIZE}
+                      title="Decrease font size"
+                      aria-label="Decrease font size"
+                    >
+                      <Minus size={14} />
+                    </IconButton>
+                    <IconButton
+                      type="button"
+                      onClick={() => changeFontSize(1)}
+                      disabled={fontSize >= MAX_FONT_SIZE}
+                      title="Increase font size"
+                      aria-label="Increase font size"
+                    >
+                      <Plus size={14} />
+                    </IconButton>
+                    <IconButton type="button" onClick={copyCode} title="Copy code" aria-label="Copy code">
+                      {copied ? <Check size={14} /> : <Copy size={14} />}
+                    </IconButton>
+                    <IconButton
+                      type="button"
+                      onClick={resetToTemplate}
+                      title="Reset to the starting template"
+                      aria-label="Reset to the starting template"
+                    >
+                      <RotateCcw size={14} />
+                    </IconButton>
+                  </EditorToolGroup>
+                </EditorActions>
+              </EditorHeader>
+              <EditorContainer>
+                <Editor
+                  height="100%"
+                  defaultLanguage={getEditorLanguage()}
+                  language={getEditorLanguage()}
+                  theme={editorTheme}
+                  value={code}
+                  onChange={handleEditorChange}
+                  onMount={handleEditorMount}
+                  loading={<EditorLoading>Loading editor…</EditorLoading>}
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize,
+                    fontFamily: "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+                    fontLigatures: true,
+                    lineNumbers: 'on',
+                    lineHeight: 1.6,
+                    roundedSelection: false,
+                    scrollBeyondLastLine: false,
+                    readOnly: isGuest,
+                    automaticLayout: true,
+                    tabSize: 4,
+                    insertSpaces: true,
+                    padding: { top: 14, bottom: 14 },
+                    smoothScrolling: true,
+                    cursorBlinking: 'smooth',
+                    bracketPairColorization: { enabled: true },
+                    guides: { bracketPairs: true, indentation: true },
+                    renderLineHighlight: 'all',
+                    scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10 },
+                    suggestSelection: 'first',
+                    wordWrap: 'off'
+                  }}
+                />
+              </EditorContainer>
+              <EditorStatusBar>
                 <StatusGroup>
-                  <StatusItem>
-                    <ShortcutKey>{isMacPlatform() ? '⌘' : 'Ctrl'}</ShortcutKey>
-                    <ShortcutKey>↵</ShortcutKey>
-                    Run
-                  </StatusItem>
-                  <StatusItem>
-                    <ShortcutKey>{isMacPlatform() ? '⇧⌘' : 'Ctrl+Shift'}</ShortcutKey>
-                    <ShortcutKey>↵</ShortcutKey>
-                    Submit
-                  </StatusItem>
+                  <StatusItem>{language === 'python' ? 'Python' : 'JavaScript'}</StatusItem>
+                  <StatusItem>Ln {cursor.line}, Col {cursor.column}</StatusItem>
+                  <StatusItem>{fontSize}px</StatusItem>
+                  {draftRestored && (
+                    <StatusItem title="Restored from your last unsaved edit">
+                      <DraftDot aria-hidden="true" />
+                      Draft restored
+                    </StatusItem>
+                  )}
+                  {isGuest && (
+                    <StatusItem>
+                      <Lock size={12} />
+                      Read-only — sign in to edit
+                    </StatusItem>
+                  )}
                 </StatusGroup>
-              )}
-            </EditorStatusBar>
-          </EditorCard>
+                {!isGuest && isEditorReady && (
+                  <StatusGroup>
+                    <StatusItem>
+                      <ShortcutKey>{isMacPlatform() ? '⌘' : 'Ctrl'}</ShortcutKey>
+                      <ShortcutKey>↵</ShortcutKey>
+                      Run
+                    </StatusItem>
+                    <StatusItem>
+                      <ShortcutKey>{isMacPlatform() ? '⇧⌘' : 'Ctrl+Shift'}</ShortcutKey>
+                      <ShortcutKey>↵</ShortcutKey>
+                      Submit
+                    </StatusItem>
+                  </StatusGroup>
+                )}
+              </EditorStatusBar>
+            </EditorCard>
+          </EditorPane>
 
-          <OutputCard>
-            <CardHeader>
-              <CardTitle>
-                <Monitor size={20} />
-                Output & Results
-              </CardTitle>
-            </CardHeader>
-            <OutputContent>
-              {/* Every code-execution action reports here, so a result is never silent.
-                  Question-loading failures stay in the page-level ErrorAlert above. */}
-              <VisuallyHidden aria-live="polite" role="status">
-                {executionFeedback.message}
-              </VisuallyHidden>
+          <HorizontalHandle
+            role="separator"
+            aria-orientation="horizontal"
+            aria-label="Resize console panel"
+            data-dragging={dragAxis === 'y'}
+            onPointerDown={(e) => { e.preventDefault(); setDragAxis('y'); }}
+          />
 
-              {executionFeedback.status !== 'idle' && executionFeedback.message && (
-                <FeedbackBanner $tone={executionFeedback.status}>
-                  {executionFeedback.status === 'pending' && <FeedbackSpinner aria-hidden="true" />}
-                  <span>{executionFeedback.message}</span>
-                </FeedbackBanner>
-              )}
+          <ConsolePane>
+            <PaneTabBar>
+              <PaneTab as="div" $active>
+                <Monitor size={15} />
+                Console
+                {executionFeedback.status !== 'idle' && executionFeedback.status !== 'pending' && (
+                  <TabBadge $tone={consoleTone}>
+                    {consoleTone === 'success' ? 'Passed' : consoleTone === 'error' ? 'Failed' : '•'}
+                  </TabBadge>
+                )}
+              </PaneTab>
+            </PaneTabBar>
 
-              {debugOutput && <div style={{ color: '#28a745', fontWeight: 'bold' }}>{debugOutput}</div>}
-              {output && <div>{output}</div>}
+            <OutputCard>
+              <OutputContent>
+                {/* Every code-execution action reports here, so a result is never silent.
+                    Question-loading failures stay in the page-level ErrorAlert above. */}
+                <VisuallyHidden aria-live="polite" role="status">
+                  {executionFeedback.message}
+                </VisuallyHidden>
 
-              {exampleTestResults && (
-                <TestResults results={exampleTestResults} type="example" />
-              )}
+                {executionFeedback.status !== 'idle' && executionFeedback.message && (
+                  <FeedbackBanner $tone={executionFeedback.status}>
+                    {executionFeedback.status === 'pending' && <FeedbackSpinner aria-hidden="true" />}
+                    <span>{executionFeedback.message}</span>
+                  </FeedbackBanner>
+                )}
 
-              {testResults && (
-                <TestResults results={testResults} type="final" />
-              )}
-            </OutputContent>
-          </OutputCard>
-        </Panel>
+                {executionFeedback.status === 'idle' && !output && !exampleTestResults && !testResults && (
+                  <ConsoleHint>Run your code to see example test results here, or submit to grade against the full test suite.</ConsoleHint>
+                )}
+
+                {debugOutput && <div style={{ color: '#28a745', fontWeight: 'bold' }}>{debugOutput}</div>}
+                {output && <div>{output}</div>}
+
+                {exampleTestResults && (
+                  <TestResults results={exampleTestResults} type="example" />
+                )}
+
+                {testResults && (
+                  <TestResults results={testResults} type="final" />
+                )}
+              </OutputContent>
+            </OutputCard>
+          </ConsolePane>
+        </RightColumn>
       </MainContent>
 
       {/* Enhanced Session Feedback Modal */}
