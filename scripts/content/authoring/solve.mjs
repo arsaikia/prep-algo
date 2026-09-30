@@ -84,14 +84,14 @@ const computeOutputs = async (reference, inputRows, types) => {
 /** Serialize a harness result into the on-disk `expectedOutput` string form. */
 const encodeExpected = (value) => JSON.stringify(value);
 
-const buildCases = (inputRows, outputs, explanations = [], { hidden = false } = {}) =>
+const buildCases = (inputRows, outputs, explanations = [], { hidden = false, defaultHidden = [], hiddenFlags } = {}) =>
     inputRows.map((inputs, index) => {
         const testCase = {
             inputs,
             expectedOutput: encodeExpected(outputs[index]),
             explanation: explanations[index] ?? '',
         };
-        if (hidden) testCase.isHidden = false;
+        if (hidden) testCase.isHidden = hiddenFlags?.[index] ?? defaultHidden[index] ?? true;
         return testCase;
     });
 
@@ -134,6 +134,13 @@ const assertDraft = (draft, file) => {
             `${file}: exampleOutputs has ${draft.exampleOutputs.length} entries but ` +
             `exampleInputs has ${draft.exampleInputs.length}`,
         );
+    }
+    if (draft.testHidden && (
+        !Array.isArray(draft.testHidden) ||
+        draft.testHidden.length !== draft.testInputs.length ||
+        draft.testHidden.some((flag) => typeof flag !== 'boolean')
+    )) {
+        throw new Error(`${file}: testHidden must contain one boolean per test input`);
     }
     assertTypes(draft, file);
 };
@@ -200,11 +207,16 @@ const applyDraft = async (file) => {
         exampleOutputs,
         draft.explanations?.example,
     );
+    // The graded set opens with the same inputs the learner can already read in
+    // the examples, so those stay visible; everything beyond them is hidden.
+    const exampleCount = draft.exampleInputs?.length ?? 0;
+    const defaultHidden = draft.testInputs.map((_, index) => index >= exampleCount);
+
     const testCases = buildCases(
         draft.testInputs,
         testOutputs,
         draft.explanations?.test,
-        { hidden: true },
+        { hidden: true, defaultHidden, hiddenFlags: draft.testHidden },
     );
 
     await verify(draft.reference, exampleTestCases, 'example', draft.types);

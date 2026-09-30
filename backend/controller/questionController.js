@@ -7,6 +7,7 @@ import { runPythonCode } from '../utils/codeExecution.js';
 import logger from '../config/logger.js';
 import { mongoCircuitBreaker } from '../config/circuitBreakers.js';
 import { invalidateUserCache } from '../middleware/cache.js';
+import { getGradingSpec, getHiddenTestCaseCount, redactHiddenResults } from '../utils/contentStore.js';
 
 /*
  * @desc     Get All Questions (without solve history)
@@ -89,7 +90,7 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
                 expectedOutput: tc.expectedOutput || '',
                 isHidden: false
             })) || [],
-        hiddenTestCaseCount: question.testCases?.filter(tc => tc.isHidden !== false).length || 0,
+        hiddenTestCaseCount: getHiddenTestCaseCount(questionId),
         topics: [question.group],
         templates: question.templates || { python: '', javascript: '' }
     };
@@ -189,30 +190,27 @@ const submitCode = async (req, res) => {
             return res.status(404).json({ error: 'Question not found' });
         }
 
-        // Check if question is complete (has description and test cases)
-        if (!question.description || question.description.trim() === '') {
-            logger.warn({ questionId }, 'no description for question');
-            return res.status(400).json({ error: 'Question description is not available' });
-        }
+        // Grade against the built content bundle, never against the database
+        // copy and never against anything the client sent. `content/` is the
+        // source of truth; the database only records who solved what.
+        const spec = getGradingSpec(questionId);
 
-        if (!question.testCases || question.testCases.length === 0) {
-            logger.warn({ questionId }, 'no test cases for question');
+        if (!spec) {
+            logger.warn({ questionId }, 'no test cases in content bundle for question');
             return res.status(400).json({ error: 'No test cases available for this question' });
         }
 
-        // Run the code against test cases
-        const results = await runPythonCode(code, question.testCases, question.types);
+        const results = await runPythonCode(code, spec.testCases, spec.types);
 
-        // Calculate score
         const passedTests = results.filter(r => r.passed).length;
         const totalTests = results.length;
-        const score = (passedTests / totalTests) * 100;
+        const score = totalTests > 0 ? (passedTests / totalTests) * 100 : 0;
 
         const solved = totalTests > 0 && passedTests === totalTests;
         const progressSaved = solved ? await recordSolvedQuestion(req.user, question) : false;
 
         res.json({
-            results,
+            results: redactHiddenResults(results, spec.testCases),
             score,
             passedTests,
             totalTests,
