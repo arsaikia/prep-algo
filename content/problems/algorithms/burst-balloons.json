@@ -13,11 +13,120 @@
   "legacyId": "3591686e-bc6f-424e-862f-bca65754f3a3",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n<p>Balloons stand in a row with values <code>nums</code>. When you burst a balloon, earn its value multiplied by the values of its nearest still-unburst neighbors. A missing neighbor counts as 1. Return the maximum coins obtainable by bursting every balloon exactly once.</p>\n<p>Neighbors change as balloons disappear, so choosing a locally large product need not be optimal. Imagine which balloon is burst last in each interval: at that instant the two balloons bordering the interval are fixed. Zero-valued balloons are still burst.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> nums = [3,1,5,8]\n<strong>Output:</strong> 167</pre><p>Burst the 1, then 5, then 3, then 8 for 15+120+24+8 = 167.</p>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> nums = [1,5]\n<strong>Output:</strong> 10</pre><p>Burst 1 first for 5 coins, then 5 for 5 more.</p>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> nums = []\n<strong>Output:</strong> 0</pre><p>An empty row earns zero coins.</p>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= nums.length &lt;= 50</li><li>0 &lt;= nums[i] &lt;= 100</li><li>The answer fits a signed 32-bit integer for the supplied inputs.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def maxCoins(self, nums: List[int]) -> int:\n        \"\"\"Balloons stand in a row with values nums. When you burst a balloon, earn its value multiplied by the values of its nearest still-unburst neighbors. A missing neighbor counts as 1. Return the maximum coins obtainable by bursting every balloon exactly once.\n\n        Return the requested number.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} nums\n * @return {number}\n */\nvar maxCoins = function(nums) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[3,1,5,8]"
+      ],
+      "expectedOutput": "167",
+      "explanation": "Burst the 1, then 5, then 3, then 8 for 15+120+24+8 = 167."
+    },
+    {
+      "inputs": [
+        "[1,5]"
+      ],
+      "expectedOutput": "10",
+      "explanation": "Burst 1 first for 5 coins, then 5 for 5 more."
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "An empty row earns zero coins."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[3,1,5,8]"
+      ],
+      "expectedOutput": "167",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[1,5]"
+      ],
+      "expectedOutput": "10",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[7]"
+      ],
+      "expectedOutput": "7",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,2,2]"
+      ],
+      "expectedOutput": "14",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,3,0]"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[9,0,5,1]"
+      ],
+      "expectedOutput": "63",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,1,1,1,1]"
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]"
+      ],
+      "expectedOutput": "50",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

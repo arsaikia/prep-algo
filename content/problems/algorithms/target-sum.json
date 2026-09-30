@@ -13,11 +13,134 @@
   "legacyId": "eb90ada2-219c-4ada-91e1-f348d8acc025",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Place exactly one plus or minus sign in front of every number in <code>nums</code>, then add the signed numbers. Return how many assignments produce <code>target</code>. Assignments are distinguished by position: choosing a plus for the first of two equal numbers differs from choosing a plus for the second.</p>\n<p>Even zero has two sign choices, +0 and -0, and those choices count as different assignments. The empty list has one assignment (the empty sum, zero). Count assignments rather than distinct expressions after simplification.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> nums = [1,1,1,1,1], target = 3\n<strong>Output:</strong> 5</pre><p>Choose one of the five ones to be negative.</p>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> nums = [1], target = 1\n<strong>Output:</strong> 1</pre><p>The plus sign on the only 1 yields the target.</p>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> nums = [], target = 0\n<strong>Output:</strong> 1</pre><p>The empty sum is zero in exactly one way.</p>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= nums.length &lt;= 20</li><li>0 &lt;= nums[i] &lt;= 100</li><li>-2000 &lt;= target &lt;= 2000</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def findTargetSumWays(self, nums: List[int], target: int) -> int:\n        \"\"\"Place exactly one plus or minus sign in front of every number in nums, then add the signed numbers. Return how many assignments produce target. Assignments are distinguished by position: choosing a plus for the first of two equal numbers differs from choosing a plus for the second.\n\n        Return the requested number.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number}\n */\nvar findTargetSumWays = function(nums, target) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[1,1,1,1,1]",
+        "3"
+      ],
+      "expectedOutput": "5",
+      "explanation": "Choose one of the five ones to be negative."
+    },
+    {
+      "inputs": [
+        "[1]",
+        "1"
+      ],
+      "expectedOutput": "1",
+      "explanation": "The plus sign on the only 1 yields the target."
+    },
+    {
+      "inputs": [
+        "[]",
+        "0"
+      ],
+      "expectedOutput": "1",
+      "explanation": "The empty sum is zero in exactly one way."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[1,1,1,1,1]",
+        "3"
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[1]",
+        "1"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]",
+        "0"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]",
+        "1"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0]",
+        "0"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,0,0]",
+        "0"
+      ],
+      "expectedOutput": "8",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,2]",
+        "0"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2,3]",
+        "-10"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[100]",
+        "-100"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]",
+        "0"
+      ],
+      "expectedOutput": "1048576",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY",
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

@@ -13,11 +13,143 @@
   "legacyId": "13a30afd-964c-459f-902a-ca0d4c2d3e16",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>Each entry in <code>tasks</code> is a one-unit job labelled by a capital letter. A processor handles one job per time unit or remains idle. Between two jobs with the same letter, at least <code>n</code> complete time units must be occupied by other jobs or idle slots. Return the shortest total elapsed time to finish all jobs.</p>\n  <p>You may reorder jobs freely. If there are no tasks, the elapsed time is zero.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> tasks = [\"A\",\"A\",\"A\",\"B\",\"B\",\"B\"], n = 2\n<strong>Output:</strong> 8</pre>\n  <p>A B idle A B idle A B takes eight slots.</p>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> tasks = [\"A\",\"C\",\"A\"], n = 1\n<strong>Output:</strong> 3</pre>\n  <p>A C A meets the one-slot separation without idling.</p>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> tasks = [\"A\",\"A\",\"A\"], n = 3\n<strong>Output:</strong> 9</pre>\n  <p>A idle idle idle A idle idle idle A takes nine slots.</p>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 &lt;= tasks.length &lt;= 100</code>; each entry is a one-character uppercase English letter.</li>\n    <li><code>0 &lt;= n &lt;= 100</code>.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def leastInterval(self, tasks: List[str], n: int) -> int:\n        \"\"\"Each entry in tasks is a one-unit job labelled by a capital letter. A processor handles one job per time unit or remains idle. Between two jobs with the same letter, at least n complete time units must be occupied by other jobs or idle slots. Return the shortest total elapsed time to finish all jobs.\"\"\"\n        pass",
+    "javascript": "/**\n * @param {string[]} tasks\n * @param {number} n\n * @return {number}\n */\nvar leastInterval = function(tasks, n) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[\"A\",\"A\",\"A\",\"B\",\"B\",\"B\"]",
+        "2"
+      ],
+      "expectedOutput": "8",
+      "explanation": "A B idle A B idle A B takes eight slots."
+    },
+    {
+      "inputs": [
+        "[\"A\",\"C\",\"A\"]",
+        "1"
+      ],
+      "expectedOutput": "3",
+      "explanation": "A C A meets the one-slot separation without idling."
+    },
+    {
+      "inputs": [
+        "[\"A\",\"A\",\"A\"]",
+        "3"
+      ],
+      "expectedOutput": "9",
+      "explanation": "A idle idle idle A idle idle idle A takes nine slots."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[\"A\",\"A\",\"A\",\"B\",\"B\",\"B\"]",
+        "2"
+      ],
+      "expectedOutput": "8",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"A\",\"C\",\"A\"]",
+        "1"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"A\",\"A\",\"A\"]",
+        "3"
+      ],
+      "expectedOutput": "9",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]",
+        "0"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"A\"]",
+        "100"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"A\",\"B\",\"C\"]",
+        "2"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"A\",\"A\",\"A\",\"A\",\"A\"]",
+        "0"
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"A\",\"A\",\"B\"]",
+        "2"
+      ],
+      "expectedOutput": "4",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"A\",\"A\",\"B\",\"B\"]",
+        "2"
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\"]",
+        "0"
+      ],
+      "expectedOutput": "100",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\",\"A\"]",
+        "100"
+      ],
+      "expectedOutput": "10000",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY",
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

@@ -71,3 +71,6 @@ RECOMMENDATION_IMPROVEMENTS.md
 # by hand or reviewed in a diff.
 /frontend/public/content/
 /backend/content/
+
+# Authoring scratch drafts (inputs to scripts/content/authoring/solve.mjs)
+.authoring-drafts/

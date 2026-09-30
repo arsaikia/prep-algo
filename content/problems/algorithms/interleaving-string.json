@@ -13,11 +13,148 @@
   "legacyId": "c939e7ee-aa9e-41e8-9476-03aab94a23f9",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Determine whether <code>s3</code> can be assembled by taking every character from <code>s1</code> and <code>s2</code> exactly once. Within each source, its characters must appear in their original order, but you may alternate between sources at any point.</p>\n<p>A matching character in the result can sometimes come from either source. Keep track of how many characters have been consumed from each source rather than committing to one greedy choice. All three strings may be empty.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> s1 = \"ab\", s2 = \"cd\", s3 = \"acbd\"\n<strong>Output:</strong> true</pre><p>Take a and b from s1 with c and d from s2 between them.</p>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> s1 = \"ab\", s2 = \"cd\", s3 = \"adbc\"\n<strong>Output:</strong> false</pre><p>Taking d before c would reverse the order in s2.</p>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> s1 = \"\", s2 = \"\", s3 = \"\"\n<strong>Output:</strong> true</pre><p>Two empty sources produce an empty result.</p>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= s1.length, s2.length &lt;= 100</li><li>0 &lt;= s3.length &lt;= 200</li><li>All strings contain only lowercase English letters.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def isInterleave(self, s1: str, s2: str, s3: str) -> bool:\n        \"\"\"Determine whether s3 can be assembled by taking every character from s1 and s2 exactly once. Within each source, its characters must appear in their original order, but you may alternate between sources at any point.\n\n        Return the requested boolean.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} s1\n * @param {string} s2\n * @param {string} s3\n * @return {boolean}\n */\nvar isInterleave = function(s1, s2, s3) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"ab\"",
+        "\"cd\"",
+        "\"acbd\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "Take a and b from s1 with c and d from s2 between them."
+    },
+    {
+      "inputs": [
+        "\"ab\"",
+        "\"cd\"",
+        "\"adbc\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "Taking d before c would reverse the order in s2."
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"\"",
+        "\"\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "Two empty sources produce an empty result."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"ab\"",
+        "\"cd\"",
+        "\"acbd\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"ab\"",
+        "\"cd\"",
+        "\"adbc\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"\"",
+        "\"\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"abc\"",
+        "\"abc\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"\"",
+        "\"acb\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"a\"",
+        "\"aa\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aa\"",
+        "\"ab\"",
+        "\"aaba\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"def\"",
+        "\"abcdef\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"def\"",
+        "\"abdfec\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"",
+        "\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+        "\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "STRING",
+      "STRING"
+    ],
+    "output": "BOOLEAN"
+  }
 }

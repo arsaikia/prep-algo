@@ -13,11 +13,143 @@
   "legacyId": "cf432a06-40f3-4d4c-ad92-e7641db82627",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n<p>Count how many choices of positions in <code>s</code> spell <code>t</code> when read from left to right. You may delete characters from <code>s</code> but cannot rearrange the ones kept. Choices of different positions count separately even if they spell the same text.</p>\n<p>The empty target is formed once by selecting no positions, including when the source is empty. Count position choices, not different resulting strings.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> s = \"rabbbit\", t = \"rabbit\"\n<strong>Output:</strong> 3</pre><p>Any one of the three consecutive b positions can be omitted.</p>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> s = \"babgbag\", t = \"bag\"\n<strong>Output:</strong> 5</pre><p>Five different index choices spell bag.</p>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> s = \"\", t = \"\"\n<strong>Output:</strong> 1</pre><p>The empty selection spells the empty target once.</p>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= s.length, t.length &lt;= 30</li><li>Both strings contain only lowercase English letters.</li><li>The answer fits a signed 32-bit integer.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def numDistinct(self, s: str, t: str) -> int:\n        \"\"\"Count how many choices of positions in s spell t when read from left to right. You may delete characters from s but cannot rearrange the ones kept. Choices of different positions count separately even if they spell the same text.\n\n        Return the requested number.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} s\n * @param {string} t\n * @return {number}\n */\nvar numDistinct = function(s, t) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"rabbbit\"",
+        "\"rabbit\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "Any one of the three consecutive b positions can be omitted."
+    },
+    {
+      "inputs": [
+        "\"babgbag\"",
+        "\"bag\""
+      ],
+      "expectedOutput": "5",
+      "explanation": "Five different index choices spell bag."
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"\""
+      ],
+      "expectedOutput": "1",
+      "explanation": "The empty selection spells the empty target once."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"rabbbit\"",
+        "\"rabbit\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"babgbag\"",
+        "\"bag\""
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"\""
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"\""
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"a\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaa\"",
+        "\"aa\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"abcd\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"abc\""
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaa\"",
+        "\"b\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"",
+        "\"aaaaaaaaaaaaaaa\""
+      ],
+      "expectedOutput": "155117520",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"",
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\""
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "STRING"
+    ],
+    "output": "NUMBER"
+  }
 }

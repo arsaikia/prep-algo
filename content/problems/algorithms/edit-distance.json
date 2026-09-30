@@ -13,11 +13,134 @@
   "legacyId": "3ef787c8-58ec-456d-a3f3-62a3c65c3c0f",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n<p>Find the smallest number of single-character operations needed to turn <code>word1</code> into <code>word2</code>. Each insertion, deletion, or replacement costs one; leaving a matching character untouched costs zero.</p>\n<p>The operations may occur anywhere in the current word. Compare prefixes: their last characters either agree, or a final edit is an insertion, deletion, or replacement. Empty words are allowed.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> word1 = \"horse\", word2 = \"ros\"\n<strong>Output:</strong> 3</pre><p>Replace h with r and delete the second r and e.</p>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> word1 = \"intention\", word2 = \"execution\"\n<strong>Output:</strong> 5</pre><p>Five edits suffice to change intention into execution, and fewer cannot align the differing prefixes.</p>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> word1 = \"\", word2 = \"abc\"\n<strong>Output:</strong> 3</pre><p>Insert a, b, and c into the empty word.</p>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= word1.length, word2.length &lt;= 100</li><li>Both words contain only lowercase English letters.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def minDistance(self, word1: str, word2: str) -> int:\n        \"\"\"Find the smallest number of single-character operations needed to turn word1 into word2. Each insertion, deletion, or replacement costs one; leaving a matching character untouched costs zero.\n\n        Return the requested number.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} word1\n * @param {string} word2\n * @return {number}\n */\nvar minDistance = function(word1, word2) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"horse\"",
+        "\"ros\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "Replace h with r and delete the second r and e."
+    },
+    {
+      "inputs": [
+        "\"intention\"",
+        "\"execution\""
+      ],
+      "expectedOutput": "5",
+      "explanation": "Five edits suffice to change intention into execution, and fewer cannot align the differing prefixes."
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"abc\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "Insert a, b, and c into the empty word."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"horse\"",
+        "\"ros\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"intention\"",
+        "\"execution\""
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"abc\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"a\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"\""
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"b\""
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"cab\""
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaa\"",
+        "\"bbbb\""
+      ],
+      "expectedOutput": "4",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"",
+        "\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\""
+      ],
+      "expectedOutput": "100",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "STRING"
+    ],
+    "output": "NUMBER"
+  }
 }

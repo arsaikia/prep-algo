@@ -13,11 +13,143 @@
   "legacyId": "8f03857b-989a-42bb-95db-2b0a33dc83fc",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n<p>Decide whether the entire string <code>s</code> matches the pattern <code>p</code>. A lowercase letter matches itself; a dot (<code>.</code>) matches exactly one lowercase letter. A star (<code>*</code>) applies only to the immediately preceding letter or dot and permits zero or more copies of it.</p>\n<p>A match must cover the whole string, not merely a substring. The pattern is always well formed: a star never occurs first or immediately after another star. A starred atom can be ignored or used repeatedly; no other regular-expression features are supported.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> s = \"aab\", p = \"c*a*b\"\n<strong>Output:</strong> true</pre><p>Use zero c characters, two a characters, then b.</p>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> s = \"ab\", p = \".*\"\n<strong>Output:</strong> true</pre><p>Dot-star can consume both letters.</p>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> s = \"abc\", p = \"a.c\"\n<strong>Output:</strong> true</pre><p>The dot consumes b between the a and c.</p>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= s.length &lt;= 30</li><li>0 &lt;= p.length &lt;= 30</li><li>s contains only lowercase English letters.</li><li>p contains lowercase English letters, dots, and well-formed stars.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def isMatch(self, s: str, p: str) -> bool:\n        \"\"\"Decide whether the entire string s matches the pattern p. A lowercase letter matches itself; a dot (.) matches exactly one lowercase letter. A star (*) applies only to the immediately preceding letter or dot and permits zero or more copies of it.\n\n        Return the requested boolean.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} s\n * @param {string} p\n * @return {boolean}\n */\nvar isMatch = function(s, p) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"aab\"",
+        "\"c*a*b\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "Use zero c characters, two a characters, then b."
+    },
+    {
+      "inputs": [
+        "\"ab\"",
+        "\".*\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "Dot-star can consume both letters."
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"a.c\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "The dot consumes b between the a and c."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"aab\"",
+        "\"c*a*b\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"ab\"",
+        "\".*\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"a.c\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"a*\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\".\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aa\"",
+        "\"a\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"ab*d\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"mississippi\"",
+        "\"mis*is*p*.\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"",
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "STRING"
+    ],
+    "output": "BOOLEAN"
+  }
 }

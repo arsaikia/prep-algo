@@ -13,11 +13,143 @@
   "legacyId": "4298146d-983b-4f3a-b420-a0b6272189f9",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Given a target <code>amount</code> and coin denominations <code>coins</code>, count the ways to make the target using any number of each coin. A way is a multiset of coins: rearranging the same coins does not create a new way.</p>\n<p>Every denomination is distinct and positive. Process denominations one by one so each combination is counted once, regardless of the order in which its coins might be placed. There is exactly one way to make zero: choose no coins.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> amount = 5, coins = [1,2,5]\n<strong>Output:</strong> 4</pre><p>The combinations are five ones; three ones and a two; one one and two twos; or one five.</p>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> amount = 3, coins = [2]\n<strong>Output:</strong> 0</pre><p>No number of 2-value coins totals 3.</p>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> amount = 0, coins = []\n<strong>Output:</strong> 1</pre><p>Choosing nothing is the single way to total zero.</p>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= amount &lt;= 5000</li><li>0 &lt;= coins.length &lt;= 30</li><li>1 &lt;= coins[i] &lt;= 5000; denominations are distinct.</li><li>The number of ways fits a signed 32-bit integer for the supplied inputs.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def change(self, amount: int, coins: List[int]) -> int:\n        \"\"\"Given a target amount and coin denominations coins, count the ways to make the target using any number of each coin. A way is a multiset of coins: rearranging the same coins does not create a new way.\n\n        Return the requested number.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number} amount\n * @param {number[]} coins\n * @return {number}\n */\nvar change = function(amount, coins) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "5",
+        "[1,2,5]"
+      ],
+      "expectedOutput": "4",
+      "explanation": "The combinations are five ones; three ones and a two; one one and two twos; or one five."
+    },
+    {
+      "inputs": [
+        "3",
+        "[2]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "No number of 2-value coins totals 3."
+    },
+    {
+      "inputs": [
+        "0",
+        "[]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "Choosing nothing is the single way to total zero."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "5",
+        "[1,2,5]"
+      ],
+      "expectedOutput": "4",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "3",
+        "[2]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "0",
+        "[]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "7",
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2",
+        "[2]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "4",
+        "[1,3]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "10",
+        "[10,5,2]"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "0",
+        "[1,2]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "8",
+        "[3,4,5]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "5000",
+        "[5000]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "5000",
+        "[4971,4972,4973,4974,4975,4976,4977,4978,4979,4980,4981,4982,4983,4984,4985,4986,4987,4988,4989,4990,4991,4992,4993,4994,4995,4996,4997,4998,4999,5000]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "NUMBER",
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

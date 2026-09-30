@@ -13,11 +13,120 @@
   "legacyId": "dff36f83-8c6d-45a4-9f5c-0908f3f0b281",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>A keypad maps digits <code>2</code> through <code>9</code> to the letters printed on those keys: <code>2=abc, 3=def, 4=ghi, 5=jkl, 6=mno, 7=pqrs, 8=tuv, 9=wxyz</code>. Choose one letter for each digit in <code>digits</code> and return all resulting strings.</p>\n<p>Return the strings in alphabetical (lexicographic) order. An empty digit string has no combinations, so return <code>[]</code>. Repeated digits are independent choices.</p>\n<p><strong>Example 1:</strong></p>\n<pre><strong>Input:</strong> digits = &quot;23&quot;\n<strong>Output:</strong> [&quot;ad&quot;,&quot;ae&quot;,&quot;af&quot;,&quot;bd&quot;,&quot;be&quot;,&quot;bf&quot;,&quot;cd&quot;,&quot;ce&quot;,&quot;cf&quot;]\n<strong>Explanation:</strong> Each letter on 2 is paired with every letter on 3.</pre>\n<p><strong>Example 2:</strong></p>\n<pre><strong>Input:</strong> digits = &quot;7&quot;\n<strong>Output:</strong> [&quot;p&quot;,&quot;q&quot;,&quot;r&quot;,&quot;s&quot;]\n<strong>Explanation:</strong> The 7 key offers four single-letter strings.</pre>\n<p><strong>Example 3:</strong></p>\n<pre><strong>Input:</strong> digits = &quot;&quot;\n<strong>Output:</strong> []\n<strong>Explanation:</strong> No digits means there is nothing to choose a letter for.</pre>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li><code>0 &lt;= digits.length &lt;= 4</code></li>\n<li><code>digits</code> contains only characters <code>2</code> through <code>9</code></li>\n</ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def letterCombinations(self, digits: str) -> List[str]:\n        \"\"\"Return all keypad strings in alphabetical order.\"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} digits\n * @return {string[]}\n */\nvar letterCombinations = function(digits) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"23\""
+      ],
+      "expectedOutput": "[\"ad\",\"ae\",\"af\",\"bd\",\"be\",\"bf\",\"cd\",\"ce\",\"cf\"]",
+      "explanation": "Each letter on 2 is paired with every letter on 3."
+    },
+    {
+      "inputs": [
+        "\"7\""
+      ],
+      "expectedOutput": "[\"p\",\"q\",\"r\",\"s\"]",
+      "explanation": "The 7 key offers four single-letter strings."
+    },
+    {
+      "inputs": [
+        "\"\""
+      ],
+      "expectedOutput": "[]",
+      "explanation": "No digits means there is nothing to choose a letter for."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"23\""
+      ],
+      "expectedOutput": "[\"ad\",\"ae\",\"af\",\"bd\",\"be\",\"bf\",\"cd\",\"ce\",\"cf\"]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"7\""
+      ],
+      "expectedOutput": "[\"p\",\"q\",\"r\",\"s\"]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\""
+      ],
+      "expectedOutput": "[]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"2\""
+      ],
+      "expectedOutput": "[\"a\",\"b\",\"c\"]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"9\""
+      ],
+      "expectedOutput": "[\"w\",\"x\",\"y\",\"z\"]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"22\""
+      ],
+      "expectedOutput": "[\"aa\",\"ab\",\"ac\",\"ba\",\"bb\",\"bc\",\"ca\",\"cb\",\"cc\"]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"79\""
+      ],
+      "expectedOutput": "[\"pw\",\"px\",\"py\",\"pz\",\"qw\",\"qx\",\"qy\",\"qz\",\"rw\",\"rx\",\"ry\",\"rz\",\"sw\",\"sx\",\"sy\",\"sz\"]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"7777\""
+      ],
+      "expectedOutput": "[\"pppp\",\"pppq\",\"pppr\",\"ppps\",\"ppqp\",\"ppqq\",\"ppqr\",\"ppqs\",\"pprp\",\"pprq\",\"pprr\",\"pprs\",\"ppsp\",\"ppsq\",\"ppsr\",\"ppss\",\"pqpp\",\"pqpq\",\"pqpr\",\"pqps\",\"pqqp\",\"pqqq\",\"pqqr\",\"pqqs\",\"pqrp\",\"pqrq\",\"pqrr\",\"pqrs\",\"pqsp\",\"pqsq\",\"pqsr\",\"pqss\",\"prpp\",\"prpq\",\"prpr\",\"prps\",\"prqp\",\"prqq\",\"prqr\",\"prqs\",\"prrp\",\"prrq\",\"prrr\",\"prrs\",\"prsp\",\"prsq\",\"prsr\",\"prss\",\"pspp\",\"pspq\",\"pspr\",\"psps\",\"psqp\",\"psqq\",\"psqr\",\"psqs\",\"psrp\",\"psrq\",\"psrr\",\"psrs\",\"pssp\",\"pssq\",\"pssr\",\"psss\",\"qppp\",\"qppq\",\"qppr\",\"qpps\",\"qpqp\",\"qpqq\",\"qpqr\",\"qpqs\",\"qprp\",\"qprq\",\"qprr\",\"qprs\",\"qpsp\",\"qpsq\",\"qpsr\",\"qpss\",\"qqpp\",\"qqpq\",\"qqpr\",\"qqps\",\"qqqp\",\"qqqq\",\"qqqr\",\"qqqs\",\"qqrp\",\"qqrq\",\"qqrr\",\"qqrs\",\"qqsp\",\"qqsq\",\"qqsr\",\"qqss\",\"qrpp\",\"qrpq\",\"qrpr\",\"qrps\",\"qrqp\",\"qrqq\",\"qrqr\",\"qrqs\",\"qrrp\",\"qrrq\",\"qrrr\",\"qrrs\",\"qrsp\",\"qrsq\",\"qrsr\",\"qrss\",\"qspp\",\"qspq\",\"qspr\",\"qsps\",\"qsqp\",\"qsqq\",\"qsqr\",\"qsqs\",\"qsrp\",\"qsrq\",\"qsrr\",\"qsrs\",\"qssp\",\"qssq\",\"qssr\",\"qsss\",\"rppp\",\"rppq\",\"rppr\",\"rpps\",\"rpqp\",\"rpqq\",\"rpqr\",\"rpqs\",\"rprp\",\"rprq\",\"rprr\",\"rprs\",\"rpsp\",\"rpsq\",\"rpsr\",\"rpss\",\"rqpp\",\"rqpq\",\"rqpr\",\"rqps\",\"rqqp\",\"rqqq\",\"rqqr\",\"rqqs\",\"rqrp\",\"rqrq\",\"rqrr\",\"rqrs\",\"rqsp\",\"rqsq\",\"rqsr\",\"rqss\",\"rrpp\",\"rrpq\",\"rrpr\",\"rrps\",\"rrqp\",\"rrqq\",\"rrqr\",\"rrqs\",\"rrrp\",\"rrrq\",\"rrrr\",\"rrrs\",\"rrsp\",\"rrsq\",\"rrsr\",\"rrss\",\"rspp\",\"rspq\",\"rspr\",\"rsps\",\"rsqp\",\"rsqq\",\"rsqr\",\"rsqs\",\"rsrp\",\"rsrq\",\"rsrr\",\"rsrs\",\"rssp\",\"rssq\",\"rssr\",\"rsss\",\"sppp\",\"sppq\",\"sppr\",\"spps\",\"spqp\",\"spqq\",\"spqr\",\"spqs\",\"sprp\",\"sprq\",\"sprr\",\"sprs\",\"spsp\",\"spsq\",\"spsr\",\"spss\",\"sqpp\",\"sqpq\",\"sqpr\",\"sqps\",\"sqqp\",\"sqqq\",\"sqqr\",\"sqqs\",\"sqrp\",\"sqrq\",\"sqrr\",\"sqrs\",\"sqsp\",\"sqsq\",\"sqsr\",\"sqss\",\"srpp\",\"srpq\",\"srpr\",\"srps\",\"srqp\",\"srqq\",\"srqr\",\"srqs\",\"srrp\",\"srrq\",\"srrr\",\"srrs\",\"srsp\",\"srsq\",\"srsr\",\"srss\",\"sspp\",\"sspq\",\"sspr\",\"ssps\",\"ssqp\",\"ssqq\",\"ssqr\",\"ssqs\",\"ssrp\",\"ssrq\",\"ssrr\",\"ssrs\",\"sssp\",\"sssq\",\"sssr\",\"ssss\"]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"2345\""
+      ],
+      "expectedOutput": "[\"adgj\",\"adgk\",\"adgl\",\"adhj\",\"adhk\",\"adhl\",\"adij\",\"adik\",\"adil\",\"aegj\",\"aegk\",\"aegl\",\"aehj\",\"aehk\",\"aehl\",\"aeij\",\"aeik\",\"aeil\",\"afgj\",\"afgk\",\"afgl\",\"afhj\",\"afhk\",\"afhl\",\"afij\",\"afik\",\"afil\",\"bdgj\",\"bdgk\",\"bdgl\",\"bdhj\",\"bdhk\",\"bdhl\",\"bdij\",\"bdik\",\"bdil\",\"begj\",\"begk\",\"begl\",\"behj\",\"behk\",\"behl\",\"beij\",\"beik\",\"beil\",\"bfgj\",\"bfgk\",\"bfgl\",\"bfhj\",\"bfhk\",\"bfhl\",\"bfij\",\"bfik\",\"bfil\",\"cdgj\",\"cdgk\",\"cdgl\",\"cdhj\",\"cdhk\",\"cdhl\",\"cdij\",\"cdik\",\"cdil\",\"cegj\",\"cegk\",\"cegl\",\"cehj\",\"cehk\",\"cehl\",\"ceij\",\"ceik\",\"ceil\",\"cfgj\",\"cfgk\",\"cfgl\",\"cfhj\",\"cfhk\",\"cfhl\",\"cfij\",\"cfik\",\"cfil\"]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"9999\""
+      ],
+      "expectedOutput": "[\"wwww\",\"wwwx\",\"wwwy\",\"wwwz\",\"wwxw\",\"wwxx\",\"wwxy\",\"wwxz\",\"wwyw\",\"wwyx\",\"wwyy\",\"wwyz\",\"wwzw\",\"wwzx\",\"wwzy\",\"wwzz\",\"wxww\",\"wxwx\",\"wxwy\",\"wxwz\",\"wxxw\",\"wxxx\",\"wxxy\",\"wxxz\",\"wxyw\",\"wxyx\",\"wxyy\",\"wxyz\",\"wxzw\",\"wxzx\",\"wxzy\",\"wxzz\",\"wyww\",\"wywx\",\"wywy\",\"wywz\",\"wyxw\",\"wyxx\",\"wyxy\",\"wyxz\",\"wyyw\",\"wyyx\",\"wyyy\",\"wyyz\",\"wyzw\",\"wyzx\",\"wyzy\",\"wyzz\",\"wzww\",\"wzwx\",\"wzwy\",\"wzwz\",\"wzxw\",\"wzxx\",\"wzxy\",\"wzxz\",\"wzyw\",\"wzyx\",\"wzyy\",\"wzyz\",\"wzzw\",\"wzzx\",\"wzzy\",\"wzzz\",\"xwww\",\"xwwx\",\"xwwy\",\"xwwz\",\"xwxw\",\"xwxx\",\"xwxy\",\"xwxz\",\"xwyw\",\"xwyx\",\"xwyy\",\"xwyz\",\"xwzw\",\"xwzx\",\"xwzy\",\"xwzz\",\"xxww\",\"xxwx\",\"xxwy\",\"xxwz\",\"xxxw\",\"xxxx\",\"xxxy\",\"xxxz\",\"xxyw\",\"xxyx\",\"xxyy\",\"xxyz\",\"xxzw\",\"xxzx\",\"xxzy\",\"xxzz\",\"xyww\",\"xywx\",\"xywy\",\"xywz\",\"xyxw\",\"xyxx\",\"xyxy\",\"xyxz\",\"xyyw\",\"xyyx\",\"xyyy\",\"xyyz\",\"xyzw\",\"xyzx\",\"xyzy\",\"xyzz\",\"xzww\",\"xzwx\",\"xzwy\",\"xzwz\",\"xzxw\",\"xzxx\",\"xzxy\",\"xzxz\",\"xzyw\",\"xzyx\",\"xzyy\",\"xzyz\",\"xzzw\",\"xzzx\",\"xzzy\",\"xzzz\",\"ywww\",\"ywwx\",\"ywwy\",\"ywwz\",\"ywxw\",\"ywxx\",\"ywxy\",\"ywxz\",\"ywyw\",\"ywyx\",\"ywyy\",\"ywyz\",\"ywzw\",\"ywzx\",\"ywzy\",\"ywzz\",\"yxww\",\"yxwx\",\"yxwy\",\"yxwz\",\"yxxw\",\"yxxx\",\"yxxy\",\"yxxz\",\"yxyw\",\"yxyx\",\"yxyy\",\"yxyz\",\"yxzw\",\"yxzx\",\"yxzy\",\"yxzz\",\"yyww\",\"yywx\",\"yywy\",\"yywz\",\"yyxw\",\"yyxx\",\"yyxy\",\"yyxz\",\"yyyw\",\"yyyx\",\"yyyy\",\"yyyz\",\"yyzw\",\"yyzx\",\"yyzy\",\"yyzz\",\"yzww\",\"yzwx\",\"yzwy\",\"yzwz\",\"yzxw\",\"yzxx\",\"yzxy\",\"yzxz\",\"yzyw\",\"yzyx\",\"yzyy\",\"yzyz\",\"yzzw\",\"yzzx\",\"yzzy\",\"yzzz\",\"zwww\",\"zwwx\",\"zwwy\",\"zwwz\",\"zwxw\",\"zwxx\",\"zwxy\",\"zwxz\",\"zwyw\",\"zwyx\",\"zwyy\",\"zwyz\",\"zwzw\",\"zwzx\",\"zwzy\",\"zwzz\",\"zxww\",\"zxwx\",\"zxwy\",\"zxwz\",\"zxxw\",\"zxxx\",\"zxxy\",\"zxxz\",\"zxyw\",\"zxyx\",\"zxyy\",\"zxyz\",\"zxzw\",\"zxzx\",\"zxzy\",\"zxzz\",\"zyww\",\"zywx\",\"zywy\",\"zywz\",\"zyxw\",\"zyxx\",\"zyxy\",\"zyxz\",\"zyyw\",\"zyyx\",\"zyyy\",\"zyyz\",\"zyzw\",\"zyzx\",\"zyzy\",\"zyzz\",\"zzww\",\"zzwx\",\"zzwy\",\"zzwz\",\"zzxw\",\"zzxx\",\"zzxy\",\"zzxz\",\"zzyw\",\"zzyx\",\"zzyy\",\"zzyz\",\"zzzw\",\"zzzx\",\"zzzy\",\"zzzz\"]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING"
+    ],
+    "output": "ARRAY"
+  }
 }

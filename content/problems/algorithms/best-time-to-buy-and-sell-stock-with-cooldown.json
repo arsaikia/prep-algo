@@ -13,11 +13,120 @@
   "legacyId": "e66b304b-9a77-49c0-9fd1-72bbc93f1140",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Each day has a stock price in <code>prices</code>. You may hold at most one share at a time, buying before you sell. After selling, the next day is a mandatory rest day on which you cannot buy. Return the largest total profit obtainable; you may skip any day and make any number of completed trades.</p>\n<p>A sale earns that day's price minus the purchase price. There is no fee and no requirement to trade; returning zero is valid when all trades lose money. Track whether you finish a day holding, resting after a sale, or free to buy.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> prices = [1,2,3,0,2]\n<strong>Output:</strong> 3</pre><p>Buy at 1, sell at 2, rest on day 3, then buy at 0 and sell at 2: profit 3.</p>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> prices = [2,1,4]\n<strong>Output:</strong> 3</pre><p>Buy at 1 and sell at 4 for profit 3.</p>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> prices = []\n<strong>Output:</strong> 0</pre><p>With no trading days there is no profit.</p>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= prices.length &lt;= 500</li><li>0 &lt;= prices[i] &lt;= 1000</li><li>Only one share can be held at a time.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def maxProfit(self, prices: List[int]) -> int:\n        \"\"\"Each day has a stock price in prices. You may hold at most one share at a time, buying before you sell. After selling, the next day is a mandatory rest day on which you cannot buy. Return the largest total profit obtainable; you may skip any day and make any number of completed trades.\n\n        Return the requested number.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} prices\n * @return {number}\n */\nvar maxProfit = function(prices) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[1,2,3,0,2]"
+      ],
+      "expectedOutput": "3",
+      "explanation": "Buy at 1, sell at 2, rest on day 3, then buy at 0 and sell at 2: profit 3."
+    },
+    {
+      "inputs": [
+        "[2,1,4]"
+      ],
+      "expectedOutput": "3",
+      "explanation": "Buy at 1 and sell at 4 for profit 3."
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "With no trading days there is no profit."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[1,2,3,0,2]"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[2,1,4]"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[5]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[5,4,3,2]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[3,3,3,3]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,0,2,0,2]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[6,1,3,2,4,7]"
+      ],
+      "expectedOutput": "6",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,10,0,10,0,10]"
+      ],
+      "expectedOutput": "20",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4]"
+      ],
+      "expectedOutput": "409",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

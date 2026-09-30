@@ -13,11 +13,134 @@
   "legacyId": "05eafa5f-f0a3-4bf7-bdc6-4b2ec579fce0",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>An <code>m</code>-by-<code>n</code> rectangular grid has a traveler at its upper-left cell. Count the routes to the lower-right cell when each move goes exactly one cell right or one cell down. There are no obstacles and routes are distinguished by their sequences of moves.</p>\n<p>A cell can be reached only from the cell above it or from the cell to its left, so its route count is the sum of those two counts. A single cell has one route, consisting of zero moves.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> m = 3, n = 7\n<strong>Output:</strong> 28</pre><p>Choose the positions of two down moves among eight total moves: 28 routes.</p>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> m = 3, n = 2\n<strong>Output:</strong> 3</pre><p>The down move can occur in any of three positions.</p>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> m = 1, n = 1\n<strong>Output:</strong> 1</pre><p>Start and destination coincide, yielding one zero-move route.</p>\n<p><strong>Constraints:</strong></p><ul><li>1 &lt;= m, n &lt;= 20</li><li>The number of routes fits a signed 64-bit integer.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def uniquePaths(self, m: int, n: int) -> int:\n        \"\"\"An m-by-n rectangular grid has a traveler at its upper-left cell. Count the routes to the lower-right cell when each move goes exactly one cell right or one cell down. There are no obstacles and routes are distinguished by their sequences of moves.\n\n        Return the requested number.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number} m\n * @param {number} n\n * @return {number}\n */\nvar uniquePaths = function(m, n) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "3",
+        "7"
+      ],
+      "expectedOutput": "28",
+      "explanation": "Choose the positions of two down moves among eight total moves: 28 routes."
+    },
+    {
+      "inputs": [
+        "3",
+        "2"
+      ],
+      "expectedOutput": "3",
+      "explanation": "The down move can occur in any of three positions."
+    },
+    {
+      "inputs": [
+        "1",
+        "1"
+      ],
+      "expectedOutput": "1",
+      "explanation": "Start and destination coincide, yielding one zero-move route."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "3",
+        "7"
+      ],
+      "expectedOutput": "28",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "3",
+        "2"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "1",
+        "1"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "1",
+        "20"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "20",
+        "1"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2",
+        "2"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "3",
+        "3"
+      ],
+      "expectedOutput": "6",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "4",
+        "5"
+      ],
+      "expectedOutput": "35",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "10",
+        "10"
+      ],
+      "expectedOutput": "48620",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "20",
+        "20"
+      ],
+      "expectedOutput": "35345263800",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "NUMBER",
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

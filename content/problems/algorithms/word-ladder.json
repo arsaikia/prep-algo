@@ -13,11 +13,148 @@
   "legacyId": "ebb143c6-50b5-46a1-8ab2-84ac8432a244",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n  <p>Turn <code>beginWord</code> into <code>endWord</code> by replacing exactly one letter per step. Every word after the first must occur in <code>wordList</code>. Return the fewest words in such a sequence, counting both endpoints, or zero if no sequence exists.</p>\n  <p>A one-letter change may pass through words not closer to the target; find the shortest valid chain.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> beginWord = &quot;hit&quot;, endWord = &quot;cog&quot;, wordList = [&quot;hot&quot;,&quot;dot&quot;,&quot;dog&quot;,&quot;lot&quot;,&quot;log&quot;,&quot;cog&quot;]\n<strong>Output:</strong> 5</pre>\n  <p>One shortest chain is hit→hot→dot→dog→cog.</p>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> beginWord = &quot;hit&quot;, endWord = &quot;cog&quot;, wordList = [&quot;hot&quot;,&quot;dot&quot;,&quot;dog&quot;,&quot;lot&quot;,&quot;log&quot;]\n<strong>Output:</strong> 0</pre>\n  <p>The target is missing from the permitted words.</p>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> beginWord = &quot;a&quot;, endWord = &quot;c&quot;, wordList = [&quot;a&quot;,&quot;b&quot;,&quot;c&quot;]\n<strong>Output:</strong> 2</pre>\n  <p>Changing a to c takes one step, making two words.</p>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>1 &lt;= beginWord.length = endWord.length &lt;= 10</code>.</li>\n    <li><code>0 &lt;= wordList.length &lt;= 100</code>; all words have the same length, use lowercase English letters, and are distinct.</li>\n    <li><code>beginWord</code> need not be in the list; when the two endpoints are equal return <code>1</code>.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def ladderLength(self, beginWord: str, endWord: str, wordList: List[str]):\n        \"\"\"NUMBER\"\"\"\n        pass\n",
+    "javascript": "class Solution {\n  /** Return the required number result. */\n  ladderLength(beginWord, endWord, wordList) {\n    // your code here\n  }\n}\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"hit\"",
+        "\"cog\"",
+        "[\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]"
+      ],
+      "expectedOutput": "5",
+      "explanation": "One shortest chain is hit→hot→dot→dog→cog."
+    },
+    {
+      "inputs": [
+        "\"hit\"",
+        "\"cog\"",
+        "[\"hot\",\"dot\",\"dog\",\"lot\",\"log\"]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "The target is missing from the permitted words."
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"c\"",
+        "[\"a\",\"b\",\"c\"]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "Changing a to c takes one step, making two words."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"hit\"",
+        "\"cog\"",
+        "[\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]"
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"hit\"",
+        "\"cog\"",
+        "[\"hot\",\"dot\",\"dog\",\"lot\",\"log\"]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"c\"",
+        "[\"a\",\"b\",\"c\"]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"a\"",
+        "[]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"b\"",
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"ab\"",
+        "\"ac\"",
+        "[\"ac\"]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaa\"",
+        "\"bbb\"",
+        "[\"aab\",\"abb\",\"bbb\"]"
+      ],
+      "expectedOutput": "4",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"xyz\"",
+        "[\"xyz\"]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"abc\"",
+        "[\"abc\"]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaa\"",
+        "\"baaaaaaaaa\"",
+        "[\"aaaaaaaaaa\",\"abaaaaaaaa\",\"acaaaaaaaa\",\"adaaaaaaaa\",\"aeaaaaaaaa\",\"afaaaaaaaa\",\"agaaaaaaaa\",\"ahaaaaaaaa\",\"aiaaaaaaaa\",\"ajaaaaaaaa\",\"akaaaaaaaa\",\"alaaaaaaaa\",\"amaaaaaaaa\",\"anaaaaaaaa\",\"aoaaaaaaaa\",\"apaaaaaaaa\",\"aqaaaaaaaa\",\"araaaaaaaa\",\"asaaaaaaaa\",\"ataaaaaaaa\",\"auaaaaaaaa\",\"avaaaaaaaa\",\"awaaaaaaaa\",\"axaaaaaaaa\",\"ayaaaaaaaa\",\"azaaaaaaaa\",\"baaaaaaaaa\",\"bbaaaaaaaa\",\"bcaaaaaaaa\",\"bdaaaaaaaa\",\"beaaaaaaaa\",\"bfaaaaaaaa\",\"bgaaaaaaaa\",\"bhaaaaaaaa\",\"biaaaaaaaa\",\"bjaaaaaaaa\",\"bkaaaaaaaa\",\"blaaaaaaaa\",\"bmaaaaaaaa\",\"bnaaaaaaaa\",\"boaaaaaaaa\",\"bpaaaaaaaa\",\"bqaaaaaaaa\",\"braaaaaaaa\",\"bsaaaaaaaa\",\"btaaaaaaaa\",\"buaaaaaaaa\",\"bvaaaaaaaa\",\"bwaaaaaaaa\",\"bxaaaaaaaa\",\"byaaaaaaaa\",\"bzaaaaaaaa\",\"caaaaaaaaa\",\"cbaaaaaaaa\",\"ccaaaaaaaa\",\"cdaaaaaaaa\",\"ceaaaaaaaa\",\"cfaaaaaaaa\",\"cgaaaaaaaa\",\"chaaaaaaaa\",\"ciaaaaaaaa\",\"cjaaaaaaaa\",\"ckaaaaaaaa\",\"claaaaaaaa\",\"cmaaaaaaaa\",\"cnaaaaaaaa\",\"coaaaaaaaa\",\"cpaaaaaaaa\",\"cqaaaaaaaa\",\"craaaaaaaa\",\"csaaaaaaaa\",\"ctaaaaaaaa\",\"cuaaaaaaaa\",\"cvaaaaaaaa\",\"cwaaaaaaaa\",\"cxaaaaaaaa\",\"cyaaaaaaaa\",\"czaaaaaaaa\",\"daaaaaaaaa\",\"dbaaaaaaaa\",\"dcaaaaaaaa\",\"ddaaaaaaaa\",\"deaaaaaaaa\",\"dfaaaaaaaa\",\"dgaaaaaaaa\",\"dhaaaaaaaa\",\"diaaaaaaaa\",\"djaaaaaaaa\",\"dkaaaaaaaa\",\"dlaaaaaaaa\",\"dmaaaaaaaa\",\"dnaaaaaaaa\",\"doaaaaaaaa\",\"dpaaaaaaaa\",\"dqaaaaaaaa\",\"draaaaaaaa\",\"dsaaaaaaaa\",\"dtaaaaaaaa\",\"duaaaaaaaa\",\"dvaaaaaaaa\"]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "STRING",
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

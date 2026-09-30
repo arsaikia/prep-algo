@@ -13,11 +13,134 @@
   "legacyId": "6383ffe9-406b-4fdb-9592-3b37f35687a1",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Return the length of the longest sequence of characters that appears in both <code>text1</code> and <code>text2</code> in the same order. Characters in each text need not be adjacent, but each position can be used at most once.</p>\n<p>When the last characters of two prefixes agree, they can extend a common sequence; otherwise one of those last characters must be skipped. Return only the length, not a sequence, so tied answers are unambiguous.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> text1 = \"abcde\", text2 = \"ace\"\n<strong>Output:</strong> 3</pre><p>a, c, e appears in both texts in order.</p>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> text1 = \"abc\", text2 = \"def\"\n<strong>Output:</strong> 0</pre><p>No character appears in both texts.</p>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> text1 = \"\", text2 = \"abc\"\n<strong>Output:</strong> 0</pre><p>An empty text has no nonempty subsequence.</p>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= text1.length, text2.length &lt;= 100</li><li>Both texts contain only lowercase English letters.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def longestCommonSubsequence(self, text1: str, text2: str) -> int:\n        \"\"\"Return the length of the longest sequence of characters that appears in both text1 and text2 in the same order. Characters in each text need not be adjacent, but each position can be used at most once.\n\n        Return the requested number.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} text1\n * @param {string} text2\n * @return {number}\n */\nvar longestCommonSubsequence = function(text1, text2) {\n    // your code here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"abcde\"",
+        "\"ace\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "a, c, e appears in both texts in order."
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"def\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "No character appears in both texts."
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"abc\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "An empty text has no nonempty subsequence."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"abcde\"",
+        "\"ace\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"def\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"abc\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"a\""
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"b\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaa\"",
+        "\"aa\""
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"bac\""
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abcdef\"",
+        "\"fedcba\""
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"",
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\""
+      ],
+      "expectedOutput": "100",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "STRING"
+    ],
+    "output": "NUMBER"
+  }
 }
