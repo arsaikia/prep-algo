@@ -529,6 +529,36 @@ only.
 Still open: a correct MCQ answer records progress but does not tick off the daily
 recommendation batch. Only the code sandbox's session tracker does that.
 
+### Production deploy runbook
+
+As of 2026-09-30 production still runs the July 2025 build: the Hosting bundle is the
+CRA build and the backend ignores `?domain=`. The next deploy ships Phases 1–3 and V2
+Steps 0–5 at once. It needs no Mongo migration and no Postgres:
+
+- **Question ids already line up.** All 221 `_id`s served by the production API equal
+  the `legacyId`s in `content/`, so existing solve records join to the catalog unchanged.
+  The production `questions` collection simply goes unread.
+- **One backfill.** Records written before Phase 3 lack `domain`, and the
+  spaced-repetition query filters on it. `backend/scripts/backfillSolveHistoryFields.js`
+  fills `domain`, `questionGroup` and `questionDifficulty` from the catalog. It is a dry
+  run unless passed `--apply`, and reads `MONGO_URI` only.
+
+Order:
+
+1. `./deploy-to-cloudrun.sh`. Builds content, then deploys a `candidate` revision at 0%
+   traffic and smoke-tests its tag URL. `REDIS_URL` is wired only if that secret exists;
+   otherwise the in-memory fallback runs.
+2. `./deploy-to-cloudrun.sh --promote`. Moves 100% of traffic and prints the rollback
+   command for the replaced revision.
+3. `./deploy-to-firebase.sh` immediately after, since the old frontend predates JWT auth.
+   Roll back with `firebase hosting:releases:rollback`.
+4. From `backend/`: `MONGO_URI=<prod> node scripts/backfillSolveHistoryFields.js`, then
+   again with `--apply`. It runs after the promote so the old backend cannot write more
+   records without `domain`. It is idempotent.
+
+Code execution on Cloud Run uses the subprocess runner. Cloud Run has no Docker daemon, so
+the sandbox logs that it is falling back.
+
 ---
 
 ## Phase 4: Guided Study System ⬜ NOT STARTED
