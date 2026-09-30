@@ -99,5 +99,13 @@
       "explanation": "",
       "isHidden": true
     }
-  ]
+  ],
+  "types": {
+    "inputs": [
+      "TREE",
+      "NUMBER",
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

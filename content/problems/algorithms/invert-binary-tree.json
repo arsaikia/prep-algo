@@ -83,5 +83,11 @@
       "explanation": "",
       "isHidden": true
     }
-  ]
+  ],
+  "types": {
+    "inputs": [
+      "TREE"
+    ],
+    "output": "TREE"
+  }
 }

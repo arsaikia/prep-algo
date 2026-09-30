@@ -90,5 +90,12 @@
       "explanation": "",
       "isHidden": true
     }
-  ]
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY",
+      "NUMBER"
+    ],
+    "output": "ARRAY"
+  }
 }

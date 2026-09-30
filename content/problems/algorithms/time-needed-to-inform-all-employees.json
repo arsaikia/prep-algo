@@ -84,5 +84,14 @@
       "explanation": "",
       "isHidden": true
     }
-  ]
+  ],
+  "types": {
+    "inputs": [
+      "NUMBER",
+      "NUMBER",
+      "ARRAY",
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

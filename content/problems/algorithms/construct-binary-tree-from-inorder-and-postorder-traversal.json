@@ -73,5 +73,12 @@
       "explanation": "",
       "isHidden": true
     }
-  ]
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY",
+      "ARRAY"
+    ],
+    "output": "TREE"
+  }
 }

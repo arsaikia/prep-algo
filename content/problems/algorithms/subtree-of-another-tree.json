@@ -91,5 +91,12 @@
       "explanation": "",
       "isHidden": true
     }
-  ]
+  ],
+  "types": {
+    "inputs": [
+      "TREE",
+      "TREE"
+    ],
+    "output": "BOOLEAN"
+  }
 }
