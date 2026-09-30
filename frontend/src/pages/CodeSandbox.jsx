@@ -13,6 +13,7 @@ import DesignDocSolver from '../components/DesignDocSolver/DesignDocSolver.jsx';
 import { useTimeTracker } from '../utils/timeTracker.js';
 import { useTestUser } from '../contexts/TestUserContext';
 import { isFeatureEnabled, isDevMode } from '../utils/featureFlags';
+import readApiError from '../utils/apiError.js';
 
 // Modern styled components with clean design
 const Container = styled.div`
@@ -576,6 +577,90 @@ const OutputContent = styled.div`
   max-height: 400px;
 `;
 
+const FEEDBACK_TONES = {
+  pending: { fg: '#2563eb', bg: 'rgba(37, 99, 235, 0.08)', border: 'rgba(37, 99, 235, 0.35)' },
+  success: { fg: '#15803d', bg: 'rgba(21, 128, 61, 0.08)', border: 'rgba(21, 128, 61, 0.35)' },
+  error: { fg: '#b91c1c', bg: 'rgba(185, 28, 28, 0.08)', border: 'rgba(185, 28, 28, 0.35)' }
+};
+
+const tone = ($tone) => FEEDBACK_TONES[$tone] || FEEDBACK_TONES.pending;
+
+const FeedbackBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  font-family: ${({ theme }) => theme?.fonts?.body || 'inherit'};
+  font-size: 14px;
+  font-weight: 600;
+  white-space: normal;
+  color: ${({ $tone }) => tone($tone).fg};
+  background: ${({ $tone }) => tone($tone).bg};
+  border: 1px solid ${({ $tone }) => tone($tone).border};
+`;
+
+const FeedbackSpinner = styled.span`
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: feedbackSpin 0.7s linear infinite;
+
+  @keyframes feedbackSpin {
+    to { transform: rotate(360deg); }
+  }
+`;
+
+const VisuallyHidden = styled.span`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+`;
+
+/**
+ * The single place an action decides whether it can run.
+ *
+ * `gated` deliberately never feeds `disabled`. The original Submit button was
+ * `disabled={isGuest}` with the label "Sign in to Submit", so a guest's click
+ * was swallowed by the browser and the page did nothing at all. Routing the
+ * gate through `onGatedClick` keeps the button live and turns the gate into a
+ * real affordance. `disabled` is now reserved for work that is genuinely in
+ * flight, which is the only case where a click has nothing to do.
+ */
+const SandboxActionButton = ({
+  gated,
+  gatedLabel,
+  onGatedClick,
+  pending,
+  pendingLabel,
+  busy,
+  onClick,
+  icon,
+  variant,
+  children
+}) => {
+  const label = gated ? gatedLabel : pending ? pendingLabel : children;
+
+  return (
+    <ModernButton
+      variant={variant}
+      onClick={gated ? onGatedClick : onClick}
+      disabled={!gated && Boolean(busy)}
+      aria-busy={pending ? 'true' : undefined}
+    >
+      {icon}
+      {label}
+    </ModernButton>
+  );
+};
+
 const QuestionDescription = styled(Card)`
   height: 500px;
   overflow-y: auto;
@@ -741,7 +826,11 @@ const CodeSandbox = () => {
   const [questionDescription, setQuestionDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [statusMessage, setStatusMessage] = useState('');
+  // One explicit lifecycle shared by the two code-execution actions (run examples,
+  // submit): idle -> pending -> success | error. The previous code spread this across
+  // `isLoading`, a transient status string and `error`, which is how the button ended
+  // up claiming to be busy while a totally unrelated request was in flight.
+  const [executionFeedback, setExecutionFeedback] = useState({ status: 'idle', message: '' });
   const [error, setError] = useState('');
   const [testResults, setTestResults] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -999,7 +1088,10 @@ const CodeSandbox = () => {
 
   const runCode = async () => {
     if (language !== 'python') {
-      setError('Submissions are executed as Python. Switch the language to Python to submit.');
+      setExecutionFeedback({
+        status: 'error',
+        message: 'Submissions are executed as Python. Switch the language to Python to submit.'
+      });
       return;
     }
 
@@ -1008,7 +1100,7 @@ const CodeSandbox = () => {
       setError('');
       setOutput('');
       setTestResults(null);
-      setStatusMessage('Submitting your solution…');
+      setExecutionFeedback({ status: 'pending', message: 'Submitting your solution…' });
 
       const questionId = leetcodeUrl.replace(/\/$/, '');
 
@@ -1037,9 +1129,14 @@ const CodeSandbox = () => {
 
         setTestResults(formattedResults);
         setOutput(`Test results: ${response.data.passedTests}/${response.data.totalTests} tests passed (${response.data.score}% score)`);
-        setStatusMessage(
-          `Submission complete: ${response.data.passedTests} of ${response.data.totalTests} tests passed.`
-        );
+
+        const allPassed = response.data.passedTests === response.data.totalTests;
+        setExecutionFeedback({
+          status: allPassed ? 'success' : 'error',
+          message: allPassed
+            ? `All ${response.data.totalTests} tests passed. Nice work!`
+            : `${response.data.passedTests} of ${response.data.totalTests} tests passed. Review the failing cases below.`
+        });
 
         // Handle session completion based on results
         const success = response.data.score === 100; // Require 100% success for Smart Hybrid recommendations
@@ -1047,14 +1144,19 @@ const CodeSandbox = () => {
           await handleSessionComplete(success);
         }
       } else {
-        setError('Unexpected response from the server. Please try again.');
+        setExecutionFeedback({
+          status: 'error',
+          message: 'Unexpected response from the server. Please try again.'
+        });
       }
     } catch (error) {
-      const data = error.response?.data;
-      setError(`Error: ${data?.error || data?.details || data?.message || error.message}`);
+      setExecutionFeedback({
+        status: 'error',
+        message: readApiError(error, 'Your solution could not be submitted.')
+      });
+      console.error('Error submitting solution:', error);
     } finally {
       setIsSubmitting(false);
-      setStatusMessage('');
     }
   };
 
@@ -1133,7 +1235,7 @@ const CodeSandbox = () => {
       // fallback silently replaced whatever the user had just opened.
       // Keeping it also makes the page shareable and survives a refresh.
     } catch (err) {
-      setError(`Error fetching question: ${err.message}`);
+      setError(`Could not load that question. ${readApiError(err)}`);
       console.error('Error fetching question:', err);
       console.error('Error details:', err.response ? err.response.data : 'No response data');
     } finally {
@@ -1142,11 +1244,19 @@ const CodeSandbox = () => {
   };
 
   const runExampleTests = async () => {
+    if (language !== 'python') {
+      setExecutionFeedback({
+        status: 'error',
+        message: 'Example tests are executed as Python. Switch the language to Python to run them.'
+      });
+      return;
+    }
+
     try {
       setIsRunningExampleTests(true);
-      setError('');
       setDebugOutput('');
       setExampleTestResults(null);
+      setExecutionFeedback({ status: 'pending', message: 'Running the example tests…' });
 
       const questionId = leetcodeUrl.replace(/\/$/, '');
 
@@ -1156,7 +1266,7 @@ const CodeSandbox = () => {
       });
 
       // Format the results for display
-      if (response.data) {
+      if (response.data && response.data.summary && Array.isArray(response.data.results)) {
         const formattedResults = {
           summary: {
             passed: response.data.summary.passed,
@@ -1175,11 +1285,23 @@ const CodeSandbox = () => {
 
         setExampleTestResults(formattedResults);
         setDebugOutput(`Example test results: ${response.data.summary.passed}/${response.data.summary.total} tests passed`);
+
+        const { passed, total } = response.data.summary;
+        setExecutionFeedback({
+          status: passed === total ? 'success' : 'error',
+          message: `Example tests: ${passed} of ${total} passed.`
+        });
       } else {
-        setError('Invalid response format from server');
+        setExecutionFeedback({
+          status: 'error',
+          message: 'Unexpected response from the server. Please try again.'
+        });
       }
     } catch (error) {
-      setError(`Error: ${error.response?.data?.message || error.message}`);
+      setExecutionFeedback({
+        status: 'error',
+        message: readApiError(error, 'The example tests could not be run.')
+      });
       console.error('Error executing example tests:', error);
     } finally {
       setIsRunningExampleTests(false);
@@ -1335,23 +1457,33 @@ const CodeSandbox = () => {
               <EditorActions>
                 <LanguageSelector value={language} onChange={handleLanguageChange}>
                   <option value="python">Python</option>
-                  <option value="javascript">JavaScript</option>
+                  <option value="javascript">JavaScript (editor only)</option>
                 </LanguageSelector>
-                <ModernButton
-                  onClick={isGuest ? () => navigate('/login') : runExampleTests}
-                  disabled={!isGuest && (isSubmitting || isRunningExampleTests)}
+                <SandboxActionButton
+                  gated={isGuest}
+                  gatedLabel="Sign in to Run"
+                  onGatedClick={() => navigate('/login')}
+                  pending={isRunningExampleTests}
+                  pendingLabel="Running Examples..."
+                  busy={isSubmitting || isRunningExampleTests}
+                  onClick={runExampleTests}
+                  icon={<PlayLucide size={16} style={{ marginRight: '6px' }} />}
                 >
-                  <PlayLucide size={16} style={{ marginRight: '6px' }} />
-                  {isGuest ? 'Sign in to Run' : isRunningExampleTests ? 'Running Examples...' : 'Run Example Tests'}
-                </ModernButton>
-                <ModernButton
-                  onClick={isGuest ? () => navigate('/login') : runCode}
-                  disabled={!isGuest && (isSubmitting || isRunningExampleTests)}
+                  Run Example Tests
+                </SandboxActionButton>
+                <SandboxActionButton
                   variant="primary"
+                  gated={isGuest}
+                  gatedLabel="Sign in to Submit"
+                  onGatedClick={() => navigate('/login')}
+                  pending={isSubmitting}
+                  pendingLabel="Submitting..."
+                  busy={isSubmitting || isRunningExampleTests}
+                  onClick={runCode}
+                  icon={<Zap size={16} style={{ marginRight: '6px' }} />}
                 >
-                  <Zap size={16} style={{ marginRight: '6px' }} />
-                  {isGuest ? 'Sign in to Submit' : isSubmitting ? 'Submitting...' : 'Submit Code'}
-                </ModernButton>
+                  Submit Code
+                </SandboxActionButton>
               </EditorActions>
             </EditorHeader>
             <EditorContainer>
@@ -1383,24 +1515,19 @@ const CodeSandbox = () => {
               </CardTitle>
             </CardHeader>
             <OutputContent>
-              <div
-                aria-live="polite"
-                role="status"
-                style={{
-                  position: 'absolute',
-                  width: '1px',
-                  height: '1px',
-                  overflow: 'hidden',
-                  clip: 'rect(0 0 0 0)',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                {statusMessage || error}
-              </div>
-              {isSubmitting && (
-                <div style={{ fontWeight: 'bold' }}>Submitting your solution…</div>
+              {/* Every code-execution action reports here, so a result is never silent.
+                  Question-loading failures stay in the page-level ErrorAlert above. */}
+              <VisuallyHidden aria-live="polite" role="status">
+                {executionFeedback.message}
+              </VisuallyHidden>
+
+              {executionFeedback.status !== 'idle' && executionFeedback.message && (
+                <FeedbackBanner $tone={executionFeedback.status}>
+                  {executionFeedback.status === 'pending' && <FeedbackSpinner aria-hidden="true" />}
+                  <span>{executionFeedback.message}</span>
+                </FeedbackBanner>
               )}
-              {error && <div style={{ color: '#dc3545', fontWeight: 'bold' }}>{error}</div>}
+
               {debugOutput && <div style={{ color: '#28a745', fontWeight: 'bold' }}>{debugOutput}</div>}
               {output && <div>{output}</div>}
 
