@@ -72,6 +72,9 @@ const authReducer = (state = initialState, action) => {
         ...initialState,
       };
 
+    // The user endpoint returns the identifier as `id`, so spreading the
+    // payload alone leaves `userId` at its 'guest' default — which reads as
+    // "signed in, but with no history" on every page load after login.
     case FETCH_USER_INFO_SUCCESS:
       return {
         ...state,
@@ -79,6 +82,7 @@ const authReducer = (state = initialState, action) => {
         isAuthenticated: true,
         error: null,
         lastActivity: Date.now(),
+        userId: action.payload.id || action.payload._id || action.payload.userId,
       };
 
     case FETCH_USER_INFO_FAILURE:
