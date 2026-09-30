@@ -430,7 +430,7 @@ database-agnostic, so the Decision 3 commitment carries no sunk cost until Step 
 |---|---|---|
 | **0** | **Sandbox the Python executor** — container, no network, read-only FS, mem/CPU caps | ✅ **DONE** — arbitrary code cannot reach FS or network (see ADR-008) |
 | 3 | **Content pipeline** — `content/` + Zod + `build:content` → hashed artifacts on CDN | ✅ **DONE** — 221 items, index **7.8 KB gz** (was 133 KB from the API), byte-reproducible, zero answer keys published (see ADR-009) |
-| 4 | Frontend reads content from CDN; `/api/v1/questions` behind a flag for rollback | list view makes zero backend content calls |
+| **4** | **Frontend reads content from CDN**; `/api/v1/questions` behind a flag for rollback | ✅ **DONE** — guest list view makes **2 CDN requests and 0 backend requests**, measured on all three domains; index **14.1 KB gz** (was 133 KB from the API) |
 | 5 | `Topic` + System Design reader | SD renders no difficulty pills and no solved ring |
 | 6 | **Postgres schema + one-shot migration** (decision point) | per-user progress identical pre/post migration |
 | 7 | Home dashboard + guided study | — |
@@ -586,7 +586,18 @@ Key files, dependencies, deployment changes.
   agreement, and schema rejection of malformed input. **Not yet verified**: behaviour
   when Firebase's SPA rewrite serves `index.html` for a missing artifact — the client
   guard for that lands in Step 4.
-- **V2.4**: Loading `/algorithms` as a guest issues zero requests to Cloud Run.
+- **V2.4**: ✅ Loading `/algorithms` as a guest issues zero requests to Cloud Run.
+  Measured in-browser: exactly **2 requests, both to the CDN** (`manifest.json` →
+  hashed `index.*.json`) and **0 to the backend**. Confirmed identically on
+  `/system-design` and `/frontend`. `availableForSolve` moved from a per-request API
+  derivation to a build-time one and was cross-validated against the live API —
+  **45 = 45** for algorithms, no difference in either direction. A 7th build test
+  asserts the index still carries every field the list renders, so a missing field
+  fails the build rather than silently hiding UI.
+  Caveat: the loader's content-type guard (which catches Firebase's SPA rewrite
+  serving `index.html` for a missing artifact) has only been exercised against the
+  Vite dev server, and still owes a real Firebase Hosting run before production
+  reliance.
 - **V2.5**: `/system-design` renders no difficulty pills and no solved ring.
 - **V2.6**: Per-user progress counts identical pre/post migration. Pool holds under a
   simulated Cloud Run scale-out.

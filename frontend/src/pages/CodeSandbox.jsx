@@ -1115,11 +1115,11 @@ const CodeSandbox = () => {
         setCode(savedCode);
       }
 
-      // Update URL without the question parameter to clean it up
-      if (questionId) {
-        const newUrl = window.location.pathname;
-        navigate(newUrl, { replace: true });
-      }
+      // The question stays in the URL on purpose. It used to be stripped
+      // here for cosmetics, but the load effect keys off `location.search`,
+      // so removing the param re-ran it with no question and the two-sum
+      // fallback silently replaced whatever the user had just opened.
+      // Keeping it also makes the page shareable and survives a refresh.
     } catch (err) {
       setError(`Error fetching question: ${err.message}`);
       console.error('Error fetching question:', err);
