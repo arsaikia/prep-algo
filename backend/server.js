@@ -6,13 +6,13 @@ import helmet from 'helmet';
 import mongoose from 'mongoose';
 import logger from './config/logger.js';
 import { connectDB } from './config/db.js';
-import { connectRedis, disconnectRedis, isRedisAvailable } from './config/redis.js';
+import { connectRedis, disconnectRedis, isRedisAvailable, isRedisConfigured } from './config/redis.js';
 import { getAllCircuitBreakerStats } from './config/circuitBreakers.js';
-import { getCodeExecutionQueue, getQueueEvents, getQueueStats, closeQueue } from './config/queue.js';
+import { getCodeExecutionQueue, getQueueEvents, getQueueStats, closeQueue, isQueueEnabled } from './config/queue.js';
 import { startCodeExecutionWorker, stopCodeExecutionWorker } from './workers/codeExecution.js';
 import correlationId from './middleware/correlationId.js';
 import { protect } from './middleware/auth.js';
-import { generalLimiter, authLimiter, codeExecutionLimiter, recommendationLimiter } from './middleware/rateLimiter/index.js';
+import { generalLimiter, codeExecutionLimiter, recommendationLimiter } from './middleware/rateLimiter/index.js';
 
 import progress from './routes/progress.js';
 import questions from './routes/questions.js';
@@ -27,6 +27,11 @@ import smartRecommendations from './routes/smartRecommendations.js';
 dotenv.config();
 
 const app = express();
+
+// Cloud Run's front end terminates the connection and appends the caller's IP
+// to X-Forwarded-For; without this every request's req.ip is the proxy's
+// 169.254.x address, and all anonymous users share one rate-limit bucket.
+app.set('trust proxy', 1);
 
 app.use(correlationId);
 app.use(helmet());
@@ -83,10 +88,13 @@ app.use((req, res, next) => {
 
 app.get('/health', async (req, res) => {
     const mongoStatus = mongoose.connection.readyState === 1 ? 'ok' : 'down';
-    const redisStatus = isRedisAvailable() ? 'ok' : 'down';
+    const redisStatus = !isRedisConfigured() ? 'disabled' : isRedisAvailable() ? 'ok' : 'down';
     const breakers = getAllCircuitBreakerStats();
     const mongoBreaker = breakers.mongodb.state;
-    const queueStats = await getQueueStats();
+    const queueStats = isQueueEnabled() ? await getQueueStats() : null;
+    const queue = !isQueueEnabled()
+        ? { status: 'disabled' }
+        : queueStats ? { status: 'ok', ...queueStats } : { status: 'down' };
 
     let status = 'ok';
     if (mongoStatus === 'down' || mongoBreaker === 'OPEN') status = 'unhealthy';
@@ -100,7 +108,7 @@ app.get('/health', async (req, res) => {
         components: {
             mongodb: { status: mongoStatus, circuitBreaker: mongoBreaker },
             redis: { status: redisStatus },
-            queue: queueStats ? { status: 'ok', ...queueStats } : { status: 'down' },
+            queue,
             circuitBreakers: breakers,
         },
     });
@@ -110,7 +118,7 @@ app.get('/health', async (req, res) => {
 app.use('/api/', generalLimiter);
 
 // --- Public routes (no auth required) ---
-app.use('/api/v1/authentication', authLimiter, authentication);
+app.use('/api/v1/authentication', authentication);
 app.use('/api/v1/questions', questions);
 app.use('/api/v1/test', testRoute);
 app.use('/api/v1/quiz', quiz);
@@ -147,10 +155,10 @@ app.use((err, req, res, next) => {
 
 const startServer = async () => {
     try {
-        await connectDB();
-        await connectRedis();
+        // Independent connections; connecting them together shortens a cold start.
+        await Promise.all([connectDB(), connectRedis()]);
 
-        if (isRedisAvailable()) {
+        if (isQueueEnabled() && isRedisAvailable()) {
             getCodeExecutionQueue();
             getQueueEvents();
             startCodeExecutionWorker();

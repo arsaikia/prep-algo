@@ -6,6 +6,13 @@ import logger from './logger.js';
 let queue = null;
 let queueEvents = null;
 
+// BullMQ is opt-in. Its worker holds blocking polls open against Redis, which
+// burns a metered command quota (Upstash), and on Cloud Run the worker runs in
+// the same container as the API, so the queue adds a hop but no isolation.
+export function isQueueEnabled() {
+  return process.env.CODE_EXECUTION_QUEUE === 'bullmq';
+}
+
 export function getCodeExecutionQueue() {
   if (queue) return queue;
   const connection = getBullMQConnection();

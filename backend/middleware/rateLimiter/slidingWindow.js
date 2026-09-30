@@ -39,7 +39,7 @@ export function createSlidingWindowLimiter({ windowMs, max, keyPrefix }) {
     }
   }
 
-  setInterval(cleanupInMemory, 60000);
+  setInterval(cleanupInMemory, 60000).unref();
 
   async function checkLimit(identifier) {
     const redis = getRedis();

@@ -10,8 +10,12 @@ const TTL_CONFIG = {
   default: 3600,
 };
 
-const CACHE_PREFIX = 'prepalgo:cache:';
-const LOCK_PREFIX = 'prepalgo:lock:';
+// Redis outlives deploys, and the catalog ships inside the image. Keying by
+// revision stops a new build from serving the previous build's bodies; old
+// namespaces age out on their TTL.
+const CACHE_VERSION = process.env.K_REVISION || 'local';
+const CACHE_PREFIX = `prepalgo:cache:${CACHE_VERSION}:`;
+const LOCK_PREFIX = `prepalgo:lock:${CACHE_VERSION}:`;
 const LOCK_TTL_MS = 5000;
 
 function getTTL(url) {
@@ -75,7 +79,7 @@ const cacheMiddleware = (req, res, next) => {
 
     const localValue = localCache.get(cacheKey);
     if (localValue) {
-      return res.status(200).send(localValue);
+      return res.status(200).type('json').send(localValue);
     }
 
     const gotLock = await acquireLock(lockKey);
