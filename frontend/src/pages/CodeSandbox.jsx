@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { useTheme } from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Play, Save, Download, Link, Shuffle, Clock, Star, Code, Terminal, Eye, Settings } from 'react-feather';
-import { Timer, Pause, Play as PlayLucide, Square, Zap, Monitor, FileDown, FileText, Shuffle as ShuffleLucide, Code2, Terminal as TerminalLucide, Eye as EyeLucide, Settings as SettingsLucide } from 'lucide-react';
+import { Timer, Pause, Play as PlayLucide, Square, Zap, Monitor, FileDown, FileText, Shuffle as ShuffleLucide, Code2, Terminal as TerminalLucide, Eye as EyeLucide, Settings as SettingsLucide, RotateCcw, Copy, Check, Minus, Plus, Lock } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { useSelector } from 'react-redux';
 import apiClient from '../api/client.js';
@@ -14,6 +14,58 @@ import { useTimeTracker } from '../utils/timeTracker.js';
 import { useTestUser } from '../contexts/TestUserContext';
 import { isFeatureEnabled, isDevMode } from '../utils/featureFlags';
 import readApiError from '../utils/apiError.js';
+
+// The editor is the only place a user's work lives before it is submitted, so an
+// unsaved buffer is kept in localStorage per (question, language). Without this a
+// refresh, a tab switch or an accidental back-navigation silently discarded the
+// solution and dropped the user back onto untouched boilerplate.
+const DRAFT_PREFIX = 'sandbox-draft';
+const FONT_SIZE_KEY = 'sandbox-font-size';
+const MIN_FONT_SIZE = 12;
+const MAX_FONT_SIZE = 22;
+const DEFAULT_FONT_SIZE = 14;
+
+const draftKey = (questionKey, lang) => `${DRAFT_PREFIX}:${questionKey || 'scratch'}:${lang}`;
+
+// Storage can throw (Safari private mode, disabled cookies). A lost draft is a
+// degraded experience, never a broken page, so every access fails soft.
+const readDraft = (questionKey, lang) => {
+  try {
+    return window.localStorage.getItem(draftKey(questionKey, lang)) || '';
+  } catch {
+    return '';
+  }
+};
+
+const writeDraft = (questionKey, lang, value) => {
+  try {
+    window.localStorage.setItem(draftKey(questionKey, lang), value);
+  } catch {
+    // Storage unavailable — the in-memory buffer still works for this session.
+  }
+};
+
+const clearDraft = (questionKey, lang) => {
+  try {
+    window.localStorage.removeItem(draftKey(questionKey, lang));
+  } catch {
+    // Storage unavailable — nothing to clear.
+  }
+};
+
+const readStoredFontSize = () => {
+  try {
+    const stored = Number(window.localStorage.getItem(FONT_SIZE_KEY));
+    if (!Number.isFinite(stored) || stored < MIN_FONT_SIZE || stored > MAX_FONT_SIZE) {
+      return DEFAULT_FONT_SIZE;
+    }
+    return stored;
+  } catch {
+    return DEFAULT_FONT_SIZE;
+  }
+};
+
+const isMacPlatform = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || '');
 
 // Modern styled components with clean design
 const Container = styled.div`
@@ -505,14 +557,21 @@ const TagButton = styled.button`
 `;
 
 const EditorCard = styled(Card)`
-  height: 600px;
+  /* Tracks the viewport instead of a hard 600px: short laptops no longer scroll the
+     editor off-screen and tall displays stop wasting half the panel. */
+  height: clamp(420px, 62vh, 780px);
   display: flex;
   flex-direction: column;
   padding: 0;
   overflow: hidden;
-  
+
+  /* Card lifts on hover; on the editor that reads as the code jittering while you type. */
+  &:hover {
+    transform: none;
+  }
+
   @media (max-width: 1024px) {
-    height: 500px;
+    height: clamp(380px, 55vh, 560px);
   }
 `;
 
@@ -520,10 +579,12 @@ const EditorHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  gap: 12px;
+  padding: 12px 16px;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.background};
   flex-shrink: 0;
+  flex-wrap: wrap;
 `;
 
 const EditorActions = styled.div`
@@ -533,13 +594,110 @@ const EditorActions = styled.div`
   flex-wrap: wrap;
 `;
 
-const LanguageSelector = styled.select`
-  padding: 8px 12px;
-  border: 2px solid ${({ theme }) => theme.colors.border};
+const EditorToolGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 8px;
+`;
+
+const IconButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 32px;
+  height: 30px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  border: none;
   border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.backgroundHover};
+    color: ${({ theme }) => theme.colors.text};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+`;
+
+const EditorStatusBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 6px 14px;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.background};
+  font-size: 11.5px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  flex-shrink: 0;
+`;
+
+const StatusGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+`;
+
+const StatusItem = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+`;
+
+const ShortcutKey = styled.kbd`
+  font-family: inherit;
+  font-size: 10.5px;
+  padding: 1px 5px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const DraftDot = styled.span`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+`;
+
+const EditorLoading = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 10px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 13px;
+`;
+
+const LanguageSelector = styled.select`
+  padding: 6px 10px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 8px;
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -841,6 +999,23 @@ const CodeSandbox = () => {
   const [exampleTestResults, setExampleTestResults] = useState(null);
   const [debugOutput, setDebugOutput] = useState('');
 
+  // Editor UX state. `fontSize` is persisted because it is an accessibility setting,
+  // not a per-session preference.
+  const [fontSize, setFontSize] = useState(readStoredFontSize);
+  const [cursor, setCursor] = useState({ line: 1, column: 1 });
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [isEditorReady, setIsEditorReady] = useState(false);
+  const editorRef = useRef(null);
+  const draftTimerRef = useRef(null);
+  const copyTimerRef = useRef(null);
+  // Monaco commands are registered once on mount and would otherwise capture the
+  // first render's closures, firing stale handlers for the rest of the session.
+  const shortcutHandlersRef = useRef({});
+  // The template effect keys off object identity; without this guard any unrelated
+  // re-render that produced a new `currentQuestion` would wipe typed code.
+  const lastTemplateKeyRef = useRef('');
+
   // Time tracking states
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [sessionDifficultyRating, setSessionDifficultyRating] = useState(null);
@@ -854,6 +1029,8 @@ const CodeSandbox = () => {
   // Get user data from Redux store, but override with test user for development
   const userFromRedux = useSelector((state) => state.auth);
   const allQuestions = useSelector((state) => state.questions.allQuestionsWithoutHistory);
+  const isDarkModeEnabled = useSelector((state) => state.theme.isDarkModeEnabled);
+  const editorTheme = isDarkModeEnabled ? 'vs-dark' : 'vs';
 
   // Determine which user to use based on authentication state
   const getEffectiveUser = () => {
@@ -1068,26 +1245,74 @@ const CodeSandbox = () => {
   const handleLanguageChange = (e) => {
     const newLanguage = e.target.value;
     setLanguage(newLanguage);
-    if (currentQuestion) {
-      setCode(getDefaultTemplate(newLanguage, currentQuestion));
-    }
   };
 
   const handleEditorChange = (value) => {
-    setCode(value);
+    const next = value ?? '';
+    setCode(next);
+    if (!leetcodeUrl) return;
+    // Debounced so a fast typist does not hit localStorage on every keystroke.
+    clearTimeout(draftTimerRef.current);
+    draftTimerRef.current = setTimeout(() => {
+      writeDraft(leetcodeUrl, language, next);
+    }, 400);
   };
 
   const getEditorLanguage = () => {
     return language === 'python' ? 'python' : 'javascript';
   };
 
-  const getEditorTheme = () => {
-    // Get the current theme state from Redux
-    const { isDarkModeEnabled } = useSelector(state => state.theme);
-
-    // Return Monaco Editor theme based on current app theme
-    return isDarkModeEnabled ? 'vs-dark' : 'vs';
+  const resetToTemplate = () => {
+    const template = getDefaultTemplate(language, currentQuestion);
+    clearTimeout(draftTimerRef.current);
+    clearDraft(leetcodeUrl, language);
+    setCode(template);
+    setDraftRestored(false);
+    editorRef.current?.focus();
   };
+
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setExecutionFeedback({
+        status: 'error',
+        message: 'Could not copy to the clipboard. Select the code and copy manually.'
+      });
+    }
+  };
+
+  const changeFontSize = (delta) => {
+    setFontSize((current) => {
+      const next = Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, current + delta));
+      try {
+        window.localStorage.setItem(FONT_SIZE_KEY, String(next));
+      } catch {
+        // Preference is session-only when storage is unavailable.
+      }
+      return next;
+    });
+  };
+
+  const handleEditorMount = useCallback((editor, monaco) => {
+    editorRef.current = editor;
+    setIsEditorReady(true);
+
+    editor.onDidChangeCursorPosition((event) => {
+      setCursor({ line: event.position.lineNumber, column: event.position.column });
+    });
+
+    // Matches the shortcuts every competing platform uses, so muscle memory carries over.
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      shortcutHandlersRef.current.run?.();
+    });
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => {
+      shortcutHandlersRef.current.submit?.();
+    });
+  }, []);
 
   const runCode = async () => {
     if (language !== 'python') {
@@ -1229,15 +1454,10 @@ const CodeSandbox = () => {
 
       setQuestionDescription(formattedContent);
 
-      // Set the template based on the current language
-      const template = questionData.templates?.[language] || getDefaultTemplate(language, null);
-      setCode(template);
-
-      // Try to load saved code for this question and language
-      const savedCode = localStorage.getItem(`savedCode_${language}_${questionToFetch}`);
-      if (savedCode) {
-        setCode(savedCode);
-      }
+      // The editor buffer is intentionally NOT set here. Under React 18 StrictMode
+      // this loader runs twice, and a second late-resolving fetch used to overwrite
+      // a restored draft with fresh boilerplate. Buffer selection (draft vs template)
+      // now has exactly one owner: the effect below that keys off the loaded question.
 
       // The question stays in the URL on purpose. It used to be stripped
       // here for cosmetics, but the load effect keys off `location.search`,
@@ -1323,12 +1543,39 @@ const CodeSandbox = () => {
     setCode(getDefaultTemplate(language, null));
   }, []);
 
-  // Update code when language changes
+  // Apply the right buffer whenever the question or language changes: a saved draft
+  // wins over boilerplate, so returning to a problem resumes where you left off.
   useEffect(() => {
-    if (currentQuestion) {
-      setCode(getDefaultTemplate(language, currentQuestion));
+    if (!currentQuestion) return;
+    const templateKey = `${leetcodeUrl}:${language}`;
+    if (lastTemplateKeyRef.current === templateKey) return;
+    lastTemplateKeyRef.current = templateKey;
+
+    const template = getDefaultTemplate(language, currentQuestion);
+    const saved = readDraft(leetcodeUrl, language);
+    if (saved && saved !== template) {
+      setCode(saved);
+      setDraftRestored(true);
+    } else {
+      setCode(template);
+      setDraftRestored(false);
     }
-  }, [language, currentQuestion]);
+  }, [language, currentQuestion, leetcodeUrl]);
+
+  // Keep the Monaco key bindings pointed at the current closures, and refuse to fire
+  // while a run is already in flight or for a guest who cannot execute anything.
+  useEffect(() => {
+    const canExecute = !isGuest && !isSubmitting && !isRunningExampleTests;
+    shortcutHandlersRef.current = {
+      run: () => { if (canExecute) runExampleTests(); },
+      submit: () => { if (canExecute) runCode(); }
+    };
+  });
+
+  useEffect(() => () => {
+    clearTimeout(draftTimerRef.current);
+    clearTimeout(copyTimerRef.current);
+  }, []);
 
   if (currentQuestion?.answerFormat === 'mcq') {
     return <McqSolver question={currentQuestion} />;
@@ -1465,6 +1712,37 @@ const CodeSandbox = () => {
                 Code Editor
               </CardTitle>
               <EditorActions>
+                <EditorToolGroup>
+                  <IconButton
+                    type="button"
+                    onClick={() => changeFontSize(-1)}
+                    disabled={fontSize <= MIN_FONT_SIZE}
+                    title="Decrease font size"
+                    aria-label="Decrease font size"
+                  >
+                    <Minus size={14} />
+                  </IconButton>
+                  <IconButton
+                    type="button"
+                    onClick={() => changeFontSize(1)}
+                    disabled={fontSize >= MAX_FONT_SIZE}
+                    title="Increase font size"
+                    aria-label="Increase font size"
+                  >
+                    <Plus size={14} />
+                  </IconButton>
+                  <IconButton type="button" onClick={copyCode} title="Copy code" aria-label="Copy code">
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                  </IconButton>
+                  <IconButton
+                    type="button"
+                    onClick={resetToTemplate}
+                    title="Reset to the starting template"
+                    aria-label="Reset to the starting template"
+                  >
+                    <RotateCcw size={14} />
+                  </IconButton>
+                </EditorToolGroup>
                 <LanguageSelector value={language} onChange={handleLanguageChange}>
                   <option value="python">Python</option>
                   <option value="javascript">JavaScript (editor only)</option>
@@ -1501,20 +1779,69 @@ const CodeSandbox = () => {
                 height="100%"
                 defaultLanguage={getEditorLanguage()}
                 language={getEditorLanguage()}
-                theme={getEditorTheme()}
+                theme={editorTheme}
                 value={code}
                 onChange={handleEditorChange}
+                onMount={handleEditorMount}
+                loading={<EditorLoading>Loading editor…</EditorLoading>}
                 options={{
                   minimap: { enabled: false },
-                  fontSize: 14,
+                  fontSize,
+                  fontFamily: "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+                  fontLigatures: true,
                   lineNumbers: 'on',
+                  lineHeight: 1.6,
                   roundedSelection: false,
                   scrollBeyondLastLine: false,
                   readOnly: isGuest,
                   automaticLayout: true,
+                  tabSize: 4,
+                  insertSpaces: true,
+                  padding: { top: 14, bottom: 14 },
+                  smoothScrolling: true,
+                  cursorBlinking: 'smooth',
+                  bracketPairColorization: { enabled: true },
+                  guides: { bracketPairs: true, indentation: true },
+                  renderLineHighlight: 'all',
+                  scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10 },
+                  suggestSelection: 'first',
+                  wordWrap: 'off'
                 }}
               />
             </EditorContainer>
+            <EditorStatusBar>
+              <StatusGroup>
+                <StatusItem>{language === 'python' ? 'Python' : 'JavaScript'}</StatusItem>
+                <StatusItem>Ln {cursor.line}, Col {cursor.column}</StatusItem>
+                <StatusItem>{fontSize}px</StatusItem>
+                {draftRestored && (
+                  <StatusItem title="Restored from your last unsaved edit">
+                    <DraftDot aria-hidden="true" />
+                    Draft restored
+                  </StatusItem>
+                )}
+                {isGuest && (
+                  <StatusItem>
+                    <Lock size={12} />
+                    Read-only — sign in to edit
+                  </StatusItem>
+                )}
+              </StatusGroup>
+              {!isGuest && isEditorReady && (
+                <StatusGroup>
+                  <StatusItem>
+                    <ShortcutKey>{isMacPlatform() ? '⌘' : 'Ctrl'}</ShortcutKey>
+                    <ShortcutKey>↵</ShortcutKey>
+                    Run
+                  </StatusItem>
+                  <StatusItem>
+                    <ShortcutKey>{isMacPlatform() ? '⇧⌘' : 'Ctrl+Shift'}</ShortcutKey>
+                    <ShortcutKey>↵</ShortcutKey>
+                    Submit
+                  </StatusItem>
+                </StatusGroup>
+              )}
+            </EditorStatusBar>
           </EditorCard>
 
           <OutputCard>
