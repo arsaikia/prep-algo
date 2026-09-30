@@ -13,11 +13,134 @@
   "legacyId": "69bc8ee6-b4c7-40ec-889e-1633e02f8355",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Keep timestamped string values under keys and retrieve the value most recently set at or before a query time.</p>\n<p>Implement the <code>TimeMap</code> class:</p>\n<ul>\n<li><code>__init__()</code> creates an empty store.</li>\n<li><code>set(key: str, value: str, timestamp: int) -&gt; None</code> records value under key at timestamp.</li>\n<li><code>get(key: str, timestamp: int) -&gt; str</code> returns the value for that key with the greatest stored timestamp not exceeding timestamp, or the empty string when none exists.</li>\n</ul>\n<p>Set timestamps for each key arrive in strictly increasing order. Keys are independent, and a get never changes stored data.</p>\n<p>You are graded on a recorded sequence of calls on one live object. The first call names the class and passes constructor arguments; subsequent calls name methods and their arguments. The constructor and methods returning nothing report <code>null</code>; the result array has one entry per call.</p>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li>Keys and values contain 1 to 100 lowercase English letters or digits.</li>\n<li>1 &lt;= timestamp &lt;= 10000000.</li>\n<li>At most 200000 calls; get should use binary search rather than scan the entire history.</li>\n</ul>\n<p><strong>Example 1:</strong></p>\n<pre>Calls: [&quot;TimeMap&quot;,&quot;set&quot;,&quot;get&quot;,&quot;get&quot;,&quot;set&quot;,&quot;get&quot;,&quot;get&quot;]\nArguments: [[],[&quot;foo&quot;,&quot;bar&quot;,1],[&quot;foo&quot;,1],[&quot;foo&quot;,3],[&quot;foo&quot;,&quot;baz&quot;,4],[&quot;foo&quot;,4],[&quot;foo&quot;,5]]\nOutput: [null,null,&quot;bar&quot;,&quot;bar&quot;,null,&quot;baz&quot;,&quot;baz&quot;]</pre>\n<p>The lookup at 3 uses time 1; after time 4 is stored, later lookups use baz.</p>\n<p><strong>Example 2:</strong></p>\n<pre>Calls: [&quot;TimeMap&quot;,&quot;set&quot;,&quot;get&quot;,&quot;get&quot;,&quot;set&quot;,&quot;get&quot;]\nArguments: [[],[&quot;a&quot;,&quot;old&quot;,5],[&quot;a&quot;,4],[&quot;a&quot;,5],[&quot;a&quot;,&quot;new&quot;,9],[&quot;a&quot;,8]]\nOutput: [null,null,&quot;&quot;,&quot;old&quot;,null,&quot;old&quot;]</pre>\n<p>Before time 5 there is no value; a lookup at 8 still uses old.</p>\n<p><strong>Example 3:</strong></p>\n<pre>Calls: [&quot;TimeMap&quot;,&quot;set&quot;,&quot;set&quot;,&quot;get&quot;,&quot;get&quot;,&quot;get&quot;]\nArguments: [[],[&quot;x&quot;,&quot;one&quot;,2],[&quot;y&quot;,&quot;two&quot;,1],[&quot;x&quot;,1],[&quot;y&quot;,10],[&quot;x&quot;,2]]\nOutput: [null,null,null,&quot;&quot;,&quot;two&quot;,&quot;one&quot;]</pre>\n<p>A value under y does not supply an answer for x.</p>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class TimeMap:\n    def __init__(self) -> None:\n        pass\n\n    def set(self, key: str, value: str, timestamp: int) -> None:\n        pass\n\n    def get(self, key: str, timestamp: int) -> str:\n        pass\n",
+    "javascript": "class TimeMap {\n    constructor() {\n    }\n\n    set(key, value, timestamp) {\n    }\n\n    get(key, timestamp) {\n    }\n}\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"get\",\"get\",\"set\",\"get\",\"get\"]",
+        "[[],[\"foo\",\"bar\",1],[\"foo\",1],[\"foo\",3],[\"foo\",\"baz\",4],[\"foo\",4],[\"foo\",5]]"
+      ],
+      "expectedOutput": "[null,null,\"bar\",\"bar\",null,\"baz\",\"baz\"]",
+      "explanation": "The lookup at 3 uses time 1; after time 4 is stored, later lookups use baz."
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"get\",\"get\",\"set\",\"get\"]",
+        "[[],[\"a\",\"old\",5],[\"a\",4],[\"a\",5],[\"a\",\"new\",9],[\"a\",8]]"
+      ],
+      "expectedOutput": "[null,null,\"\",\"old\",null,\"old\"]",
+      "explanation": "Before time 5 there is no value; a lookup at 8 still uses old."
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"set\",\"get\",\"get\",\"get\"]",
+        "[[],[\"x\",\"one\",2],[\"y\",\"two\",1],[\"x\",1],[\"y\",10],[\"x\",2]]"
+      ],
+      "expectedOutput": "[null,null,null,\"\",\"two\",\"one\"]",
+      "explanation": "A value under y does not supply an answer for x."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"get\",\"get\",\"set\",\"get\",\"get\"]",
+        "[[],[\"foo\",\"bar\",1],[\"foo\",1],[\"foo\",3],[\"foo\",\"baz\",4],[\"foo\",4],[\"foo\",5]]"
+      ],
+      "expectedOutput": "[null,null,\"bar\",\"bar\",null,\"baz\",\"baz\"]",
+      "explanation": "The lookup at 3 uses time 1; after time 4 is stored, later lookups use baz.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"get\",\"get\",\"set\",\"get\"]",
+        "[[],[\"a\",\"old\",5],[\"a\",4],[\"a\",5],[\"a\",\"new\",9],[\"a\",8]]"
+      ],
+      "expectedOutput": "[null,null,\"\",\"old\",null,\"old\"]",
+      "explanation": "Before time 5 there is no value; a lookup at 8 still uses old.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"set\",\"get\",\"get\",\"get\"]",
+        "[[],[\"x\",\"one\",2],[\"y\",\"two\",1],[\"x\",1],[\"y\",10],[\"x\",2]]"
+      ],
+      "expectedOutput": "[null,null,null,\"\",\"two\",\"one\"]",
+      "explanation": "A value under y does not supply an answer for x.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"get\",\"set\",\"get\"]",
+        "[[],[\"z\",9],[\"z\",\"yes\",10],[\"z\",10]]"
+      ],
+      "expectedOutput": "[null,\"\",null,\"yes\"]",
+      "explanation": "An unknown key has no prior value.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"set\",\"set\",\"get\",\"get\",\"get\"]",
+        "[[],[\"a\",\"v1\",1],[\"a\",\"v2\",5],[\"a\",\"v3\",10],[\"a\",9],[\"a\",10],[\"a\",1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,\"v2\",\"v3\",\"v1\"]",
+      "explanation": "Choose the greatest timestamp not exceeding the requested time.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"set\",\"get\",\"get\"]",
+        "[[],[\"a\",\"a1\",1],[\"b\",\"b1\",2],[\"b\",1],[\"a\",2]]"
+      ],
+      "expectedOutput": "[null,null,null,\"\",\"a1\"]",
+      "explanation": "Timelines for distinct keys do not mix.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"get\",\"get\"]",
+        "[[],[\"key\",\"value\",100],[\"key\",99],[\"key\",100]]"
+      ],
+      "expectedOutput": "[null,null,\"\",\"value\"]",
+      "explanation": "The boundary timestamp is inclusive.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"set\",\"get\",\"get\"]",
+        "[[],[\"q\",\"v\",1],[\"q\",\"w\",10000000],[\"q\",9999999],[\"q\",10000000]]"
+      ],
+      "expectedOutput": "[null,null,null,\"v\",\"w\"]",
+      "explanation": "A distant future entry cannot answer an earlier lookup.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"get\",\"set\",\"get\"]",
+        "[[],[\"m\",\"first\",3],[\"m\",7],[\"m\",\"second\",8],[\"m\",7]]"
+      ],
+      "expectedOutput": "[null,null,\"first\",null,\"first\"]",
+      "explanation": "Later writes do not retroactively change earlier lookups.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"TimeMap\",\"set\",\"set\",\"get\",\"get\"]",
+        "[[],[\"a\",\"one\",2],[\"a\",\"two\",4],[\"a\",3],[\"a\",1]]"
+      ],
+      "expectedOutput": "[null,null,null,\"one\",\"\"]",
+      "explanation": "Between writes use the first value; before both use the empty string.",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "OPS",
+      "OPS"
+    ],
+    "output": "ARRAY"
+  }
 }

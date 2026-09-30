@@ -13,11 +13,134 @@
   "legacyId": "3bbab282-3f1b-404f-a493-fc0023a49e96",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n<p>Maintain the median while numbers are appended to a stream.</p>\n<p>Implement the <code>MedianFinder</code> class:</p>\n<ul>\n<li><code>__init__()</code> creates an empty stream.</li>\n<li><code>addNum(num: int) -&gt; None</code> appends one occurrence of num.</li>\n<li><code>findMedian() -&gt; float</code> returns the median of all values added so far.</li>\n</ul>\n<p>For an odd number of entries the median is the middle sorted value, returned as a Python float. For an even number it is the arithmetic mean of the two middle sorted values, also returned as a Python float (for example 2.0 or 2.5). In the displayed JSON output, integral floats appear without a decimal suffix (2.0 appears as 2). findMedian is called only after at least one addNum.</p>\n<p>You are graded on a recorded sequence of calls on one live object. The first call names the class and passes constructor arguments; subsequent calls name methods and their arguments. The constructor and methods returning nothing report <code>null</code>; the result array has one entry per call.</p>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li>-100000 &lt;= num &lt;= 100000.</li>\n<li>At most 50000 calls.</li>\n<li>Insertion should take O(log n) time and median lookup O(1).</li>\n</ul>\n<p><strong>Example 1:</strong></p>\n<pre>Calls: [&quot;MedianFinder&quot;,&quot;addNum&quot;,&quot;addNum&quot;,&quot;findMedian&quot;,&quot;addNum&quot;,&quot;findMedian&quot;]\nArguments: [[],[1],[2],[],[3],[]]\nOutput: [null,null,null,1.5,null,2]</pre>\n<p>The middle of 1 and 2 averages to 1.5; adding 3 gives a median of 2.0.</p>\n<p><strong>Example 2:</strong></p>\n<pre>Calls: [&quot;MedianFinder&quot;,&quot;addNum&quot;,&quot;findMedian&quot;,&quot;addNum&quot;,&quot;findMedian&quot;]\nArguments: [[],[-1],[],[-2],[]]\nOutput: [null,null,-1,null,-1.5]</pre>\n<p>A singleton has median -1.0, and the mean of -2 and -1 is -1.5.</p>\n<p><strong>Example 3:</strong></p>\n<pre>Calls: [&quot;MedianFinder&quot;,&quot;addNum&quot;,&quot;addNum&quot;,&quot;addNum&quot;,&quot;findMedian&quot;,&quot;addNum&quot;,&quot;findMedian&quot;]\nArguments: [[],[5],[1],[9],[],[0],[]]\nOutput: [null,null,null,null,5,null,3]</pre>\n<p>Sorted values 1, 5, 9 give 5.0; after adding 0 the middle pair 1 and 5 gives 3.0.</p>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class MedianFinder:\n    def __init__(self) -> None:\n        pass\n\n    def addNum(self, num: int) -> None:\n        pass\n\n    def findMedian(self) -> float:\n        pass\n",
+    "javascript": "class MedianFinder {\n    constructor() {\n    }\n\n    addNum(num) {\n    }\n\n    findMedian() {\n    }\n}\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\"]",
+        "[[],[1],[2],[],[3],[]]"
+      ],
+      "expectedOutput": "[null,null,null,1.5,null,2]",
+      "explanation": "The middle of 1 and 2 averages to 1.5; adding 3 gives a median of 2.0."
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\"]",
+        "[[],[-1],[],[-2],[]]"
+      ],
+      "expectedOutput": "[null,null,-1,null,-1.5]",
+      "explanation": "A singleton has median -1.0, and the mean of -2 and -1 is -1.5."
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"addNum\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\"]",
+        "[[],[5],[1],[9],[],[0],[]]"
+      ],
+      "expectedOutput": "[null,null,null,null,5,null,3]",
+      "explanation": "Sorted values 1, 5, 9 give 5.0; after adding 0 the middle pair 1 and 5 gives 3.0."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\"]",
+        "[[],[1],[2],[],[3],[]]"
+      ],
+      "expectedOutput": "[null,null,null,1.5,null,2]",
+      "explanation": "The middle of 1 and 2 averages to 1.5; adding 3 gives a median of 2.0.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\"]",
+        "[[],[-1],[],[-2],[]]"
+      ],
+      "expectedOutput": "[null,null,-1,null,-1.5]",
+      "explanation": "A singleton has median -1.0, and the mean of -2 and -1 is -1.5.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"addNum\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\"]",
+        "[[],[5],[1],[9],[],[0],[]]"
+      ],
+      "expectedOutput": "[null,null,null,null,5,null,3]",
+      "explanation": "Sorted values 1, 5, 9 give 5.0; after adding 0 the middle pair 1 and 5 gives 3.0.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"addNum\",\"addNum\",\"addNum\",\"findMedian\"]",
+        "[[],[1],[10],[2],[3],[]]"
+      ],
+      "expectedOutput": "[null,null,null,null,null,2.5]",
+      "explanation": "The two central values are 2 and 3 after four insertions.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\"]",
+        "[[],[10],[],[1],[],[2],[]]"
+      ],
+      "expectedOutput": "[null,null,10,null,5.5,null,2]",
+      "explanation": "Alternating inserts and lookups requires balancing after each insertion.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\"]",
+        "[[],[0],[0],[],[0],[]]"
+      ],
+      "expectedOutput": "[null,null,null,0,null,0]",
+      "explanation": "Duplicate zeroes still count as three entries.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"addNum\",\"addNum\",\"findMedian\"]",
+        "[[],[-100000],[100000],[0],[]]"
+      ],
+      "expectedOutput": "[null,null,null,null,0]",
+      "explanation": "Opposite extremes leave zero as the center.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"addNum\",\"findMedian\",\"addNum\",\"addNum\",\"findMedian\"]",
+        "[[],[5],[7],[],[8],[9],[]]"
+      ],
+      "expectedOutput": "[null,null,null,6,null,null,7.5]",
+      "explanation": "Both even-sized medians average their middle pair.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"addNum\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\"]",
+        "[[],[7],[7],[3],[],[7],[]]"
+      ],
+      "expectedOutput": "[null,null,null,null,7,null,7]",
+      "explanation": "Repeated sevens remain in the middle.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"MedianFinder\",\"addNum\",\"addNum\",\"addNum\",\"addNum\",\"addNum\",\"findMedian\"]",
+        "[[],[9],[8],[7],[6],[5],[]]"
+      ],
+      "expectedOutput": "[null,null,null,null,null,null,7]",
+      "explanation": "The center of five descending entries is seven.",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "OPS",
+      "OPS"
+    ],
+    "output": "ARRAY"
+  }
 }

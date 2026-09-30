@@ -13,11 +13,134 @@
   "legacyId": "81463377-bb2f-4f8d-b85e-3560bb8731bf",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "",
+  "description": "<div>\n<p>Track the kth largest entry in a growing stream of integers, counting repeated values as separate entries.</p>\n<p>Implement the <code>KthLargest</code> class:</p>\n<ul>\n<li><code>__init__(k: int, nums: list[int])</code> initializes the stream with nums and fixes its rank k.</li>\n<li><code>add(val: int) -&gt; int</code> inserts val, then returns the kth largest entry in the stream after that insertion.</li>\n</ul>\n<p>Every add call occurs when the resulting stream has at least k entries. Equal numbers occupy separate ranks; the constructor reports null rather than a rank.</p>\n<p>You are graded on a recorded sequence of calls on one live object. The first call names the class and passes constructor arguments; subsequent calls name methods and their arguments. The constructor and methods returning nothing report <code>null</code>; the result array has one entry per call.</p>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li>1 &lt;= k &lt;= 10000.</li>\n<li>Initially 0 to 10000 numbers, each between -10000 and 10000.</li>\n<li>At most 10000 add calls; use O(log k) work per insertion.</li>\n</ul>\n<p><strong>Example 1:</strong></p>\n<pre>Calls: [&quot;KthLargest&quot;,&quot;add&quot;,&quot;add&quot;,&quot;add&quot;,&quot;add&quot;,&quot;add&quot;]\nArguments: [[3,[4,5,8,2]],[3],[5],[10],[9],[4]]\nOutput: [null,4,5,5,8,8]</pre>\n<p>The third-largest entries after each insertion are 4, 5, 5, 8, and 8.</p>\n<p><strong>Example 2:</strong></p>\n<pre>Calls: [&quot;KthLargest&quot;,&quot;add&quot;,&quot;add&quot;,&quot;add&quot;]\nArguments: [[1,[]],[-2],[0],[-5]]\nOutput: [null,-2,0,0]</pre>\n<p>With k equal to one, the answer is the largest value seen so far.</p>\n<p><strong>Example 3:</strong></p>\n<pre>Calls: [&quot;KthLargest&quot;,&quot;add&quot;,&quot;add&quot;,&quot;add&quot;]\nArguments: [[2,[5,5]],[5],[6],[4]]\nOutput: [null,5,5,5]</pre>\n<p>Duplicate fives take separate ranks; six becomes first while five stays second.</p>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class KthLargest:\n    def __init__(self, k: int, nums: list[int]) -> None:\n        pass\n\n    def add(self, val: int) -> int:\n        pass\n",
+    "javascript": "class KthLargest {\n    constructor(k, nums) {\n    }\n\n    add(val) {\n    }\n}\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\",\"add\",\"add\",\"add\"]",
+        "[[3,[4,5,8,2]],[3],[5],[10],[9],[4]]"
+      ],
+      "expectedOutput": "[null,4,5,5,8,8]",
+      "explanation": "The third-largest entries after each insertion are 4, 5, 5, 8, and 8."
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\",\"add\"]",
+        "[[1,[]],[-2],[0],[-5]]"
+      ],
+      "expectedOutput": "[null,-2,0,0]",
+      "explanation": "With k equal to one, the answer is the largest value seen so far."
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\",\"add\"]",
+        "[[2,[5,5]],[5],[6],[4]]"
+      ],
+      "expectedOutput": "[null,5,5,5]",
+      "explanation": "Duplicate fives take separate ranks; six becomes first while five stays second."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\",\"add\",\"add\",\"add\"]",
+        "[[3,[4,5,8,2]],[3],[5],[10],[9],[4]]"
+      ],
+      "expectedOutput": "[null,4,5,5,8,8]",
+      "explanation": "The third-largest entries after each insertion are 4, 5, 5, 8, and 8.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\",\"add\"]",
+        "[[1,[]],[-2],[0],[-5]]"
+      ],
+      "expectedOutput": "[null,-2,0,0]",
+      "explanation": "With k equal to one, the answer is the largest value seen so far.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\",\"add\"]",
+        "[[2,[5,5]],[5],[6],[4]]"
+      ],
+      "expectedOutput": "[null,5,5,5]",
+      "explanation": "Duplicate fives take separate ranks; six becomes first while five stays second.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\"]",
+        "[[3,[1,2]],[3],[4]]"
+      ],
+      "expectedOutput": "[null,1,2]",
+      "explanation": "The first add makes the stream large enough to have a third entry.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\"]",
+        "[[2,[10,9]],[1],[11]]"
+      ],
+      "expectedOutput": "[null,9,10]",
+      "explanation": "Adding a low value leaves rank two unchanged; a higher value raises it.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\",\"add\"]",
+        "[[1,[0]],[-1],[1],[1]]"
+      ],
+      "expectedOutput": "[null,0,1,1]",
+      "explanation": "Tied maxima still rank as individual entries.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\"]",
+        "[[4,[9,8,7,6]],[10],[0]]"
+      ],
+      "expectedOutput": "[null,7,7]",
+      "explanation": "After a high insertion rank four rises, but a low insertion cannot lower it.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\"]",
+        "[[2,[-5,-4]],[-3],[-6]]"
+      ],
+      "expectedOutput": "[null,-4,-4]",
+      "explanation": "Negative values use the same descending order.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\"]",
+        "[[3,[2,2,2]],[3],[3]]"
+      ],
+      "expectedOutput": "[null,2,2]",
+      "explanation": "Repeated values count toward rank three.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"KthLargest\",\"add\",\"add\"]",
+        "[[2,[0]],[1],[2]]"
+      ],
+      "expectedOutput": "[null,0,1]",
+      "explanation": "Each insertion supplies a new candidate; after the first insertion the second-largest rank is defined.",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "OPS",
+      "OPS"
+    ],
+    "output": "ARRAY"
+  }
 }

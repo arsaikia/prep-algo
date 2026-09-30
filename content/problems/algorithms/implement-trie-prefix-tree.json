@@ -13,11 +13,134 @@
   "legacyId": "5c581cf2-dedb-47b7-a846-9dbc0a1f324a",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Store lowercase words by their characters so exact words and prefixes can be queried separately.</p>\n<p>Implement the <code>Trie</code> class:</p>\n<ul>\n<li><code>__init__()</code> creates an empty trie.</li>\n<li><code>insert(word: str) -&gt; None</code> stores word as a complete word; inserting it again has no extra effect.</li>\n<li><code>search(word: str) -&gt; bool</code> returns true only when word was inserted as a complete word.</li>\n<li><code>startsWith(prefix: str) -&gt; bool</code> returns true when at least one stored word begins with prefix.</li>\n</ul>\n<p>A path that exists only because a longer word was inserted is not by itself a complete word. An empty prefix matches even an empty trie; words and search queries are nonempty.</p>\n<p>You are graded on a recorded sequence of calls on one live object. The first call names the class and passes constructor arguments; subsequent calls name methods and their arguments. The constructor and methods returning nothing report <code>null</code>; the result array has one entry per call.</p>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li>Words and search queries contain 1 to 200 lowercase English letters.</li>\n<li>Prefixes contain 0 to 200 lowercase English letters.</li>\n<li>At most 30000 calls.</li>\n</ul>\n<p><strong>Example 1:</strong></p>\n<pre>Calls: [&quot;Trie&quot;,&quot;insert&quot;,&quot;search&quot;,&quot;search&quot;,&quot;startsWith&quot;,&quot;insert&quot;,&quot;search&quot;]\nArguments: [[],[&quot;apple&quot;],[&quot;apple&quot;],[&quot;app&quot;],[&quot;app&quot;],[&quot;app&quot;],[&quot;app&quot;]]\nOutput: [null,null,true,false,true,null,true]</pre>\n<p>The prefix app exists before insertion, but is only a complete word afterward.</p>\n<p><strong>Example 2:</strong></p>\n<pre>Calls: [&quot;Trie&quot;,&quot;startsWith&quot;,&quot;search&quot;,&quot;insert&quot;,&quot;startsWith&quot;,&quot;search&quot;]\nArguments: [[],[&quot;&quot;],[&quot;a&quot;],[&quot;at&quot;],[&quot;a&quot;],[&quot;at&quot;]]\nOutput: [null,true,false,null,true,true]</pre>\n<p>The empty prefix always exists; a is not an inserted word.</p>\n<p><strong>Example 3:</strong></p>\n<pre>Calls: [&quot;Trie&quot;,&quot;insert&quot;,&quot;insert&quot;,&quot;search&quot;,&quot;startsWith&quot;,&quot;search&quot;]\nArguments: [[],[&quot;car&quot;],[&quot;cat&quot;],[&quot;ca&quot;],[&quot;ca&quot;],[&quot;cat&quot;]]\nOutput: [null,null,null,false,true,true]</pre>\n<p>Both words share ca, but ca was never inserted.</p>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Trie:\n    def __init__(self) -> None:\n        pass\n\n    def insert(self, word: str) -> None:\n        pass\n\n    def search(self, word: str) -> bool:\n        pass\n\n    def startsWith(self, prefix: str) -> bool:\n        pass\n",
+    "javascript": "class Trie {\n    constructor() {\n    }\n\n    insert(word) {\n    }\n\n    search(word) {\n    }\n\n    startsWith(prefix) {\n    }\n}\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[\"Trie\",\"insert\",\"search\",\"search\",\"startsWith\",\"insert\",\"search\"]",
+        "[[],[\"apple\"],[\"apple\"],[\"app\"],[\"app\"],[\"app\"],[\"app\"]]"
+      ],
+      "expectedOutput": "[null,null,true,false,true,null,true]",
+      "explanation": "The prefix app exists before insertion, but is only a complete word afterward."
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"startsWith\",\"search\",\"insert\",\"startsWith\",\"search\"]",
+        "[[],[\"\"],[\"a\"],[\"at\"],[\"a\"],[\"at\"]]"
+      ],
+      "expectedOutput": "[null,true,false,null,true,true]",
+      "explanation": "The empty prefix always exists; a is not an inserted word."
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"insert\",\"insert\",\"search\",\"startsWith\",\"search\"]",
+        "[[],[\"car\"],[\"cat\"],[\"ca\"],[\"ca\"],[\"cat\"]]"
+      ],
+      "expectedOutput": "[null,null,null,false,true,true]",
+      "explanation": "Both words share ca, but ca was never inserted."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[\"Trie\",\"insert\",\"search\",\"search\",\"startsWith\",\"insert\",\"search\"]",
+        "[[],[\"apple\"],[\"apple\"],[\"app\"],[\"app\"],[\"app\"],[\"app\"]]"
+      ],
+      "expectedOutput": "[null,null,true,false,true,null,true]",
+      "explanation": "The prefix app exists before insertion, but is only a complete word afterward.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"startsWith\",\"search\",\"insert\",\"startsWith\",\"search\"]",
+        "[[],[\"\"],[\"a\"],[\"at\"],[\"a\"],[\"at\"]]"
+      ],
+      "expectedOutput": "[null,true,false,null,true,true]",
+      "explanation": "The empty prefix always exists; a is not an inserted word.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"insert\",\"insert\",\"search\",\"startsWith\",\"search\"]",
+        "[[],[\"car\"],[\"cat\"],[\"ca\"],[\"ca\"],[\"cat\"]]"
+      ],
+      "expectedOutput": "[null,null,null,false,true,true]",
+      "explanation": "Both words share ca, but ca was never inserted.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"search\",\"startsWith\"]",
+        "[[],[\"z\"],[\"z\"]]"
+      ],
+      "expectedOutput": "[null,false,false]",
+      "explanation": "No nonempty path is present in the empty trie.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"insert\",\"insert\",\"search\",\"startsWith\"]",
+        "[[],[\"a\"],[\"ab\"],[\"a\"],[\"ab\"]]"
+      ],
+      "expectedOutput": "[null,null,null,true,true]",
+      "explanation": "A word remains terminal after a longer extension is inserted.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"insert\",\"search\",\"startsWith\"]",
+        "[[],[\"dog\"],[\"dogs\"],[\"dogs\"]]"
+      ],
+      "expectedOutput": "[null,null,false,false]",
+      "explanation": "A longer query does not match an inserted shorter word.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"insert\",\"insert\",\"search\",\"startsWith\"]",
+        "[[],[\"bear\"],[\"bear\"],[\"bear\"],[\"bea\"]]"
+      ],
+      "expectedOutput": "[null,null,null,true,true]",
+      "explanation": "Duplicate insertion does not affect membership.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"insert\",\"insert\",\"search\",\"startsWith\"]",
+        "[[],[\"go\"],[\"gone\"],[\"gon\"],[\"gon\"]]"
+      ],
+      "expectedOutput": "[null,null,null,false,true]",
+      "explanation": "An intermediate path is a prefix but not a word.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"insert\",\"search\",\"startsWith\"]",
+        "[[],[\"xyz\"],[\"xy\"],[\"xya\"]]"
+      ],
+      "expectedOutput": "[null,null,false,false]",
+      "explanation": "An existing prefix is not an inserted word, and a diverging prefix fails.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Trie\",\"insert\",\"insert\",\"search\",\"search\"]",
+        "[[],[\"a\"],[\"b\"],[\"a\"],[\"c\"]]"
+      ],
+      "expectedOutput": "[null,null,null,true,false]",
+      "explanation": "Different root branches are independent.",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "OPS",
+      "OPS"
+    ],
+    "output": "ARRAY"
+  }
 }

@@ -13,11 +13,134 @@
   "legacyId": "c600a161-38fc-48ce-a07d-ab415fe22e2c",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Build a small social feed where users post tweets and choose whose tweets to see.</p>\n<p>Implement the <code>Twitter</code> class:</p>\n<ul>\n<li><code>__init__()</code> creates an empty service.</li>\n<li><code>postTweet(userId: int, tweetId: int) -&gt; None</code> publishes a tweet for the user at the current call&#x27;s time.</li>\n<li><code>getNewsFeed(userId: int) -&gt; list[int]</code> returns up to the ten newest tweet IDs authored by the user or users they follow, most recent first.</li>\n<li><code>follow(followerId: int, followeeId: int) -&gt; None</code> adds a follow relationship.</li>\n<li><code>unfollow(followerId: int, followeeId: int) -&gt; None</code> removes a follow relationship if present.</li>\n</ul>\n<p>Users always see their own tweets implicitly, even if they never explicitly follow themselves. Following or unfollowing oneself changes nothing. Repeated follow calls have no extra effect, and unfollowing a user who is not followed is a no-op. Tweet IDs are unique, and recency follows postTweet call order rather than numerical tweet ID.</p>\n<p>You are graded on a recorded sequence of calls on one live object. The first call names the class and passes constructor arguments; subsequent calls name methods and their arguments. The constructor and methods returning nothing report <code>null</code>; the result array has one entry per call.</p>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li>1 &lt;= userId, followerId, followeeId &lt;= 500.</li>\n<li>1 &lt;= tweetId &lt;= 1000000; tweet IDs are unique.</li>\n<li>At most 30000 calls.</li>\n</ul>\n<p><strong>Example 1:</strong></p>\n<pre>Calls: [&quot;Twitter&quot;,&quot;postTweet&quot;,&quot;getNewsFeed&quot;,&quot;follow&quot;,&quot;postTweet&quot;,&quot;getNewsFeed&quot;,&quot;unfollow&quot;,&quot;getNewsFeed&quot;]\nArguments: [[],[1,5],[1],[1,2],[2,6],[1],[1,2],[1]]\nOutput: [null,null,[5],null,null,[6,5],null,[5]]</pre>\n<p>User 1 initially sees 5, then the newer followed tweet 6, and after unfollowing only 5.</p>\n<p><strong>Example 2:</strong></p>\n<pre>Calls: [&quot;Twitter&quot;,&quot;follow&quot;,&quot;postTweet&quot;,&quot;postTweet&quot;,&quot;getNewsFeed&quot;]\nArguments: [[],[1,2],[2,3],[1,9],[1]]\nOutput: [null,null,null,null,[9,3]]</pre>\n<p>The later local tweet 9 precedes the followed tweet 3.</p>\n<p><strong>Example 3:</strong></p>\n<pre>Calls: [&quot;Twitter&quot;,&quot;unfollow&quot;,&quot;follow&quot;,&quot;follow&quot;,&quot;postTweet&quot;,&quot;getNewsFeed&quot;]\nArguments: [[],[1,2],[1,1],[1,2],[1,8],[1]]\nOutput: [null,null,null,null,null,[8]]</pre>\n<p>An absent unfollow and self-follow change nothing; the author&#x27;s own tweet appears once.</p>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Twitter:\n    def __init__(self) -> None:\n        pass\n\n    def postTweet(self, userId: int, tweetId: int) -> None:\n        pass\n\n    def getNewsFeed(self, userId: int) -> list[int]:\n        pass\n\n    def follow(self, followerId: int, followeeId: int) -> None:\n        pass\n\n    def unfollow(self, followerId: int, followeeId: int) -> None:\n        pass\n",
+    "javascript": "class Twitter {\n    constructor() {\n    }\n\n    postTweet(userId, tweetId) {\n    }\n\n    getNewsFeed(userId) {\n    }\n\n    follow(followerId, followeeId) {\n    }\n\n    unfollow(followerId, followeeId) {\n    }\n}\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[\"Twitter\",\"postTweet\",\"getNewsFeed\",\"follow\",\"postTweet\",\"getNewsFeed\",\"unfollow\",\"getNewsFeed\"]",
+        "[[],[1,5],[1],[1,2],[2,6],[1],[1,2],[1]]"
+      ],
+      "expectedOutput": "[null,null,[5],null,null,[6,5],null,[5]]",
+      "explanation": "User 1 initially sees 5, then the newer followed tweet 6, and after unfollowing only 5."
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"follow\",\"postTweet\",\"postTweet\",\"getNewsFeed\"]",
+        "[[],[1,2],[2,3],[1,9],[1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,[9,3]]",
+      "explanation": "The later local tweet 9 precedes the followed tweet 3."
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"unfollow\",\"follow\",\"follow\",\"postTweet\",\"getNewsFeed\"]",
+        "[[],[1,2],[1,1],[1,2],[1,8],[1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,null,[8]]",
+      "explanation": "An absent unfollow and self-follow change nothing; the author's own tweet appears once."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[\"Twitter\",\"postTweet\",\"getNewsFeed\",\"follow\",\"postTweet\",\"getNewsFeed\",\"unfollow\",\"getNewsFeed\"]",
+        "[[],[1,5],[1],[1,2],[2,6],[1],[1,2],[1]]"
+      ],
+      "expectedOutput": "[null,null,[5],null,null,[6,5],null,[5]]",
+      "explanation": "User 1 initially sees 5, then the newer followed tweet 6, and after unfollowing only 5.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"follow\",\"postTweet\",\"postTweet\",\"getNewsFeed\"]",
+        "[[],[1,2],[2,3],[1,9],[1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,[9,3]]",
+      "explanation": "The later local tweet 9 precedes the followed tweet 3.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"unfollow\",\"follow\",\"follow\",\"postTweet\",\"getNewsFeed\"]",
+        "[[],[1,2],[1,1],[1,2],[1,8],[1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,null,[8]]",
+      "explanation": "An absent unfollow and self-follow change nothing; the author's own tweet appears once.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"getNewsFeed\",\"postTweet\",\"getNewsFeed\"]",
+        "[[],[1],[2,1],[1]]"
+      ],
+      "expectedOutput": "[null,[],null,[]]",
+      "explanation": "Unfollowed users do not appear in an empty feed.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"postTweet\",\"postTweet\",\"postTweet\",\"getNewsFeed\"]",
+        "[[],[1,100],[1,2],[1,50],[1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,[50,2,100]]",
+      "explanation": "Posting order rather than tweet ID determines feed order.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"follow\",\"follow\",\"postTweet\",\"getNewsFeed\"]",
+        "[[],[1,2],[1,2],[2,10],[1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,[10]]",
+      "explanation": "Repeated follow calls do not duplicate a tweet.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"follow\",\"postTweet\",\"unfollow\",\"getNewsFeed\"]",
+        "[[],[1,2],[2,10],[1,2],[1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,[]]",
+      "explanation": "Unfollowing removes previously posted followed tweets from the feed.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"postTweet\",\"follow\",\"unfollow\",\"getNewsFeed\"]",
+        "[[],[1,11],[1,1],[1,1],[1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,[11]]",
+      "explanation": "The author always sees their own post after a self-unfollow.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"follow\",\"postTweet\",\"getNewsFeed\",\"unfollow\",\"getNewsFeed\"]",
+        "[[],[2,1],[1,12],[2],[2,1],[2]]"
+      ],
+      "expectedOutput": "[null,null,null,[12],null,[]]",
+      "explanation": "A followed author's tweet disappears when the relationship is removed.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"Twitter\",\"postTweet\",\"postTweet\",\"postTweet\",\"postTweet\",\"postTweet\",\"postTweet\",\"postTweet\",\"postTweet\",\"postTweet\",\"postTweet\",\"postTweet\",\"postTweet\",\"getNewsFeed\"]",
+        "[[],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9],[1,10],[1,11],[1,12],[1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,null,null,null,null,null,null,null,null,null,[12,11,10,9,8,7,6,5,4,3]]",
+      "explanation": "The feed retains only the ten most recently posted IDs, newest first.",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "OPS",
+      "OPS"
+    ],
+    "output": "ARRAY"
+  }
 }

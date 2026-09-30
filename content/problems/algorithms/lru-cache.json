@@ -13,11 +13,134 @@
   "legacyId": "cea15f39-df53-49c2-aa75-01159890874a",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Keep at most capacity key/value pairs, discarding the least recently used pair when room is needed.</p>\n<p>Implement the <code>LRUCache</code> class:</p>\n<ul>\n<li><code>__init__(capacity: int)</code> creates an empty cache of positive capacity.</li>\n<li><code>get(key: int) -&gt; int</code> returns the stored value or -1 if the key is absent; a successful get marks its key as recently used.</li>\n<li><code>put(key: int, value: int) -&gt; None</code> inserts or overwrites a pair, marking it as recently used; if this creates excess entries, evicts the least recently used key.</li>\n</ul>\n<p>A missing get does not change usage order. Overwriting an existing key also counts as use. The least recently used key is the one with the oldest successful get or put; insertion is a use.</p>\n<p>You are graded on a recorded sequence of calls on one live object. The first call names the class and passes constructor arguments; subsequent calls name methods and their arguments. The constructor and methods returning nothing report <code>null</code>; the result array has one entry per call.</p>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li>1 &lt;= capacity &lt;= 3000.</li>\n<li>Keys and values are integers between 0 and 100000.</li>\n<li>At most 30000 calls; get and put should run in amortized O(1) time.</li>\n</ul>\n<p><strong>Example 1:</strong></p>\n<pre>Calls: [&quot;LRUCache&quot;,&quot;put&quot;,&quot;put&quot;,&quot;get&quot;,&quot;put&quot;,&quot;get&quot;,&quot;get&quot;]\nArguments: [[2],[1,1],[2,2],[1],[3,3],[2],[3]]\nOutput: [null,null,null,1,null,-1,3]</pre>\n<p>Reading 1 makes 2 least recent, so the new entry evicts 2.</p>\n<p><strong>Example 2:</strong></p>\n<pre>Calls: [&quot;LRUCache&quot;,&quot;put&quot;,&quot;put&quot;,&quot;get&quot;,&quot;put&quot;,&quot;get&quot;,&quot;get&quot;]\nArguments: [[2],[1,10],[2,20],[2],[3,30],[1],[2]]\nOutput: [null,null,null,20,null,-1,20]</pre>\n<p>The read of 2 protects it; insertion of 3 evicts 1.</p>\n<p><strong>Example 3:</strong></p>\n<pre>Calls: [&quot;LRUCache&quot;,&quot;put&quot;,&quot;put&quot;,&quot;get&quot;,&quot;put&quot;,&quot;get&quot;]\nArguments: [[1],[7,4],[7,9],[7],[8,3],[7]]\nOutput: [null,null,null,9,null,-1]</pre>\n<p>Overwriting 7 keeps one entry, but adding 8 evicts it.</p>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class LRUCache:\n    def __init__(self, capacity: int) -> None:\n        pass\n\n    def get(self, key: int) -> int:\n        pass\n\n    def put(self, key: int, value: int) -> None:\n        pass\n",
+    "javascript": "class LRUCache {\n    constructor(capacity) {\n    }\n\n    get(key) {\n    }\n\n    put(key, value) {\n    }\n}\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"get\",\"put\",\"get\",\"get\"]",
+        "[[2],[1,1],[2,2],[1],[3,3],[2],[3]]"
+      ],
+      "expectedOutput": "[null,null,null,1,null,-1,3]",
+      "explanation": "Reading 1 makes 2 least recent, so the new entry evicts 2."
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"get\",\"put\",\"get\",\"get\"]",
+        "[[2],[1,10],[2,20],[2],[3,30],[1],[2]]"
+      ],
+      "expectedOutput": "[null,null,null,20,null,-1,20]",
+      "explanation": "The read of 2 protects it; insertion of 3 evicts 1."
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"get\",\"put\",\"get\"]",
+        "[[1],[7,4],[7,9],[7],[8,3],[7]]"
+      ],
+      "expectedOutput": "[null,null,null,9,null,-1]",
+      "explanation": "Overwriting 7 keeps one entry, but adding 8 evicts it."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"get\",\"put\",\"get\",\"get\"]",
+        "[[2],[1,1],[2,2],[1],[3,3],[2],[3]]"
+      ],
+      "expectedOutput": "[null,null,null,1,null,-1,3]",
+      "explanation": "Reading 1 makes 2 least recent, so the new entry evicts 2.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"get\",\"put\",\"get\",\"get\"]",
+        "[[2],[1,10],[2,20],[2],[3,30],[1],[2]]"
+      ],
+      "expectedOutput": "[null,null,null,20,null,-1,20]",
+      "explanation": "The read of 2 protects it; insertion of 3 evicts 1.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"get\",\"put\",\"get\"]",
+        "[[1],[7,4],[7,9],[7],[8,3],[7]]"
+      ],
+      "expectedOutput": "[null,null,null,9,null,-1]",
+      "explanation": "Overwriting 7 keeps one entry, but adding 8 evicts it.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"get\",\"put\",\"get\"]",
+        "[[1],[1],[1,0],[1]]"
+      ],
+      "expectedOutput": "[null,-1,null,0]",
+      "explanation": "A missing read gives -1; zero is still a stored value.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"put\",\"get\",\"get\"]",
+        "[[2],[1,1],[2,2],[1,3],[1],[2]]"
+      ],
+      "expectedOutput": "[null,null,null,null,3,2]",
+      "explanation": "Overwriting 1 refreshes it without evicting 2.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"get\",\"put\",\"get\",\"get\"]",
+        "[[2],[1,1],[2,2],[9],[3,3],[1],[2]]"
+      ],
+      "expectedOutput": "[null,null,null,-1,null,-1,2]",
+      "explanation": "A miss on 9 does not rescue the oldest key 1.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"get\",\"put\",\"get\",\"put\",\"get\"]",
+        "[[2],[1,1],[2,2],[1],[3,3],[1],[4,4],[3]]"
+      ],
+      "expectedOutput": "[null,null,null,1,null,1,null,-1]",
+      "explanation": "A series of hits changes which old entry is evicted next.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"get\",\"put\",\"get\",\"get\"]",
+        "[[1],[0,0],[0],[1,1],[0],[1]]"
+      ],
+      "expectedOutput": "[null,null,0,null,-1,1]",
+      "explanation": "Zero is a valid key and value, and is evicted at capacity one.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"put\",\"get\",\"get\",\"get\"]",
+        "[[3],[1,1],[2,2],[3,3],[1],[2],[3]]"
+      ],
+      "expectedOutput": "[null,null,null,null,1,2,3]",
+      "explanation": "Three different entries fit without eviction.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"LRUCache\",\"put\",\"put\",\"put\",\"get\",\"get\"]",
+        "[[2],[1,5],[2,6],[1,7],[2],[1]]"
+      ],
+      "expectedOutput": "[null,null,null,null,6,7]",
+      "explanation": "Refreshing an existing key does not increase size.",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "OPS",
+      "OPS"
+    ],
+    "output": "ARRAY"
+  }
 }

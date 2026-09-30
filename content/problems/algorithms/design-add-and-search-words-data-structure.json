@@ -13,11 +13,134 @@
   "legacyId": "9fe0fdb4-2baa-413e-9526-07ba4819e165",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Build a dictionary of lowercase words and query it with patterns that may contain one-character wildcards.</p>\n<p>Implement the <code>WordDictionary</code> class:</p>\n<ul>\n<li><code>__init__()</code> creates an empty dictionary.</li>\n<li><code>addWord(word: str) -&gt; None</code> stores a complete word; repeats do not change whether a pattern matches.</li>\n<li><code>search(word: str) -&gt; bool</code> tests a full-word pattern, where each dot matches exactly one lowercase letter.</li>\n</ul>\n<p>The pattern must match the entire stored word: neither a prefix nor a suffix alone is enough. Dots do not match zero characters.</p>\n<p>You are graded on a recorded sequence of calls on one live object. The first call names the class and passes constructor arguments; subsequent calls name methods and their arguments. The constructor and methods returning nothing report <code>null</code>; the result array has one entry per call.</p>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li>Added words contain 1 to 25 lowercase English letters.</li>\n<li>Queries contain 1 to 25 lowercase letters or dots.</li>\n<li>At most 10000 calls; at most two dots per query.</li>\n</ul>\n<p><strong>Example 1:</strong></p>\n<pre>Calls: [&quot;WordDictionary&quot;,&quot;addWord&quot;,&quot;addWord&quot;,&quot;search&quot;,&quot;search&quot;,&quot;search&quot;]\nArguments: [[],[&quot;bad&quot;],[&quot;dad&quot;],[&quot;pad&quot;],[&quot;.ad&quot;],[&quot;b..&quot;]]\nOutput: [null,null,null,false,true,true]</pre>\n<p>pad is absent; .ad and b.. each match a whole stored three-letter word.</p>\n<p><strong>Example 2:</strong></p>\n<pre>Calls: [&quot;WordDictionary&quot;,&quot;addWord&quot;,&quot;search&quot;,&quot;search&quot;,&quot;search&quot;]\nArguments: [[],[&quot;cat&quot;],[&quot;ca&quot;],[&quot;c.t&quot;],[&quot;....&quot;]]\nOutput: [null,null,false,true,false]</pre>\n<p>A prefix and a four-character pattern cannot match cat, but c.t can.</p>\n<p><strong>Example 3:</strong></p>\n<pre>Calls: [&quot;WordDictionary&quot;,&quot;search&quot;,&quot;addWord&quot;,&quot;search&quot;,&quot;search&quot;]\nArguments: [[],[&quot;a&quot;],[&quot;a&quot;],[&quot;.&quot;],[&quot;..&quot;]]\nOutput: [null,false,null,true,false]</pre>\n<p>Searching before the insertion fails; the single dot then matches the new one-letter word, but two dots need two letters.</p>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class WordDictionary:\n    def __init__(self) -> None:\n        pass\n\n    def addWord(self, word: str) -> None:\n        pass\n\n    def search(self, word: str) -> bool:\n        pass\n",
+    "javascript": "class WordDictionary {\n    constructor() {\n    }\n\n    addWord(word) {\n    }\n\n    search(word) {\n    }\n}\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"addWord\",\"search\",\"search\",\"search\"]",
+        "[[],[\"bad\"],[\"dad\"],[\"pad\"],[\".ad\"],[\"b..\"]]"
+      ],
+      "expectedOutput": "[null,null,null,false,true,true]",
+      "explanation": "pad is absent; .ad and b.. each match a whole stored three-letter word."
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"search\",\"search\",\"search\"]",
+        "[[],[\"cat\"],[\"ca\"],[\"c.t\"],[\"....\"]]"
+      ],
+      "expectedOutput": "[null,null,false,true,false]",
+      "explanation": "A prefix and a four-character pattern cannot match cat, but c.t can."
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"search\",\"addWord\",\"search\",\"search\"]",
+        "[[],[\"a\"],[\"a\"],[\".\"],[\"..\"]]"
+      ],
+      "expectedOutput": "[null,false,null,true,false]",
+      "explanation": "Searching before the insertion fails; the single dot then matches the new one-letter word, but two dots need two letters."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"addWord\",\"search\",\"search\",\"search\"]",
+        "[[],[\"bad\"],[\"dad\"],[\"pad\"],[\".ad\"],[\"b..\"]]"
+      ],
+      "expectedOutput": "[null,null,null,false,true,true]",
+      "explanation": "pad is absent; .ad and b.. each match a whole stored three-letter word.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"search\",\"search\",\"search\"]",
+        "[[],[\"cat\"],[\"ca\"],[\"c.t\"],[\"....\"]]"
+      ],
+      "expectedOutput": "[null,null,false,true,false]",
+      "explanation": "A prefix and a four-character pattern cannot match cat, but c.t can.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"search\",\"addWord\",\"search\",\"search\"]",
+        "[[],[\"a\"],[\"a\"],[\".\"],[\"..\"]]"
+      ],
+      "expectedOutput": "[null,false,null,true,false]",
+      "explanation": "Searching before the insertion fails; the single dot then matches the new one-letter word, but two dots need two letters.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"addWord\",\"search\",\"search\"]",
+        "[[],[\"at\"],[\"and\"],[\"a.\"],[\"an\"]]"
+      ],
+      "expectedOutput": "[null,null,null,true,false]",
+      "explanation": "The wildcard matches exactly one character and an is only a prefix.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"search\",\"search\"]",
+        "[[],[\"hello\"],[\"h.llo\"],[\"h..lo\"]]"
+      ],
+      "expectedOutput": "[null,null,true,true]",
+      "explanation": "Both wildcard positions are independent.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"search\",\"search\"]",
+        "[[],[\"one\"],[\".ne\"],[\"ne\"]]"
+      ],
+      "expectedOutput": "[null,null,true,false]",
+      "explanation": "A suffix alone is not a match.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"addWord\",\"search\"]",
+        "[[],[\"abc\"],[\"axc\"],[\"a.c\"]]"
+      ],
+      "expectedOutput": "[null,null,null,true]",
+      "explanation": "Either stored middle letter may satisfy the dot.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"search\",\"search\"]",
+        "[[],[\"zz\"],[\"..\"],[\".\"]]"
+      ],
+      "expectedOutput": "[null,null,true,false]",
+      "explanation": "Two dots match a two-letter word, not a one-letter word.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"addWord\",\"search\",\"search\"]",
+        "[[],[\"aa\"],[\"aa\"],[\"aa\"],[\"a.\"]]"
+      ],
+      "expectedOutput": "[null,null,null,true,true]",
+      "explanation": "Repeating a word does not change exact or wildcard searches.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"WordDictionary\",\"addWord\",\"addWord\",\"search\",\"search\"]",
+        "[[],[\"abc\"],[\"abd\"],[\"ab.\"],[\"a.e\"]]"
+      ],
+      "expectedOutput": "[null,null,null,true,false]",
+      "explanation": "The final wildcard works; no stored word ends in e.",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "OPS",
+      "OPS"
+    ],
+    "output": "ARRAY"
+  }
 }
