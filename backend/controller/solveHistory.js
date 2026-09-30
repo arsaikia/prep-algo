@@ -1,8 +1,8 @@
 import SolveHistory from '../models/SolveHistory.js';
 import UserProfile from '../models/UserProfile.js';
 import asyncHandler from '../middleware/async.js';
-import ErrorResponse from '../middleware/error.js';
-import Question from '../models/Question.js';
+import ErrorResponse from '../utils/errorResponse.js';
+import { getItemByLegacyId, toQuestionSummary } from '../utils/contentStore.js';
 import { invalidateUserCache } from '../middleware/cache.js';
 import logger from '../config/logger.js';
 
@@ -13,15 +13,24 @@ import logger from '../config/logger.js';
  */
 const getSolveHistory = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
-    const solveHistory = await SolveHistory.find({ userId }).populate('questionId');
+    const solveHistory = await SolveHistory.find({ userId }).lean();
 
     if (!solveHistory) {
         return next(new ErrorResponse(`No SolveHistory found!`, 404));
     }
+
+    // `questionId` used to be populated with the whole question document,
+    // hidden test cases and answer keys included. It is now the public
+    // summary from the content catalog (null if the item no longer exists).
+    const data = solveHistory.map((entry) => ({
+        ...entry,
+        questionId: toQuestionSummary(getItemByLegacyId(entry.questionId)),
+    }));
+
     res.status(200).json({
         success: true,
-        count: solveHistory.length,
-        data: solveHistory,
+        count: data.length,
+        data,
     });
 });
 
@@ -44,19 +53,21 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
     } = req.body;
 
     if (!userId || !questionId) {
-        return next(new Error(`userId and questionId are required`, 400));
+        return next(new ErrorResponse(`userId and questionId are required`, 400));
     }
 
-    // Get question details for analytics
-    const question = await Question.findById(questionId);
-    if (!question) {
-        return next(new Error(`Question not found`, 404));
+    // Question metadata for analytics comes from the content catalog; the
+    // id is the legacy id every problem and quiz carries.
+    const item = getItemByLegacyId(questionId);
+    if (!item) {
+        return next(new ErrorResponse(`Question not found`, 404));
     }
+    const question = { group: item.group, difficulty: item.difficulty, domain: item.domain };
 
     // Get or create user profile for adaptive recommendations
     let userProfile = await UserProfile.findByUserId(userId);
     if (!userProfile) {
-        const existingHistory = await SolveHistory.find({ userId }).populate('questionId');
+        const existingHistory = await SolveHistory.find({ userId });
         userProfile = await UserProfile.createFromSolveHistory(userId, existingHistory);
         await userProfile.save();
     }
@@ -155,7 +166,7 @@ const updateSolveHistory = asyncHandler(async (req, res, next) => {
     }
 
     if (!response) {
-        return next(new Error(`SolveHistory update error`, 500));
+        return next(new ErrorResponse(`SolveHistory update error`, 500));
     }
 
     // Update user profile with this solve session for adaptive recommendations

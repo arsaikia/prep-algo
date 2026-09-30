@@ -1,6 +1,6 @@
 import express from 'express';
-import Question from '../models/Question.js';
 import { runPythonCode } from '../utils/codeExecution.js';
+import { getGradingSpec, getItemBySlug } from '../utils/contentStore.js';
 import logger from '../config/logger.js';
 import { isQueueAvailable, getCodeExecutionQueue, getQueueEvents } from '../config/queue.js';
 import { validate } from '../middleware/validate.js';
@@ -29,16 +29,16 @@ router.post('/execute/example', validate(executeCodeSchema), async (req, res) =>
         const { code, questionId } = req.body;
         req.log.debug({ questionId, codeLength: code.length }, 'code execution request');
 
-        const question = await Question.findOne({
-            $or: [{ link: questionId }, { link: `${questionId}/` }]
-        });
+        // Examples are public content, read from the same built catalog the
+        // CDN serves, so what runs is exactly what the learner was shown.
+        const item = getItemBySlug(questionId);
 
-        if (!question) return res.status(404).json({ error: 'Question not found' });
-        if (!question.exampleTestCases || question.exampleTestCases.length === 0) {
+        if (!item || item.type !== 'problem') return res.status(404).json({ error: 'Question not found' });
+        if (!item.exampleTestCases || item.exampleTestCases.length === 0) {
             return res.status(400).json({ error: 'No example test cases available for this question' });
         }
 
-        const results = await executeCode(code, question.exampleTestCases, question.types, req.log);
+        const results = await executeCode(code, item.exampleTestCases, item.types ?? null, req.log);
 
         res.json({
             results,
@@ -58,16 +58,15 @@ router.post('/execute/submit', validate(executeCodeSchema), async (req, res) => 
     try {
         const { code, questionId } = req.body;
 
-        const question = await Question.findOne({
-            $or: [{ link: questionId }, { link: `${questionId}/` }]
-        });
+        const item = getItemBySlug(questionId);
+        if (!item || item.type !== 'problem') return res.status(404).json({ error: 'Question not found' });
 
-        if (!question) return res.status(404).json({ error: 'Question not found' });
-        if (!question.testCases || question.testCases.length === 0) {
+        const spec = getGradingSpec(item.slug);
+        if (!spec) {
             return res.status(400).json({ error: 'No test cases available for this question' });
         }
 
-        const results = await executeCode(code, question.testCases, question.types, req.log);
+        const results = await executeCode(code, spec.testCases, spec.types, req.log);
         const passed = results.every(r => r.passed);
 
         res.json({

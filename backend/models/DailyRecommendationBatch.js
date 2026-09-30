@@ -268,7 +268,8 @@ dailyRecommendationBatchSchema.methods.getProgress = function () {
 // Static methods
 dailyRecommendationBatchSchema.statics.findTodaysBatch = function (userId) {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    return this.findOne({ userId, date: today }).populate('recommendations.question');
+    // Question refs stay bare ids; controllers attach catalog summaries.
+    return this.findOne({ userId, date: today });
 };
 
 dailyRecommendationBatchSchema.statics.createDailyBatch = async function (userId, recommendations, analysis) {

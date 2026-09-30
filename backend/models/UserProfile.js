@@ -264,7 +264,7 @@ userProfileSchema.statics.createFromSolveHistory = async function (userId, solve
                 questionId: q.questionId,
                 success: q.solveCount === 1,
                 timeSpent: q.averageTimeToSolve || 15,
-                difficulty: q.questionId?.difficulty || 'Medium',
+                difficulty: q.questionDifficulty || q.questionId?.difficulty || 'Medium',
                 solvedAt: q.lastUpdatedAt,
                 strategy: 'general_practice'
             }))

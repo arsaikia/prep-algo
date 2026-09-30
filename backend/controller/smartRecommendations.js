@@ -1,11 +1,58 @@
 import DailyRecommendationBatch from '../models/DailyRecommendationBatch.js';
 import SolveHistory from '../models/SolveHistory.js';
 import UserProfile from '../models/UserProfile.js';
-import Question from '../models/Question.js';
 import asyncHandler from '../middleware/async.js';
 import ErrorResponse from '../utils/errorResponse.js';
 import { invalidateUserCache } from '../middleware/cache.js';
 import logger from '../config/logger.js';
+import { getItemByLegacyId, listItems, toQuestionSummary } from '../utils/contentStore.js';
+
+/*
+ * Question metadata comes from the content catalog, never the database. A
+ * batch stores only each question's id; the summary clients render is
+ * attached at response time from public catalog fields, which is what keeps
+ * answer keys and hidden test cases out of recommendation payloads.
+ */
+
+/** A recommendation's question id, whether the ref is stored bare or hydrated. */
+const recQuestionId = (rec) => {
+    const q = rec?.question;
+    if (q === null || q === undefined) return undefined;
+    return typeof q === 'string' ? q : String(q._id ?? q.id ?? '');
+};
+
+/** The public summary for a recommendation's question, or null if it no longer exists. */
+const hydrateQuestion = (rec) => toQuestionSummary(getItemByLegacyId(recQuestionId(rec)));
+
+/**
+ * Whether an item can be assigned as practice. Problems and quizzes are
+ * solved; System Design topics are read in the reader, so they are never
+ * handed out as a daily question.
+ */
+const isRecommendable = (item) =>
+    Boolean(item?.legacyId) && (item.type === 'problem' || item.type === 'quiz');
+
+/**
+ * In-memory equivalent of the candidate queries the engine used to run
+ * against the questions collection: exclude ids, filter by domain, group and
+ * difficulty (a list means any of), and take the first `limit` in catalog
+ * order. Pure, so the selection rules are testable without a database.
+ */
+const selectCandidates = (pool, { exclude = [], domain, groups, difficulty, limit = Infinity } = {}) => {
+    const excluded = new Set(Array.from(exclude, String));
+    const difficulties = difficulty === undefined ? null : [].concat(difficulty);
+    const groupSet = groups ? new Set(groups) : null;
+    const out = [];
+    for (const item of pool) {
+        if (out.length >= limit) break;
+        if (excluded.has(String(item.legacyId))) continue;
+        if (domain && item.domain !== domain) continue;
+        if (groupSet && !groupSet.has(item.group)) continue;
+        if (difficulties && !difficulties.includes(item.difficulty)) continue;
+        out.push(item);
+    }
+    return out;
+};
 
 /*
  * @desc     Get smart daily recommendations with hybrid caching
@@ -50,13 +97,13 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
             success: true,
             data: {
                 recommendations: batch.recommendations.map(rec => {
-                    const questionId = rec.question._id || rec.question.id;
+                    const questionId = recQuestionId(rec);
                     const isCompleted = completedQuestionIds.includes(questionId);
                     const completionData = isCompleted ?
                         batch.questionsCompleted.find(q => q.questionId === questionId) : null;
 
                     return {
-                        question: rec.question,
+                        question: hydrateQuestion(rec),
                         domain: rec.domain || 'algorithms',
                         reason: rec.reason,
                         priority: rec.priority,
@@ -167,13 +214,13 @@ const replaceCompletedQuestions = asyncHandler(async (req, res, next) => {
             success: true,
             data: {
                 recommendations: refreshedBatch.recommendations.map(rec => {
-                    const questionId = rec.question._id || rec.question.id;
+                    const questionId = recQuestionId(rec);
                     const isCompleted = completedQuestionIds.includes(questionId);
                     const completionData = isCompleted ?
                         refreshedBatch.questionsCompleted.find(q => q.questionId === questionId) : null;
 
                     return {
-                        question: rec.question,
+                        question: hydrateQuestion(rec),
                         reason: rec.reason,
                         priority: rec.priority,
                         strategy: rec.strategy,
@@ -239,7 +286,7 @@ const forceRefreshRecommendations = asyncHandler(async (req, res, next) => {
             success: true,
             data: {
                 recommendations: refreshedBatch.recommendations.map(rec => ({
-                    question: rec.question,
+                    question: hydrateQuestion(rec),
                     reason: rec.reason,
                     priority: rec.priority,
                     strategy: rec.strategy,
@@ -348,7 +395,7 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
 
     // Get remaining recommendations (not completed)
     const remainingRecommendations = currentBatch.recommendations.filter(
-        rec => !completedQuestionIds.includes(rec.question._id || rec.question.id)
+        rec => !completedQuestionIds.includes(recQuestionId(rec))
     );
 
     logger.debug({ remaining: remainingRecommendations.length, completed: completedQuestionIds.length }, 'smart refresh stats');
@@ -384,7 +431,7 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
 
         // Get already recommended question IDs (from current batch + carried over)
         const existingQuestionIds = [
-            ...currentBatch.recommendations.map(r => r.question._id || r.question.id),
+            ...currentBatch.recommendations.map(recQuestionId),
             ...completedQuestionIds
         ];
 
@@ -425,22 +472,21 @@ const performSelectiveRefresh = async (currentBatch, userId) => {
     // Get user profile and fresh analysis
     let userProfile = await UserProfile.findByUserId(userId);
     if (!userProfile) {
-        const existingHistory = await SolveHistory.find({ userId }).populate('questionId');
+        const existingHistory = await SolveHistory.find({ userId });
         userProfile = await UserProfile.createFromSolveHistory(userId, existingHistory);
         await userProfile.save();
     }
 
-    const userHistory = await SolveHistory.find({ userId }).populate('questionId');
+    const userHistory = await SolveHistory.find({ userId });
     const freshAnalysis = await analyzeUserPatternsAdaptive(userId, userHistory, userProfile);
 
     // Get completed question IDs
     const completedQuestionIds = currentBatch.questionsCompleted.map(q => q.questionId);
 
     // Separate completed and incomplete recommendations
-    const incompleteRecommendations = currentBatch.recommendations.filter(rec => {
-        const questionId = rec.question._id || rec.question.id;
-        return !completedQuestionIds.includes(questionId);
-    });
+    const incompleteRecommendations = currentBatch.recommendations.filter(
+        rec => !completedQuestionIds.includes(recQuestionId(rec))
+    );
 
     const completedCount = currentBatch.recommendations.length - incompleteRecommendations.length;
 
@@ -452,7 +498,7 @@ const performSelectiveRefresh = async (currentBatch, userId) => {
         // Get all question IDs to exclude (solved + current batch)
         const allExcludedIds = [
             ...await SolveHistory.find({ userId }).distinct('questionId'),
-            ...currentBatch.recommendations.map(r => r.question._id || r.question.id)
+            ...currentBatch.recommendations.map(recQuestionId)
         ];
 
         newRecommendations = await generateAdaptiveRecommendations(
@@ -486,7 +532,7 @@ const performSelectiveRefresh = async (currentBatch, userId) => {
 };
 
 const isStillRelevant = (recommendation, newAnalysis) => {
-    const question = recommendation.question;
+    const question = hydrateQuestion(recommendation) || {};
     const strategy = recommendation.strategy;
     const priority = recommendation.priority;
 
@@ -547,8 +593,12 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
     };
 
     userHistory.forEach(history => {
-        const group = history.questionGroup || (history.questionId && history.questionId.group);
-        const difficulty = history.questionDifficulty || (history.questionId && history.questionId.difficulty);
+        // Denormalized on the row; older rows fall back to the catalog.
+        const item = history.questionGroup && history.questionDifficulty
+            ? null
+            : getItemByLegacyId(history.questionId);
+        const group = history.questionGroup || item?.group;
+        const difficulty = history.questionDifficulty || item?.difficulty;
         const domain = history.domain || 'algorithms';
         if (!group || !difficulty) return;
 
@@ -777,13 +827,11 @@ const generateAdaptiveRecommendations = async (userId, analysis, userProfile, co
 
     const weights = userProfile.getAdaptiveWeights();
     const domainPrefs = userProfile.domainPreferences || {};
+    const pool = listItems().filter(isRecommendable);
 
     const availablePerDomain = {};
     for (const domain of ['algorithms', 'system_design', 'frontend']) {
-        availablePerDomain[domain] = await Question.countDocuments({
-            _id: { $nin: allExcludedIds },
-            domain
-        });
+        availablePerDomain[domain] = selectCandidates(pool, { exclude: allExcludedIds, domain }).length;
     }
 
     const domainSlots = allocateDomainSlots(count, domainPrefs, availablePerDomain);
@@ -814,12 +862,13 @@ const generateAdaptiveRecommendations = async (userId, analysis, userProfile, co
         const weakCount = Math.max(1, Math.ceil(slotCount * weights.weak_area_reinforcement));
         const domainWeakAreas = (analysis.domainStats?.[domain]?.weakAreas || analysis.weakAreas || []);
         if (domainWeakAreas.length > 0) {
-            const weakQ = await Question.find({
-                _id: { $nin: domainExcluded },
+            const weakQ = selectCandidates(pool, {
+                exclude: domainExcluded,
                 domain,
-                group: { $in: domainWeakAreas },
-                difficulty: getDifficultyForLevel(analysis.userLevel)
-            }).limit(weakCount);
+                groups: domainWeakAreas,
+                difficulty: getDifficultyForLevel(analysis.userLevel),
+                limit: weakCount
+            }).map(toQuestionSummary);
             weakQ.forEach(q => {
                 if (filled >= slotCount) return;
                 addRec(q, `Strengthen weak area: ${q.group}`, 'high', 'weak_area_reinforcement', weights.weak_area_reinforcement);
@@ -831,11 +880,12 @@ const generateAdaptiveRecommendations = async (userId, analysis, userProfile, co
         const progCount = Math.max(1, Math.ceil(slotCount * weights.progressive_difficulty));
         if (filled < slotCount) {
             const nextDiff = getNextDifficultyAdaptive(analysis.userLevel, analysis.difficultyStats);
-            const progQ = await Question.find({
-                _id: { $nin: [...domainExcluded, ...Array.from(usedIds)] },
+            const progQ = selectCandidates(pool, {
+                exclude: [...domainExcluded, ...Array.from(usedIds)],
                 domain,
-                difficulty: nextDiff
-            }).limit(progCount);
+                difficulty: nextDiff,
+                limit: progCount
+            }).map(toQuestionSummary);
             progQ.forEach(q => {
                 if (filled >= slotCount) return;
                 addRec(q, `Progressive difficulty: ${nextDiff}`, 'medium', 'progressive_difficulty', weights.progressive_difficulty);
@@ -858,8 +908,9 @@ const generateAdaptiveRecommendations = async (userId, analysis, userProfile, co
 
             for (const item of solvedInDomain) {
                 if (filled >= slotCount || usedIds.has(item.questionId)) continue;
-                const q = await Question.findById(item.questionId);
-                if (!q) continue;
+                const solved = getItemByLegacyId(item.questionId);
+                if (!isRecommendable(solved)) continue;
+                const q = toQuestionSummary(solved);
                 addRec(q, `Review: solved ${item.solveCount} times`, 'high', 'spaced_repetition', weights.spaced_repetition);
                 filled++;
             }
@@ -867,17 +918,20 @@ const generateAdaptiveRecommendations = async (userId, analysis, userProfile, co
 
         // Strategy 4: topic_exploration
         if (filled < slotCount) {
-            const allDomainGroups = await Question.distinct('group', { domain });
+            const allDomainGroups = [...new Set(
+                pool.filter(item => item.domain === domain).map(item => item.group)
+            )];
             const solvedGroups = Object.keys(analysis.domainStats?.[domain]?.groupStats || analysis.groupStats || {});
             const unexplored = allDomainGroups.filter(g => !solvedGroups.includes(g) || (analysis.groupStats?.[g]?.count || 0) < 2);
 
             if (unexplored.length > 0) {
-                const exploreQ = await Question.find({
-                    _id: { $nin: [...domainExcluded, ...Array.from(usedIds)] },
+                const exploreQ = selectCandidates(pool, {
+                    exclude: [...domainExcluded, ...Array.from(usedIds)],
                     domain,
-                    group: { $in: unexplored },
-                    difficulty: 'Easy'
-                }).limit(slotCount - filled);
+                    groups: unexplored,
+                    difficulty: 'Easy',
+                    limit: slotCount - filled
+                }).map(toQuestionSummary);
                 exploreQ.forEach(q => {
                     if (filled >= slotCount) return;
                     addRec(q, `Explore new topic: ${q.group}`, 'low', 'topic_exploration', weights.topic_exploration);
@@ -888,11 +942,12 @@ const generateAdaptiveRecommendations = async (userId, analysis, userProfile, co
 
         // Strategy 5: general_practice (fill remaining)
         if (filled < slotCount) {
-            const fillerQ = await Question.find({
-                _id: { $nin: [...domainExcluded, ...Array.from(usedIds)] },
+            const fillerQ = selectCandidates(pool, {
+                exclude: [...domainExcluded, ...Array.from(usedIds)],
                 domain,
-                difficulty: getDifficultyForLevel(analysis.userLevel)
-            }).limit(slotCount - filled);
+                difficulty: getDifficultyForLevel(analysis.userLevel),
+                limit: slotCount - filled
+            }).map(toQuestionSummary);
             fillerQ.forEach(q => {
                 if (filled >= slotCount) return;
                 addRec(q, 'Quality practice question', 'medium', 'general_practice', weights.general_practice);
@@ -963,31 +1018,18 @@ const calculateCurrentStreak = (dailyActivity) => {
     };
 };
 
-let _topicCountsCache = null;
-let _topicCountsCacheTime = 0;
-const TOPIC_COUNTS_TTL = 3600000; // 1 hour
-
+/**
+ * Questions available per group, summed across domains, for mastery
+ * percentages. Counts everything that carries progress — topics included,
+ * since solves recorded against them still count toward their group.
+ */
 const getTopicQuestionCounts = async () => {
-    const now = Date.now();
-    if (_topicCountsCache && (now - _topicCountsCacheTime) < TOPIC_COUNTS_TTL) {
-        return _topicCountsCache;
+    const countMap = {};
+    for (const item of listItems()) {
+        if (!item.legacyId || item.type === 'module') continue;
+        countMap[item.group] = (countMap[item.group] || 0) + 1;
     }
-    try {
-        const topicCounts = await Question.aggregate([
-            { $group: { _id: { domain: '$domain', group: '$group' }, totalQuestions: { $sum: 1 } } }
-        ]);
-        const countMap = {};
-        topicCounts.forEach(item => {
-            const key = item._id.group;
-            countMap[key] = (countMap[key] || 0) + item.totalQuestions;
-        });
-        _topicCountsCache = countMap;
-        _topicCountsCacheTime = now;
-        return countMap;
-    } catch (error) {
-        logger.error({ err: error }, 'error fetching topic question counts');
-        return _topicCountsCache || {};
-    }
+    return countMap;
 };
 
 // NEW: Calculate topic mastery levels using percentage of available questions
@@ -1070,10 +1112,7 @@ const trackRecommendationAction = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('No active daily batch found', 404));
     }
 
-    const rec = batch.recommendations.find(r => {
-        const qId = r.question._id || r.question.toString();
-        return qId === questionId;
-    });
+    const rec = batch.recommendations.find(r => recQuestionId(r) === questionId);
 
     if (!rec) {
         return res.status(404).json({ success: false, message: 'Question not in batch' });
@@ -1098,5 +1137,8 @@ export {
     trackRecommendationAction,
     // Pure helpers exported for unit testing
     allocateDomainSlots,
-    getNextDifficultyAdaptive
+    getNextDifficultyAdaptive,
+    selectCandidates,
+    isRecommendable,
+    recQuestionId
 }; 

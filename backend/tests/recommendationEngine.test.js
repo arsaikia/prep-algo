@@ -2,7 +2,10 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   allocateDomainSlots,
-  getNextDifficultyAdaptive
+  getNextDifficultyAdaptive,
+  selectCandidates,
+  isRecommendable,
+  recQuestionId
 } from '../controller/smartRecommendations.js';
 
 const sum = slots => Object.values(slots).reduce((a, b) => a + b, 0);
@@ -132,5 +135,86 @@ describe('getNextDifficultyAdaptive', () => {
   test('promotes an intermediate to Hard once Medium is dominant', () => {
     const stats = { Easy: 10, Medium: 70, Hard: 20 };
     assert.equal(getNextDifficultyAdaptive('intermediate', stats), 'Hard');
+  });
+});
+
+const item = (legacyId, fields = {}) => ({
+  type: 'problem',
+  legacyId,
+  slug: legacyId,
+  domain: 'algorithms',
+  group: 'Arrays',
+  difficulty: 'Easy',
+  ...fields
+});
+
+const POOL = [
+  item('a1'),
+  item('a2', { difficulty: 'Medium' }),
+  item('a3', { group: 'Graphs', difficulty: 'Hard' }),
+  item('f1', { domain: 'frontend', group: 'CSS' }),
+  item('s1', { type: 'quiz', domain: 'system_design', group: 'Caching', difficulty: 'Medium' })
+];
+
+const ids = items => items.map(i => i.legacyId);
+
+describe('selectCandidates', () => {
+  test('keeps catalog order when nothing is filtered', () => {
+    assert.deepEqual(ids(selectCandidates(POOL)), ['a1', 'a2', 'a3', 'f1', 's1']);
+  });
+
+  test('drops excluded ids, including non-string ids', () => {
+    const excluded = ['a1', { toString: () => 'a3' }];
+    assert.deepEqual(ids(selectCandidates(POOL, { exclude: excluded, domain: 'algorithms' })), ['a2']);
+  });
+
+  test('filters by domain and group', () => {
+    assert.deepEqual(ids(selectCandidates(POOL, { domain: 'frontend' })), ['f1']);
+    assert.deepEqual(ids(selectCandidates(POOL, { domain: 'algorithms', groups: ['Graphs'] })), ['a3']);
+  });
+
+  test('treats a difficulty list as any of', () => {
+    assert.deepEqual(ids(selectCandidates(POOL, { domain: 'algorithms', difficulty: 'Medium' })), ['a2']);
+    assert.deepEqual(
+      ids(selectCandidates(POOL, { domain: 'algorithms', difficulty: ['Easy', 'Hard'] })),
+      ['a1', 'a3']
+    );
+  });
+
+  test('takes the first `limit` matches', () => {
+    assert.deepEqual(ids(selectCandidates(POOL, { limit: 2 })), ['a1', 'a2']);
+    assert.deepEqual(selectCandidates(POOL, { limit: 0 }), []);
+  });
+
+  test('matches nothing for an empty group list', () => {
+    assert.deepEqual(selectCandidates(POOL, { groups: [] }), []);
+  });
+});
+
+describe('isRecommendable', () => {
+  test('accepts problems and quizzes that progress can be keyed on', () => {
+    assert.equal(isRecommendable(item('p')), true);
+    assert.equal(isRecommendable(item('q', { type: 'quiz' })), true);
+  });
+
+  test('rejects reader topics, modules, unkeyed items and missing items', () => {
+    assert.equal(isRecommendable(item('t', { type: 'topic' })), false);
+    assert.equal(isRecommendable(item('m', { type: 'module' })), false);
+    assert.equal(isRecommendable(item(undefined)), false);
+    assert.equal(isRecommendable(null), false);
+  });
+});
+
+describe('recQuestionId', () => {
+  test('reads bare and hydrated question refs alike', () => {
+    assert.equal(recQuestionId({ question: 'q-1' }), 'q-1');
+    assert.equal(recQuestionId({ question: { _id: 'q-2', name: 'Two Sum' } }), 'q-2');
+    assert.equal(recQuestionId({ question: { id: 'q-3' } }), 'q-3');
+  });
+
+  test('returns undefined when the recommendation has no question', () => {
+    assert.equal(recQuestionId({ question: null }), undefined);
+    assert.equal(recQuestionId({}), undefined);
+    assert.equal(recQuestionId(undefined), undefined);
   });
 });
