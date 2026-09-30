@@ -740,6 +740,8 @@ const CodeSandbox = () => {
   const [leetcodeUrl, setLeetcodeUrl] = useState('');
   const [questionDescription, setQuestionDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
   const [error, setError] = useState('');
   const [testResults, setTestResults] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -996,11 +998,17 @@ const CodeSandbox = () => {
   };
 
   const runCode = async () => {
+    if (language !== 'python') {
+      setError('Submissions are executed as Python. Switch the language to Python to submit.');
+      return;
+    }
+
     try {
-      setIsLoading(true);
+      setIsSubmitting(true);
       setError('');
       setOutput('');
       setTestResults(null);
+      setStatusMessage('Submitting your solution…');
 
       const questionId = leetcodeUrl.replace(/\/$/, '');
 
@@ -1009,7 +1017,7 @@ const CodeSandbox = () => {
       });
 
       // Format the results for display
-      if (response.data) {
+      if (response.data && Array.isArray(response.data.results)) {
         const formattedResults = {
           summary: {
             passed: response.data.passedTests,
@@ -1029,6 +1037,9 @@ const CodeSandbox = () => {
 
         setTestResults(formattedResults);
         setOutput(`Test results: ${response.data.passedTests}/${response.data.totalTests} tests passed (${response.data.score}% score)`);
+        setStatusMessage(
+          `Submission complete: ${response.data.passedTests} of ${response.data.totalTests} tests passed.`
+        );
 
         // Handle session completion based on results
         const success = response.data.score === 100; // Require 100% success for Smart Hybrid recommendations
@@ -1036,13 +1047,14 @@ const CodeSandbox = () => {
           await handleSessionComplete(success);
         }
       } else {
-        setError('Invalid response format from server');
+        setError('Unexpected response from the server. Please try again.');
       }
     } catch (error) {
-      setError(`Error: ${error.response?.data?.message || error.message}`);
-
+      const data = error.response?.data;
+      setError(`Error: ${data?.error || data?.details || data?.message || error.message}`);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
+      setStatusMessage('');
     }
   };
 
@@ -1325,13 +1337,20 @@ const CodeSandbox = () => {
                   <option value="python">Python</option>
                   <option value="javascript">JavaScript</option>
                 </LanguageSelector>
-                <ModernButton onClick={runExampleTests} disabled={isGuest || isLoading || isRunningExampleTests}>
+                <ModernButton
+                  onClick={isGuest ? () => navigate('/login') : runExampleTests}
+                  disabled={!isGuest && (isSubmitting || isRunningExampleTests)}
+                >
                   <PlayLucide size={16} style={{ marginRight: '6px' }} />
                   {isGuest ? 'Sign in to Run' : isRunningExampleTests ? 'Running Examples...' : 'Run Example Tests'}
                 </ModernButton>
-                <ModernButton onClick={runCode} disabled={isGuest || isLoading || isRunningExampleTests} variant="primary">
+                <ModernButton
+                  onClick={isGuest ? () => navigate('/login') : runCode}
+                  disabled={!isGuest && (isSubmitting || isRunningExampleTests)}
+                  variant="primary"
+                >
                   <Zap size={16} style={{ marginRight: '6px' }} />
-                  {isGuest ? 'Sign in to Submit' : isLoading ? 'Running...' : 'Submit Code'}
+                  {isGuest ? 'Sign in to Submit' : isSubmitting ? 'Submitting...' : 'Submit Code'}
                 </ModernButton>
               </EditorActions>
             </EditorHeader>
@@ -1364,6 +1383,23 @@ const CodeSandbox = () => {
               </CardTitle>
             </CardHeader>
             <OutputContent>
+              <div
+                aria-live="polite"
+                role="status"
+                style={{
+                  position: 'absolute',
+                  width: '1px',
+                  height: '1px',
+                  overflow: 'hidden',
+                  clip: 'rect(0 0 0 0)',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {statusMessage || error}
+              </div>
+              {isSubmitting && (
+                <div style={{ fontWeight: 'bold' }}>Submitting your solution…</div>
+              )}
               {error && <div style={{ color: '#dc3545', fontWeight: 'bold' }}>{error}</div>}
               {debugOutput && <div style={{ color: '#28a745', fontWeight: 'bold' }}>{debugOutput}</div>}
               {output && <div>{output}</div>}

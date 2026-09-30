@@ -38,17 +38,44 @@ function* fetchFromApi(userId, domain) {
  * The two requests are independent, so they run concurrently — the join
  * cost is a Map lookup per item and does not justify serialising them.
  */
+function* fetchProgress(userId) {
+    try {
+        const response = yield call([apiClient, 'get'], `/progress/${userId}`);
+        return response.data.data;
+    } catch (error) {
+        // Progress is an enhancement, not a prerequisite: a failure here must
+        // cost the user their solved badges, never the question list itself.
+        console.error(
+            `[questions] progress lookup failed for "${userId}" — rendering without solved badges.`,
+            error,
+        );
+        return null;
+    }
+}
+
 function* fetchFromCdn(userId, domain) {
-    const [index, progressResponse] = yield all([
+    const [index, progressRows] = yield all([
         call(loadIndex),
-        call([apiClient, 'get'], `/progress/${userId}`),
+        call(fetchProgress, userId),
     ]);
 
     const items = domain
         ? index.items.filter((item) => item.domain === domain)
         : index.items;
 
-    return buildQuestionGroups(items, progressResponse.data.data);
+    const groups = buildQuestionGroups(items, progressRows);
+
+    // The join is `progress.questionId` -> `indexEntry.legacyId`. If those key
+    // spaces ever drift apart the badges vanish silently, which reads exactly
+    // like "solved nothing" — so say so out loud instead.
+    if (progressRows?.length && !Object.values(groups.questions).flat().some((q) => q.solved)) {
+        console.error(
+            `[questions] received ${progressRows.length} progress rows but matched none against the content index — `
+            + 'questionId/legacyId mismatch.',
+        );
+    }
+
+    return groups;
 }
 
 function* fetchAllQuestions(action) {
@@ -89,7 +116,7 @@ function* fetchAllQuestions(action) {
             type: GET_SOLVED_QUESTIONS,
         });
     } catch (error) {
-        // Error handling without logging
+        console.error('[questions] failed to load the question list.', error);
     }
 
     yield put({ type: HIDE_FETCH_LOADING });
