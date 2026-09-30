@@ -47,12 +47,17 @@ export default function buildQuestionGroups(indexItems, progressRows = null) {
         ? new Map(progressRows.map((row) => [row.questionId, row]))
         : null;
 
-    // Topics are read, not solved. They have no difficulty and no pass/fail,
-    // so rendering them in the question list produces empty difficulty pills
-    // and a meaningless solved ring. They have their own reader at
-    // /system-design.
+    // The question list solves things. Topics and modules are read, not
+    // solved — they render empty difficulty pills and a meaningless solved
+    // ring — and a quiz bound to a topic belongs inline at the end of that
+    // topic, not as a standalone row that claims to be a coding question.
+    // All three have their own reader at /system-design.
+    //
+    // An *unbound* quiz is still a legitimate standalone list item; only the
+    // ones that were authored as a topic's comprehension check are removed.
     const questions = indexItems
-        .filter((entry) => entry.type !== 'topic')
+        .filter((entry) => entry.type !== 'topic' && entry.type !== 'module')
+        .filter((entry) => !(entry.type === 'quiz' && entry.topic))
         .map((entry) => toListQuestion(entry, progress));
     const grouped = groupBy(questions, (question) => question.group);
 

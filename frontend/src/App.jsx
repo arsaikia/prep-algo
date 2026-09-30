@@ -40,13 +40,45 @@ const AppWrapper = styled.div`
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   transition: all 0.3s ease;
+
+  ${({ $immersive }) => $immersive && `
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  `}
 `;
 
 const MainContent = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
+  /*
+   * Immersive routes own the viewport: they lay themselves out against a
+   * fixed height and scroll internally, so the page itself must not grow a
+   * scrollbar around them.
+   */
+  ${({ $immersive }) => $immersive && `
+    min-height: 0;
+    overflow: hidden;
+  `}
 `;
+
+/**
+ * Routes that manage their own full-height layout.
+ *
+ * The default shell centres content in a padded container and always renders
+ * a footer, which is right for a document-shaped page and wrong for an
+ * application-shaped one. A resizable editor split or a two-pane reader has
+ * to know its own height, and it cannot if the shell keeps adding chrome
+ * below it. These routes opt out of the container and the footer entirely.
+ */
+const IMMERSIVE_ROUTES = ['/codesandbox', '/system-design'];
+
+function isImmersiveRoute(pathname) {
+    return IMMERSIVE_ROUTES.some(
+        (route) => pathname === route || pathname.startsWith(`${route}/`),
+    );
+}
 
 // Wrapper component to access location
 function AppContent() {
@@ -91,20 +123,29 @@ function AppContent() {
   }
 
   const currentTheme = createTheme(isDarkModeEnabled ? 'dark' : 'light', colorScheme);
+  const immersive = isImmersiveRoute(location.pathname);
+
+  const routes = (
+    <>
+      <Suspense fallback={null}>
+        {needsCodeModal && <CodeSection />}
+      </Suspense>
+      <AllRoutes />
+    </>
+  );
 
   return (
     <ThemeProvider theme={currentTheme}>
-      <AppWrapper>
-        <MainContent>
+      <AppWrapper $immersive={immersive}>
+        <MainContent $immersive={immersive}>
           <Navbar />
-          <Container width="calc(100% - 2rem)" padding="0 1rem">
-            <Suspense fallback={null}>
-              {needsCodeModal && <CodeSection />}
-            </Suspense>
-            <AllRoutes />
-          </Container>
+          {immersive ? routes : (
+            <Container width="calc(100% - 2rem)" padding="0 1rem">
+              {routes}
+            </Container>
+          )}
         </MainContent>
-        <Footer />
+        {!immersive && <Footer />}
       </AppWrapper>
     </ThemeProvider>
   );

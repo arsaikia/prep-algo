@@ -84,8 +84,14 @@ const TabsAndStatsHeader = styled.div`
 `;
 
 const TabsSection = styled.div`
-  flex-shrink: 0;
-  max-width: fit-content;
+  /*
+   * Must be allowed to shrink. TabsContainer already sets overflow-x: auto,
+   * but a flex item's default min-width is its content size, so without
+   * min-width: 0 the strip is pinned to its full intrinsic width, the scroll
+   * never engages, and the stats block is pushed outside the card instead.
+   */
+  flex: 1 1 auto;
+  min-width: 0;
 `;
 
 const StatsSection = styled.div`
