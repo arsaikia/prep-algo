@@ -28,7 +28,9 @@ See [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) for Mermaid diagrams sh
 | Resilience | Circuit breakers (opossum) around MongoDB | — | Working |
 | Observability | pino structured logs, correlation IDs, deep `/health` | — | Partial (no `/metrics`) |
 
-**Key models**: Question, User, UserProfile, SolveHistory, DailyRecommendationBatch
+**Key models**: User, UserProfile, SolveHistory, DailyRecommendationBatch — per-user data
+only. `Question` survives for the offline scripts; the API reads content from the build
+(see [Server-side content reads](#server-side-content-reads-)).
 **Recommendation engine**: 5 weighted adaptive strategies, topic mastery, learning velocity, domain-weighted slot allocation
 
 ### Critical Gaps
@@ -404,7 +406,8 @@ costs no schema work.
 ```
 
 This also lets `CodeSandbox.jsx` shed its MCQ/design-doc branches and return to being a
-code sandbox.
+code sandbox. The design-doc branch is gone: a topic opened in the sandbox redirects to
+the reader. The MCQ branch remains for quizzes that are not bound to a topic.
 
 ### Decision 6: Revert strategy — git, not a `/v2` API namespace
 
@@ -456,10 +459,12 @@ What parking it costs, and what to do about it:
   project, schema or migration code should be written until the park is lifted. The
   reasoning in Decision 3 does not decay.
 - **Steps 1 and 2 come back into scope.** They were dropped only because Step 6 would
-  delete the code they optimize. With Step 6 parked, the `$nin` anti-join and the
-  unbounded `UserProfile` arrays are load-bearing for however long the park lasts, and
-  the arrays grow monotonically with use. Treat these as the next infrastructure work
-  *if* the park outlives one more feature step.
+  delete the code they optimize. The `$nin` anti-join is already gone (see
+  [Server-side content reads](#server-side-content-reads-)), but the unbounded
+  `UserProfile` arrays and the unprojected `SolveHistory.find({ userId })` reads are
+  load-bearing for however long the park lasts, and the arrays grow monotonically with
+  use. Treat these as the next infrastructure work *if* the park outlives one more
+  feature step.
 - **Transactional correctness stays unfixed.** A solve still mutates `SolveHistory`,
   `UserProfile` and the recommendation batch with zero transactions. This is a live
   correctness gap that Postgres was going to close; parking Step 6 does not make it
@@ -478,6 +483,51 @@ What parking it costs, and what to do about it:
 now spanning algorithms, system design and frontend. Product name and domain should be
 revisited during this rebuild — one breaking change rather than two. Independent of all
 engineering work above; must not block Step 0.
+
+### Server-side content reads ✅
+
+This finishes Decision 1 on the server. `npm run build:content` also emits
+`backend/content/`, which is gitignored like the CDN output. It holds `catalog.json` (the
+public body of every item) and the grading bundles `testcases.json` and
+`quiz-answers.json`. The API resolves every question read against the catalog, by slug or
+legacy id. No runtime code imports the `Question` model, and Mongo holds per-user data
+only.
+
+- **The sandbox reads question bodies from the CDN.** It fetches
+  `items/<slug>.<hash>.json` and calls `GET /questions/:slug` only if the CDN misses.
+  `backend/tests/sandboxQuestionParity.test.js` asserts that both paths yield the same
+  question for each content type, and that the CDN mapper drops any answer key it is
+  handed. While the API read Mongo, 142 of 193 authored problems opened with no
+  description, examples or template, because Mongo held only stubs. None do now, from
+  either source.
+- **Recommendations filter the in-memory catalog.** Three problems from Finding 5 are
+  gone: the `$nin` anti-join, the `countDocuments()` loop and the `Question.findById`
+  N+1. The `SolveHistory` reads remain.
+- **Only grading writes solves.** `submitCode` and `submitMcqAnswer` record a solve
+  through `recordSolvedQuestion`, and only on a pass. The sandbox's session tracker also
+  posted to `POST /solveHistory`, which records any attempt as solved, whenever a session
+  ended: on its first submit, pass or fail, or on End session. That body always carried
+  `difficultyRating: null`, so validation rejected it, with two live effects:
+  - Under Zod 4, `validate.js` read the removed `ZodError.errors`, so every validation
+    failure API-wide surfaced as a 500.
+  - The rejected post threw before the tracker reached
+    `/recommendations/:userId/complete`, so a sandbox solve never ticked off the daily
+    batch. It also kept the "Session Complete" modal from ever opening.
+
+  Fixing validation turns the 500 into a 400 naming `difficultyRating`. Making that body
+  valid would have recorded failed attempts as solved and counted every pass twice, and
+  the modal it reopened would have posted a third time with `success: true` hardcoded.
+  Instead the client no longer writes solves. The tracker only times the session and,
+  after a saved solve, ticks it off the batch. The modal is gone; nothing read its rating
+  or tags. `POST /solveHistory` now has no caller: remove it, or narrow it to
+  annotations, before cutover.
+- **Deploys build content first.** The backend image and the Hosting bundle both ship
+  gitignored build output, so `deploy-to-cloudrun.sh`, `deploy-to-firebase.sh` and
+  `deploy-frontend-quick.sh` now run `npm run build:content` first. A backend started
+  without the bundles logs an error and 404s every question.
+
+Still open: a correct MCQ answer records progress but does not tick off the daily
+recommendation batch. Only the code sandbox's session tracker does that.
 
 ---
 
