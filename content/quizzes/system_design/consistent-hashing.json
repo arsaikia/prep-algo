@@ -10,6 +10,7 @@
   ],
   "legacyId": "dcb0015f-afef-43d8-9388-329a1fcc1569",
   "type": "quiz",
+  "topic": "consistent-hashing-fundamentals",
   "difficulty": "Medium",
   "description": "Understand consistent hashing and its use in distributed systems.",
   "options": [

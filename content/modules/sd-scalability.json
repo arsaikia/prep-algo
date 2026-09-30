@@ -1,0 +1,11 @@
+{
+    "slug": "sd-scalability",
+    "title": "Scalability & Reliability",
+    "domain": "system_design",
+    "type": "module",
+    "group": "Curriculum",
+    "order": 3,
+    "tags": [],
+    "lists": [],
+    "summary": "Keeping a system fast and up as load grows: queues, backpressure, rate limiting, failure isolation and observability."
+}

@@ -1,0 +1,11 @@
+{
+    "slug": "sd-foundations",
+    "title": "Foundations",
+    "domain": "system_design",
+    "type": "module",
+    "group": "Curriculum",
+    "order": 1,
+    "tags": [],
+    "lists": [],
+    "summary": "The vocabulary every design interview assumes you already have: scaling, load balancing, caching, consistency and the storage tradeoffs underneath them."
+}

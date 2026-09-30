@@ -1,0 +1,27 @@
+{
+    "slug": "consistent-hashing-fundamentals",
+    "title": "Consistent Hashing",
+    "domain": "system_design",
+    "type": "topic",
+    "group": "Foundations",
+    "module": "sd-foundations",
+    "kind": "concept",
+    "order": 7,
+    "tags": [
+        "sharding",
+        "distributed-systems"
+    ],
+    "lists": [],
+    "summary": "A hash ring reduces key movement when membership changes, but virtual nodes and hot-key controls still determine balance.",
+    "body": "Suppose a cache cluster has four nodes and a client chooses node hash(key) modulo 4. Add a fifth node: the modulus changes, so most keys select a different owner and the cache suffers a near-total cold start. Consistent hashing changes the placement rule so membership changes disturb only neighboring ranges.\n\n## Walk around the ring\n\nHash each key and each node into the same large circular number space. Starting at a key's position, walk clockwise to the first node: that node owns the key. When a node joins, it takes the keys between itself and its predecessor from its clockwise successor; other ranges keep their owners. When a node leaves, its successor takes over its interval. With balanced intervals, adding one node to N nodes moves roughly 1/(N+1) of the keys, rather than reshuffling most keys as modulo N does. That fraction is an average expectation, not a per-node guarantee.\n\n| Scheme | Membership change | What you pay for |\n| --- | --- | --- |\n| Modulo hashing | Many keys change owner | Simple routing when the node count stays fixed |\n| Hash ring | Primarily neighboring ranges move | Ring metadata and uneven intervals |\n| Virtual-node ring | Many small ranges change owner | More tokens and placement metadata |\n\n## Why virtual nodes matter\n\nWith just one hash point per physical server, random gaps between points vary enormously. One server may own a huge arc while another owns almost none. Assign each physical server many virtual positions (tokens) around the ring so each owns many smaller ranges; the aggregate key count tends to be more even. Tokens can also be assigned proportionally to node capacity. This is statistical balancing, not proof of equal load: one celebrity user's key or a larger value can still overload a node. Measure bytes and request rates, not just key counts; split hot keys or replicate reads when necessary.\n\nReplication adds another question: where do copies go? A Dynamo-style design walks clockwise to distinct physical nodes for a replica set and adjusts ownership as nodes join and leave. Never count several virtual tokens on one box as several independent replicas. While moving data, transfer ranges before switching clients or keep old owners serving reads; otherwise consistent placement does not prevent misses or availability gaps.\n\n## Where it actually helps\n\nDynamo's design and Cassandra's token ranges use ring-style placement, and many memcached clients use consistent hashing to choose servers without a central router. Cassandra's placement and replicas have additional topology rules; DynamoDB's internal layout is not something to assume matches a textbook ring. A load balancer may also hash for affinity, but if every request is cheap and stateless, round robin is simpler. Consistent hashing solves churn-driven remapping, not global load balancing by itself.\n\n## How to answer this in an interview\n\n> For a 10-node memcached cluster holding 100 million keys, modulo hashing would remap most keys when node 11 joins. I would use a consistent hash ring with multiple virtual positions per node; on average about 1/11 of keys move, then watch per-node bytes and RPS for skew rather than promise perfect balance.",
+    "keyTakeaways": [
+        "Modulo hashing remaps most keys when the number of nodes changes; a ring moves neighboring ranges.",
+        "Virtual nodes reduce random ownership skew but cannot eliminate hot-key traffic or unequal value sizes.",
+        "Replicas must live on distinct physical nodes and transfers must preserve availability.",
+        "Dynamo-style storage, Cassandra token ranges and memcached clients use ring-based placement."
+    ],
+    "prerequisites": [
+        "scaling-fundamentals"
+    ],
+    "relatedProblems": []
+}

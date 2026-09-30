@@ -99,6 +99,7 @@ function publicBody(item) {
             ...common,
             difficulty: item.difficulty,
             description: item.description,
+            ...(item.topic ? { topic: item.topic } : {}),
             // `isCorrect` and `explanation` are deliberately dropped. Anything
             // published here is readable by anyone who opens devtools, so the
             // key stays server-side and the client learns the answer only in
@@ -106,9 +107,14 @@ function publicBody(item) {
             options: item.options.map((o) => ({ id: o.id, text: o.text })),
         };
     }
+    if (item.type === 'module') {
+        return { ...common, summary: item.summary };
+    }
     return {
         ...common,
         summary: item.summary,
+        module: item.module,
+        kind: item.kind,
         body: item.body,
         keyTakeaways: item.keyTakeaways,
         prerequisites: item.prerequisites,
@@ -149,6 +155,12 @@ async function main() {
     // exist is a broken learning path, and is exactly the class of bug that
     // used to surface as an empty page in production.
     const slugs = new Set(items.map(({ item }) => item.slug));
+    const moduleSlugs = new Set(
+        items.filter(({ item }) => item.type === 'module').map(({ item }) => item.slug),
+    );
+    const topicSlugs = new Set(
+        items.filter(({ item }) => item.type === 'topic').map(({ item }) => item.slug),
+    );
     const seen = new Map();
     for (const { item, rel } of items) {
         if (seen.has(item.slug)) {
@@ -161,6 +173,12 @@ async function main() {
         }
         for (const dep of item.relatedProblems ?? []) {
             if (!slugs.has(dep)) errors.push(`${rel}: relatedProblem "${dep}" does not exist`);
+        }
+        if (item.type === 'topic' && !moduleSlugs.has(item.module)) {
+            errors.push(`${rel}: module "${item.module}" does not exist`);
+        }
+        if (item.type === 'quiz' && item.topic && !topicSlugs.has(item.topic)) {
+            errors.push(`${rel}: topic "${item.topic}" does not exist`);
         }
     }
 

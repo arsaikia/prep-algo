@@ -114,9 +114,20 @@ test('index carries every field the question list renders', async () => {
             `${entry.slug}: availableForSolve must be present or the Solve button disappears`,
         );
 
-        // Progress is joined on legacyId, so an entry without one can never be
-        // marked solved.
-        assert.equal(typeof entry.legacyId, 'string', `${entry.slug}: legacyId`);
+        // Progress is joined on legacyId, so a solvable entry without one can
+        // never be marked solved. Content authored after the Mongo export has
+        // no row to carry an ObjectId from, and modules and topics are read
+        // rather than solved — neither participates in the progress join, so
+        // requiring an id there would only force a fake one.
+        const joinsProgress = entry.type === 'problem' || entry.type === 'quiz';
+        if (joinsProgress) {
+            assert.equal(typeof entry.legacyId, 'string', `${entry.slug}: legacyId`);
+        } else {
+            assert.ok(
+                entry.legacyId === undefined || typeof entry.legacyId === 'string',
+                `${entry.slug}: legacyId must be a string when present`,
+            );
+        }
 
         // `link` is the routing key. It is only stored when it differs from the
         // slug, so the fallback has to stay valid.

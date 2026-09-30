@@ -1,0 +1,11 @@
+{
+    "slug": "sd-case-studies",
+    "title": "Design Case Studies",
+    "domain": "system_design",
+    "type": "module",
+    "group": "Curriculum",
+    "order": 5,
+    "tags": [],
+    "lists": [],
+    "summary": "Full interview walkthroughs. Each one applies the concepts end to end under a realistic set of constraints."
+}

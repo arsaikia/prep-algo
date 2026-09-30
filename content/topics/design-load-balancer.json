@@ -1,24 +1,26 @@
 {
-  "slug": "design-load-balancer",
-  "title": "Design a Load Balancer",
-  "domain": "system_design",
-  "group": "Scaling",
-  "order": 12,
-  "tags": [],
-  "lists": [
-    "SD TOP 25"
-  ],
-  "legacyId": "ff076160-b416-4cac-b6c5-d48ccf86f056",
-  "type": "topic",
-  "summary": "Design a Layer 7 load balancer for a web application.",
-  "body": "Design a Layer 7 load balancer for a web application.\n\n## Scenario\n\nDesign a load balancer that distributes HTTP traffic across backend servers with health checking and session affinity.\n\n## Requirements\n\n- Multiple load balancing algorithms (round robin, least connections, weighted)\n- Health checking with automatic server removal/addition\n- Session affinity (sticky sessions) support\n- SSL termination\n- Request rate limiting per client IP\n\n## Constraints\n\n- Handle 100K concurrent connections\n- Add/remove backend servers with zero downtime\n- Failover in < 5 seconds\n- No single point of failure for the load balancer itself\n\n## What a strong answer covers\n\n- L4 vs L7 load balancing tradeoffs\n- Health check design (active vs passive)\n- Consistent hashing for session affinity\n- High availability of the load balancer itself\n- Connection draining during server removal\n\n## Reference walkthrough\n\nL7 reverse proxy (like Nginx/HAProxy). Active health checks every 5s + passive monitoring of response errors. Consistent hashing on session cookie for affinity (falls back to round-robin for new sessions). SSL termination at LB with certificate management. HA via active-passive pair with VRRP/keepalived. Connection draining: stop sending new requests to removed server, wait for in-flight to complete (30s timeout). Rate limiting via token bucket per client IP in shared memory.",
-  "keyTakeaways": [
-    "L4 vs L7 load balancing tradeoffs",
-    "Health check design (active vs passive)",
-    "Consistent hashing for session affinity",
-    "High availability of the load balancer itself",
-    "Connection draining during server removal"
-  ],
-  "prerequisites": [],
-  "relatedProblems": []
+    "slug": "design-load-balancer",
+    "title": "Design a Load Balancer",
+    "domain": "system_design",
+    "group": "Scaling",
+    "order": 12,
+    "tags": [],
+    "lists": [
+        "SD TOP 25"
+    ],
+    "legacyId": "ff076160-b416-4cac-b6c5-d48ccf86f056",
+    "type": "topic",
+    "summary": "Design a Layer 7 load balancer for a web application.",
+    "body": "Design a Layer 7 load balancer for a web application.\n\n## Scenario\n\nDesign a load balancer that distributes HTTP traffic across backend servers with health checking and session affinity.\n\n## Requirements\n\n- Multiple load balancing algorithms (round robin, least connections, weighted)\n- Health checking with automatic server removal/addition\n- Session affinity (sticky sessions) support\n- SSL termination\n- Request rate limiting per client IP\n\n## Constraints\n\n- Handle 100K concurrent connections\n- Add/remove backend servers with zero downtime\n- Failover in < 5 seconds\n- No single point of failure for the load balancer itself\n\n## What a strong answer covers\n\n- L4 vs L7 load balancing tradeoffs\n- Health check design (active vs passive)\n- Consistent hashing for session affinity\n- High availability of the load balancer itself\n- Connection draining during server removal\n\n## Reference walkthrough\n\nL7 reverse proxy (like Nginx/HAProxy). Active health checks every 5s + passive monitoring of response errors. Consistent hashing on session cookie for affinity (falls back to round-robin for new sessions). SSL termination at LB with certificate management. HA via active-passive pair with VRRP/keepalived. Connection draining: stop sending new requests to removed server, wait for in-flight to complete (30s timeout). Rate limiting via token bucket per client IP in shared memory.",
+    "keyTakeaways": [
+        "L4 vs L7 load balancing tradeoffs",
+        "Health check design (active vs passive)",
+        "Consistent hashing for session affinity",
+        "High availability of the load balancer itself",
+        "Connection draining during server removal"
+    ],
+    "prerequisites": [],
+    "relatedProblems": [],
+    "module": "sd-case-studies",
+    "kind": "case_study"
 }

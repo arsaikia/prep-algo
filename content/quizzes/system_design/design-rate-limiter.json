@@ -10,6 +10,7 @@
   ],
   "legacyId": "24413ee4-89a2-417b-8f69-6d8d02812afd",
   "type": "quiz",
+  "topic": "rate-limiting-fundamentals",
   "difficulty": "Medium",
   "description": "Understand the tradeoffs between different rate limiting algorithms.",
   "options": [

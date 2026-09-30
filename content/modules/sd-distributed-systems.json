@@ -1,0 +1,11 @@
+{
+    "slug": "sd-distributed-systems",
+    "title": "Distributed Systems",
+    "domain": "system_design",
+    "type": "module",
+    "group": "Curriculum",
+    "order": 4,
+    "tags": [],
+    "lists": [],
+    "summary": "Coordination across machines: consensus, leader election, clocks, idempotency and exactly-once delivery."
+}

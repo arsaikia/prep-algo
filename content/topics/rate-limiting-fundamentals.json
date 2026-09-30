@@ -1,0 +1,25 @@
+{
+    "slug": "rate-limiting-fundamentals",
+    "title": "Rate Limiting",
+    "domain": "system_design",
+    "type": "topic",
+    "group": "Foundations",
+    "module": "sd-foundations",
+    "kind": "concept",
+    "order": 8,
+    "tags": [
+        "rate-limiting",
+        "api"
+    ],
+    "lists": [],
+    "summary": "Choose burst behavior, identity and enforcement location explicitly; a correct counter on one server is not a global limit.",
+    "body": "A rate limit is a policy about who may do how much over what interval. “100 requests per minute” alone does not say whether 100 requests at once are allowed, whether the clock is shared, or whether a retry counts. Define these before picking Redis or an API gateway.\n\n## Choose the burst shape\n\n| Algorithm | Behavior | Tradeoff |\n| --- | --- | --- |\n| Fixed window counter | Reset at a wall-clock boundary | Two bursts straddling a boundary can admit nearly 2× the intended one-minute rate |\n| Sliding window log | Keep timestamps of every request in the trailing interval | Exact window, but high memory and per-request cleanup cost |\n| Sliding window counter | Weight adjacent fixed-window counts | Small state; approximate boundary smoothing |\n| Token bucket | Refill tokens at a fixed rate up to a capacity | Permits bursts up to bucket capacity, then throttles |\n| Leaky bucket queue | Drain accepted work at a fixed rate | Smooth output, but queueing adds latency and needs a bound |\n\nFor a 60/minute rule, 60 calls at 12:00:59 and 60 at 12:01:01 can both pass a fixed-window counter: 120 in two seconds. A token bucket with capacity 20 and refill of one token per second permits 20 immediately after idle and then roughly one per second. Do not claim token buckets forbid bursts or leaky buckets process at variable output rates.\n\n## Identity and enforcement\n\nEnforce broad abuse limits at the edge before expensive authentication or database work, then apply authenticated per-user or per-tenant limits in the service for business quotas. Per-IP controls are useful for unauthenticated traffic but can punish thousands of legitimate users behind one NAT or be bypassed through many IPs. For login attempts, limit by account and source with separate thresholds; protect a shared paid quota with an authenticated tenant identity. Decide whether rejected requests consume tokens to avoid creating a free attack path.\n\nMultiple service instances with local counters each granting 100/minute can accidentally grant 300/minute across three instances. A shared Redis counter and expiry, or an atomic Lua script for token refill plus decrement, prevents concurrent check-then-set races. Multi-region replication can still overshoot a strict global limit; either allocate regional budgets, route through one authority, or accept bounded overrun. If Redis fails, choose fail-open for a low-risk read endpoint or fail-closed for a costly operation, and explain why.\n\n## Tell clients how to recover\n\nReturn HTTP 429 Too Many Requests with a Retry-After header in seconds or an HTTP date when the limit is temporary. Include scoped limit information if helpful and avoid leaking another user's quota. Idempotency keys matter when a client times out after an accepted write and retries; a limiter alone cannot make the write safe.\n\n## How to answer this in an interview\n\n> For an authenticated API at 60 requests per minute per user, I would use a Redis-backed token bucket with capacity 20 and refill one token per second, checked at the gateway after identity verification. I would return 429 with Retry-After when empty and cap each tenant separately so one tenant cannot consume the fleet's budget.",
+    "keyTakeaways": [
+        "A fixed window can admit nearly twice its limit near the boundary; sliding logs cost memory.",
+        "Token buckets admit bounded bursts; leaky buckets smooth work at a fixed output rate.",
+        "Use atomic shared state for global enforcement and define multi-region overrun behavior.",
+        "Choose user or tenant identity for authenticated quotas, and return 429 with Retry-After."
+    ],
+    "prerequisites": [],
+    "relatedProblems": []
+}

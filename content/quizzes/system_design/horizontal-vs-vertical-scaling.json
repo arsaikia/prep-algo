@@ -10,6 +10,7 @@
   ],
   "legacyId": "37aa1139-8327-4acd-b48c-338c7ced5968",
   "type": "quiz",
+  "topic": "scaling-fundamentals",
   "difficulty": "Easy",
   "description": "Understand when to scale horizontally vs vertically.",
   "options": [

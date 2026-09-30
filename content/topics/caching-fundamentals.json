@@ -1,0 +1,25 @@
+{
+    "slug": "caching-fundamentals",
+    "title": "Caching Strategies",
+    "domain": "system_design",
+    "type": "topic",
+    "group": "Foundations",
+    "module": "sd-foundations",
+    "kind": "concept",
+    "order": 3,
+    "tags": [
+        "caching",
+        "latency"
+    ],
+    "lists": [],
+    "summary": "Choose a cache ownership and write policy before setting a TTL, or faster reads will trade correctness for surprise.",
+    "body": "A cache helps only when the same answer is requested repeatedly and a stale or missing answer has an acceptable fallback. Start with the read/write ratio, required freshness, and what source owns the truth. Redis is a common shared cache; a CDN handles public HTTP responses closer to users.\n\n## Pick a read and write path\n\n| Policy | On read | On write | Cost |\n| --- | --- | --- | --- |\n| Cache-aside | Miss loads database, then populates cache | Write database; invalidate cache | Simple, but misses and races need handling |\n| Write-through | Read cached value when present | Synchronously write database and cache | Higher write latency; cache stays current on successful coordinated writes |\n| Write-behind | Read cached value | Queue or buffer write, flush to database later | Fast writes, but an unflushed crash can lose data |\n\nWrite-through is not magical transactional consistency: a partial failure between two systems still requires an ordering and recovery policy. Write-behind needs a durable log or replay mechanism if losing acknowledged writes is unacceptable. For money transfers, a durable database transaction followed by cache invalidation is safer than treating Redis as the ledger.\n\n## Invalidation is an ownership question\n\nA 60-second TTL puts an approximate bound on stale responses but does not immediately reflect a change. Explicit deletion on each write reduces that window; change events or pub/sub can fan invalidations out to many caches, and versioned keys can make old entries unreachable. A cache-aside race still exists: a reader can fetch an old value while a write completes and then repopulate the old value after invalidation. Version checks, ordered events or a second invalidation can address this when correctness demands it.\n\n“Cache invalidation is hard” usually means nobody owns all mutation paths. Name the owner of each key, list every writer, and decide which fields may be stale before choosing a TTL. When there is little reuse or strict immediate consistency, not caching can be the right design.\n\n## Misses can overload the source\n\nWhen a hot key expires, 1,000 simultaneous requests can all read the database: cache-aside does not prevent a stampede. Use single-flight/mutex regeneration per key, stale-while-revalidate for acceptable stale data, and jittered TTLs to avoid mass expiry. Missing keys are another problem: attackers can query endless nonexistent IDs and bypass the cache. Validate inputs, rate-limit, and briefly negative-cache confirmed misses; a Bloom filter helps when the valid key set is known, but false positives still reach storage. Never cache an authorization-sensitive 404 across users without including scope in the key.\n\n## How to answer this in an interview\n\n> At 2,000 reads and 20 writes per second for product details, I would use Redis cache-aside with a 60-second jittered TTL, invalidate the product key after a committed database write, and single-flight regeneration for hot keys. If prices must update instantly, I would bypass or version that cache rather than promise the TTL makes it current.",
+    "keyTakeaways": [
+        "Cache-aside, write-through and write-behind differ in latency, failure modes and durability.",
+        "A TTL bounds staleness; explicit invalidation needs a defined owner for every mutation.",
+        "Single-flight or stale-while-revalidate prevents hot-key stampedes; negative caching protects against repeated misses.",
+        "Do not cache data whose consistency requirement exceeds your invalidation guarantees."
+    ],
+    "prerequisites": [],
+    "relatedProblems": []
+}

@@ -1,24 +1,26 @@
 {
-  "slug": "design-cdn",
-  "title": "Design a CDN",
-  "domain": "system_design",
-  "group": "Caching",
-  "order": 10,
-  "tags": [],
-  "lists": [
-    "SD TOP 25"
-  ],
-  "legacyId": "98bf5687-b3ee-4a1a-9f37-957f514fce67",
-  "type": "topic",
-  "summary": "Design a Content Delivery Network for global content distribution.",
-  "body": "Design a Content Delivery Network for global content distribution.\n\n## Scenario\n\nDesign a CDN that distributes static and dynamic content to users worldwide with minimal latency.\n\n## Requirements\n\n- Global edge server network\n- Content caching with intelligent invalidation\n- Origin shielding to protect backend\n- Support for static files, streaming, and dynamic content\n- Real-time analytics on cache hit rates and latency\n\n## Constraints\n\n- Cache hit ratio > 95% for static content\n- First byte time < 50ms for cached content\n- Purge propagation < 30 seconds globally\n- Handle 10M requests/second globally\n\n## What a strong answer covers\n\n- Edge server placement strategy\n- Cache hierarchy (edge, regional, origin shield)\n- Cache key design and vary headers\n- Purge/invalidation mechanism\n- DNS-based vs anycast routing\n\n## Reference walkthrough\n\nTwo-tier cache hierarchy: edge PoPs in major cities + regional aggregation nodes. Anycast DNS for routing to nearest PoP. Consistent hashing within each PoP for cache distribution. Origin shield as a reverse proxy cache before the origin. Cache keys include URL + relevant Vary headers. Purge via fan-out from control plane to all PoPs. Tiered TTLs: immutable assets (1 year), API responses (configurable). Streaming via chunked transfer with edge buffering.",
-  "keyTakeaways": [
-    "Edge server placement strategy",
-    "Cache hierarchy (edge, regional, origin shield)",
-    "Cache key design and vary headers",
-    "Purge/invalidation mechanism",
-    "DNS-based vs anycast routing"
-  ],
-  "prerequisites": [],
-  "relatedProblems": []
+    "slug": "design-cdn",
+    "title": "Design a CDN",
+    "domain": "system_design",
+    "group": "Caching",
+    "order": 10,
+    "tags": [],
+    "lists": [
+        "SD TOP 25"
+    ],
+    "legacyId": "98bf5687-b3ee-4a1a-9f37-957f514fce67",
+    "type": "topic",
+    "summary": "Design a Content Delivery Network for global content distribution.",
+    "body": "Design a Content Delivery Network for global content distribution.\n\n## Scenario\n\nDesign a CDN that distributes static and dynamic content to users worldwide with minimal latency.\n\n## Requirements\n\n- Global edge server network\n- Content caching with intelligent invalidation\n- Origin shielding to protect backend\n- Support for static files, streaming, and dynamic content\n- Real-time analytics on cache hit rates and latency\n\n## Constraints\n\n- Cache hit ratio > 95% for static content\n- First byte time < 50ms for cached content\n- Purge propagation < 30 seconds globally\n- Handle 10M requests/second globally\n\n## What a strong answer covers\n\n- Edge server placement strategy\n- Cache hierarchy (edge, regional, origin shield)\n- Cache key design and vary headers\n- Purge/invalidation mechanism\n- DNS-based vs anycast routing\n\n## Reference walkthrough\n\nTwo-tier cache hierarchy: edge PoPs in major cities + regional aggregation nodes. Anycast DNS for routing to nearest PoP. Consistent hashing within each PoP for cache distribution. Origin shield as a reverse proxy cache before the origin. Cache keys include URL + relevant Vary headers. Purge via fan-out from control plane to all PoPs. Tiered TTLs: immutable assets (1 year), API responses (configurable). Streaming via chunked transfer with edge buffering.",
+    "keyTakeaways": [
+        "Edge server placement strategy",
+        "Cache hierarchy (edge, regional, origin shield)",
+        "Cache key design and vary headers",
+        "Purge/invalidation mechanism",
+        "DNS-based vs anycast routing"
+    ],
+    "prerequisites": [],
+    "relatedProblems": [],
+    "module": "sd-case-studies",
+    "kind": "case_study"
 }

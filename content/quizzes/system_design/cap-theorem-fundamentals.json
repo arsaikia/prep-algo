@@ -10,6 +10,7 @@
   ],
   "legacyId": "f0b7e1ca-1a0b-4a3d-8c9a-2ee84de2f843",
   "type": "quiz",
+  "topic": "cap-theorem-and-consistency",
   "difficulty": "Easy",
   "description": "Understand the CAP theorem and its implications for distributed databases.",
   "options": [

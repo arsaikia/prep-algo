@@ -10,6 +10,7 @@
   ],
   "legacyId": "34c47318-2f1d-4a88-9a0f-80dbe4221fe2",
   "type": "quiz",
+  "topic": "database-indexing-fundamentals",
   "difficulty": "Easy",
   "description": "Understand when and how to use database indexes effectively.",
   "options": [

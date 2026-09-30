@@ -101,6 +101,14 @@ export const quizSchema = z.object({
     group: z.string().min(1),
     difficulty,
     description: z.string().default(''),
+    /**
+     * Slug of the topic this quiz checks understanding of.
+     *
+     * When set, the quiz is rendered inline at the end of that topic instead
+     * of appearing as a standalone item in a list. Verified by the build, so
+     * a quiz can never point at a topic that was renamed or removed.
+     */
+    topic: z.string().regex(SLUG).optional(),
     options: z
         .array(
             z.object({
@@ -117,6 +125,24 @@ export const quizSchema = z.object({
 });
 
 /**
+ * A chapter of the System Design curriculum.
+ *
+ * Exists as its own type rather than being inferred from the topics that
+ * point at it, because the curriculum outline has to be expressible before
+ * the topics are written. A module with no topics yet renders as a visible
+ * "coming soon" chapter; derived-from-topics grouping can only ever show
+ * chapters that are already finished, which hides the shape of the syllabus
+ * from the reader and from whoever is authoring it next.
+ */
+export const moduleSchema = z.object({
+    ...envelope,
+    type: z.literal('module'),
+    domain: z.literal('system_design'),
+    group: z.string().min(1).default('Curriculum'),
+    summary: z.string().default(''),
+});
+
+/**
  * Read and reflected on, not solved. This is the type System Design was
  * missing: it has no difficulty and no pass/fail, and `prerequisites` is the
  * learning-path graph Phase 4 traverses.
@@ -126,6 +152,17 @@ export const topicSchema = z.object({
     type: z.literal('topic'),
     domain: z.literal('system_design'),
     group: z.string().min(1),
+    /**
+     * Slug of the owning module. The build checks it resolves, so a topic
+     * can never end up orphaned in a chapter that does not exist.
+     */
+    module: z.string().regex(SLUG),
+    /**
+     * `concept` explains an idea; `case_study` walks a full "design X"
+     * interview question. They read differently and are listed separately,
+     * so the reader needs to tell them apart without pattern-matching slugs.
+     */
+    kind: z.enum(['concept', 'case_study']).default('case_study'),
     summary: z.string().default(''),
     /** Markdown. */
     body: z.string().min(1, 'a topic must have a body'),
@@ -140,6 +177,7 @@ export const contentItemSchema = z.discriminatedUnion('type', [
     problemSchema,
     quizSchema,
     topicSchema,
+    moduleSchema,
 ]);
 
 /**
@@ -154,6 +192,7 @@ export const contentItemSchema = z.discriminatedUnion('type', [
  * and topics have no such prerequisite.
  */
 function isAvailableForSolve(item) {
+    if (item.type === 'module' || item.type === 'topic') return false;
     if (item.type !== 'problem') return true;
     const hasPrompt = Boolean(item.description && item.description.trim());
     const hasCases = item.testCases.length > 0 || item.exampleTestCases.length > 0;
@@ -178,8 +217,21 @@ export function toIndexEntry(item) {
         legacyId: item.legacyId,
         ...(item.link ? { link: item.link } : {}),
     };
-    if (item.type === 'topic') {
-        return { ...base, summary: item.summary, prerequisites: item.prerequisites };
+    if (item.type === 'module') {
+        return { ...base, summary: item.summary };
     }
-    return { ...base, difficulty: item.difficulty };
+    if (item.type === 'topic') {
+        return {
+            ...base,
+            summary: item.summary,
+            module: item.module,
+            kind: item.kind,
+            prerequisites: item.prerequisites,
+        };
+    }
+    return {
+        ...base,
+        difficulty: item.difficulty,
+        ...(item.topic ? { topic: item.topic } : {}),
+    };
 }

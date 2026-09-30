@@ -10,6 +10,7 @@
   ],
   "legacyId": "c014d833-44d3-4580-b29b-151c860da829",
   "type": "quiz",
+  "topic": "caching-fundamentals",
   "difficulty": "Medium",
   "description": "Understand different caching strategies and their tradeoffs.",
   "options": [

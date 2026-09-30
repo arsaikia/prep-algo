@@ -1,0 +1,25 @@
+{
+    "slug": "api-design-fundamentals",
+    "title": "API Design Basics",
+    "domain": "system_design",
+    "type": "topic",
+    "group": "Foundations",
+    "module": "sd-foundations",
+    "kind": "concept",
+    "order": 9,
+    "tags": [
+        "api",
+        "http"
+    ],
+    "lists": [],
+    "summary": "Model resources and retries around user actions, then choose pagination and status codes that remain reliable as data changes.",
+    "body": "An API is a contract for clients that may be slow, retry after a timeout, or remain on an older version for months. Begin with the resources and the operations users need, not with a list of controller methods.\n\n## Resources and HTTP behavior\n\nUse nouns for resources: GET /orders/123 reads an order; POST /orders creates one; PUT /orders/123 replaces its representation; PATCH /orders/123 changes selected fields; DELETE /orders/123 removes it. Paths such as /getOrders or /deleteOrder encode operations in the URL instead of using HTTP methods. Model relationships clearly, such as GET /customers/42/orders, but avoid nesting six levels deep.\n\n| Outcome | Useful status | Why it matters |\n| --- | --- | --- |\n| Created | 201 Created with Location | Client knows the new resource's URL |\n| Successful read/update | 200 OK, or 204 No Content without a body | Distinguishes success from creation |\n| Malformed input / unauthenticated / forbidden | 400 / 401 / 403 | Clients can fix input or credentials |\n| Missing / conflict / limited | 404 / 409 / 429 | Different recovery strategies |\n\nUse 5xx for server failures. Returning 200 with an error inside the JSON body breaks client retry and monitoring semantics. GET, PUT and DELETE should be idempotent: repeating an operation has the same intended effect on server state as doing it once (the response status can differ, for example a second DELETE). POST usually is not: a retry can create two orders.\n\n## Retries need identity\n\nIf a client sends POST /payments and times out, it cannot tell whether the payment succeeded. Accept an idempotency key scoped to the authenticated actor and operation, record it alongside the committed outcome, and return the same outcome on retries. Reject reuse of a key with different parameters. Store keys long enough for the advertised retry window, using a unique constraint or atomic insert so two concurrent retries cannot both charge. Idempotency keys are not a replacement for transactional business invariants.\n\n## Pagination under writes\n\nOffset pagination (limit=20&offset=20) is easy for a stable small list, but a new item inserted before the next page shifts results: clients can see a duplicate or miss an item. Large offsets also force databases to walk past many records. Cursor pagination uses a stable sort and tie-breaker such as (created_at DESC, id DESC), returning an opaque cursor for the last seen pair. Query the next page using the pair, keep filters fixed, and index the sort columns. A cursor does not provide a snapshot of later updates unless that is a separate guarantee.\n\nVersion a public contract when breaking changes are unavoidable, for example /v2/orders or a negotiated media type, and keep older clients supported for a defined window. Additive fields are usually easier than versioning every release. REST is not automatically the best shape: GraphQL lets clients select fields across a complex graph; gRPC can suit typed internal service calls or streaming. GraphQL is not a kind of REST API, and each alternative has its own caching and operational costs.\n\n## How to answer this in an interview\n\n> For 1,000 order creations per minute, I would POST /orders, return 201 and a Location header, and require an idempotency key retained for at least 24 hours so retries cannot create duplicates. GET /orders would page 20 at a time using an opaque (created_at, id) cursor, not offsets that shift when new orders arrive.",
+    "keyTakeaways": [
+        "Noun-based resources plus HTTP methods make operations and statuses predictable.",
+        "GET, PUT and DELETE are idempotent in intended effect; POST retries need a persisted idempotency key.",
+        "Cursor pagination with a stable tie-breaker avoids offset shifts in changing lists.",
+        "Version breaking contracts deliberately; GraphQL and gRPC are alternatives, not forms of REST."
+    ],
+    "prerequisites": [],
+    "relatedProblems": []
+}

@@ -1,0 +1,25 @@
+{
+    "slug": "scaling-fundamentals",
+    "title": "Vertical vs Horizontal Scaling",
+    "domain": "system_design",
+    "type": "topic",
+    "group": "Foundations",
+    "module": "sd-foundations",
+    "kind": "concept",
+    "order": 1,
+    "tags": [
+        "scaling",
+        "availability"
+    ],
+    "lists": [],
+    "summary": "Why teams move to many machines long before one machine runs out of capacity — and what statelessness costs you.",
+    "body": "Every scaling conversation starts with the same fork: make one machine bigger, or add more machines. The answer shapes everything downstream — your data model, your failure modes, and what you are allowed to promise a user.\n\n## Vertical scaling (scale up)\n\nBuy a bigger box. More cores, more RAM, faster disks. Nothing about the application has to change: the same process, the same in-memory state, the same single database connection pool.\n\nThis is genuinely the right answer more often than interview folklore suggests. A single modern server handles tens of thousands of requests per second and terabytes of working set. Vertical scaling buys you that without introducing a network hop between components that used to be a function call.\n\nIt stops working for two reasons, and only one of them is about capacity:\n\n- **There is a ceiling.** The largest instance your cloud sells is a hard wall, and price grows faster than capability as you approach it.\n- **There is no redundancy.** One machine is one failure domain. Scaling up does not improve availability at all — it concentrates it.\n\nThat second point is what usually forces the decision. Teams move horizontally long before they run out of vertical headroom, because they need to survive losing a machine.\n\n## Horizontal scaling (scale out)\n\nRun many identical instances behind a load balancer. Capacity becomes roughly linear in machine count, and losing one instance degrades throughput instead of causing an outage.\n\nThe cost is that your application must become **stateless**. Any request has to be serviceable by any instance, which means per-user state cannot live in process memory:\n\n| State that used to be local | Where it goes |\n| --- | --- |\n| Session data | Shared cache (Redis) or a signed token |\n| Uploaded files | Object storage (S3) |\n| In-memory cache | Distributed cache, or accept per-instance duplication |\n| Background timers | A scheduler or queue with leader election |\n\nOnce state is externalised, the database becomes the bottleneck you have not solved yet. Ten web servers all talk to one primary. Scaling the stateless tier is the easy half; scaling the stateful tier is the topic that fills the rest of this module.\n\n## How to answer this in an interview\n\nDo not open with \"we will scale horizontally.\" Open with the number. Estimate requests per second and working-set size, then state the threshold:\n\n> At 500 RPS and a 40 GB working set, one instance is comfortable. I would still run three behind a load balancer for availability rather than capacity, because a single node means a single outage.\n\nThat answer shows you can size a system *and* that you know availability, not throughput, is usually what forces the architecture.",
+    "keyTakeaways": [
+        "Vertical scaling needs no application change but has a hard ceiling and zero redundancy.",
+        "Availability, not throughput, is usually what forces horizontal scaling.",
+        "Scaling out requires statelessness: sessions, files and timers must move out of process memory.",
+        "Scaling the stateless tier just relocates the bottleneck to the database."
+    ],
+    "prerequisites": [],
+    "relatedProblems": []
+}
