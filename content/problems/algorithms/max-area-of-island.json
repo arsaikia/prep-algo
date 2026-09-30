@@ -1,5 +1,6 @@
 {
   "slug": "max-area-of-island",
+  "link": "max-area-of-island/",
   "title": "Max Area of Island",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "9622e42d-866b-4524-a9dd-f57017f71a1b",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

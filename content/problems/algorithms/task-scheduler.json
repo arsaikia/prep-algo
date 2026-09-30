@@ -1,5 +1,6 @@
 {
   "slug": "task-scheduler",
+  "link": "task-scheduler/",
   "title": "Task Scheduler",
   "domain": "algorithms",
   "group": "Heap / Priority Queue",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "13a30afd-964c-459f-902a-ca0d4c2d3e16",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

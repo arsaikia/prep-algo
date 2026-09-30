@@ -1,5 +1,6 @@
 {
   "slug": "min-cost-to-connect-all-points",
+  "link": "min-cost-to-connect-all-points/",
   "title": "Min Cost to Connect All Points",
   "domain": "algorithms",
   "group": "Advanced Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "347e8987-bce2-4c44-a68a-ab536e33af19",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "6bc54ed2-846b-4187-b79e-cb423c1d6897",
   "type": "problem",
   "difficulty": "Medium",
   "description": "Implement a throttle function that ensures the provided function is called at most once per `wait` milliseconds.",

@@ -1,5 +1,6 @@
 {
   "slug": "longest-increasing-path-in-a-matrix",
+  "link": "longest-increasing-path-in-a-matrix/",
   "title": "Longest Increasing Path In a Matrix",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "8d3d5083-f2fd-492f-8e62-13798dc63faf",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

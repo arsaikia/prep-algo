@@ -1,5 +1,6 @@
 {
   "slug": "k-closest-points-to-origin",
+  "link": "k-closest-points-to-origin/",
   "title": "K Closest Points to Origin",
   "domain": "algorithms",
   "group": "Heap / Priority Queue",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "14f0633a-960b-45ae-baad-4f041478616b",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

@@ -1,5 +1,6 @@
 {
   "slug": "edit-distance",
+  "link": "edit-distance/",
   "title": "Edit Distance",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "3ef787c8-58ec-456d-a3f3-62a3c65c3c0f",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

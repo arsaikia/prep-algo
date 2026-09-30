@@ -8,6 +8,7 @@
   "lists": [
     "SD TOP 25"
   ],
+  "legacyId": "ed2e8056-8291-4d04-b702-14f0523b1182",
   "type": "topic",
   "summary": "Design a real-time chat system supporting 1:1 and group messaging.",
   "body": "Design a real-time chat system supporting 1:1 and group messaging.\n\n## Scenario\n\nDesign a chat application like WhatsApp or Slack that supports real-time messaging between users.\n\n## Requirements\n\n- 1:1 and group messaging\n- Online/offline status indicators\n- Message delivery receipts (sent, delivered, read)\n- Message history and search\n- Support 50M daily active users\n\n## Constraints\n\n- Messages delivered in < 500ms for online users\n- Messages must never be lost\n- Support offline message queuing\n- End-to-end encryption for 1:1 chats\n\n## What a strong answer covers\n\n- WebSocket vs long polling for real-time delivery\n- Message storage and fanout strategy\n- Presence service design\n- Group message delivery optimization\n- Handling network partitions\n\n## Reference walkthrough\n\nWebSocket connections through a gateway service. Message queue (Kafka) for reliable delivery. Chat service writes to a message store (Cassandra for write-heavy workload). Fan-out-on-write for small groups, fan-out-on-read for large channels. Presence service using heartbeats with Redis. Push notifications via FCM/APNs for offline users.",

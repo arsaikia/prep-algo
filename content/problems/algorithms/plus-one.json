@@ -1,5 +1,6 @@
 {
   "slug": "plus-one",
+  "link": "plus-one/",
   "title": "Plus One",
   "domain": "algorithms",
   "group": "Math & Geometry",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "4217b6cc-d098-41c4-b91a-4be6b74b1095",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

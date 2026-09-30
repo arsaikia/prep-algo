@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "5be13417-bbc9-47cb-a4bf-1b6d8dc3c1de",
   "type": "quiz",
   "difficulty": "Hard",
   "description": "Understand different state management approaches in React applications.",

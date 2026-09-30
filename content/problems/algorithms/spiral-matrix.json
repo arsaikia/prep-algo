@@ -1,5 +1,6 @@
 {
   "slug": "spiral-matrix",
+  "link": "spiral-matrix/",
   "title": "Spiral Matrix",
   "domain": "algorithms",
   "group": "Math & Geometry",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "2dfdc9e8-1011-4e1a-aa51-96082fea421c",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

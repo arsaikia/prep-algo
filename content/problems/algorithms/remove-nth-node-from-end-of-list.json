@@ -1,5 +1,6 @@
 {
   "slug": "remove-nth-node-from-end-of-list",
+  "link": "remove-nth-node-from-end-of-list/",
   "title": "Remove Nth Node From End of List",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "546d9e2b-f232-4a88-adb6-68c2eb118efc",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

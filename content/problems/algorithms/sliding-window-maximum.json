@@ -1,5 +1,6 @@
 {
   "slug": "sliding-window-maximum",
+  "link": "sliding-window-maximum/",
   "title": "Sliding Window Maximum",
   "domain": "algorithms",
   "group": "Sliding Window",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "a93f86d9-4a1c-433d-a85b-35478e7aae8b",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

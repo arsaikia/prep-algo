@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "2df0ac1f-4cc8-450d-8941-80098896bcd2",
   "type": "problem",
   "difficulty": "Medium",
   "description": "Implement a deep clone function that creates a complete copy of a nested object/array structure.",

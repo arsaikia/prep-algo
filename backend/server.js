@@ -14,6 +14,7 @@ import correlationId from './middleware/correlationId.js';
 import { protect } from './middleware/auth.js';
 import { generalLimiter, authLimiter, codeExecutionLimiter, recommendationLimiter } from './middleware/rateLimiter/index.js';
 
+import progress from './routes/progress.js';
 import questions from './routes/questions.js';
 import authentication from './routes/authentication.js';
 import submission from './routes/submission.js';
@@ -115,6 +116,7 @@ app.use('/api/v1/test', testRoute);
 // --- Protected routes (auth required) ---
 app.use('/api/v1/submission', protect, submission);
 app.use('/api/v1/code', protect, codeExecutionLimiter, codeExecution);
+app.use('/api/v1/progress', progress);
 app.use('/api/v1/solveHistory', protect, solveHistory);
 app.use('/api/v1/recommendations', protect, recommendationLimiter, smartRecommendations);
 

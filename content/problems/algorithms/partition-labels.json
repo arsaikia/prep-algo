@@ -1,5 +1,6 @@
 {
   "slug": "partition-labels",
+  "link": "partition-labels/",
   "title": "Partition Labels",
   "domain": "algorithms",
   "group": "Greedy",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "e89be0ef-cc9b-4137-b862-b1170d3cb23d",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

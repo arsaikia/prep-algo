@@ -1,5 +1,6 @@
 {
   "slug": "path-with-minimum-effort",
+  "link": "path-with-minimum-effort/",
   "title": "Path With Minimum Effort",
   "domain": "algorithms",
   "group": "Graphs",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "d135c654-98f5-4319-8cfa-f312ed650a82",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

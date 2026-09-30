@@ -1,5 +1,6 @@
 {
   "slug": "reorder-list",
+  "link": "reorder-list/",
   "title": "Reorder List",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "f60ae024-5cbf-479d-b2a7-d5b6b8968ff2",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

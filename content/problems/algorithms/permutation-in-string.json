@@ -1,5 +1,6 @@
 {
   "slug": "permutation-in-string",
+  "link": "permutation-in-string/",
   "title": "Permutation In String",
   "domain": "algorithms",
   "group": "Sliding Window",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "3a950d11-d4ec-44b3-84c4-0bc4f2ca064f",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

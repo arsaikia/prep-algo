@@ -1,5 +1,6 @@
 {
   "slug": "generate-parentheses",
+  "link": "generate-parentheses/",
   "title": "Generate Parentheses",
   "domain": "algorithms",
   "group": "Stack",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "249588e6-c800-473a-ac3b-9bde0b0246da",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

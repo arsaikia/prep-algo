@@ -1,5 +1,6 @@
 {
   "slug": "number-of-1-bits",
+  "link": "number-of-1-bits/",
   "title": "Number of 1 Bits",
   "domain": "algorithms",
   "group": "Bit Manipulation",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "54be2f73-ab49-4a58-bd4e-90848443d872",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

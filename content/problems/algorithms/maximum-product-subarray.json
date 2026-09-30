@@ -1,5 +1,6 @@
 {
   "slug": "maximum-product-subarray",
+  "link": "maximum-product-subarray/",
   "title": "Maximum Product Subarray",
   "domain": "algorithms",
   "group": "1-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "a5d9fc95-0fb6-4d4b-8453-77c7e321ae41",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

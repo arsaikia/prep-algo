@@ -1,5 +1,6 @@
 {
   "slug": "kth-largest-element-in-a-stream",
+  "link": "kth-largest-element-in-a-stream/",
   "title": "Kth Largest Element In a Stream",
   "domain": "algorithms",
   "group": "Heap / Priority Queue",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "81463377-bb2f-4f8d-b85e-3560bb8731bf",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

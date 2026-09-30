@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "387a7df6-d544-49d8-ae2a-572000769ee9",
   "type": "quiz",
   "difficulty": "Easy",
   "description": "Understand the CSS box model and box-sizing property.",

@@ -1,5 +1,6 @@
 {
   "slug": "coin-change-ii",
+  "link": "coin-change-ii/",
   "title": "Coin Change II",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "4298146d-983b-4f3a-b420-a0b6272189f9",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

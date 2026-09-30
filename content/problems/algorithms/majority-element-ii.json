@@ -1,5 +1,6 @@
 {
   "slug": "majority-element-ii",
+  "link": "majority-element-ii/",
   "title": "Majority Element II",
   "domain": "algorithms",
   "group": "Arrays & Hashing",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "169b8c16-582d-48f9-8b6f-bf7e4040a1b8",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

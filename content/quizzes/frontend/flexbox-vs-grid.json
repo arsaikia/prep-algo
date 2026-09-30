@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "b8a10f8e-500b-4c31-a362-1bc33282dc65",
   "type": "quiz",
   "difficulty": "Medium",
   "description": "Understand when to use Flexbox vs CSS Grid for layouts.",

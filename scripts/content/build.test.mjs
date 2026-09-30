@@ -97,3 +97,34 @@ test('schema rejects structurally invalid content', async () => {
         'non-kebab-case slug should be rejected',
     );
 });
+
+test('index carries every field the question list renders', async () => {
+    const manifest = await readJson(path.join(PUBLIC_OUT, 'manifest.json'));
+    const index = await readJson(path.join(PUBLIC_OUT, manifest.index));
+
+    // The list UI is fed entirely from the index. A field missing here is not
+    // a build failure and not a runtime error — it silently renders a degraded
+    // page, which is how `availableForSolve` once hid every Solve button.
+    for (const entry of index.items) {
+        assert.equal(typeof entry.title, 'string', `${entry.slug}: title`);
+        assert.equal(typeof entry.group, 'string', `${entry.slug}: group`);
+        assert.equal(
+            typeof entry.availableForSolve,
+            'boolean',
+            `${entry.slug}: availableForSolve must be present or the Solve button disappears`,
+        );
+
+        // Progress is joined on legacyId, so an entry without one can never be
+        // marked solved.
+        assert.equal(typeof entry.legacyId, 'string', `${entry.slug}: legacyId`);
+
+        // `link` is the routing key. It is only stored when it differs from the
+        // slug, so the fallback has to stay valid.
+        assert.ok((entry.link || entry.slug).length > 0, `${entry.slug}: no routable link`);
+    }
+
+    // Guard the whole point of the exercise: the index must stay small enough
+    // to be a cheap first paint.
+    const bytes = (await readFile(path.join(PUBLIC_OUT, manifest.index))).length;
+    assert.ok(bytes < 400_000, `index is ${bytes} bytes uncompressed — budget exceeded`);
+});

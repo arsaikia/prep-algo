@@ -1,5 +1,6 @@
 {
   "slug": "subsets-ii",
+  "link": "subsets-ii/",
   "title": "Subsets II",
   "domain": "algorithms",
   "group": "Backtracking",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "2a49b3e4-9069-405c-b8a6-578bc0c81ac8",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

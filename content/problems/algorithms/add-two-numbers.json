@@ -1,5 +1,6 @@
 {
   "slug": "add-two-numbers",
+  "link": "add-two-numbers/",
   "title": "Add Two Numbers",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "cfb4d5ef-f417-47fe-9a34-88494b3f578a",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

@@ -1,5 +1,6 @@
 {
   "slug": "letter-combinations-of-a-phone-number",
+  "link": "letter-combinations-of-a-phone-number/",
   "title": "Letter Combinations of a Phone Number",
   "domain": "algorithms",
   "group": "Backtracking",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "dff36f83-8c6d-45a4-9f5c-0908f3f0b281",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

@@ -1,5 +1,6 @@
 {
   "slug": "find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree",
+  "link": "find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree/",
   "title": "Find Critical and Pseudo-Critical Edges in Minimum Spanning Tree",
   "domain": "algorithms",
   "group": "Advanced Graphs",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "e214c265-7778-47ee-ab77-b9b159b51bb9",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

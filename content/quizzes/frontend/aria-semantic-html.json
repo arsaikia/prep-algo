@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "9affae7b-920e-4098-90ed-e73bf7f12d2d",
   "type": "quiz",
   "difficulty": "Easy",
   "description": "Understand web accessibility principles and ARIA attributes.",

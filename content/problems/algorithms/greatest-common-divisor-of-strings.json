@@ -1,5 +1,6 @@
 {
   "slug": "greatest-common-divisor-of-strings",
+  "link": "greatest-common-divisor-of-strings/",
   "title": "Greatest Common Divisor of Strings",
   "domain": "algorithms",
   "group": "String",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "da0a905a-eb85-4a01-9cc0-7b3bd9e59307",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

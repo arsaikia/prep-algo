@@ -1,5 +1,6 @@
 {
   "slug": "word-ladder",
+  "link": "word-ladder/",
   "title": "Word Ladder",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "ebb143c6-50b5-46a1-8ab2-84ac8432a244",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

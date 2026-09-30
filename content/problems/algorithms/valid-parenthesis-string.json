@@ -1,5 +1,6 @@
 {
   "slug": "valid-parenthesis-string",
+  "link": "valid-parenthesis-string/",
   "title": "Valid Parenthesis String",
   "domain": "algorithms",
   "group": "Greedy",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "b2cb74d0-7a67-4d4b-8080-7ca3a4d42cd5",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

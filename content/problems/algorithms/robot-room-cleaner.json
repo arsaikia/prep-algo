@@ -1,5 +1,6 @@
 {
   "slug": "robot-room-cleaner",
+  "link": "robot-room-cleaner/",
   "title": "Robot Room Cleaner",
   "domain": "algorithms",
   "group": "Graphs",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "5b52fff3-674f-4729-b5b3-410fd8e5877d",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

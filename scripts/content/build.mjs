@@ -80,6 +80,8 @@ function publicBody(item) {
         order: item.order,
         tags: item.tags,
         lists: item.lists,
+        legacyId: item.legacyId,
+        ...(item.link ? { link: item.link } : {}),
     };
 
     if (item.type === 'problem') {

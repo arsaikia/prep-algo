@@ -1,5 +1,6 @@
 {
   "slug": "permutations",
+  "link": "permutations/",
   "title": "Permutations",
   "domain": "algorithms",
   "group": "Backtracking",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "889bb544-3332-4e6d-9701-d0b1d15258bc",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

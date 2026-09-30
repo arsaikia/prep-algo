@@ -1,5 +1,6 @@
 {
   "slug": "combination-sum-ii",
+  "link": "combination-sum-ii/",
   "title": "Combination Sum II",
   "domain": "algorithms",
   "group": "Backtracking",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "86ae107f-187d-4f0f-b245-766ce5f2306e",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

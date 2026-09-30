@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "8c664d1f-03a2-436c-a003-cdbb6e293fa7",
   "type": "quiz",
   "difficulty": "Easy",
   "description": "Understand CSS specificity rules and how styles cascade.",

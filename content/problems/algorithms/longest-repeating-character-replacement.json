@@ -1,5 +1,6 @@
 {
   "slug": "longest-repeating-character-replacement",
+  "link": "longest-repeating-character-replacement/",
   "title": "Longest Repeating Character Replacement",
   "domain": "algorithms",
   "group": "Sliding Window",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "e79235f4-867e-40c4-ac9e-ac589a2a96ef",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

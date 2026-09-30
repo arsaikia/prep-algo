@@ -1,5 +1,6 @@
 {
   "slug": "rotate-image",
+  "link": "rotate-image/",
   "title": "Rotate Image",
   "domain": "algorithms",
   "group": "Math & Geometry",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "985f4c2a-e2e2-4d72-8661-aef361a45d3d",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

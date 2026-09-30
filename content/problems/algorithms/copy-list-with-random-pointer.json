@@ -1,5 +1,6 @@
 {
   "slug": "copy-list-with-random-pointer",
+  "link": "copy-list-with-random-pointer/",
   "title": "Copy List With Random Pointer",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "6662a4d5-595d-478b-86f4-c9f0c7582b70",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

@@ -1,5 +1,6 @@
 {
   "slug": "target-sum",
+  "link": "target-sum/",
   "title": "Target Sum",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "eb90ada2-219c-4ada-91e1-f348d8acc025",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

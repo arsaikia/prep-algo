@@ -1,5 +1,6 @@
 {
   "slug": "search-in-a-sorted-array-of-unknown-size",
+  "link": "search-in-a-sorted-array-of-unknown-size/",
   "title": "Search in a Sorted Array of Unknown Size",
   "domain": "algorithms",
   "group": "Binary Search",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "a647a7e1-67f2-4b0c-8d28-6d8bac91c86f",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

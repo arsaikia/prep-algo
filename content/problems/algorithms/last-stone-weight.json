@@ -1,5 +1,6 @@
 {
   "slug": "last-stone-weight",
+  "link": "last-stone-weight/",
   "title": "Last Stone Weight",
   "domain": "algorithms",
   "group": "Heap / Priority Queue",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "605afdda-fe61-44f4-8654-191116cca3f2",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

@@ -1,5 +1,6 @@
 {
   "slug": "time-based-key-value-store",
+  "link": "time-based-key-value-store/",
   "title": "Time Based Key Value Store",
   "domain": "algorithms",
   "group": "Binary Search",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "69bc8ee6-b4c7-40ec-889e-1633e02f8355",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

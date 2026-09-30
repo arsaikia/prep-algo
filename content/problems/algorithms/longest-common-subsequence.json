@@ -1,5 +1,6 @@
 {
   "slug": "longest-common-subsequence",
+  "link": "longest-common-subsequence/",
   "title": "Longest Common Subsequence",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "6383ffe9-406b-4fdb-9592-3b37f35687a1",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

@@ -1,5 +1,6 @@
 {
   "slug": "longest-substring-without-repeating-characters",
+  "link": "longest-substring-without-repeating-characters/",
   "title": "Longest Substring Without Repeating Characters",
   "domain": "algorithms",
   "group": "Sliding Window",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "29ccfa2f-f0a8-46f9-bedc-4a2f94428a24",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

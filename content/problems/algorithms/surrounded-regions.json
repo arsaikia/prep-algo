@@ -1,5 +1,6 @@
 {
   "slug": "surrounded-regions",
+  "link": "surrounded-regions/",
   "title": "Surrounded Regions",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "417f4674-e53b-4f89-8efe-381217fc80f0",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

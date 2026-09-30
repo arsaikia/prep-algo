@@ -1,5 +1,6 @@
 {
   "slug": "3sum",
+  "link": "3sum/",
   "title": "3Sum",
   "domain": "algorithms",
   "group": "Two Pointers",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "498c6a7e-ca59-42a9-ba0a-28d4c2f8fc5b",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

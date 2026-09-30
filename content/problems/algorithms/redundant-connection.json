@@ -1,5 +1,6 @@
 {
   "slug": "redundant-connection",
+  "link": "redundant-connection/",
   "title": "Redundant Connection",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "209efea8-7e83-490c-9db8-e62a50bb4dba",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

@@ -1,5 +1,6 @@
 {
   "slug": "find-the-duplicate-number",
+  "link": "find-the-duplicate-number/",
   "title": "Find The Duplicate Number",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "7c16c0ca-7d76-4013-a767-f306d363c7e8",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

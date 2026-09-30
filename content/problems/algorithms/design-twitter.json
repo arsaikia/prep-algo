@@ -1,5 +1,6 @@
 {
   "slug": "design-twitter",
+  "link": "design-twitter/",
   "title": "Design Twitter",
   "domain": "algorithms",
   "group": "Heap / Priority Queue",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "c600a161-38fc-48ce-a07d-ab415fe22e2c",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

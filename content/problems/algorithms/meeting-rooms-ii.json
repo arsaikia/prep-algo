@@ -1,5 +1,6 @@
 {
   "slug": "meeting-rooms-ii",
+  "link": "meeting-rooms-ii/",
   "title": "Meeting Rooms II",
   "domain": "algorithms",
   "group": "Intervals",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "6a72f8b3-b77d-49a6-89f1-a7ece9ae04de",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

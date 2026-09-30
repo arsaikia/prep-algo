@@ -1,5 +1,6 @@
 {
   "slug": "single-number",
+  "link": "single-number/",
   "title": "Single Number",
   "domain": "algorithms",
   "group": "Bit Manipulation",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "fe289547-e340-4cf9-9f6f-0e32ed3f371b",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

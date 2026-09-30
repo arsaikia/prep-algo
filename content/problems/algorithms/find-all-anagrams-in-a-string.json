@@ -1,5 +1,6 @@
 {
   "slug": "find-all-anagrams-in-a-string",
+  "link": "find-all-anagrams-in-a-string/",
   "title": "Find All Anagrams in a String",
   "domain": "algorithms",
   "group": "String",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "ad1c65da-b0e9-4252-9a24-006f1178f25b",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

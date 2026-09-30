@@ -1,5 +1,6 @@
 {
   "slug": "longest-palindromic-substring",
+  "link": "longest-palindromic-substring/",
   "title": "Longest Palindromic Substring",
   "domain": "algorithms",
   "group": "1-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "269f36e1-1ee1-4d38-b541-769ed36c69f6",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

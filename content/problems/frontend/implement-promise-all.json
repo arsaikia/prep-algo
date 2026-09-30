@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "172f3fdb-bbd7-4251-b727-782a989b5355",
   "type": "problem",
   "difficulty": "Medium",
   "description": "Implement a function that behaves like Promise.all — resolves when all promises resolve, rejects on first rejection.",

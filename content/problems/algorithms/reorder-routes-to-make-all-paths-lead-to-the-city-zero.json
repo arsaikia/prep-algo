@@ -1,5 +1,6 @@
 {
   "slug": "reorder-routes-to-make-all-paths-lead-to-the-city-zero",
+  "link": "reorder-routes-to-make-all-paths-lead-to-the-city-zero/",
   "title": "Reorder Routes to Make All Paths Lead to the City Zero",
   "domain": "algorithms",
   "group": "Graphs",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "2f7f974e-50d8-4093-85f2-4a05083bca1a",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

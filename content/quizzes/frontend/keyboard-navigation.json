@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "e409da96-fbab-478a-a422-ff2d95957624",
   "type": "quiz",
   "difficulty": "Medium",
   "description": "Understand keyboard accessibility requirements for web applications.",

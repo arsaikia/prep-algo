@@ -1,5 +1,6 @@
 {
   "slug": "move-zeroes",
+  "link": "move-zeroes/",
   "title": "Move Zeroes",
   "domain": "algorithms",
   "group": "Arrays & Hashing",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "b97d0e11-88b7-4b6c-af84-46a37c1903d5",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

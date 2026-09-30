@@ -1,5 +1,6 @@
 {
   "slug": "find-minimum-in-rotated-sorted-array",
+  "link": "find-minimum-in-rotated-sorted-array/",
   "title": "Find Minimum In Rotated Sorted Array",
   "domain": "algorithms",
   "group": "Binary Search",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "a4b5587f-305e-447f-81b8-d540f7a5d8b2",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

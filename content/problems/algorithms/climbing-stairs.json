@@ -1,5 +1,6 @@
 {
   "slug": "climbing-stairs",
+  "link": "climbing-stairs/",
   "title": "Climbing Stairs",
   "domain": "algorithms",
   "group": "1-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "f4f87932-4b66-4d08-bbf7-4c50861da4b8",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

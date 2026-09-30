@@ -1,5 +1,6 @@
 {
   "slug": "container-with-most-water",
+  "link": "container-with-most-water/",
   "title": "Container With Most Water",
   "domain": "algorithms",
   "group": "Two Pointers",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "543496d0-f3a8-4867-bfd3-4c8d04be38af",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

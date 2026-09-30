@@ -1,5 +1,6 @@
 {
   "slug": "design-add-and-search-words-data-structure",
+  "link": "design-add-and-search-words-data-structure/",
   "title": "Design Add And Search Words Data Structure",
   "domain": "algorithms",
   "group": "Tries",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "9fe0fdb4-2baa-413e-9526-07ba4819e165",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

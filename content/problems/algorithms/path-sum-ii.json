@@ -1,5 +1,6 @@
 {
   "slug": "path-sum-ii",
+  "link": "path-sum-ii/",
   "title": "Path Sum II",
   "domain": "algorithms",
   "group": "Backtracking",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "b38a3228-a372-43d1-97dc-a5fe54248ea4",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

@@ -1,5 +1,6 @@
 {
   "slug": "find-median-from-data-stream",
+  "link": "find-median-from-data-stream/",
   "title": "Find Median From Data Stream",
   "domain": "algorithms",
   "group": "Heap / Priority Queue",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "3bbab282-3f1b-404f-a493-fc0023a49e96",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

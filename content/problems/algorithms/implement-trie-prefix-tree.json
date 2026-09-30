@@ -1,5 +1,6 @@
 {
   "slug": "implement-trie-prefix-tree",
+  "link": "implement-trie-prefix-tree/",
   "title": "Implement Trie Prefix Tree",
   "domain": "algorithms",
   "group": "Tries",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "5c581cf2-dedb-47b7-a846-9dbc0a1f324a",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

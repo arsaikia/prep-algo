@@ -8,6 +8,7 @@
   "lists": [
     "SD TOP 25"
   ],
+  "legacyId": "555eb7d4-0a7f-451d-bce4-54e4762043ee",
   "type": "topic",
   "summary": "Design a distributed key-value store like DynamoDB or Redis Cluster.",
   "body": "Design a distributed key-value store like DynamoDB or Redis Cluster.\n\n## Scenario\n\nDesign a distributed key-value store that supports put(key, value) and get(key) operations with high availability.\n\n## Requirements\n\n- Automatic data partitioning across nodes\n- Data replication for fault tolerance\n- Consistency tuning (strong vs eventual)\n- Automatic failure detection and recovery\n- Support for 1M operations/second\n\n## Constraints\n\n- Each value up to 1MB\n- Read latency p99 < 10ms\n- No single point of failure\n- Handle node additions/removals gracefully\n\n## What a strong answer covers\n\n- Consistent hashing for partitioning\n- Replication strategy (quorum reads/writes)\n- Conflict resolution (vector clocks vs LWW)\n- Failure detection (gossip protocol)\n- Merkle trees for anti-entropy\n\n## Reference walkthrough\n\nConsistent hashing with virtual nodes for even distribution. N=3 replicas with configurable W and R quorum. Vector clocks for conflict detection, application-level resolution. Gossip protocol for membership and failure detection. Merkle trees per partition for background sync. Hinted handoff for temporary failures.",

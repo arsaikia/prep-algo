@@ -1,5 +1,6 @@
 {
   "slug": "reverse-linked-list",
+  "link": "reverse-linked-list/",
   "title": "Reverse Linked List",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "b47825a8-7843-4785-8daa-1bf2faf6c37b",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

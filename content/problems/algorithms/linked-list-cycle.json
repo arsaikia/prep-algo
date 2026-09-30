@@ -1,5 +1,6 @@
 {
   "slug": "linked-list-cycle",
+  "link": "linked-list-cycle/",
   "title": "Linked List Cycle",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "1cb7fdfa-c4f9-4420-b920-04bdac554d53",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

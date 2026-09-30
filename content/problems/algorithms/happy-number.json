@@ -1,5 +1,6 @@
 {
   "slug": "happy-number",
+  "link": "happy-number/",
   "title": "Happy Number",
   "domain": "algorithms",
   "group": "Math & Geometry",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "b545d7ed-4cb5-4e85-be76-3ec95ae407b5",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

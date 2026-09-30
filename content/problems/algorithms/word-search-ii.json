@@ -1,5 +1,6 @@
 {
   "slug": "word-search-ii",
+  "link": "word-search-ii/",
   "title": "Word Search II",
   "domain": "algorithms",
   "group": "Tries",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "4af526c3-3c8c-46af-ae86-ddd843f217f1",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

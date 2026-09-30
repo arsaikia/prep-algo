@@ -1,5 +1,6 @@
 {
   "slug": "decode-ways",
+  "link": "decode-ways/",
   "title": "Decode Ways",
   "domain": "algorithms",
   "group": "1-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "f1d9257d-89c1-4274-8f13-ba3da1f96c75",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

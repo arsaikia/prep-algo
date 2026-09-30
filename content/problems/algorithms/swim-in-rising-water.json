@@ -1,5 +1,6 @@
 {
   "slug": "swim-in-rising-water",
+  "link": "swim-in-rising-water/",
   "title": "Swim In Rising Water",
   "domain": "algorithms",
   "group": "Advanced Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "0fdd24bb-81ab-4005-a5fb-c01fbc3f9733",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

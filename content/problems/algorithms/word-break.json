@@ -1,5 +1,6 @@
 {
   "slug": "word-break",
+  "link": "word-break/",
   "title": "Word Break",
   "domain": "algorithms",
   "group": "1-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "590b2cf5-6c5e-4244-9087-e812bb2d88e9",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

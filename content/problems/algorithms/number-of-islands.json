@@ -1,5 +1,6 @@
 {
   "slug": "number-of-islands",
+  "link": "number-of-islands/",
   "title": "Number of Islands",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "a6b54cea-32f8-4b1d-b539-43e59468efbc",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

@@ -1,5 +1,6 @@
 {
   "slug": "burst-balloons",
+  "link": "burst-balloons/",
   "title": "Burst Balloons",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "3591686e-bc6f-424e-862f-bca65754f3a3",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

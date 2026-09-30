@@ -1,5 +1,6 @@
 {
   "slug": "minimum-window-substring",
+  "link": "minimum-window-substring/",
   "title": "Minimum Window Substring",
   "domain": "algorithms",
   "group": "Sliding Window",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "413c4fe0-140a-4d5b-a28f-e38dbe1affd5",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

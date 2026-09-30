@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "7f5a1cb3-a24a-45a5-8696-7147c0f93339",
   "type": "quiz",
   "difficulty": "Medium",
   "description": "Understand Core Web Vitals and frontend performance metrics.",

@@ -1,5 +1,6 @@
 {
   "slug": "minimum-interval-to-include-each-query",
+  "link": "minimum-interval-to-include-each-query/",
   "title": "Minimum Interval to Include Each Query",
   "domain": "algorithms",
   "group": "Intervals",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "56d6eaf3-43ec-4b7c-911b-bd429a203785",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

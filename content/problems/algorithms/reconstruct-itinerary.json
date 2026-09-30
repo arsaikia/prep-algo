@@ -1,5 +1,6 @@
 {
   "slug": "reconstruct-itinerary",
+  "link": "reconstruct-itinerary/",
   "title": "Reconstruct Itinerary",
   "domain": "algorithms",
   "group": "Advanced Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "8e5f953c-9b6f-4a2a-93bc-b9ad2bbadd73",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

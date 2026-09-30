@@ -1,5 +1,6 @@
 {
   "slug": "regular-expression-matching",
+  "link": "regular-expression-matching/",
   "title": "Regular Expression Matching",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "8f03857b-989a-42bb-95db-2b0a33dc83fc",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

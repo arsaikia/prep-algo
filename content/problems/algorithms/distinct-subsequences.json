@@ -1,5 +1,6 @@
 {
   "slug": "distinct-subsequences",
+  "link": "distinct-subsequences/",
   "title": "Distinct Subsequences",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "cf432a06-40f3-4d4c-ad92-e7641db82627",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

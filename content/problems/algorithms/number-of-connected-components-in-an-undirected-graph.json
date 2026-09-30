@@ -1,5 +1,6 @@
 {
   "slug": "number-of-connected-components-in-an-undirected-graph",
+  "link": "number-of-connected-components-in-an-undirected-graph/",
   "title": "Number of Connected Components In An Undirected Graph",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "66805be3-9f6f-4ae0-9beb-12f22a6831d1",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

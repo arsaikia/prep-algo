@@ -1,5 +1,6 @@
 {
   "slug": "shortest-bridge",
+  "link": "shortest-bridge/",
   "title": "Shortest Bridge",
   "domain": "algorithms",
   "group": "Graphs",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "07c1bbdc-89fe-4b8a-a066-e091363491c0",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

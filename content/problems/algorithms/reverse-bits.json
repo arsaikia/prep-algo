@@ -1,5 +1,6 @@
 {
   "slug": "reverse-bits",
+  "link": "reverse-bits/",
   "title": "Reverse Bits",
   "domain": "algorithms",
   "group": "Bit Manipulation",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "97aeba02-b736-4c1a-90b6-79c70b7fc08d",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

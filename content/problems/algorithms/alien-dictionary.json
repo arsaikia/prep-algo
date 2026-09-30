@@ -1,5 +1,6 @@
 {
   "slug": "alien-dictionary",
+  "link": "alien-dictionary/",
   "title": "Alien Dictionary",
   "domain": "algorithms",
   "group": "Advanced Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "e859da8e-d6b7-43b6-ad1d-5cdfd3692a78",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

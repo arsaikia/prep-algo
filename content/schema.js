@@ -21,6 +21,23 @@ const envelope = {
     order: z.number().int().nonnegative(),
     /** Collections this item belongs to, e.g. "Blind 75". */
     lists: z.array(z.string().min(1)).default([]),
+    /**
+     * The MongoDB `_id` this item was exported from.
+     *
+     * Transitional. User progress is still keyed by ObjectId, so the client
+     * needs this to join progress onto content. Step 6 rekeys progress to
+     * `slug` and this field goes away. It is not a secret — the old API
+     * already returned it as `question._id`.
+     */
+    legacyId: z.string().optional(),
+    /**
+     * The original routing identifier, when it is not simply the slug.
+     *
+     * Absent for the overwhelming majority of items, where slug === link.
+     * Present only where slugify() had to change the string, so navigation
+     * never has to assume that transform was reversible.
+     */
+    link: z.string().min(1).optional(),
 };
 
 const difficulty = z.enum(['Easy', 'Medium', 'Hard']);
@@ -114,11 +131,30 @@ export const contentItemSchema = z.discriminatedUnion('type', [
 ]);
 
 /**
+ * Whether the item can actually be opened in the solver.
+ *
+ * The API used to derive this per request by loading every description and
+ * test case just to check they were non-empty. It is a pure function of the
+ * content, so it belongs in the build: derived here, shipped in the index,
+ * and never recomputed at runtime.
+ *
+ * A code problem needs both a prompt and something to run against. Quizzes
+ * and topics have no such prerequisite.
+ */
+function isAvailableForSolve(item) {
+    if (item.type !== 'problem') return true;
+    const hasPrompt = Boolean(item.description && item.description.trim());
+    const hasCases = item.testCases.length > 0 || item.exampleTestCases.length > 0;
+    return hasPrompt && hasCases;
+}
+
+/**
  * The list payload. Deliberately excludes bodies, descriptions and test cases:
  * the whole point is that browsing a list does not download every item.
  */
 export function toIndexEntry(item) {
     const base = {
+        availableForSolve: isAvailableForSolve(item),
         slug: item.slug,
         type: item.type,
         title: item.title,
@@ -127,6 +163,8 @@ export function toIndexEntry(item) {
         order: item.order,
         tags: item.tags,
         lists: item.lists,
+        legacyId: item.legacyId,
+        ...(item.link ? { link: item.link } : {}),
     };
     if (item.type === 'topic') {
         return { ...base, summary: item.summary, prerequisites: item.prerequisites };

@@ -1,5 +1,6 @@
 {
   "slug": "merge-two-sorted-lists",
+  "link": "merge-two-sorted-lists/",
   "title": "Merge Two Sorted Lists",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "d6e0b9a9-8743-4dff-b170-86bbc961725f",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

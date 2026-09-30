@@ -1,5 +1,6 @@
 {
   "slug": "merge-k-sorted-lists",
+  "link": "merge-k-sorted-lists/",
   "title": "Merge K Sorted Lists",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "605dff78-4512-417a-965f-4b7aa433d9bd",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

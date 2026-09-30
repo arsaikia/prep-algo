@@ -67,15 +67,22 @@ function designPromptToMarkdown(doc) {
 }
 
 function toContentItem(doc) {
-    const slug = slugify(doc.link || doc.name);
+    const link = doc.link || doc.name;
+    const slug = slugify(link);
     const common = {
         slug,
+        // The slug is derived from `link`, so for well-formed links the two
+        // are identical and storing both would be noise. Keep `link` only
+        // when slugify actually changed something, so routing never has to
+        // assume the round-trip was lossless.
+        ...(link !== slug ? { link } : {}),
         title: doc.name,
         domain: doc.domain || 'algorithms',
         group: doc.group,
         order: typeof doc.order === 'number' ? doc.order : 0,
         tags: [],
         lists: Array.isArray(doc.list) ? doc.list.filter(Boolean) : [],
+        legacyId: String(doc._id),
     };
 
     if (doc.answerFormat === 'design_doc') {

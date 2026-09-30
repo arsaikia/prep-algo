@@ -1,5 +1,6 @@
 {
   "slug": "merge-intervals",
+  "link": "merge-intervals/",
   "title": "Merge Intervals",
   "domain": "algorithms",
   "group": "Intervals",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "3abcecca-38a7-47c2-9101-94a98540e443",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

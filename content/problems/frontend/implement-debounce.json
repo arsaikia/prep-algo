@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "703906ea-3772-48de-98e6-5a75fb2e62b7",
   "type": "problem",
   "difficulty": "Easy",
   "description": "Implement a debounce function that delays invoking the provided function until after `wait` milliseconds have elapsed since the last invocation.",

@@ -1,5 +1,6 @@
 {
   "slug": "reverse-nodes-in-k-group",
+  "link": "reverse-nodes-in-k-group/",
   "title": "Reverse Nodes In K Group",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "2ace70e7-e230-4e78-8e0e-5e3ff86bb044",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

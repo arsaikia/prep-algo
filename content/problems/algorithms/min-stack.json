@@ -1,5 +1,6 @@
 {
   "slug": "min-stack",
+  "link": "min-stack/",
   "title": "Min Stack",
   "domain": "algorithms",
   "group": "Stack",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "2d747bb3-83d4-407f-9fa9-8324000f6953",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

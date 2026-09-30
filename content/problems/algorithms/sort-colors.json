@@ -1,5 +1,6 @@
 {
   "slug": "sort-colors",
+  "link": "sort-colors/",
   "title": "Sort Colors",
   "domain": "algorithms",
   "group": "Arrays & Hashing",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "8c6377ad-32e7-43e1-8c89-fbc90f3b6c03",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

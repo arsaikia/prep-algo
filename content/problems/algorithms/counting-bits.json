@@ -1,5 +1,6 @@
 {
   "slug": "counting-bits",
+  "link": "counting-bits/",
   "title": "Counting Bits",
   "domain": "algorithms",
   "group": "Bit Manipulation",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "58225874-c05e-4797-8639-e6c5bfcab3e3",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

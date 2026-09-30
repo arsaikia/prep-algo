@@ -1,5 +1,6 @@
 {
   "slug": "missing-number",
+  "link": "missing-number/",
   "title": "Missing Number",
   "domain": "algorithms",
   "group": "Bit Manipulation",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "e51d89a3-f043-4f1d-ab7c-f9ca47c8c601",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "419f3454-a5f7-46ac-8b47-00b3f53a31e5",
   "type": "quiz",
   "difficulty": "Medium",
   "description": "Understand code splitting strategies for frontend applications.",

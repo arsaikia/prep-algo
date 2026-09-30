@@ -1,5 +1,6 @@
 {
   "slug": "kth-largest-element-in-an-array",
+  "link": "kth-largest-element-in-an-array/",
   "title": "Kth Largest Element In An Array",
   "domain": "algorithms",
   "group": "Heap / Priority Queue",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "b73db38f-77eb-4cbb-b438-b0348027f98b",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

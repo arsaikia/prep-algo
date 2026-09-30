@@ -1,5 +1,6 @@
 {
   "slug": "powx-n",
+  "link": "powx-n/",
   "title": "Pow(x",
   "domain": "algorithms",
   "group": "Math & Geometry",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "55b5514b-02ca-4780-8f3d-d782dbfee296",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

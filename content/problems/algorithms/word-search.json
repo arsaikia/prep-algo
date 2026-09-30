@@ -1,5 +1,6 @@
 {
   "slug": "word-search",
+  "link": "word-search/",
   "title": "Word Search",
   "domain": "algorithms",
   "group": "Backtracking",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "6d2c06eb-9a51-4a97-b4eb-4f0317aaccf8",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

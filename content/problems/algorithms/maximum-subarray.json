@@ -1,5 +1,6 @@
 {
   "slug": "maximum-subarray",
+  "link": "maximum-subarray/",
   "title": "Maximum Subarray",
   "domain": "algorithms",
   "group": "Greedy",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "f0b4c972-0c04-43c1-9e13-97b6a0a38629",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

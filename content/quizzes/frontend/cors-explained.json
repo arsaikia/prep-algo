@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "8f86b2e6-5c42-42be-8d6e-e92976397cd8",
   "type": "quiz",
   "difficulty": "Medium",
   "description": "Understand CORS, preflight requests, and cross-origin security.",

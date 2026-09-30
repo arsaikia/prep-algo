@@ -1,5 +1,6 @@
 {
   "slug": "median-of-two-sorted-arrays",
+  "link": "median-of-two-sorted-arrays/",
   "title": "Median of Two Sorted Arrays",
   "domain": "algorithms",
   "group": "Binary Search",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "c027b534-ff09-4229-b14e-727ce1cb64c1",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

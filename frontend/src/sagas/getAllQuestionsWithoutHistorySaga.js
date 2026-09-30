@@ -11,52 +11,53 @@ import {
     SHOW_FETCH_LOADING,
 } from '../actions/types';
 import { getQuestions } from '../api/getQuestions';
+import buildQuestionGroups from '../content/buildQuestionGroups';
+import { loadIndex } from '../content/loader';
+import { isCdnContentEnabled } from '../content/source';
 import groupBy from '../utils/groupBy';
 
-// worker Saga
+/** Legacy path: the backend returns fully-formed question documents. */
+function* fetchFromApi() {
+    const response = yield call(getQuestions);
+
+    if (!response.success || !response.data) {
+        throw new Error('Invalid API response structure');
+    }
+
+    const grouped = groupBy(response.data, (question) => question.group);
+
+    return {
+        groups: Array.from(grouped.keys()),
+        questions: Object.fromEntries(grouped),
+    };
+}
+
+/** Target path: the list is served entirely from the CDN, no backend call. */
+function* fetchFromCdn() {
+    const index = yield call(loadIndex);
+    return buildQuestionGroups(index.items);
+}
+
 function* fetchAllQuestionsWithoutHistory() {
-    yield put({
-        type: SHOW_FETCH_LOADING,
-    });
+    yield put({ type: SHOW_FETCH_LOADING });
 
     try {
-        const questionsDataResponse = yield call(getQuestions);
+        const questionWithGroups = yield call(
+            isCdnContentEnabled() ? fetchFromCdn : fetchFromApi,
+        );
 
-        if (!questionsDataResponse.success || !questionsDataResponse.data) {
-            throw new Error('Invalid API response structure');
+        if (questionWithGroups.groups.length === 0) {
+            throw new Error('No questions available');
         }
 
-        const allQuestions = questionsDataResponse.data;
-
-        if (!allQuestions || allQuestions.length === 0) {
-            throw new Error('No questions returned from API');
-        }
-
-        // Group questions by their group property
-        const groupedQuestionsMap = groupBy(allQuestions, (question) => question.group);
-
-        // Convert Map to Object and get group names
-        const questionsGroupNames = Array.from(groupedQuestionsMap.keys());
-        const groupedQuestions = Object.fromEntries(groupedQuestionsMap);
-
-        // Create the final structure with groups and questions
-        const questionWithGroups = {
-            groups: questionsGroupNames,
-            questions: groupedQuestions,
-        };
-
-        const successAction = {
+        yield put({
             payload: questionWithGroups,
             type: GET_ALL_QUESTIONS_WITHOUT_HISTORY_SUCCESS,
-        };
-
-        yield put(successAction);
+        });
     } catch (error) {
         // Error handling without logging
     } finally {
-        yield put({
-            type: HIDE_FETCH_LOADING,
-        });
+        yield put({ type: HIDE_FETCH_LOADING });
     }
 }
 
@@ -65,4 +66,4 @@ function* getAllQuestionsWithoutHistoryWatcher() {
     yield takeEvery(GET_ALL_QUESTIONS_WITHOUT_HISTORY, fetchAllQuestionsWithoutHistory);
 }
 
-export default getAllQuestionsWithoutHistoryWatcher; 
+export default getAllQuestionsWithoutHistoryWatcher;

@@ -1,5 +1,6 @@
 {
   "slug": "island-perimeter",
+  "link": "island-perimeter/",
   "title": "Island Perimeter",
   "domain": "algorithms",
   "group": "Graphs",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "b798a26f-6396-4205-8438-699e768444f9",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

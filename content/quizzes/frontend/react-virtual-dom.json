@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "662880bd-bdbd-426c-aa42-99b66ba81b4e",
   "type": "quiz",
   "difficulty": "Medium",
   "description": "Understand how React's virtual DOM and reconciliation work.",

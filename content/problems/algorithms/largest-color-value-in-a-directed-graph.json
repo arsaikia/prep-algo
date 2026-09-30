@@ -1,5 +1,6 @@
 {
   "slug": "largest-color-value-in-a-directed-graph",
+  "link": "largest-color-value-in-a-directed-graph/",
   "title": "Largest Color Value in a Directed Graph",
   "domain": "algorithms",
   "group": "Graphs",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "1e55c8f3-e5e5-4384-958c-50793934fdca",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

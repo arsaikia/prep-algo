@@ -1,5 +1,6 @@
 {
   "slug": "house-robber",
+  "link": "house-robber/",
   "title": "House Robber",
   "domain": "algorithms",
   "group": "1-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "598ca5a7-daf1-40c0-b1b9-676f89b38561",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

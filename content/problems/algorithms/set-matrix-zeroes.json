@@ -1,5 +1,6 @@
 {
   "slug": "set-matrix-zeroes",
+  "link": "set-matrix-zeroes/",
   "title": "Set Matrix Zeroes",
   "domain": "algorithms",
   "group": "Math & Geometry",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "bc1b0031-9a58-4227-b086-ebebcea2abb5",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

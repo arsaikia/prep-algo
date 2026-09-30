@@ -1,5 +1,6 @@
 {
   "slug": "walls-and-gates",
+  "link": "walls-and-gates/",
   "title": "Walls And Gates",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "7cc8d0c3-c267-4dfa-bc86-eed3b7cd26cb",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

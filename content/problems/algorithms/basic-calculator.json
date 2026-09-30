@@ -1,5 +1,6 @@
 {
   "slug": "basic-calculator",
+  "link": "basic-calculator/",
   "title": "Basic Calculator",
   "domain": "algorithms",
   "group": "Stack",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "697b80c7-bae8-4266-98b4-52bce0892b04",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

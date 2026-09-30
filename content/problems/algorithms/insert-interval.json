@@ -1,5 +1,6 @@
 {
   "slug": "insert-interval",
+  "link": "insert-interval/",
   "title": "Insert Interval",
   "domain": "algorithms",
   "group": "Intervals",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "5d3e9d49-7ce0-44f0-9356-1132da182ee5",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

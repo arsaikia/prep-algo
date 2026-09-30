@@ -1,5 +1,6 @@
 {
   "slug": "binary-search",
+  "link": "binary-search/",
   "title": "Binary Search",
   "domain": "algorithms",
   "group": "Binary Search",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "4fad4819-3db1-4333-8932-6a0c5440273d",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

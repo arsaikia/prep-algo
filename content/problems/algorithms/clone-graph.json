@@ -1,5 +1,6 @@
 {
   "slug": "clone-graph",
+  "link": "clone-graph/",
   "title": "Clone Graph",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "66b28dce-9923-432b-8bee-12c421970417",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

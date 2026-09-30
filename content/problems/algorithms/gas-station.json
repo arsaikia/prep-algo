@@ -1,5 +1,6 @@
 {
   "slug": "gas-station",
+  "link": "gas-station/",
   "title": "Gas Station",
   "domain": "algorithms",
   "group": "Greedy",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "9649fa42-f80a-4c28-9682-95b62516fea8",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

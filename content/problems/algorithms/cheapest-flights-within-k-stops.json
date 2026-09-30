@@ -1,5 +1,6 @@
 {
   "slug": "cheapest-flights-within-k-stops",
+  "link": "cheapest-flights-within-k-stops/",
   "title": "Cheapest Flights Within K Stops",
   "domain": "algorithms",
   "group": "Advanced Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "6d3d60d6-0ee9-42d6-9a3a-bb6b6eb481ef",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

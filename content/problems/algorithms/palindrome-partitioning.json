@@ -1,5 +1,6 @@
 {
   "slug": "palindrome-partitioning",
+  "link": "palindrome-partitioning/",
   "title": "Palindrome Partitioning",
   "domain": "algorithms",
   "group": "Backtracking",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "8ffd26b8-beac-4dda-afe5-1999f0a726f8",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

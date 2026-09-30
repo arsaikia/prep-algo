@@ -1,5 +1,6 @@
 {
   "slug": "unique-paths",
+  "link": "unique-paths/",
   "title": "Unique Paths",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "05eafa5f-f0a3-4bf7-bdc6-4b2ec579fce0",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

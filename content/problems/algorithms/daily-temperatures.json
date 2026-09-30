@@ -1,5 +1,6 @@
 {
   "slug": "daily-temperatures",
+  "link": "daily-temperatures/",
   "title": "Daily Temperatures",
   "domain": "algorithms",
   "group": "Stack",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "f65f3d37-02d3-4449-b820-da9ae5f88bf5",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

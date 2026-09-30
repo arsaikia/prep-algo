@@ -1,5 +1,6 @@
 {
   "slug": "largest-rectangle-in-histogram",
+  "link": "largest-rectangle-in-histogram/",
   "title": "Largest Rectangle In Histogram",
   "domain": "algorithms",
   "group": "Stack",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "98227cd0-da63-400e-98e8-a51e9ae86675",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

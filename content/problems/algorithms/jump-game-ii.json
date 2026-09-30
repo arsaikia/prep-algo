@@ -1,5 +1,6 @@
 {
   "slug": "jump-game-ii",
+  "link": "jump-game-ii/",
   "title": "Jump Game II",
   "domain": "algorithms",
   "group": "Greedy",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "7cfbdffd-d4f6-4692-876d-dd9ef1c90acb",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

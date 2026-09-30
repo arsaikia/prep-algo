@@ -1,5 +1,6 @@
 {
   "slug": "best-time-to-buy-and-sell-stock-with-cooldown",
+  "link": "best-time-to-buy-and-sell-stock-with-cooldown/",
   "title": "Best Time to Buy And Sell Stock With Cooldown",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "e66b304b-9a77-49c0-9fd1-72bbc93f1140",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

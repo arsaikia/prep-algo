@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "5b9070e6-7510-415d-8b30-2679fb32e46d",
   "type": "quiz",
   "difficulty": "Easy",
   "description": "Understand the JavaScript event loop, call stack, and task queue.",

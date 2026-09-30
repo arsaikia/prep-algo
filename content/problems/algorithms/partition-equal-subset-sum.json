@@ -1,5 +1,6 @@
 {
   "slug": "partition-equal-subset-sum",
+  "link": "partition-equal-subset-sum/",
   "title": "Partition Equal Subset Sum",
   "domain": "algorithms",
   "group": "1-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "705e55e6-007e-4899-9425-44c6dbfa1e20",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

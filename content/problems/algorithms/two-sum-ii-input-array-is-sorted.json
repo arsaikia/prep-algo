@@ -1,5 +1,6 @@
 {
   "slug": "two-sum-ii-input-array-is-sorted",
+  "link": "two-sum-ii-input-array-is-sorted/",
   "title": "Two Sum II Input Array Is Sorted",
   "domain": "algorithms",
   "group": "Two Pointers",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "0cfb5edb-ab1f-4394-b6bf-19687205687c",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

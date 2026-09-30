@@ -1,5 +1,6 @@
 {
   "slug": "lru-cache",
+  "link": "lru-cache/",
   "title": "LRU Cache",
   "domain": "algorithms",
   "group": "Linked List",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "cea15f39-df53-49c2-aa75-01159890874a",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

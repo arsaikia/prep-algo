@@ -1,5 +1,6 @@
 {
   "slug": "n-queens",
+  "link": "n-queens/",
   "title": "N Queens",
   "domain": "algorithms",
   "group": "Backtracking",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "c57496b9-e860-4ba7-9e34-e02f087c609f",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

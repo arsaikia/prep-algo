@@ -1,5 +1,6 @@
 {
   "slug": "koko-eating-bananas",
+  "link": "koko-eating-bananas/",
   "title": "Koko Eating Bananas",
   "domain": "algorithms",
   "group": "Binary Search",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "22359745-6d9b-420b-8a08-ee270ba77e14",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

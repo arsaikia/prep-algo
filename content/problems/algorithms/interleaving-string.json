@@ -1,5 +1,6 @@
 {
   "slug": "interleaving-string",
+  "link": "interleaving-string/",
   "title": "Interleaving String",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "c939e7ee-aa9e-41e8-9476-03aab94a23f9",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

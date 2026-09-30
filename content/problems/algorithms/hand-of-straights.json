@@ -1,5 +1,6 @@
 {
   "slug": "hand-of-straights",
+  "link": "hand-of-straights/",
   "title": "Hand of Straights",
   "domain": "algorithms",
   "group": "Greedy",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "763d9bf0-f354-4aa5-8ad7-a8a45a75b291",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

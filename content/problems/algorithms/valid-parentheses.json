@@ -1,5 +1,6 @@
 {
   "slug": "valid-parentheses",
+  "link": "valid-parentheses/",
   "title": "Valid Parentheses",
   "domain": "algorithms",
   "group": "Stack",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "2fb27369-1b2a-43a2-8376-db2f2eb858a0",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

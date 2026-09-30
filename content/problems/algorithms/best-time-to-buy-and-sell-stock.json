@@ -1,5 +1,6 @@
 {
   "slug": "best-time-to-buy-and-sell-stock",
+  "link": "best-time-to-buy-and-sell-stock/",
   "title": "Best Time to Buy And Sell Stock",
   "domain": "algorithms",
   "group": "Sliding Window",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "e6e23da1-2600-4733-87ba-7524a53c6020",
   "type": "problem",
   "difficulty": "Easy",
   "description": "",

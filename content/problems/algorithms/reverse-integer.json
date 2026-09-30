@@ -1,5 +1,6 @@
 {
   "slug": "reverse-integer",
+  "link": "reverse-integer/",
   "title": "Reverse Integer",
   "domain": "algorithms",
   "group": "Bit Manipulation",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "682c6f7d-3ec8-403d-ab9e-49a352e93ea4",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

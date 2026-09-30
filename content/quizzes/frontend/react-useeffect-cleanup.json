@@ -8,6 +8,7 @@
   "lists": [
     "FE ESSENTIALS"
   ],
+  "legacyId": "3bf59c84-3d7e-4804-8abc-65b13c954793",
   "type": "quiz",
   "difficulty": "Easy",
   "description": "Understand useEffect cleanup functions and when they run.",

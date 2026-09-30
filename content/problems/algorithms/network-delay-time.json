@@ -1,5 +1,6 @@
 {
   "slug": "network-delay-time",
+  "link": "network-delay-time/",
   "title": "Network Delay Time",
   "domain": "algorithms",
   "group": "Advanced Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "6bc12e4f-e2e5-4014-bea1-8e2aa239942a",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

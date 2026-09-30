@@ -1,5 +1,6 @@
 {
   "slug": "course-schedule-iv",
+  "link": "course-schedule-iv/",
   "title": "Course Schedule IV",
   "domain": "algorithms",
   "group": "Graphs",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "11badf1d-e108-42ab-b3fc-3ec0a1fa554e",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

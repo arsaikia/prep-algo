@@ -1,5 +1,6 @@
 {
   "slug": "course-schedule-ii",
+  "link": "course-schedule-ii/",
   "title": "Course Schedule II",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "748a04a8-a7bb-4c8e-8e67-cb61f92659b3",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

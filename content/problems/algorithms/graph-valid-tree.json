@@ -1,5 +1,6 @@
 {
   "slug": "graph-valid-tree",
+  "link": "graph-valid-tree/",
   "title": "Graph Valid Tree",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "17fcbde7-0de1-413f-bd6c-279af515b27b",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

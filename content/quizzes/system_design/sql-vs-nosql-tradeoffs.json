@@ -8,6 +8,7 @@
   "lists": [
     "SD TOP 25"
   ],
+  "legacyId": "b07b8255-6b22-4d41-aac9-085566694f81",
   "type": "quiz",
   "difficulty": "Easy",
   "description": "Understand when to choose SQL vs NoSQL databases.",

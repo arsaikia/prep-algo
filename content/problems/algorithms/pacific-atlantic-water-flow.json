@@ -1,5 +1,6 @@
 {
   "slug": "pacific-atlantic-water-flow",
+  "link": "pacific-atlantic-water-flow/",
   "title": "Pacific Atlantic Water Flow",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "5e5abbbb-c97d-4a35-9072-505a93b9ea06",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

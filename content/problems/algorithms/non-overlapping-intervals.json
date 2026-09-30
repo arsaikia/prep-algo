@@ -1,5 +1,6 @@
 {
   "slug": "non-overlapping-intervals",
+  "link": "non-overlapping-intervals/",
   "title": "Non Overlapping Intervals",
   "domain": "algorithms",
   "group": "Intervals",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "c91ad8a8-7bd9-443e-b25c-001df4df0ea1",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

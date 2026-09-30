@@ -1,5 +1,6 @@
 {
   "slug": "search-in-rotated-sorted-array",
+  "link": "search-in-rotated-sorted-array/",
   "title": "Search In Rotated Sorted Array",
   "domain": "algorithms",
   "group": "Binary Search",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "3de30e9d-6eba-4683-b236-efb58e62e6c0",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

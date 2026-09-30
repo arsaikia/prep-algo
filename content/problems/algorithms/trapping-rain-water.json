@@ -1,5 +1,6 @@
 {
   "slug": "trapping-rain-water",
+  "link": "trapping-rain-water/",
   "title": "Trapping Rain Water",
   "domain": "algorithms",
   "group": "Two Pointers",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "252ea467-1d05-4f70-8c97-fe121da8076a",
   "type": "problem",
   "difficulty": "Hard",
   "description": "",

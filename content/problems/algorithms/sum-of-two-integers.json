@@ -1,5 +1,6 @@
 {
   "slug": "sum-of-two-integers",
+  "link": "sum-of-two-integers/",
   "title": "Sum of Two Integers",
   "domain": "algorithms",
   "group": "Bit Manipulation",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "0eea2ed1-7978-4180-8f53-30144bc2725c",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

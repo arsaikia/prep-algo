@@ -1,5 +1,6 @@
 {
   "slug": "search-a-2d-matrix",
+  "link": "search-a-2d-matrix/",
   "title": "Search a 2D Matrix",
   "domain": "algorithms",
   "group": "Binary Search",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "6e9adf93-fdf9-4914-8f6b-d9f441acf744",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

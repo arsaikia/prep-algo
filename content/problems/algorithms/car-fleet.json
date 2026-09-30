@@ -1,5 +1,6 @@
 {
   "slug": "car-fleet",
+  "link": "car-fleet/",
   "title": "Car Fleet",
   "domain": "algorithms",
   "group": "Stack",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "876c90dd-a067-404a-a2d5-6e864b7b624e",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

@@ -1,5 +1,6 @@
 {
   "slug": "rotting-oranges",
+  "link": "rotting-oranges/",
   "title": "Rotting Oranges",
   "domain": "algorithms",
   "group": "Graphs",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "a3869860-2ad9-4549-b8b0-18cb5379c42a",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

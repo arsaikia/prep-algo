@@ -1,5 +1,6 @@
 {
   "slug": "count-sub-islands",
+  "link": "count-sub-islands/",
   "title": "Count Sub Islands",
   "domain": "algorithms",
   "group": "Graphs",
@@ -8,6 +9,7 @@
   "lists": [
     "ALL"
   ],
+  "legacyId": "0dc1686a-5483-4ff3-9795-1c1a525dd423",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

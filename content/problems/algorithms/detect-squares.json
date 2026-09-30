@@ -1,5 +1,6 @@
 {
   "slug": "detect-squares",
+  "link": "detect-squares/",
   "title": "Detect Squares",
   "domain": "algorithms",
   "group": "Math & Geometry",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "297d8c77-96ca-4505-9236-4c237f1b6086",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",

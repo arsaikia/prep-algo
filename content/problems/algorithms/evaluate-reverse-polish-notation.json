@@ -1,5 +1,6 @@
 {
   "slug": "evaluate-reverse-polish-notation",
+  "link": "evaluate-reverse-polish-notation/",
   "title": "Evaluate Reverse Polish Notation",
   "domain": "algorithms",
   "group": "Stack",
@@ -9,6 +10,7 @@
     "ALL",
     "TOP 150"
   ],
+  "legacyId": "40f997ea-ca27-4b9a-8f53-05d71cb400bf",
   "type": "problem",
   "difficulty": "Medium",
   "description": "",
