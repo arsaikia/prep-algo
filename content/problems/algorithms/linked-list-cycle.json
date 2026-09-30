@@ -13,11 +13,120 @@
   "legacyId": "1cb7fdfa-c4f9-4420-b920-04bdac554d53",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "",
+  "description": "<p>Given the head of a linked list, determine whether the list contains a cycle.</p>\n<p>A cycle exists when some node can be reached again by repeatedly following <code>next</code>. The input describes the list as <code>{\"values\": [...], \"pos\": i}</code>, where <code>pos</code> is the index of the node the last node points back to, or <code>-1</code> when the list ends normally. <code>pos</code> is not passed to your function &mdash; it only describes how the list is wired before you receive it.</p>\n<p>Return <code>true</code> if there is a cycle and <code>false</code> otherwise.</p>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li>The list holds between <code>0</code> and <code>10^4</code> nodes.</li>\n<li><code>-10^5 &lt;= Node.val &lt;= 10^5</code>.</li>\n<li><code>pos</code> is <code>-1</code> or a valid index in the list.</li>\n<li>Solving this with <code>O(1)</code> extra memory is the point of the exercise; a set of visited nodes works but uses <code>O(n)</code>.</li>\n</ul>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def hasCycle(self, head) -> bool:\n        pass\n",
+    "javascript": "/**\n * @param {ListNode} head\n * @return {boolean}\n */\nvar hasCycle = function(head) {\n\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "{\"values\":[3,2,0,-4],\"pos\":1}"
+      ],
+      "expectedOutput": "true",
+      "explanation": "The tail links back to index 1, so following next never reaches an end."
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2],\"pos\":0}"
+      ],
+      "expectedOutput": "true",
+      "explanation": "Two nodes pointing at each other form the smallest two-node cycle."
+    },
+    {
+      "inputs": [
+        "{\"values\":[1],\"pos\":-1}"
+      ],
+      "expectedOutput": "false",
+      "explanation": "A single node whose next is None terminates, so there is no cycle."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "{\"values\":[3,2,0,-4],\"pos\":1}"
+      ],
+      "expectedOutput": "true",
+      "explanation": "The tail links back to index 1, so following next never reaches an end.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2],\"pos\":0}"
+      ],
+      "expectedOutput": "true",
+      "explanation": "Two nodes pointing at each other form the smallest two-node cycle.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "{\"values\":[1],\"pos\":-1}"
+      ],
+      "expectedOutput": "false",
+      "explanation": "A single node whose next is None terminates, so there is no cycle.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "{\"values\":[],\"pos\":-1}"
+      ],
+      "expectedOutput": "false",
+      "explanation": "An empty list has nothing to loop through.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[1],\"pos\":0}"
+      ],
+      "expectedOutput": "true",
+      "explanation": "A node pointing at itself is a cycle of length one, which a fast pointer must still catch.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2,3,4,5],\"pos\":-1}"
+      ],
+      "expectedOutput": "false",
+      "explanation": "A plain five node list ends normally.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2,3,4,5],\"pos\":4}"
+      ],
+      "expectedOutput": "true",
+      "explanation": "The tail pointing at itself is a cycle, even though only one node repeats.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2,3,4,5],\"pos\":0}"
+      ],
+      "expectedOutput": "true",
+      "explanation": "The tail links back to the head, so the whole list is one loop.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[7,7,7,7],\"pos\":2}"
+      ],
+      "expectedOutput": "true",
+      "explanation": "Repeated values must not be mistaken for a repeated node; identity is what matters.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[-1,-2,-3],\"pos\":-1}"
+      ],
+      "expectedOutput": "false",
+      "explanation": "Negative values change nothing about the traversal.",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "LINKEDLIST_CYCLE"
+    ],
+    "output": "BOOLEAN"
+  }
 }

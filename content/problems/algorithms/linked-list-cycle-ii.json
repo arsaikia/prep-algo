@@ -13,11 +13,120 @@
   "legacyId": "0264ebe9-4a09-4aaa-83c9-87e4c9537bde",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<p>Given the head of a linked list, return the node where the cycle begins. If the list has no cycle, return <code>None</code>.</p>\n<p>The input describes the list as <code>{\"values\": [...], \"pos\": i}</code>, where <code>pos</code> is the index of the node the last node points back to, or <code>-1</code> when the list ends normally. <code>pos</code> is not passed to your function.</p>\n<p>Because two nodes can hold the same value, your answer is reported as the <em>index</em> of the node you return within the original list, or <code>-1</code> when you return <code>None</code>. Return the node itself &mdash; the index is worked out for you.</p>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li>The list holds between <code>0</code> and <code>10^4</code> nodes.</li>\n<li><code>-10^5 &lt;= Node.val &lt;= 10^5</code>.</li>\n<li><code>pos</code> is <code>-1</code> or a valid index in the list.</li>\n<li>Aim for <code>O(1)</code> extra memory.</li>\n</ul>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def detectCycle(self, head):\n        pass\n",
+    "javascript": "/**\n * @param {ListNode} head\n * @return {ListNode}\n */\nvar detectCycle = function(head) {\n\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "{\"values\":[3,2,0,-4],\"pos\":1}"
+      ],
+      "expectedOutput": "1",
+      "explanation": "The tail links back to index 1, so the cycle starts at the second node."
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2],\"pos\":0}"
+      ],
+      "expectedOutput": "0",
+      "explanation": "The tail links back to the head, so the cycle starts at index 0."
+    },
+    {
+      "inputs": [
+        "{\"values\":[1],\"pos\":-1}"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "No cycle, so there is no starting node."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "{\"values\":[3,2,0,-4],\"pos\":1}"
+      ],
+      "expectedOutput": "1",
+      "explanation": "The tail links back to index 1, so the cycle starts at the second node.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2],\"pos\":0}"
+      ],
+      "expectedOutput": "0",
+      "explanation": "The tail links back to the head, so the cycle starts at index 0.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "{\"values\":[1],\"pos\":-1}"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "No cycle, so there is no starting node.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "{\"values\":[],\"pos\":-1}"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "An empty list has no node to return.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[1],\"pos\":0}"
+      ],
+      "expectedOutput": "0",
+      "explanation": "A self-loop starts at the only node.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2,3,4,5],\"pos\":-1}"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "A plain list ends normally and has no entry point.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2,3,4,5],\"pos\":4}"
+      ],
+      "expectedOutput": "4",
+      "explanation": "The tail points at itself, so the cycle begins at the last index.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2,3,4,5],\"pos\":0}"
+      ],
+      "expectedOutput": "0",
+      "explanation": "The whole list is one loop, so the cycle begins at the head.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[7,7,7,7],\"pos\":2}"
+      ],
+      "expectedOutput": "2",
+      "explanation": "Every value is identical, so only node identity can distinguish the entry point.",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "{\"values\":[1,2,3,4,5,6],\"pos\":3}"
+      ],
+      "expectedOutput": "3",
+      "explanation": "A tail three nodes long looping back to index 3 tests the second phase of the walk.",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "LINKEDLIST_CYCLE"
+    ],
+    "output": "NODE_INDEX"
+  }
 }
