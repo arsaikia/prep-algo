@@ -4,8 +4,14 @@ import { fileURLToPath } from 'node:url';
 import logger from '../config/logger.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const BUNDLE = path.join(HERE, '..', 'content', 'testcases.json');
-const QUIZ_BUNDLE = path.join(HERE, '..', 'content', 'quiz-answers.json');
+const DEFAULT_CONTENT_DIR = path.join(HERE, '..', 'content');
+
+/**
+ * Where the build writes the server bundles. `CONTENT_BUNDLE_DIR` lets a
+ * deployment mount content apart from the code and lets tests load fixtures
+ * without touching the real build output. Resolved per load, not at import.
+ */
+const bundlePath = (file) => path.join(process.env.CONTENT_BUNDLE_DIR || DEFAULT_CONTENT_DIR, file);
 
 /**
  * Server-side grading bundle, emitted by `npm run build:content` from the
@@ -20,6 +26,7 @@ const QUIZ_BUNDLE = path.join(HERE, '..', 'content', 'quiz-answers.json');
  */
 let cache = null;
 let quizCache = null;
+let catalogCache = null;
 
 function loadBundle(file, label) {
     try {
@@ -37,12 +44,12 @@ function loadBundle(file, label) {
 }
 
 function load() {
-    if (!cache) cache = loadBundle(BUNDLE, 'grading');
+    if (!cache) cache = loadBundle(bundlePath('testcases.json'), 'grading');
     return cache;
 }
 
 function loadQuizAnswers() {
-    if (!quizCache) quizCache = loadBundle(QUIZ_BUNDLE, 'quiz answer');
+    if (!quizCache) quizCache = loadBundle(bundlePath('quiz-answers.json'), 'quiz answer');
     return quizCache;
 }
 
@@ -91,6 +98,76 @@ export function redactHiddenResults(results, testCases) {
 export function resetContentCache() {
     cache = null;
     quizCache = null;
+    catalogCache = null;
+}
+
+/**
+ * Public metadata for every content item — the same allowlisted bodies the
+ * CDN serves, in the same order as the published index. The backend reads
+ * question metadata from here rather than from a database collection, so
+ * content has exactly one source: the git-authored `content/` tree.
+ */
+function loadCatalog() {
+    if (!catalogCache) {
+        const raw = loadBundle(bundlePath('catalog.json'), 'catalog');
+        const items = Array.isArray(raw.items) ? raw.items : [];
+        catalogCache = {
+            items,
+            bySlug: new Map(items.map((item) => [item.slug, item])),
+            byLegacyId: new Map(
+                items.filter((item) => item.legacyId).map((item) => [item.legacyId, item]),
+            ),
+        };
+    }
+    return catalogCache;
+}
+
+/** Every catalog item in index order. Shared — callers must not mutate. */
+export function listItems() {
+    return loadCatalog().items;
+}
+
+/** Look up by slug. Accepts legacy `link` values, which are the slug plus a trailing slash. */
+export function getItemBySlug(slug) {
+    return loadCatalog().bySlug.get(normalize(slug)) || null;
+}
+
+/**
+ * Look up by the id progress is keyed on. Items that predate the content
+ * tree carry the database id they were exported with, so existing solve
+ * history and recommendation batches keep resolving.
+ */
+export function getItemByLegacyId(id) {
+    if (id === null || id === undefined) return null;
+    return loadCatalog().byLegacyId.get(String(id)) || null;
+}
+
+const ANSWER_FORMAT = { problem: 'code', quiz: 'mcq', topic: 'design_doc' };
+
+/** The solver an item opens in, in the vocabulary older clients understand. */
+export function answerFormatFor(item) {
+    return ANSWER_FORMAT[item?.type] ?? null;
+}
+
+/**
+ * The summary shape clients have always received for a question: the fields
+ * list rows, recommendation cards and progress stats read. Built only from
+ * public catalog fields, so it cannot carry answer keys however it is used.
+ */
+export function toQuestionSummary(item) {
+    if (!item) return null;
+    return {
+        _id: item.legacyId ?? null,
+        name: item.title,
+        link: item.link || item.slug,
+        slug: item.slug,
+        type: item.type,
+        group: item.group,
+        difficulty: item.difficulty ?? null,
+        domain: item.domain,
+        answerFormat: answerFormatFor(item),
+        ...(item.topic ? { topic: item.topic } : {}),
+    };
 }
 
 /**

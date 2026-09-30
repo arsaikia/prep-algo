@@ -206,14 +206,21 @@ async function main() {
     await mkdir(SERVER_OUT, { recursive: true });
 
     const indexEntries = [];
+    const catalog = [];
     const hiddenTests = {};
     const quizAnswers = {};
 
     for (const { item } of items) {
-        const body = stable(publicBody(item));
+        const pub = publicBody(item);
+        const body = stable(pub);
         const h = hash(body);
+        const entry = toIndexEntry(item);
         await writeFile(path.join(PUBLIC_OUT, 'items', `${item.slug}.${h}.json`), body);
-        indexEntries.push({ ...toIndexEntry(item), h });
+        indexEntries.push({ ...entry, h });
+        // Server-side twin of the published items: the backend reads problem
+        // metadata from here instead of the database. Built from the same
+        // allowlist, so it can never carry more than the CDN already serves.
+        catalog.push({ ...pub, availableForSolve: entry.availableForSolve });
 
         if (item.type === 'problem' && item.testCases.length > 0) {
             hiddenTests[item.slug] = { types: item.types ?? null, testCases: item.testCases };
@@ -240,6 +247,10 @@ async function main() {
 
     await writeFile(path.join(SERVER_OUT, 'testcases.json'), `${stable(hiddenTests)}\n`);
     await writeFile(path.join(SERVER_OUT, 'quiz-answers.json'), `${stable(quizAnswers)}\n`);
+    await writeFile(
+        path.join(SERVER_OUT, 'catalog.json'),
+        `${stable({ version: 1, count: catalog.length, items: catalog })}\n`,
+    );
 
     const indexKb = (Buffer.byteLength(indexBody) / 1024).toFixed(1);
     const gzKb = (
@@ -257,6 +268,7 @@ async function main() {
     console.log(
         `  hidden  ${Object.keys(hiddenTests).length} test sets, ${Object.keys(quizAnswers).length} answer keys → ${path.relative(ROOT, SERVER_OUT)}/`,
     );
+    console.log(`  catalog ${catalog.length} public items → ${path.relative(ROOT, SERVER_OUT)}/catalog.json`);
 
     if (Number(gzKb) > 30) {
         console.warn(`⚠ index exceeds the 30 KB gz budget (${gzKb} KB)`);

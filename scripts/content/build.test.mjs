@@ -47,6 +47,40 @@ test('published items never contain answer keys', async () => {
     }
 });
 
+test('server catalog mirrors the public items and never carries answer keys', async () => {
+    // The backend serves question metadata from this file — API responses,
+    // recommendations — so it must hold exactly what the CDN already
+    // publishes. Anything more would leak answers through JSON responses.
+    const raw = await readFile(path.join(SERVER_OUT, 'catalog.json'), 'utf8');
+    for (const forbidden of ['"isCorrect"', '"testCases"', '"isHidden"']) {
+        assert.ok(!raw.includes(forbidden), `catalog leaks ${forbidden}`);
+    }
+
+    const catalog = JSON.parse(raw);
+    const manifest = await readJson(path.join(PUBLIC_OUT, 'manifest.json'));
+    const index = await readJson(path.join(PUBLIC_OUT, manifest.index));
+    assert.equal(catalog.count, catalog.items.length);
+    assert.deepEqual(
+        catalog.items.map((i) => i.slug),
+        index.items.map((i) => i.slug),
+        'catalog order must match the index so both sides agree on list order',
+    );
+
+    const byLegacyId = new Set();
+    for (const item of catalog.items) {
+        assert.equal(typeof item.availableForSolve, 'boolean', `${item.slug}: availableForSolve`);
+        // Example explanations are public; per-option explanations reveal
+        // the answer, so quiz options may carry nothing beyond id and text.
+        for (const option of item.options ?? []) {
+            assert.deepEqual(Object.keys(option).sort(), ['id', 'text'], `${item.slug}: option leaks`);
+        }
+        if (item.legacyId) {
+            assert.ok(!byLegacyId.has(item.legacyId), `${item.slug}: duplicate legacyId`);
+            byLegacyId.add(item.legacyId);
+        }
+    }
+});
+
 test('answer keys are present server-side', async () => {
     const answers = await readJson(path.join(SERVER_OUT, 'quiz-answers.json'));
     const tests = await readJson(path.join(SERVER_OUT, 'testcases.json'));
