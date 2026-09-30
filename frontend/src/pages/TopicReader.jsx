@@ -1,33 +1,25 @@
 import React, { useEffect, useState } from 'react';
 
-import { Link, useParams } from 'react-router-dom';
+import { Link, useOutletContext, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { ArrowLeft, Check, Code } from 'react-feather';
+import { Check, Code } from 'react-feather';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 
 import { loadIndex, loadItem } from '../content/loader';
 import FullScreenLoader from '../components/Loader/FullScreenLoader';
+import TopicQuiz from './systemDesign/TopicQuiz';
 
+/*
+ * The reader is a column inside the System Design shell, not a page. The shell
+ * owns the viewport and the scroll container, so this sets its own measure and
+ * nothing else — no `min-height`, no background of its own.
+ */
 const Container = styled.div`
   max-width: 820px;
   margin: 0 auto;
-  padding: 20px 20px 5rem;
-  background: ${({ theme }) => theme.colors.background};
+  padding: 2.5rem 1.5rem 6rem;
   color: ${({ theme }) => theme.colors.text};
-  min-height: 100vh;
-`;
-
-const BackLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  text-decoration: none;
-  font-size: 0.9rem;
-  margin-bottom: 1.75rem;
-
-  &:hover { color: ${({ theme }) => theme.colors.primary}; }
 `;
 
 const GroupLabel = styled.p`
@@ -182,11 +174,14 @@ const Message = styled.p`
  */
 function TopicReader() {
   const { slug } = useParams();
+  const { quizByTopic } = useOutletContext() ?? {};
   const [state, setState] = useState({ status: 'loading' });
+  const [quiz, setQuiz] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     setState({ status: 'loading' });
+    setQuiz(null);
 
     (async () => {
       const index = await loadIndex();
@@ -213,19 +208,26 @@ function TopicReader() {
         prerequisites: resolve(topic.prerequisites),
         relatedProblems: resolve(topic.relatedProblems),
       });
+
+      // The quiz is a second network round trip, and it sits at the bottom of
+      // a long article. Fetching it after the topic renders keeps it off the
+      // critical path for reading.
+      const quizEntry = quizByTopic?.get(slug);
+      if (!quizEntry) return;
+      const quiz = await loadItem(quizEntry.slug, quizEntry.h);
+      if (!cancelled) setQuiz(quiz);
     })().catch((err) => {
       if (!cancelled) setState({ status: 'error', message: err.message });
     });
 
     return () => { cancelled = true; };
-  }, [slug]);
+  }, [slug, quizByTopic]);
 
   if (state.status === 'loading') return <FullScreenLoader show />;
 
   if (state.status === 'missing') {
     return (
       <Container>
-        <BackLink to="/system-design"><ArrowLeft size={15} /> All topics</BackLink>
         <Message>No system design topic called &ldquo;{slug}&rdquo;.</Message>
       </Container>
     );
@@ -234,7 +236,6 @@ function TopicReader() {
   if (state.status === 'error') {
     return (
       <Container>
-        <BackLink to="/system-design"><ArrowLeft size={15} /> All topics</BackLink>
         <Message>Could not load this topic: {state.message}</Message>
       </Container>
     );
@@ -250,8 +251,6 @@ function TopicReader() {
 
   return (
     <Container>
-      <BackLink to="/system-design"><ArrowLeft size={15} /> All topics</BackLink>
-
       <GroupLabel>{topic.group}</GroupLabel>
       <Title>{topic.title}</Title>
       {showSummary && <Summary>{topic.summary}</Summary>}
@@ -305,6 +304,8 @@ function TopicReader() {
           </LinkRow>
         </Panel>
       )}
+
+      <TopicQuiz quiz={quiz} />
     </Container>
   );
 }

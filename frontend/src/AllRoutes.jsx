@@ -19,7 +19,8 @@ const Login = lazy(() => import('./pages/Login'));
 const CodeSandbox = lazy(() => import('./pages/CodeSandbox'));
 // System Design is read, not solved, so it has its own index and reader
 // rather than reusing the question list.
-const SystemDesign = lazy(() => import('./pages/SystemDesign'));
+const SystemDesignLayout = lazy(() => import('./pages/systemDesign/SystemDesignLayout'));
+const SystemDesignOverview = lazy(() => import('./pages/systemDesign/SystemDesignOverview'));
 const TopicReader = lazy(() => import('./pages/TopicReader'));
 const Error = lazy(() => import('./pages/Error'));
 
@@ -31,8 +32,15 @@ function AllRoutes() {
         <Route path="/all" element={<AllQuestions />} />
         <Route path="/questions" element={<AllQuestions />} />
         <Route path="/algorithms" element={<AllQuestions domain="algorithms" />} />
-        <Route path="/system-design" element={<SystemDesign />} />
-        <Route path="/system-design/:slug" element={<TopicReader />} />
+        {/*
+          * Nested so the curriculum sidebar stays mounted while you move
+          * between topics: the outline is the navigation, and remounting it on
+          * every click would reset its scroll and expansion state.
+          */}
+        <Route path="/system-design" element={<SystemDesignLayout />}>
+            <Route index element={<SystemDesignOverview />} />
+            <Route path=":slug" element={<TopicReader />} />
+        </Route>
         <Route path="/frontend" element={<AllQuestions domain="frontend" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/codesandbox" element={<CodeSandbox />} />

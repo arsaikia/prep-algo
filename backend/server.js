@@ -20,6 +20,7 @@ import authentication from './routes/authentication.js';
 import submission from './routes/submission.js';
 import codeExecution from './routes/code.js';
 import testRoute from './routes/test.js';
+import quiz from './routes/quiz.js';
 import { solveHistory } from './routes/solveHistory.js';
 import smartRecommendations from './routes/smartRecommendations.js';
 
@@ -112,6 +113,7 @@ app.use('/api/', generalLimiter);
 app.use('/api/v1/authentication', authLimiter, authentication);
 app.use('/api/v1/questions', questions);
 app.use('/api/v1/test', testRoute);
+app.use('/api/v1/quiz', quiz);
 
 // --- Protected routes (auth required) ---
 app.use('/api/v1/submission', protect, submission);

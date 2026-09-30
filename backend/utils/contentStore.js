@@ -5,6 +5,7 @@ import logger from '../config/logger.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BUNDLE = path.join(HERE, '..', 'content', 'testcases.json');
+const QUIZ_BUNDLE = path.join(HERE, '..', 'content', 'quiz-answers.json');
 
 /**
  * Server-side grading bundle, emitted by `npm run build:content` from the
@@ -18,22 +19,31 @@ const BUNDLE = path.join(HERE, '..', 'content', 'testcases.json');
  * to drift apart.
  */
 let cache = null;
+let quizCache = null;
 
-function load() {
-    if (cache) return cache;
+function loadBundle(file, label) {
     try {
-        cache = JSON.parse(readFileSync(BUNDLE, 'utf8'));
+        return JSON.parse(readFileSync(file, 'utf8'));
     } catch (err) {
         // Missing bundle is a deployment error, not a per-request one. Fail
         // closed with an empty map so callers return "not gradable" rather
         // than silently grading against nothing.
         logger.error(
-            { err, bundle: BUNDLE },
-            'grading bundle missing or unreadable — run `npm run build:content`',
+            { err, bundle: file },
+            `${label} bundle missing or unreadable — run \`npm run build:content\``,
         );
-        cache = {};
+        return {};
     }
+}
+
+function load() {
+    if (!cache) cache = loadBundle(BUNDLE, 'grading');
     return cache;
+}
+
+function loadQuizAnswers() {
+    if (!quizCache) quizCache = loadBundle(QUIZ_BUNDLE, 'quiz answer');
+    return quizCache;
 }
 
 /** Strip the trailing slash some stored links carry. */
@@ -80,4 +90,37 @@ export function redactHiddenResults(results, testCases) {
 /** Test seam: drop the cached bundle so the next read hits disk. */
 export function resetContentCache() {
     cache = null;
+    quizCache = null;
+}
+
+/**
+ * Grade a multiple-choice answer against the server-side answer key.
+ *
+ * The published quiz body carries option text but never `isCorrect` — the key
+ * lives only here, alongside the hidden test cases, for the same reason. Grading
+ * is keyed by content slug rather than a database id so a quiz is gradable the
+ * moment it is authored and built, with no database row to create.
+ *
+ * Returns null when the slug has no answer key, which callers surface as 404
+ * rather than as a wrong answer.
+ */
+export function gradeQuiz(slug, selectedOptionId) {
+    const options = loadQuizAnswers()[normalize(slug)];
+    if (!Array.isArray(options) || options.length === 0) return null;
+
+    const correct = options.find((o) => o.isCorrect);
+    const chosen = options.find((o) => o.id === selectedOptionId) || null;
+
+    return {
+        passed: Boolean(chosen?.isCorrect),
+        selectedOptionId: chosen ? chosen.id : null,
+        correctOptionId: correct ? correct.id : null,
+        // Every option's explanation, so the UI can teach why the distractors
+        // are wrong instead of only confirming the right answer.
+        explanations: options.map(({ id, isCorrect, explanation }) => ({
+            id,
+            isCorrect: Boolean(isCorrect),
+            explanation: explanation || '',
+        })),
+    };
 }
