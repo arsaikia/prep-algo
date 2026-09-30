@@ -117,6 +117,14 @@ check /health
 check /api/v1/questions
 check /api/v1/questions/two-sum
 
+# /health answers 200 even when Redis is down (the backend falls back to memory),
+# so print the component statuses rather than trusting the code alone.
+HEALTH=$(curl -s --max-time 30 "$CANDIDATE_URL/health")
+for component in mongodb redis queue; do
+    status=$(printf '%s' "$HEALTH" | sed -n "s/.*\"$component\":{\"status\":\"\([a-z]*\)\".*/\1/p")
+    echo -e "   $component: ${YELLOW}${status:-unknown}${NC}"
+done
+
 if [ "$FAILED" = "1" ]; then
     echo -e "${RED}❌ Candidate failed smoke tests. Live traffic is untouched.${NC}"
     echo -e "Logs: ${YELLOW}gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=$SERVICE' --limit=50${NC}"

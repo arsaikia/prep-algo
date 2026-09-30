@@ -20,11 +20,11 @@ See [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) for Mermaid diagrams sh
 | Backend | Express.js monolith (ESM), Mongoose 7 | Cloud Run (`us-central1`) | Working |
 | Database | MongoDB Atlas (denormalized fields + compound indexes) | Cloud | Working |
 | Auth | Google OAuth + JWT, `protect` middleware on all private route groups, `requireSelf` ownership checks, `authorize('admin')` on content mutations | — | Working |
-| Cache | Two-tier: node-cache (L1) + Redis/Upstash (L2), stampede protection | — | Working |
-| Rate Limit | Distributed sliding window on Redis | — | Working |
-| Code Exec | Python3 `child_process.spawn`, 5s timeout, **no sandbox** | — | **Unsafe** |
+| Cache | Two-tier: node-cache (L1) + Redis/Upstash (L2), stampede protection, keys versioned by Cloud Run revision | — | Working |
+| Rate Limit | Distributed sliding window on Redis, keyed by client IP (`trust proxy` 1 behind Cloud Run) | — | Working |
+| Code Exec | Python sandbox (ADR-008): subprocess runner on Cloud Run, 5s timeout, 256MB, one program at a time per instance | — | Working |
 | CDN | Firebase Hosting headers (`immutable` hashed assets, `no-cache` index.html) + security headers | — | Working |
-| Async | BullMQ queue on Redis for code execution | — | Working |
+| Async | BullMQ queue on Redis for code execution, opt-in via `CODE_EXECUTION_QUEUE=bullmq` (off in production) | — | Working |
 | Resilience | Circuit breakers (opossum) around MongoDB | — | Working |
 | Observability | pino structured logs, correlation IDs, deep `/health` | — | Partial (no `/metrics`) |
 
@@ -566,6 +566,81 @@ Order:
 
 Code execution on Cloud Run uses the subprocess runner. Cloud Run has no Docker daemon, so
 the sandbox logs that it is falling back.
+
+### Redis (Upstash free tier)
+
+Redis is optional: without `REDIS_URL` the cache and rate limiter run in memory per
+instance. With it, both are shared across instances. The backend never waits on Redis.
+It listens even if Redis is down at startup, reconnects in the background, and `/health`
+reports `redis: down` with `status: degraded` until the connection returns. Cache keys
+carry the revision name (`K_REVISION`), so every deploy starts on an empty cache and never
+serves an entry built from a previous image's catalog. BullMQ stays off in production
+(`CODE_EXECUTION_QUEUE` unset). Its blocking polls would spend the free tier's commands
+while idle.
+
+1. Create a database at upstash.com: Redis, GCP `us-central1`, TLS on. Copy the
+   `rediss://default:…@….upstash.io:6379` URL.
+2. Store it as a secret that the runtime service account can read:
+   ```bash
+   printf %s "$REDIS_URL" | gcloud secrets create REDIS_URL --data-file=- --project=prepalgo
+   gcloud secrets add-iam-policy-binding REDIS_URL --project=prepalgo \
+     --member=serviceAccount:419917211939-compute@developer.gserviceaccount.com \
+     --role=roles/secretmanager.secretAccessor
+   ```
+3. Attach it to a candidate revision. Use `--update-secrets`: `--set-secrets` would drop
+   the existing ones.
+   ```bash
+   gcloud run services update prep-algo-backend --region=us-central1 \
+     --update-secrets=REDIS_URL=REDIS_URL:latest --no-traffic --tag=candidate
+   ```
+4. Confirm the candidate's `/health` shows `redis: ok`, then shift traffic with
+   `./deploy-to-cloudrun.sh --promote`.
+5. Check that rate limiting sees real clients. The app's `ip` must equal Cloud Run's
+   `remoteIp` for the same request. Before `trust proxy`, every request showed
+   `169.254.169.126`, so all anonymous users shared one bucket.
+   ```bash
+   gcloud logging read 'resource.labels.service_name=prep-algo-backend AND jsonPayload.msg="request completed"' \
+     --limit=5 --format='table(timestamp,jsonPayload.ip,jsonPayload.url)'
+   gcloud logging read 'resource.labels.service_name=prep-algo-backend AND httpRequest.remoteIp:*' \
+     --limit=5 --format='table(timestamp,httpRequest.remoteIp,httpRequest.requestUrl)'
+   ```
+
+### Cold starts
+
+Measured over 14 days in September 2026:
+
+- **The service scales to zero.** A new instance takes about 3.5s to start. That is 2.9s
+  to start Node and 0.5s to reach Mongo; Mongo and Redis now connect in parallel.
+- **The first request after an idle spell takes 3–6s.** Every request of 2s or more in
+  that window coincided with an instance start.
+- **The frontend is not affected.** It is served from the CDN, and guest `/algorithms`
+  makes no backend calls.
+- **Concurrency 1 made cold starts worse.** Parallel requests from one page load each
+  started their own instance (five within 0.6s).
+
+It was 1 because two 256MB sandboxed programs plus Node could exceed the 512Mi
+container. The sandbox now runs one program at a time per process
+(`CODE_SANDBOX_MAX_CONCURRENT`), so an instance can take many requests. Concurrency lives
+on the revision, and traffic is pinned to a revision rather than to the latest one. Change
+it through a candidate like any other deploy, then run `./deploy-to-cloudrun.sh --promote`:
+
+```bash
+gcloud run services update prep-algo-backend --region=us-central1 \
+  --concurrency=10 --no-traffic --tag=candidate
+```
+
+This can be folded into Redis step 3 as a single revision.
+
+To remove cold starts entirely, keep one instance warm. `--min` is service-wide and
+creates no new revision. An idle instance at 1 vCPU / 512Mi costs about $8–10 a month
+after the free tier.
+
+```bash
+gcloud run services update prep-algo-backend --region=us-central1 --min=1
+```
+
+The free alternative is a Cloud Scheduler job that requests `/health` every 10 minutes.
+It narrows the window but does not guarantee a warm instance.
 
 ---
 
