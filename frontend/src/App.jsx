@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useCookies } from 'react-cookie';
@@ -20,7 +20,6 @@ import {
   fetchUserInfo,
 } from './actions/actions';
 import AllRoutes from './AllRoutes';
-import CodeSection from './components/CodeSection';
 import FullScreenLoader from './components/Loader/FullScreenLoader';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -28,6 +27,10 @@ import { Container } from './styles';
 import { createTheme } from './theme';
 import useTheme from './hooks/useTheme';
 import { TestUserProvider } from './contexts/TestUserContext';
+
+// CodeSection is a modal that stays closed until the user asks to view code.
+// Loading it lazily keeps its syntax-highlighting dependency off the critical path.
+const CodeSection = lazy(() => import('./components/CodeSection'));
 
 // App wrapper with theme background
 const AppWrapper = styled.div`
@@ -54,6 +57,11 @@ function AppContent() {
 
   // Get states using useSelector ( state->reducerName )
   const isFetchingQuestions = useSelector((state) => state.questions.isFetchingQuestions);
+  // Mount the code modal only once something wants to show it, so its chunk is
+  // never downloaded during an ordinary visit.
+  const needsCodeModal = useSelector(
+    (state) => state.codeModal.showCodeModal || state.codeModal.showLoading,
+  );
 
   // Update body background color based on theme and color scheme
   useEffect(() => {
@@ -86,7 +94,9 @@ function AppContent() {
         <MainContent>
           <Navbar />
           <Container width="calc(100% - 2rem)" padding="0 1rem">
-            <CodeSection />
+            <Suspense fallback={null}>
+              {needsCodeModal && <CodeSection />}
+            </Suspense>
             <AllRoutes />
           </Container>
         </MainContent>

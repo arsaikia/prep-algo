@@ -21,6 +21,7 @@ export default defineConfig({
   build: {
     outDir: 'build',
     sourcemap: false,
+    chunkSizeWarningLimit: 600,
   },
   define: {
     global: 'globalThis',

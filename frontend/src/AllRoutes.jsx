@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 
 import {
   Navigate,
@@ -8,26 +8,33 @@ import {
   Routes,
 } from 'react-router-dom';
 
-import AllQuestions from './pages/AllQuestions';
-import CodeSandbox from './pages/CodeSandbox';
-import Error from './pages/Error';
-import Login from './pages/Login';
-import Home from './pages/Home';
+import FullScreenLoader from './components/Loader/FullScreenLoader';
+
+// Routes are split into their own chunks so the initial download only carries
+// the page the visitor actually landed on. CodeSandbox in particular pulls in
+// the Monaco editor, which dwarfs the rest of the app.
+const Home = lazy(() => import('./pages/Home'));
+const AllQuestions = lazy(() => import('./pages/AllQuestions'));
+const Login = lazy(() => import('./pages/Login'));
+const CodeSandbox = lazy(() => import('./pages/CodeSandbox'));
+const Error = lazy(() => import('./pages/Error'));
 
 function AllRoutes() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/all" element={<AllQuestions />} />
-      <Route path="/questions" element={<AllQuestions />} />
-      <Route path="/algorithms" element={<AllQuestions domain="algorithms" />} />
-      <Route path="/system-design" element={<AllQuestions domain="system_design" />} />
-      <Route path="/frontend" element={<AllQuestions domain="frontend" />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/codesandbox" element={<CodeSandbox />} />
-      <Route path="/404" element={<Error />} />
-      <Route path="*" element={<Navigate replace to="/404" />} />
-    </Routes>
+    <Suspense fallback={<FullScreenLoader show />}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/all" element={<AllQuestions />} />
+        <Route path="/questions" element={<AllQuestions />} />
+        <Route path="/algorithms" element={<AllQuestions domain="algorithms" />} />
+        <Route path="/system-design" element={<AllQuestions domain="system_design" />} />
+        <Route path="/frontend" element={<AllQuestions domain="frontend" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/codesandbox" element={<CodeSandbox />} />
+        <Route path="/404" element={<Error />} />
+        <Route path="*" element={<Navigate replace to="/404" />} />
+      </Routes>
+    </Suspense>
   );
 }
 
