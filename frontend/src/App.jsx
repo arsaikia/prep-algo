@@ -51,7 +51,11 @@ const MainContent = styled.div`
 // Wrapper component to access location
 function AppContent() {
   const location = useLocation();
-  const isAllQuestionsPage = ['/all', '/questions', '/algorithms', '/system-design', '/frontend'].includes(location.pathname);
+  // Pages that render their own loading state; the global spinner would
+  // double up. System Design's reader (/system-design/:slug) manages its own
+  // fetch too, so match the whole subtree rather than the index alone.
+  const isAllQuestionsPage = ['/all', '/questions', '/algorithms', '/frontend'].includes(location.pathname)
+    || location.pathname.startsWith('/system-design');
   const isLoginPage = location.pathname === '/login';
   const { isDarkModeEnabled, colorScheme } = useTheme();
 

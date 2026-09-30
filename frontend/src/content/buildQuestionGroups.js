@@ -47,7 +47,13 @@ export default function buildQuestionGroups(indexItems, progressRows = null) {
         ? new Map(progressRows.map((row) => [row.questionId, row]))
         : null;
 
-    const questions = indexItems.map((entry) => toListQuestion(entry, progress));
+    // Topics are read, not solved. They have no difficulty and no pass/fail,
+    // so rendering them in the question list produces empty difficulty pills
+    // and a meaningless solved ring. They have their own reader at
+    // /system-design.
+    const questions = indexItems
+        .filter((entry) => entry.type !== 'topic')
+        .map((entry) => toListQuestion(entry, progress));
     const grouped = groupBy(questions, (question) => question.group);
 
     return {

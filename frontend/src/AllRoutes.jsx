@@ -17,6 +17,10 @@ const Home = lazy(() => import('./pages/Home'));
 const AllQuestions = lazy(() => import('./pages/AllQuestions'));
 const Login = lazy(() => import('./pages/Login'));
 const CodeSandbox = lazy(() => import('./pages/CodeSandbox'));
+// System Design is read, not solved, so it has its own index and reader
+// rather than reusing the question list.
+const SystemDesign = lazy(() => import('./pages/SystemDesign'));
+const TopicReader = lazy(() => import('./pages/TopicReader'));
 const Error = lazy(() => import('./pages/Error'));
 
 function AllRoutes() {
@@ -27,7 +31,8 @@ function AllRoutes() {
         <Route path="/all" element={<AllQuestions />} />
         <Route path="/questions" element={<AllQuestions />} />
         <Route path="/algorithms" element={<AllQuestions domain="algorithms" />} />
-        <Route path="/system-design" element={<AllQuestions domain="system_design" />} />
+        <Route path="/system-design" element={<SystemDesign />} />
+        <Route path="/system-design/:slug" element={<TopicReader />} />
         <Route path="/frontend" element={<AllQuestions domain="frontend" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/codesandbox" element={<CodeSandbox />} />

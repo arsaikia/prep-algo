@@ -431,7 +431,7 @@ database-agnostic, so the Decision 3 commitment carries no sunk cost until Step 
 | **0** | **Sandbox the Python executor** — container, no network, read-only FS, mem/CPU caps | ✅ **DONE** — arbitrary code cannot reach FS or network (see ADR-008) |
 | 3 | **Content pipeline** — `content/` + Zod + `build:content` → hashed artifacts on CDN | ✅ **DONE** — 221 items, index **7.8 KB gz** (was 133 KB from the API), byte-reproducible, zero answer keys published (see ADR-009) |
 | **4** | **Frontend reads content from CDN**; `/api/v1/questions` behind a flag for rollback | ✅ **DONE** — guest list view makes **2 CDN requests and 0 backend requests**, measured on all three domains; index **14.1 KB gz** (was 133 KB from the API) |
-| 5 | `Topic` + System Design reader | SD renders no difficulty pills and no solved ring |
+| **5** | **`Topic` + System Design reader** | ✅ **DONE** — `/system-design` is its own index and `/system-design/:slug` its own reader; no difficulty pill and no solved ring anywhere in the subtree, and topics no longer appear in the question list at all. **3 CDN requests, 0 backend requests** |
 | 6 | **Postgres schema + one-shot migration** (decision point) | per-user progress identical pre/post migration |
 | 7 | Home dashboard + guided study | — |
 
