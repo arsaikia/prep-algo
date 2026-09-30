@@ -1,11 +1,29 @@
 #!/bin/bash
 
 # Cloud Run Deployment Script
-# This script deploys the backend to Cloud Run with all required environment variables and secrets
+#
+#   ./deploy-to-cloudrun.sh            build and deploy a "candidate" revision at
+#                                      0% traffic, then smoke-test its tag URL
+#   ./deploy-to-cloudrun.sh --promote  send 100% of traffic to the candidate
+#
+# Live traffic never moves until you promote, and the promote step prints the
+# command that rolls back to the revision it replaced.
 
 set -e
+cd "$(dirname "$0")"
 
-echo "🚀 Deploying to Cloud Run..."
+SERVICE="prep-algo-backend"
+REGION="us-central1"
+TAG="candidate"
+
+MODE="deploy"
+case "$1" in
+    "") ;;
+    --promote) MODE="promote" ;;
+    *) echo "Usage: $0 [--promote]"; exit 1 ;;
+esac
+
+echo "🚀 Cloud Run: $MODE"
 
 # Colors for output
 RED='\033[0;31m'
@@ -28,6 +46,23 @@ if [ -z "$PROJECT_ID" ]; then
 fi
 
 echo -e "${BLUE}📋 Project ID: $PROJECT_ID${NC}"
+
+
+tag_url() {
+    gcloud run services describe "$SERVICE" --region="$REGION" --format=json \
+        | TAG="$TAG" node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const t=(JSON.parse(s).status.traffic||[]).find(x=>x.tag===process.env.TAG);console.log(t&&t.url?t.url:"")})'
+}
+
+if [ "$MODE" = "promote" ]; then
+    PREVIOUS=$(gcloud run services describe "$SERVICE" --region="$REGION" --format=json \
+        | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const t=(JSON.parse(s).status.traffic||[]).filter(x=>x.percent>0).sort((a,b)=>b.percent-a.percent)[0];console.log(t?t.revisionName:"")})')
+    gcloud run services update-traffic "$SERVICE" --region="$REGION" --to-tags "$TAG=100"
+    echo -e "${GREEN}✅ 100% of traffic now on the $TAG revision${NC}"
+    if [ -n "$PREVIOUS" ]; then
+        echo -e "Roll back with: ${YELLOW}gcloud run services update-traffic $SERVICE --region=$REGION --to-revisions=$PREVIOUS=100${NC}"
+    fi
+    exit 0
+fi
 
 # Check if secrets exist
 echo -e "${YELLOW}🔍 Checking required secrets...${NC}"
@@ -81,41 +116,54 @@ gcloud services enable secretmanager.googleapis.com --quiet
 # build artifact. Without it every question read 404s.
 echo -e "${YELLOW}📦 Building content bundles...${NC}"
 npm run build:content
+if [ ! -f backend/content/catalog.json ]; then
+    echo -e "${RED}❌ backend/content/catalog.json missing after build:content${NC}"
+    exit 1
+fi
 
-# Deploy using Cloud Build
-echo -e "${YELLOW}🚀 Deploying using Cloud Build...${NC}"
+# Redis is optional: without it the backend uses its in-memory fallback.
+WITH_REDIS=false
+if gcloud secrets describe REDIS_URL &> /dev/null; then
+    WITH_REDIS=true
+fi
+echo -e "${BLUE}Redis: $WITH_REDIS${NC}"
 
+echo -e "${YELLOW}🚀 Building and deploying a $TAG revision (0% traffic)...${NC}"
 cd backend
+gcloud builds submit --config cloudbuild.yaml --substitutions="_TAG=$TAG,_WITH_REDIS=$WITH_REDIS" .
+cd ..
 
-# Submit build to Cloud Build
-gcloud builds submit --config cloudbuild.yaml .
+CANDIDATE_URL=$(tag_url)
+if [ -z "$CANDIDATE_URL" ]; then
+    echo -e "${RED}❌ Could not find the $TAG tag URL. Check: gcloud run services describe $SERVICE --region=$REGION${NC}"
+    exit 1
+fi
+echo -e "Candidate: ${GREEN}$CANDIDATE_URL${NC}"
 
-# Get service URL
-SERVICE_URL=$(gcloud run services describe prep-algo-backend --region=us-central1 --format='value(status.url)')
+echo -e "${YELLOW}🧪 Smoke-testing the candidate...${NC}"
+FAILED=0
+check() {
+    local path=$1
+    local code
+    code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "$CANDIDATE_URL$path")
+    if [ "$code" = "200" ]; then
+        echo -e "${GREEN}✅ $path${NC}"
+    else
+        echo -e "${RED}❌ $path → $code${NC}"
+        FAILED=1
+    fi
+}
+check /health
+check /api/v1/questions
+check /api/v1/questions/two-sum
 
-echo -e "${GREEN}✅ Deployment successful!${NC}"
-echo ""
-echo -e "${BLUE}📊 Service Information:${NC}"
-echo -e "Service URL: ${GREEN}$SERVICE_URL${NC}"
-echo -e "Region: ${GREEN}us-central1${NC}"
-echo -e "Memory: ${GREEN}512Mi${NC}"
-echo -e "CPU: ${GREEN}1${NC}"
-echo -e "Max Instances: ${GREEN}10${NC}"
-echo -e "Min Instances: ${GREEN}0${NC}"
-echo ""
-
-# Test the deployment
-echo -e "${YELLOW}🧪 Testing deployment...${NC}"
-if curl -f "$SERVICE_URL/health" &> /dev/null; then
-    echo -e "${GREEN}✅ Health check passed!${NC}"
-else
-    echo -e "${YELLOW}⚠️  Health check failed or service is still starting up${NC}"
+if [ "$FAILED" = "1" ]; then
+    echo -e "${RED}❌ Candidate failed smoke tests. Live traffic is untouched.${NC}"
+    echo -e "Logs: ${YELLOW}gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=$SERVICE' --limit=50${NC}"
+    exit 1
 fi
 
 echo ""
-echo -e "${BLUE}🔗 Useful commands:${NC}"
-echo -e "View logs: ${GREEN}gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=prep-algo-backend' --limit=50${NC}"
-echo -e "Service details: ${GREEN}gcloud run services describe prep-algo-backend --region=us-central1${NC}"
-echo -e "Update service: ${GREEN}gcloud run services update prep-algo-backend --region=us-central1${NC}"
-echo ""
-echo -e "${GREEN}🎉 Deployment complete!${NC}" 
+echo -e "${GREEN}✅ Candidate is healthy and serving 0% of traffic.${NC}"
+echo -e "Try it: ${GREEN}$CANDIDATE_URL/api/v1/questions/two-sum${NC}"
+echo -e "Go live: ${YELLOW}./deploy-to-cloudrun.sh --promote${NC}"
