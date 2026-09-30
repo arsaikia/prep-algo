@@ -428,7 +428,7 @@ database-agnostic, so the Decision 3 commitment carries no sunk cost until Step 
 
 | # | Step | Exit criteria |
 |---|---|---|
-| **0** | **Sandbox the Python executor** — container, no network, read-only FS, mem/CPU caps | arbitrary code cannot reach FS or network |
+| **0** | **Sandbox the Python executor** — container, no network, read-only FS, mem/CPU caps | ✅ **DONE** — arbitrary code cannot reach FS or network (see ADR-008) |
 | 3 | Content pipeline — `content/` + Zod + `build:content` → hashed artifacts on CDN | artifacts build reproducibly; index < 30 KB gz; nothing consumes them yet |
 | 4 | Frontend reads content from CDN; `/api/v1/questions` behind a flag for rollback | list view makes zero backend content calls |
 | 5 | `Topic` + System Design reader | SD renders no difficulty pills and no solved ring |
@@ -573,7 +573,12 @@ Key files, dependencies, deployment changes.
 - **2a**: Auth middleware rejects unauthenticated requests. Redis cache survives cold start. Rate limiter shared across instances (test with 2 Cloud Run instances). Cache stampede test with concurrent requests.
 - **2b**: Code execution returns via job polling. Circuit breaker opens on DB kill, serves stale cache. Correlation IDs trace through logs.
 - **2c**: Gateway routes to correct service. Code execution sandboxed (can't access filesystem/network). CDN serves cached assets with correct headers.
-- **V2.0**: Executor cannot open a socket, read outside its jail, or exceed its memory cap.
+- **V2.0**: ✅ Executor cannot open a socket, read outside its jail, or exceed its memory cap.
+  Verified by 75 tests (`backend/tests/sandbox.test.js`, `codeExecution.test.js`) covering
+  network, filesystem, process-spawn and syscall escapes, resource limits, guard-prologue
+  composition, Docker isolation flags, and the end-to-end grading path. Subprocess mode was
+  exercised live; Docker mode is asserted at the argument level only and still owes a live
+  container run before production reliance.
 - **V2.3**: Malformed content fails CI. Artifacts are byte-identical across repeated builds.
 - **V2.4**: Loading `/algorithms` as a guest issues zero requests to Cloud Run.
 - **V2.5**: `/system-design` renders no difficulty pills and no solved ring.

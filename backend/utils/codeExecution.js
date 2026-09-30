@@ -1,10 +1,7 @@
-import { spawn } from 'child_process';
-import { writeFile, unlink } from 'fs/promises';
-import { join } from 'path';
-import { tmpdir } from 'os';
+import { executePython, POLICY } from './sandbox/index.js';
 
 // Constants
-const EXECUTION_TIMEOUT = 5000; // 5 seconds timeout
+const EXECUTION_TIMEOUT = POLICY.timeoutMs;
 
 /**
  * Extract imports from Python code
@@ -182,9 +179,6 @@ export const runPythonCode = async (code, testCases, questionTypes = null) => {
 
     for (const testCase of testCases) {
         try {
-            // Create a temporary Python file with the user's code and test case
-            const tempFile = join(tmpdir(), `code_${Date.now()}.py`);
-
             // Determine input and output types
             let inputTypes, expectedOutputType;
 
@@ -219,7 +213,6 @@ export const runPythonCode = async (code, testCases, questionTypes = null) => {
 
             const testCode = `
 import json
-import signal
 import sys
 import io
 import contextlib
@@ -320,15 +313,10 @@ class PrintCapture:
     def flush(self):
         pass
 
-def timeout_handler(signum, frame):
-    print(json.dumps({
-        'passed': False,
-        'error': 'Execution timed out (exceeded ${EXECUTION_TIMEOUT / 1000} seconds)'
-    }))
-    sys.exit(1)
-
-signal.signal(signal.SIGALRM, timeout_handler)
-signal.alarm(${Math.ceil(EXECUTION_TIMEOUT / 1000)})
+# Timeouts are enforced by the parent process and by RLIMIT_CPU inside the
+# sandbox guard. A self-imposed SIGALRM was removed deliberately: submitted
+# code can reset the alarm or mask the signal, so a child cannot be trusted to
+# time itself out.
 
 ${codeWithoutImports}
 
@@ -437,50 +425,42 @@ if __name__ == "__main__":
             'debugOutput': ''.join(print_capture.output)
         }))
     except Exception as e:
-        # Restore stdout in case of exception
-        if 'sys.stdout' in locals():
+        # Restore stdout before reporting, otherwise the verdict below is
+        # swallowed by the capture buffer and the caller sees an empty stdout.
+        if 'original_stdout' in locals():
             sys.stdout = original_stdout
         
         print(json.dumps({
             'passed': False,
-            'error': str(e),
+            'error': f'{type(e).__name__}: {e}',
             'debugOutput': ''.join(print_capture.output) if 'print_capture' in locals() else ''
         }))
 `;
 
-            await writeFile(tempFile, testCode);
-
-            // Execute the Python code with timeout
-            const result = await new Promise((resolve, reject) => {
-                const python = spawn('python3', [tempFile]);
-                let output = '';
-                let error = '';
-
-                const timeoutId = setTimeout(() => {
-                    python.kill();
-                    reject(new Error(`Execution timed out (exceeded ${EXECUTION_TIMEOUT / 1000} seconds)`));
-                }, EXECUTION_TIMEOUT);
-
-                python.stdout.on('data', (data) => output += data.toString());
-                python.stderr.on('data', (data) => error += data.toString());
-
-                python.on('close', (code) => {
-                    clearTimeout(timeoutId);
-                    if (code !== 0) {
-                        reject(new Error(error || 'Execution failed'));
-                    } else {
-                        try {
-                            const lines = output.trim().split('\n');
-                            const lastLine = lines[lines.length - 1];
-                            resolve(JSON.parse(lastLine));
-                        } catch (e) {
-                            reject(new Error('Invalid output format'));
-                        }
-                    }
-                });
+            const execution = await executePython({
+                source: testCode,
+                timeoutMs: EXECUTION_TIMEOUT,
             });
 
-            await unlink(tempFile);
+            if (execution.timedOut) {
+                throw new Error(`Execution timed out (exceeded ${EXECUTION_TIMEOUT / 1000} seconds)`);
+            }
+            if (execution.oom) {
+                throw new Error(`Execution exceeded the ${POLICY.memoryMb}MB memory limit`);
+            }
+            if (execution.exitCode !== 0) {
+                throw new Error(execution.stderr.trim() || 'Execution failed');
+            }
+
+            // The harness prints a JSON verdict as its final line; anything
+            // before it is the submission's own stdout.
+            let result;
+            try {
+                const lines = execution.stdout.trim().split('\n');
+                result = JSON.parse(lines[lines.length - 1]);
+            } catch {
+                throw new Error('Invalid output format');
+            }
 
             results.push({
                 input: testCase.inputs,
