@@ -1,0 +1,21 @@
+{
+  "slug": "pacific-atlantic-water-flow",
+  "title": "Pacific Atlantic Water Flow",
+  "domain": "algorithms",
+  "group": "Graphs",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

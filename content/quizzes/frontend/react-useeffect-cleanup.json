@@ -1,0 +1,40 @@
+{
+  "slug": "react-useeffect-cleanup",
+  "title": "React useEffect Cleanup",
+  "domain": "frontend",
+  "group": "React Patterns",
+  "order": 5,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Easy",
+  "description": "Understand useEffect cleanup functions and when they run.",
+  "options": [
+    {
+      "id": "a",
+      "text": "The cleanup function runs before the component mounts",
+      "isCorrect": false,
+      "explanation": "The cleanup function runs: (1) before each re-run of the effect (when dependencies change), and (2) when the component unmounts. NOT before initial mount."
+    },
+    {
+      "id": "b",
+      "text": "useEffect cleanup runs before the next effect execution and on unmount",
+      "isCorrect": true,
+      "explanation": "React runs the cleanup from the previous render's effect before running the new effect. This prevents stale closures and memory leaks from subscriptions, timers, or event listeners."
+    },
+    {
+      "id": "c",
+      "text": "An empty dependency array [] means the effect runs on every render",
+      "isCorrect": false,
+      "explanation": "[] means the effect runs ONCE after initial render (mount) and cleanup runs on unmount. No dependency array means it runs after every render."
+    },
+    {
+      "id": "d",
+      "text": "Cleanup functions are optional and React handles all cleanup automatically",
+      "isCorrect": false,
+      "explanation": "React does NOT auto-cleanup side effects. If your effect sets up a subscription, timer, or event listener, you MUST return a cleanup function to avoid memory leaks."
+    }
+  ]
+}

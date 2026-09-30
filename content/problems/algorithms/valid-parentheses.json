@@ -1,0 +1,21 @@
+{
+  "slug": "valid-parentheses",
+  "title": "Valid Parentheses",
+  "domain": "algorithms",
+  "group": "Stack",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Easy",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

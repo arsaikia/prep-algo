@@ -1,0 +1,40 @@
+{
+  "slug": "flexbox-vs-grid",
+  "title": "Flexbox vs Grid",
+  "domain": "frontend",
+  "group": "CSS Layout",
+  "order": 4,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Medium",
+  "description": "Understand when to use Flexbox vs CSS Grid for layouts.",
+  "options": [
+    {
+      "id": "a",
+      "text": "Flexbox is one-dimensional (row OR column) while Grid is two-dimensional (rows AND columns)",
+      "isCorrect": true,
+      "explanation": "Flexbox lays items out along a single axis (main axis). Grid works in both dimensions simultaneously. Use Flexbox for navigation bars, card rows; Grid for full page layouts, image galleries."
+    },
+    {
+      "id": "b",
+      "text": "CSS Grid cannot create responsive layouts without media queries",
+      "isCorrect": false,
+      "explanation": "Grid has built-in responsive features: `auto-fill`/`auto-fit` with `minmax()` creates responsive grids without media queries. E.g., `grid-template-columns: repeat(auto-fill, minmax(250px, 1fr))`."
+    },
+    {
+      "id": "c",
+      "text": "Flexbox items cannot wrap to multiple lines",
+      "isCorrect": false,
+      "explanation": "flex-wrap: wrap allows flex items to wrap onto multiple lines. Combined with flex-basis, this creates responsive card layouts without media queries."
+    },
+    {
+      "id": "d",
+      "text": "You should never use Flexbox and Grid together",
+      "isCorrect": false,
+      "explanation": "They complement each other perfectly. A common pattern: Grid for the overall page layout, Flexbox for component-level alignment within grid cells."
+    }
+  ]
+}

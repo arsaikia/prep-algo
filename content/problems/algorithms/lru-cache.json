@@ -1,0 +1,21 @@
+{
+  "slug": "lru-cache",
+  "title": "LRU Cache",
+  "domain": "algorithms",
+  "group": "Linked List",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

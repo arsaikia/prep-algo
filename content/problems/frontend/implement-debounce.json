@@ -1,0 +1,46 @@
+{
+  "slug": "implement-debounce",
+  "title": "Implement debounce",
+  "domain": "frontend",
+  "group": "DOM & Browser",
+  "order": 2,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "problem",
+  "difficulty": "Easy",
+  "description": "Implement a debounce function that delays invoking the provided function until after `wait` milliseconds have elapsed since the last invocation.",
+  "templates": {
+    "python": "def debounce(func, wait):\n    # Implement debounce\n    pass",
+    "javascript": "function debounce(func, wait) {\n  // Implement debounce\n}"
+  },
+  "types": {
+    "inputs": [
+      "STRING",
+      "NUMBER"
+    ],
+    "output": "STRING"
+  },
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "() => 'called'",
+        "300"
+      ],
+      "expectedOutput": "function",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "() => 'called'",
+        "300"
+      ],
+      "expectedOutput": "function",
+      "explanation": "",
+      "isHidden": true
+    }
+  ]
+}

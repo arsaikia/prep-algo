@@ -1,0 +1,21 @@
+{
+  "slug": "trapping-rain-water",
+  "title": "Trapping Rain Water",
+  "domain": "algorithms",
+  "group": "Two Pointers",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

@@ -1,0 +1,40 @@
+{
+  "slug": "consistent-hashing",
+  "title": "Consistent Hashing",
+  "domain": "system_design",
+  "group": "Distributed Systems",
+  "order": 13,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "quiz",
+  "difficulty": "Medium",
+  "description": "Understand consistent hashing and its use in distributed systems.",
+  "options": [
+    {
+      "id": "a",
+      "text": "When a node is added to a consistent hash ring, all keys must be redistributed",
+      "isCorrect": false,
+      "explanation": "Only keys in the range between the new node and its predecessor need to move — on average K/N keys (where K is total keys, N is total nodes). This is the key advantage over simple modular hashing."
+    },
+    {
+      "id": "b",
+      "text": "Virtual nodes help solve the problem of uneven key distribution across physical nodes",
+      "isCorrect": true,
+      "explanation": "Without virtual nodes, nodes may be unevenly spaced on the ring, causing hot spots. Virtual nodes (multiple points per physical node) ensure more uniform distribution — each physical node owns many small ranges instead of one large one."
+    },
+    {
+      "id": "c",
+      "text": "Consistent hashing guarantees perfectly equal load distribution",
+      "isCorrect": false,
+      "explanation": "Even with virtual nodes, consistent hashing only provides approximately equal distribution. Perfect equality would require dynamic rebalancing based on actual load, not just key count."
+    },
+    {
+      "id": "d",
+      "text": "Consistent hashing is only used for cache distribution",
+      "isCorrect": false,
+      "explanation": "Consistent hashing is used in many distributed systems: database sharding (DynamoDB, Cassandra), load balancing, distributed caches, CDNs, and distributed file systems."
+    }
+  ]
+}

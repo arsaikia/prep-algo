@@ -1,0 +1,21 @@
+{
+  "slug": "evaluate-reverse-polish-notation",
+  "title": "Evaluate Reverse Polish Notation",
+  "domain": "algorithms",
+  "group": "Stack",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

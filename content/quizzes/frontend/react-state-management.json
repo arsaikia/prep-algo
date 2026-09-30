@@ -1,0 +1,40 @@
+{
+  "slug": "react-state-management",
+  "title": "React State Management Patterns",
+  "domain": "frontend",
+  "group": "React Patterns",
+  "order": 13,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Hard",
+  "description": "Understand different state management approaches in React applications.",
+  "options": [
+    {
+      "id": "a",
+      "text": "Redux is required for any React application with shared state",
+      "isCorrect": false,
+      "explanation": "React Context + useReducer can handle shared state for many apps. Redux adds value for complex state logic, time-travel debugging, middleware, and predictable state updates at scale. But it's not always needed."
+    },
+    {
+      "id": "b",
+      "text": "Lifting state up is always preferable to using Context or Redux",
+      "isCorrect": false,
+      "explanation": "Lifting state works for closely related components. But lifting too high causes prop drilling and unnecessary re-renders of intermediate components. Context or state management libraries solve this for deeply shared state."
+    },
+    {
+      "id": "c",
+      "text": "Server state (API data) and client state (UI state) have different caching and synchronization needs",
+      "isCorrect": true,
+      "explanation": "Server state needs cache invalidation, background refetching, optimistic updates, and error retry — libraries like React Query/TanStack Query handle this. Client state (form inputs, modals, selections) doesn't need server sync and is better served by useState/useReducer."
+    },
+    {
+      "id": "d",
+      "text": "useContext re-renders only the components that use the changed value",
+      "isCorrect": false,
+      "explanation": "ALL components consuming a context re-render when ANY value in that context changes, even if they only use an unchanged part. This is why splitting contexts by update frequency and using memoization matters."
+    }
+  ]
+}

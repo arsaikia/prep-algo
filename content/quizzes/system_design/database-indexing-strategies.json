@@ -1,0 +1,40 @@
+{
+  "slug": "database-indexing-strategies",
+  "title": "Database Indexing Strategies",
+  "domain": "system_design",
+  "group": "Database Design",
+  "order": 6,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "quiz",
+  "difficulty": "Easy",
+  "description": "Understand when and how to use database indexes effectively.",
+  "options": [
+    {
+      "id": "a",
+      "text": "Adding more indexes always improves query performance",
+      "isCorrect": false,
+      "explanation": "Indexes speed up reads but slow down writes — every INSERT/UPDATE must also update all indexes. Over-indexing can degrade overall performance."
+    },
+    {
+      "id": "b",
+      "text": "A compound index on (A, B) can satisfy queries filtering on A alone but not B alone",
+      "isCorrect": true,
+      "explanation": "Compound indexes follow the leftmost prefix rule. An index on (A, B) can serve queries on A or (A, B), but not B alone — B is only sorted within each A value."
+    },
+    {
+      "id": "c",
+      "text": "B-tree indexes are ideal for full-text search",
+      "isCorrect": false,
+      "explanation": "B-tree indexes are optimized for equality and range queries. Full-text search requires inverted indexes (like those in Elasticsearch or PostgreSQL's GIN indexes)."
+    },
+    {
+      "id": "d",
+      "text": "Covering indexes are indexes that span all tables in a database",
+      "isCorrect": false,
+      "explanation": "A covering index includes all columns needed by a query, allowing the database to serve the query entirely from the index without accessing the table (index-only scan)."
+    }
+  ]
+}

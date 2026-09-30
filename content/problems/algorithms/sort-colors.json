@@ -1,0 +1,21 @@
+{
+  "slug": "sort-colors",
+  "title": "Sort Colors",
+  "domain": "algorithms",
+  "group": "Arrays & Hashing",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

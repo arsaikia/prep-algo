@@ -1,0 +1,20 @@
+{
+  "slug": "majority-element-ii",
+  "title": "Majority Element II",
+  "domain": "algorithms",
+  "group": "Arrays & Hashing",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

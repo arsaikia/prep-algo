@@ -1,0 +1,20 @@
+{
+  "slug": "path-with-minimum-effort",
+  "title": "Path With Minimum Effort",
+  "domain": "algorithms",
+  "group": "Graphs",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

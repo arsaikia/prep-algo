@@ -1,0 +1,21 @@
+{
+  "slug": "search-a-2d-matrix",
+  "title": "Search a 2D Matrix",
+  "domain": "algorithms",
+  "group": "Binary Search",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

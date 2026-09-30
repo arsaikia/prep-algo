@@ -1,0 +1,21 @@
+{
+  "slug": "greatest-common-divisor-of-strings",
+  "title": "Greatest Common Divisor of Strings",
+  "domain": "algorithms",
+  "group": "String",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Easy",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

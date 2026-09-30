@@ -1,0 +1,40 @@
+{
+  "slug": "cap-theorem-fundamentals",
+  "title": "CAP Theorem",
+  "domain": "system_design",
+  "group": "Database Design",
+  "order": 4,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "quiz",
+  "difficulty": "Easy",
+  "description": "Understand the CAP theorem and its implications for distributed databases.",
+  "options": [
+    {
+      "id": "a",
+      "text": "A system can guarantee all three: Consistency, Availability, and Partition tolerance",
+      "isCorrect": false,
+      "explanation": "The CAP theorem proves that in the presence of a network partition, a distributed system must choose between consistency and availability — it cannot guarantee all three simultaneously."
+    },
+    {
+      "id": "b",
+      "text": "During a network partition, a CP system sacrifices availability to maintain consistency",
+      "isCorrect": true,
+      "explanation": "CP systems (like HBase, MongoDB) refuse to serve requests during partitions rather than risk returning stale data, sacrificing availability for consistency."
+    },
+    {
+      "id": "c",
+      "text": "AP systems never return stale data",
+      "isCorrect": false,
+      "explanation": "AP systems (like Cassandra, DynamoDB) prioritize availability during partitions and may return stale data, achieving eventual consistency."
+    },
+    {
+      "id": "d",
+      "text": "The CAP theorem only applies to SQL databases",
+      "isCorrect": false,
+      "explanation": "CAP applies to ALL distributed data stores regardless of data model — SQL, NoSQL, key-value, document, etc."
+    }
+  ]
+}

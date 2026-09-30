@@ -1,0 +1,21 @@
+{
+  "slug": "reverse-integer",
+  "title": "Reverse Integer",
+  "domain": "algorithms",
+  "group": "Bit Manipulation",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

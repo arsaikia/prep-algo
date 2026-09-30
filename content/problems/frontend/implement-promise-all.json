@@ -1,0 +1,43 @@
+{
+  "slug": "implement-promise-all",
+  "title": "Implement Promise.all",
+  "domain": "frontend",
+  "group": "DOM & Browser",
+  "order": 12,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "Implement a function that behaves like Promise.all — resolves when all promises resolve, rejects on first rejection.",
+  "templates": {
+    "python": "",
+    "javascript": "function promiseAll(promises) {\n  // Implement Promise.all\n}"
+  },
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "ARRAY"
+  },
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[Promise.resolve(1), Promise.resolve(2)]"
+      ],
+      "expectedOutput": "[1, 2]",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[Promise.resolve(1), Promise.resolve(2)]"
+      ],
+      "expectedOutput": "[1, 2]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ]
+}

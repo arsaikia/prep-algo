@@ -1,0 +1,21 @@
+{
+  "slug": "happy-number",
+  "title": "Happy Number",
+  "domain": "algorithms",
+  "group": "Math & Geometry",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Easy",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

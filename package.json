@@ -5,15 +5,16 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test \"scripts/**/*.test.mjs\"",
+    "build:content": "node scripts/content/build.mjs",
     "server": "cd backend && nodemon --experimental-json-modules server.js",
-    "client": "cd frontend && npm run dev",
+    "client": "npm run build:content && cd frontend && npm run dev",
     "start": "cd backend && node server.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "install-server": "cd backend && npm install",
     "start-server": "cd backend && node server.js",
     "install-client": "cd frontend && npm install",
-    "build-client": "cd frontend && npm run build",
+    "build-client": "npm run build:content && cd frontend && npm run build",
     "start-client": "cd frontend && npm start"
   },
   "repository": {
@@ -35,6 +36,7 @@
     "concurrently": "^5.3.0",
     "eslint": "^8.43.0",
     "eslint-config-airbnb": "^19.0.4",
-    "nodemon": "^2.0.6"
+    "nodemon": "^2.0.6",
+    "zod": "^4.6.5"
   }
 }

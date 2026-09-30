@@ -1,0 +1,21 @@
+{
+  "slug": "design-add-and-search-words-data-structure",
+  "title": "Design Add And Search Words Data Structure",
+  "domain": "algorithms",
+  "group": "Tries",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

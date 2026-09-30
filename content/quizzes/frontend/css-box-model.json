@@ -1,0 +1,40 @@
+{
+  "slug": "css-box-model",
+  "title": "CSS Box Model",
+  "domain": "frontend",
+  "group": "CSS Layout",
+  "order": 3,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Easy",
+  "description": "Understand the CSS box model and box-sizing property.",
+  "options": [
+    {
+      "id": "a",
+      "text": "With box-sizing: content-box, padding and border are included in the element's specified width",
+      "isCorrect": false,
+      "explanation": "content-box is the default — width/height only apply to the content area. Padding and border are ADDED on top, making the element larger than the specified width."
+    },
+    {
+      "id": "b",
+      "text": "With box-sizing: border-box, the specified width includes content, padding, and border",
+      "isCorrect": true,
+      "explanation": "border-box makes width/height include content + padding + border. This makes layouts more predictable — a 200px wide element is always 200px regardless of padding/border."
+    },
+    {
+      "id": "c",
+      "text": "Margin is included in box-sizing calculations",
+      "isCorrect": false,
+      "explanation": "Margin is NEVER included in box-sizing calculations for either content-box or border-box. Margin is the space outside the border."
+    },
+    {
+      "id": "d",
+      "text": "box-sizing: border-box is the browser default for all elements",
+      "isCorrect": false,
+      "explanation": "The default is content-box. Most CSS resets include `*, *::before, *::after { box-sizing: border-box; }` because border-box is more intuitive for layout."
+    }
+  ]
+}

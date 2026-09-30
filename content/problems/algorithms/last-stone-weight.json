@@ -1,0 +1,21 @@
+{
+  "slug": "last-stone-weight",
+  "title": "Last Stone Weight",
+  "domain": "algorithms",
+  "group": "Heap / Priority Queue",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Easy",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

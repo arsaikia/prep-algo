@@ -1,0 +1,23 @@
+{
+  "slug": "design-api-rate-limiting-service",
+  "title": "Design an API Rate Limiting Service",
+  "domain": "system_design",
+  "group": "API Design",
+  "order": 8,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "topic",
+  "summary": "Design a centralized rate limiting service for a microservices architecture.",
+  "body": "Design a centralized rate limiting service for a microservices architecture.\n\n## Scenario\n\nDesign a rate limiting service that multiple backend services can use to enforce per-user and per-API rate limits.\n\n## Requirements\n\n- Support multiple rate limiting algorithms (fixed window, sliding window, token bucket)\n- Per-user, per-API, and global rate limits\n- Sub-millisecond decision latency\n- Dashboard for monitoring and configuration\n- Graceful degradation when rate limiter is unavailable\n\n## Constraints\n\n- Must handle 1M+ decisions per second\n- Decision latency < 1ms at p99\n- No false negatives (never allow over-limit requests)\n- Minimal false positives (< 0.1% wrongly rejected)\n\n## What a strong answer covers\n\n- Choice of data store (Redis, in-memory)\n- Synchronization strategy across instances\n- Rule configuration and hot-reload\n- Client library design\n- Failure mode design\n\n## Reference walkthrough\n\nRedis-backed with Lua scripts for atomic operations. Sliding window counter as default algorithm. Client library with local token bucket as first-line defense, Redis check as second line. Rules stored in Redis with pub/sub for hot reload. If Redis unavailable, fall back to local rate limiting with conservative limits. Return rate limit headers (X-RateLimit-*) for client visibility.",
+  "keyTakeaways": [
+    "Choice of data store (Redis, in-memory)",
+    "Synchronization strategy across instances",
+    "Rule configuration and hot-reload",
+    "Client library design",
+    "Failure mode design"
+  ],
+  "prerequisites": [],
+  "relatedProblems": []
+}

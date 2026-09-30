@@ -1,0 +1,21 @@
+{
+  "slug": "swim-in-rising-water",
+  "title": "Swim In Rising Water",
+  "domain": "algorithms",
+  "group": "Advanced Graphs",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

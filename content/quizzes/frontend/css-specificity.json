@@ -1,0 +1,40 @@
+{
+  "slug": "css-specificity",
+  "title": "CSS Specificity",
+  "domain": "frontend",
+  "group": "CSS Layout",
+  "order": 15,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Easy",
+  "description": "Understand CSS specificity rules and how styles cascade.",
+  "options": [
+    {
+      "id": "a",
+      "text": "An ID selector (#header) has higher specificity than any number of class selectors",
+      "isCorrect": true,
+      "explanation": "Specificity is calculated as (inline, IDs, classes, elements). One ID (0,1,0,0) beats any number of classes (0,0,N,0). So #header beats .nav.main.header. Only inline styles and !important override IDs."
+    },
+    {
+      "id": "b",
+      "text": "!important declarations follow normal specificity rules",
+      "isCorrect": false,
+      "explanation": "!important overrides ALL normal specificity. When two !important declarations conflict, normal specificity rules apply between them. Overusing !important creates maintenance nightmares."
+    },
+    {
+      "id": "c",
+      "text": "The order of CSS rules never matters if specificities are different",
+      "isCorrect": false,
+      "explanation": "Order matters when specificities are EQUAL — the last rule wins. When specificities differ, the more specific rule wins regardless of order. Both specificity AND source order play roles."
+    },
+    {
+      "id": "d",
+      "text": "Pseudo-classes like :hover have the same specificity as element selectors",
+      "isCorrect": false,
+      "explanation": "Pseudo-classes (:hover, :focus, :nth-child) have the same specificity as class selectors (0,0,1,0). Pseudo-elements (::before, ::after) have the same specificity as element selectors (0,0,0,1)."
+    }
+  ]
+}

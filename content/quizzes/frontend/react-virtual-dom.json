@@ -1,0 +1,40 @@
+{
+  "slug": "react-virtual-dom",
+  "title": "React Virtual DOM",
+  "domain": "frontend",
+  "group": "React Patterns",
+  "order": 6,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Medium",
+  "description": "Understand how React's virtual DOM and reconciliation work.",
+  "options": [
+    {
+      "id": "a",
+      "text": "The virtual DOM is always faster than directly manipulating the real DOM",
+      "isCorrect": false,
+      "explanation": "The virtual DOM adds overhead (diffing, creating virtual nodes). For simple, targeted DOM updates, direct manipulation can be faster. The virtual DOM's benefit is making complex UI updates manageable and predictable, not raw speed."
+    },
+    {
+      "id": "b",
+      "text": "React's reconciliation uses keys to track element identity across re-renders",
+      "isCorrect": true,
+      "explanation": "Keys help React identify which items changed, were added, or removed in lists. Without keys (or with index keys), React can't distinguish moved items from recreated ones, leading to incorrect state preservation or unnecessary re-renders."
+    },
+    {
+      "id": "c",
+      "text": "React re-renders the entire component tree when any state changes",
+      "isCorrect": false,
+      "explanation": "React re-renders the component where state changed and its children. But 'render' doesn't mean DOM update — React diffs virtual DOM trees and only updates changed DOM nodes. React.memo, useMemo, and useCallback can prevent unnecessary child re-renders."
+    },
+    {
+      "id": "d",
+      "text": "The virtual DOM is stored in the browser's memory alongside the real DOM",
+      "isCorrect": false,
+      "explanation": "The virtual DOM is a plain JavaScript object tree maintained by React in JS heap memory. It's not a browser API — it's React's internal representation used for diffing before committing changes to the actual browser DOM."
+    }
+  ]
+}

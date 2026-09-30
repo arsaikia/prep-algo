@@ -1,0 +1,21 @@
+{
+  "slug": "two-sum-ii-input-array-is-sorted",
+  "title": "Two Sum II Input Array Is Sorted",
+  "domain": "algorithms",
+  "group": "Two Pointers",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

@@ -1,0 +1,21 @@
+{
+  "slug": "graph-valid-tree",
+  "title": "Graph Valid Tree",
+  "domain": "algorithms",
+  "group": "Graphs",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

@@ -1,0 +1,23 @@
+{
+  "slug": "design-notification-system",
+  "title": "Design a Notification System",
+  "domain": "system_design",
+  "group": "Distributed Systems",
+  "order": 14,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "topic",
+  "summary": "Design a scalable notification system supporting push, SMS, and email.",
+  "body": "Design a scalable notification system supporting push, SMS, and email.\n\n## Scenario\n\nDesign a notification system that can send push notifications, SMS, and emails to millions of users.\n\n## Requirements\n\n- Support multiple channels: push (iOS/Android), SMS, email\n- User notification preferences (opt-in/out per channel and type)\n- Template-based notifications with personalization\n- Scheduled and triggered notifications\n- Delivery tracking and analytics\n\n## Constraints\n\n- Send 10M notifications per day\n- Push notification delivery < 5 seconds\n- At-least-once delivery guarantee\n- Rate limiting per user (max 5 notifications per hour)\n\n## What a strong answer covers\n\n- Message queue architecture for reliability\n- Priority queue for urgent notifications\n- Template rendering pipeline\n- Third-party service integration (APNs, FCM, Twilio, SendGrid)\n- De-duplication strategy\n\n## Reference walkthrough\n\nEvent-driven architecture with Kafka as the message backbone. Notification service receives events, resolves user preferences, and fans out to channel-specific queues. Each channel has dedicated workers with provider SDKs. Priority queue (separate Kafka topic) for urgent notifications. Template service with variable substitution. Redis for rate limiting and de-duplication (message ID tracking). DLQ for failed deliveries with exponential backoff retry. Analytics via event streaming to data warehouse.",
+  "keyTakeaways": [
+    "Message queue architecture for reliability",
+    "Priority queue for urgent notifications",
+    "Template rendering pipeline",
+    "Third-party service integration (APNs, FCM, Twilio, SendGrid)",
+    "De-duplication strategy"
+  ],
+  "prerequisites": [],
+  "relatedProblems": []
+}

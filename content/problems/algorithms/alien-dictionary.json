@@ -1,0 +1,21 @@
+{
+  "slug": "alien-dictionary",
+  "title": "Alien Dictionary",
+  "domain": "algorithms",
+  "group": "Advanced Graphs",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

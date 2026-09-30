@@ -1,0 +1,43 @@
+{
+  "slug": "implement-deep-clone",
+  "title": "Implement Deep Clone",
+  "domain": "frontend",
+  "group": "DOM & Browser",
+  "order": 14,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "Implement a deep clone function that creates a complete copy of a nested object/array structure.",
+  "templates": {
+    "python": "def deep_clone(obj):\n    # Implement deep clone\n    pass",
+    "javascript": "function deepClone(obj) {\n  // Implement deep clone\n}"
+  },
+  "types": {
+    "inputs": [
+      "STRING"
+    ],
+    "output": "STRING"
+  },
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "{\"a\": 1, \"b\": {\"c\": 2}}"
+      ],
+      "expectedOutput": "{\"a\": 1, \"b\": {\"c\": 2}}",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "{\"a\": 1, \"b\": {\"c\": 2}}"
+      ],
+      "expectedOutput": "{\"a\": 1, \"b\": {\"c\": 2}}",
+      "explanation": "",
+      "isHidden": true
+    }
+  ]
+}

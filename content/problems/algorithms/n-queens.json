@@ -1,0 +1,21 @@
+{
+  "slug": "n-queens",
+  "title": "N Queens",
+  "domain": "algorithms",
+  "group": "Backtracking",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

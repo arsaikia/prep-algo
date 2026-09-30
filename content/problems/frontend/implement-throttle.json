@@ -1,0 +1,46 @@
+{
+  "slug": "implement-throttle",
+  "title": "Implement throttle",
+  "domain": "frontend",
+  "group": "DOM & Browser",
+  "order": 7,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "Implement a throttle function that ensures the provided function is called at most once per `wait` milliseconds.",
+  "templates": {
+    "python": "def throttle(func, wait):\n    # Implement throttle\n    pass",
+    "javascript": "function throttle(func, wait) {\n  // Implement throttle\n}"
+  },
+  "types": {
+    "inputs": [
+      "STRING",
+      "NUMBER"
+    ],
+    "output": "STRING"
+  },
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "() => 'called'",
+        "300"
+      ],
+      "expectedOutput": "function",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "() => 'called'",
+        "300"
+      ],
+      "expectedOutput": "function",
+      "explanation": "",
+      "isHidden": true
+    }
+  ]
+}

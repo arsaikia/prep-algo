@@ -1,0 +1,23 @@
+{
+  "slug": "design-url-shortener",
+  "title": "Design a URL Shortener",
+  "domain": "system_design",
+  "group": "Distributed Systems",
+  "order": 1,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "topic",
+  "summary": "Design a URL shortening service like bit.ly that can handle millions of URLs.",
+  "body": "Design a URL shortening service like bit.ly that can handle millions of URLs.\n\n## Scenario\n\nDesign a URL shortening service that takes long URLs and creates short aliases. When users visit the short URL, they should be redirected to the original.\n\n## Requirements\n\n- Generate unique short URLs from long URLs\n- Redirect short URLs to original URLs with low latency\n- Support custom short URLs\n- Track click analytics (count, referrer, location)\n- Handle 100M new URLs per month\n\n## Constraints\n\n- Short URL should be at most 7 characters\n- URLs should not be guessable\n- System should be highly available (99.9%)\n- Redirects should complete in < 100ms\n\n## What a strong answer covers\n\n- Hash/encoding strategy for short URL generation\n- Database schema and sharding strategy\n- Caching layer design\n- Analytics pipeline\n- Rate limiting and abuse prevention\n\n## Reference walkthrough\n\nUse Base62 encoding of an auto-incrementing counter (distributed via Zookeeper ranges). Store mappings in a sharded NoSQL database (key: shortUrl, value: longUrl). Add a Redis cache layer for hot URLs. Use Kafka for async analytics event processing. CDN for global low-latency redirects.",
+  "keyTakeaways": [
+    "Hash/encoding strategy for short URL generation",
+    "Database schema and sharding strategy",
+    "Caching layer design",
+    "Analytics pipeline",
+    "Rate limiting and abuse prevention"
+  ],
+  "prerequisites": [],
+  "relatedProblems": []
+}

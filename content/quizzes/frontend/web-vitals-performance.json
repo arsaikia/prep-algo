@@ -1,0 +1,40 @@
+{
+  "slug": "web-vitals-performance",
+  "title": "Web Vitals and Performance",
+  "domain": "frontend",
+  "group": "Performance",
+  "order": 8,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Medium",
+  "description": "Understand Core Web Vitals and frontend performance metrics.",
+  "options": [
+    {
+      "id": "a",
+      "text": "LCP (Largest Contentful Paint) measures the time for the entire page to finish rendering",
+      "isCorrect": false,
+      "explanation": "LCP measures when the largest content element (image, text block) becomes visible. It's about perceived load speed, not complete render. Good LCP is under 2.5 seconds."
+    },
+    {
+      "id": "b",
+      "text": "CLS (Cumulative Layout Shift) measures unexpected layout movements during the page lifecycle",
+      "isCorrect": true,
+      "explanation": "CLS quantifies how much visible content unexpectedly shifts. Common causes: images without dimensions, dynamically injected content, web fonts causing FOIT/FOUT. Good CLS is under 0.1."
+    },
+    {
+      "id": "c",
+      "text": "FID (First Input Delay) measures how fast the browser renders the first pixel",
+      "isCorrect": false,
+      "explanation": "FID measures the delay between a user's first interaction (click, tap) and the browser's response. First pixel render is measured by FCP (First Contentful Paint). FID has been replaced by INP (Interaction to Next Paint)."
+    },
+    {
+      "id": "d",
+      "text": "Lazy loading images always improves LCP",
+      "isCorrect": false,
+      "explanation": "Lazy loading above-the-fold images can HURT LCP by delaying the largest content element. Only lazy-load below-the-fold images. Use `loading='eager'` (default) for hero images."
+    }
+  ]
+}

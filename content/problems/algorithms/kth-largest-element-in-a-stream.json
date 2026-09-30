@@ -1,0 +1,21 @@
+{
+  "slug": "kth-largest-element-in-a-stream",
+  "title": "Kth Largest Element In a Stream",
+  "domain": "algorithms",
+  "group": "Heap / Priority Queue",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Easy",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

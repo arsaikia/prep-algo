@@ -1,0 +1,21 @@
+{
+  "slug": "linked-list-cycle",
+  "title": "Linked List Cycle",
+  "domain": "algorithms",
+  "group": "Linked List",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Easy",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

@@ -8,6 +8,24 @@
     ],
     "headers": [
       {
+        "source": "/content/items/**",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        ]
+      },
+      {
+        "source": "/content/index.*.json",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        ]
+      },
+      {
+        "source": "/content/manifest.json",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=60, must-revalidate" }
+        ]
+      },
+      {
         "source": "**/*.@(js|css|svg|png|jpg|jpeg|gif|webp|woff|woff2|ttf|eot)",
         "headers": [
           { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }

@@ -1,0 +1,21 @@
+{
+  "slug": "minimum-window-substring",
+  "title": "Minimum Window Substring",
+  "domain": "algorithms",
+  "group": "Sliding Window",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

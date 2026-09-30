@@ -1,0 +1,40 @@
+{
+  "slug": "sql-vs-nosql-tradeoffs",
+  "title": "SQL vs NoSQL",
+  "domain": "system_design",
+  "group": "Database Design",
+  "order": 15,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "quiz",
+  "difficulty": "Easy",
+  "description": "Understand when to choose SQL vs NoSQL databases.",
+  "options": [
+    {
+      "id": "a",
+      "text": "NoSQL databases cannot perform joins",
+      "isCorrect": false,
+      "explanation": "Some NoSQL databases support joins (MongoDB $lookup, Couchbase N1QL). The distinction is that NoSQL databases typically don't enforce referential integrity and denormalization is preferred over joins for performance."
+    },
+    {
+      "id": "b",
+      "text": "SQL databases are better suited when you need ACID transactions across multiple entities",
+      "isCorrect": true,
+      "explanation": "SQL databases provide native ACID transactions across tables. While some NoSQL databases support transactions (MongoDB multi-document), SQL databases are purpose-built for complex transactional workloads with referential integrity."
+    },
+    {
+      "id": "c",
+      "text": "NoSQL databases are always faster than SQL databases",
+      "isCorrect": false,
+      "explanation": "Speed depends on access patterns. SQL with proper indexes can outperform NoSQL for complex queries with joins. NoSQL excels at simple key-value lookups and document retrieval at scale."
+    },
+    {
+      "id": "d",
+      "text": "You should always start with NoSQL for new projects",
+      "isCorrect": false,
+      "explanation": "SQL is often the better default — it provides flexibility for evolving schemas, built-in data integrity, and powerful querying. Choose NoSQL when you have specific needs: massive scale, flexible schema, or access patterns that don't fit relational models."
+    }
+  ]
+}

@@ -429,7 +429,7 @@ database-agnostic, so the Decision 3 commitment carries no sunk cost until Step 
 | # | Step | Exit criteria |
 |---|---|---|
 | **0** | **Sandbox the Python executor** — container, no network, read-only FS, mem/CPU caps | ✅ **DONE** — arbitrary code cannot reach FS or network (see ADR-008) |
-| 3 | Content pipeline — `content/` + Zod + `build:content` → hashed artifacts on CDN | artifacts build reproducibly; index < 30 KB gz; nothing consumes them yet |
+| 3 | **Content pipeline** — `content/` + Zod + `build:content` → hashed artifacts on CDN | ✅ **DONE** — 221 items, index **7.8 KB gz** (was 133 KB from the API), byte-reproducible, zero answer keys published (see ADR-009) |
 | 4 | Frontend reads content from CDN; `/api/v1/questions` behind a flag for rollback | list view makes zero backend content calls |
 | 5 | `Topic` + System Design reader | SD renders no difficulty pills and no solved ring |
 | 6 | **Postgres schema + one-shot migration** (decision point) | per-user progress identical pre/post migration |
@@ -579,7 +579,13 @@ Key files, dependencies, deployment changes.
   composition, Docker isolation flags, and the end-to-end grading path. Subprocess mode was
   exercised live; Docker mode is asserted at the argument level only and still owes a live
   container run before production reliance.
-- **V2.3**: Malformed content fails CI. Artifacts are byte-identical across repeated builds.
+- **V2.3**: ✅ Malformed content fails the build. Artifacts are byte-identical across
+  repeated builds. Verified by 6 tests (`scripts/content/build.test.mjs`) covering
+  reproducibility, answer-key leak prevention (`isCorrect` / `testCases` / `isHidden`
+  absent from all 221 published items), manifest→index→item resolution, hash-to-bytes
+  agreement, and schema rejection of malformed input. **Not yet verified**: behaviour
+  when Firebase's SPA rewrite serves `index.html` for a missing artifact — the client
+  guard for that lands in Step 4.
 - **V2.4**: Loading `/algorithms` as a guest issues zero requests to Cloud Run.
 - **V2.5**: `/system-design` renders no difficulty pills and no solved ring.
 - **V2.6**: Per-user progress counts identical pre/post migration. Pool holds under a

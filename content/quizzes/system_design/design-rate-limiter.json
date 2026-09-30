@@ -1,0 +1,40 @@
+{
+  "slug": "design-rate-limiter",
+  "title": "Design a Rate Limiter",
+  "domain": "system_design",
+  "group": "Distributed Systems",
+  "order": 2,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "quiz",
+  "difficulty": "Medium",
+  "description": "Understand the tradeoffs between different rate limiting algorithms.",
+  "options": [
+    {
+      "id": "a",
+      "text": "Fixed window counter resets at fixed intervals and can allow 2x the rate at window boundaries",
+      "isCorrect": true,
+      "explanation": "Fixed window counters reset at interval boundaries. A burst at the end of one window and start of the next can allow double the intended rate."
+    },
+    {
+      "id": "b",
+      "text": "Token bucket cannot handle burst traffic",
+      "isCorrect": false,
+      "explanation": "Token bucket explicitly supports burst traffic — tokens accumulate up to a max bucket size, allowing short bursts."
+    },
+    {
+      "id": "c",
+      "text": "Sliding window log is the most memory-efficient algorithm",
+      "isCorrect": false,
+      "explanation": "Sliding window log stores every request timestamp, making it the LEAST memory-efficient. Sliding window counter is more efficient."
+    },
+    {
+      "id": "d",
+      "text": "Leaky bucket processes requests at a variable rate",
+      "isCorrect": false,
+      "explanation": "Leaky bucket processes requests at a FIXED rate regardless of input rate, smoothing out bursts."
+    }
+  ]
+}

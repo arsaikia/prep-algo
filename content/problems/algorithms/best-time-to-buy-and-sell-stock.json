@@ -1,0 +1,21 @@
+{
+  "slug": "best-time-to-buy-and-sell-stock",
+  "title": "Best Time to Buy And Sell Stock",
+  "domain": "algorithms",
+  "group": "Sliding Window",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Easy",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

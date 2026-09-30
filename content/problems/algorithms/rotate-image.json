@@ -1,0 +1,21 @@
+{
+  "slug": "rotate-image",
+  "title": "Rotate Image",
+  "domain": "algorithms",
+  "group": "Math & Geometry",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

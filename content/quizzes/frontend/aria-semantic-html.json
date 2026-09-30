@@ -1,0 +1,40 @@
+{
+  "slug": "aria-semantic-html",
+  "title": "ARIA and Semantic HTML",
+  "domain": "frontend",
+  "group": "Accessibility",
+  "order": 10,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Easy",
+  "description": "Understand web accessibility principles and ARIA attributes.",
+  "options": [
+    {
+      "id": "a",
+      "text": "Using ARIA attributes is always better than using semantic HTML elements",
+      "isCorrect": false,
+      "explanation": "The first rule of ARIA is: don't use ARIA if you can use a native HTML element. <button> is better than <div role='button'> — it includes keyboard handling, focus management, and screen reader announcements for free."
+    },
+    {
+      "id": "b",
+      "text": "Semantic HTML elements like <nav>, <main>, <article> provide built-in accessibility landmarks",
+      "isCorrect": true,
+      "explanation": "Semantic elements create landmark regions that screen readers use for navigation. <nav> = navigation, <main> = main content, <aside> = complementary. Users can jump between landmarks without reading everything."
+    },
+    {
+      "id": "c",
+      "text": "aria-hidden='true' removes an element from the visual display",
+      "isCorrect": false,
+      "explanation": "aria-hidden removes elements from the accessibility tree (screen readers ignore it) but has NO effect on visual display. Use CSS display:none to hide visually. Conversely, visually-hidden CSS class hides visually but keeps in accessibility tree."
+    },
+    {
+      "id": "d",
+      "text": "Color alone is sufficient to convey information to all users",
+      "isCorrect": false,
+      "explanation": "WCAG requires that information conveyed by color is also available through other means (text, icons, patterns). ~8% of men have color vision deficiency and cannot distinguish certain color differences."
+    }
+  ]
+}

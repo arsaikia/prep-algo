@@ -1,0 +1,21 @@
+{
+  "slug": "max-area-of-island",
+  "title": "Max Area of Island",
+  "domain": "algorithms",
+  "group": "Graphs",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

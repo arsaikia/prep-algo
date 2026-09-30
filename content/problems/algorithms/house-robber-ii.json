@@ -1,0 +1,21 @@
+{
+  "slug": "house-robber-ii",
+  "title": "House Robber II",
+  "domain": "algorithms",
+  "group": "1-D Dynamic Programming",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

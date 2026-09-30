@@ -1,0 +1,21 @@
+{
+  "slug": "time-based-key-value-store",
+  "title": "Time Based Key Value Store",
+  "domain": "algorithms",
+  "group": "Binary Search",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

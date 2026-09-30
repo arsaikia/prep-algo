@@ -1,0 +1,21 @@
+{
+  "slug": "find-median-from-data-stream",
+  "title": "Find Median From Data Stream",
+  "domain": "algorithms",
+  "group": "Heap / Priority Queue",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

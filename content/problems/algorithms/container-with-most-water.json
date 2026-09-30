@@ -1,0 +1,21 @@
+{
+  "slug": "container-with-most-water",
+  "title": "Container With Most Water",
+  "domain": "algorithms",
+  "group": "Two Pointers",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

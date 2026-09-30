@@ -1,0 +1,40 @@
+{
+  "slug": "caching-strategies-deep-dive",
+  "title": "Caching Strategies",
+  "domain": "system_design",
+  "group": "Caching",
+  "order": 9,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "quiz",
+  "difficulty": "Medium",
+  "description": "Understand different caching strategies and their tradeoffs.",
+  "options": [
+    {
+      "id": "a",
+      "text": "Write-through cache has higher write latency but ensures cache consistency",
+      "isCorrect": true,
+      "explanation": "Write-through writes to both cache and database synchronously. Higher write latency (two writes) but cache always has latest data. Good for read-heavy workloads where consistency matters."
+    },
+    {
+      "id": "b",
+      "text": "Cache-aside (lazy loading) prevents cache stampede by default",
+      "isCorrect": false,
+      "explanation": "Cache-aside is vulnerable to cache stampede — when a popular key expires, many requests simultaneously hit the database. Stampede protection (mutex locks, probabilistic early expiry) must be added explicitly."
+    },
+    {
+      "id": "c",
+      "text": "Write-behind cache guarantees zero data loss",
+      "isCorrect": false,
+      "explanation": "Write-behind (write-back) buffers writes and flushes asynchronously. If the cache node crashes before flushing, buffered writes are lost. It trades durability for write performance."
+    },
+    {
+      "id": "d",
+      "text": "TTL-based expiry is the only way to invalidate cached data",
+      "isCorrect": false,
+      "explanation": "Other strategies include explicit invalidation (delete on write), event-driven invalidation (pub/sub), and versioned keys. TTL is the simplest but can serve stale data."
+    }
+  ]
+}

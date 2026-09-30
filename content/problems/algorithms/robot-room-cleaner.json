@@ -1,0 +1,20 @@
+{
+  "slug": "robot-room-cleaner",
+  "title": "Robot Room Cleaner",
+  "domain": "algorithms",
+  "group": "Graphs",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

@@ -1,0 +1,21 @@
+{
+  "slug": "largest-rectangle-in-histogram",
+  "title": "Largest Rectangle In Histogram",
+  "domain": "algorithms",
+  "group": "Stack",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

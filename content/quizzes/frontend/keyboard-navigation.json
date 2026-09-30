@@ -1,0 +1,40 @@
+{
+  "slug": "keyboard-navigation",
+  "title": "Keyboard Navigation",
+  "domain": "frontend",
+  "group": "Accessibility",
+  "order": 11,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Medium",
+  "description": "Understand keyboard accessibility requirements for web applications.",
+  "options": [
+    {
+      "id": "a",
+      "text": "All interactive elements should be reachable and operable via keyboard alone",
+      "isCorrect": true,
+      "explanation": "WCAG 2.1.1 requires all functionality to be available via keyboard. This means proper tab order, Enter/Space to activate, Escape to dismiss, arrow keys for composite widgets, and visible focus indicators."
+    },
+    {
+      "id": "b",
+      "text": "tabindex='0' makes an element the first item in the tab order",
+      "isCorrect": false,
+      "explanation": "tabindex='0' puts an element in the natural tab order (based on DOM position). tabindex='1' or higher sets a specific order (but is considered an anti-pattern — use DOM order instead)."
+    },
+    {
+      "id": "c",
+      "text": "Removing the default focus outline improves accessibility",
+      "isCorrect": false,
+      "explanation": "The focus outline is critical for keyboard users to know which element is focused. If you remove it for aesthetics, you MUST provide an alternative visible focus indicator. :focus-visible helps — it shows focus rings only for keyboard navigation."
+    },
+    {
+      "id": "d",
+      "text": "Mouse-only interactions are acceptable for non-essential features",
+      "isCorrect": false,
+      "explanation": "WCAG requires ALL interactive features to be keyboard-accessible, not just 'essential' ones. Hover-only menus, drag-only interfaces, and click-only controls all need keyboard alternatives."
+    }
+  ]
+}

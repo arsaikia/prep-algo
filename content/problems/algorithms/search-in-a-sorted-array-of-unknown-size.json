@@ -1,0 +1,20 @@
+{
+  "slug": "search-in-a-sorted-array-of-unknown-size",
+  "title": "Search in a Sorted Array of Unknown Size",
+  "domain": "algorithms",
+  "group": "Binary Search",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

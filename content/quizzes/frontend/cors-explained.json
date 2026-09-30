@@ -1,0 +1,40 @@
+{
+  "slug": "cors-explained",
+  "title": "Cross-Origin Resource Sharing",
+  "domain": "frontend",
+  "group": "DOM & Browser",
+  "order": 16,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Medium",
+  "description": "Understand CORS, preflight requests, and cross-origin security.",
+  "options": [
+    {
+      "id": "a",
+      "text": "CORS restrictions are enforced by the server",
+      "isCorrect": false,
+      "explanation": "CORS is enforced by the BROWSER. The server sets Access-Control-Allow-Origin headers, but it's the browser that checks them and blocks the response from reaching JavaScript. Server-to-server requests are unaffected by CORS."
+    },
+    {
+      "id": "b",
+      "text": "A preflight OPTIONS request is sent for any cross-origin request with custom headers or non-simple methods",
+      "isCorrect": true,
+      "explanation": "Simple requests (GET/POST with standard headers and content types) go directly. Non-simple requests (PUT, DELETE, custom headers, application/json) trigger a preflight OPTIONS request to check if the server allows the actual request."
+    },
+    {
+      "id": "c",
+      "text": "Setting Access-Control-Allow-Origin to * allows credentials (cookies) to be sent",
+      "isCorrect": false,
+      "explanation": "Wildcard * and credentials are mutually exclusive. To send cookies cross-origin, the server must specify the exact origin AND set Access-Control-Allow-Credentials: true. The client must also set fetch({ credentials: 'include' })."
+    },
+    {
+      "id": "d",
+      "text": "CORS prevents the server from receiving cross-origin requests",
+      "isCorrect": false,
+      "explanation": "The server ALWAYS receives and processes the request. CORS only prevents the browser from exposing the response to JavaScript. This is a common misconception — CORS is not a security mechanism for the server, it's a browser policy."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "slug": "distinct-subsequences",
+  "title": "Distinct Subsequences",
+  "domain": "algorithms",
+  "group": "2-D Dynamic Programming",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

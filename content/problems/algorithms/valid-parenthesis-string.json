@@ -1,0 +1,21 @@
+{
+  "slug": "valid-parenthesis-string",
+  "title": "Valid Parenthesis String",
+  "domain": "algorithms",
+  "group": "Greedy",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

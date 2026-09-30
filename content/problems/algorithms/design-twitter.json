@@ -1,0 +1,21 @@
+{
+  "slug": "design-twitter",
+  "title": "Design Twitter",
+  "domain": "algorithms",
+  "group": "Heap / Priority Queue",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

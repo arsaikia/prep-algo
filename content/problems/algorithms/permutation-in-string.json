@@ -1,0 +1,21 @@
+{
+  "slug": "permutation-in-string",
+  "title": "Permutation In String",
+  "domain": "algorithms",
+  "group": "Sliding Window",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Medium",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

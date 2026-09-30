@@ -1,0 +1,40 @@
+{
+  "slug": "code-splitting-lazy-loading",
+  "title": "Code Splitting and Lazy Loading",
+  "domain": "frontend",
+  "group": "Performance",
+  "order": 9,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Medium",
+  "description": "Understand code splitting strategies for frontend applications.",
+  "options": [
+    {
+      "id": "a",
+      "text": "React.lazy() works with server-side rendering out of the box",
+      "isCorrect": false,
+      "explanation": "React.lazy() only works client-side. For SSR, use a library like @loadable/component or React Server Components. React.lazy loads modules via dynamic import() which requires a browser environment."
+    },
+    {
+      "id": "b",
+      "text": "Route-based code splitting loads page-specific JavaScript only when the user navigates to that route",
+      "isCorrect": true,
+      "explanation": "By wrapping route components with React.lazy(), each page's code is in a separate chunk loaded on-demand. This dramatically reduces initial bundle size — users only download code for pages they visit."
+    },
+    {
+      "id": "c",
+      "text": "More code splitting always results in better performance",
+      "isCorrect": false,
+      "explanation": "Over-splitting creates many tiny chunks, increasing HTTP requests and adding latency from chunk loading. Each split point adds a loading state. Split at meaningful boundaries (routes, heavy libraries), not every component."
+    },
+    {
+      "id": "d",
+      "text": "Dynamic import() is synchronous and blocks the main thread",
+      "isCorrect": false,
+      "explanation": "import() is asynchronous — it returns a Promise. The module loads in the background without blocking. This is what enables lazy loading and code splitting."
+    }
+  ]
+}

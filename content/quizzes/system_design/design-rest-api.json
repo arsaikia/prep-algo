@@ -1,0 +1,40 @@
+{
+  "slug": "design-rest-api",
+  "title": "Design a REST API",
+  "domain": "system_design",
+  "group": "API Design",
+  "order": 7,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "quiz",
+  "difficulty": "Easy",
+  "description": "Understand REST API design principles and best practices.",
+  "options": [
+    {
+      "id": "a",
+      "text": "REST APIs should use verbs in URL paths (e.g., /getUsers, /deletePost)",
+      "isCorrect": false,
+      "explanation": "REST uses nouns for resources (/users, /posts) and HTTP methods (GET, DELETE) for actions. Verbs in URLs is an anti-pattern."
+    },
+    {
+      "id": "b",
+      "text": "Idempotency means calling an operation multiple times produces the same result as calling it once",
+      "isCorrect": true,
+      "explanation": "GET, PUT, and DELETE should be idempotent. POST is typically not idempotent. Idempotency is crucial for retry safety in distributed systems."
+    },
+    {
+      "id": "c",
+      "text": "HTTP 200 is the correct status code for a successful resource creation",
+      "isCorrect": false,
+      "explanation": "201 Created is the correct status for successful resource creation. 200 OK is for successful retrieval or update operations."
+    },
+    {
+      "id": "d",
+      "text": "GraphQL is a type of REST API",
+      "isCorrect": false,
+      "explanation": "GraphQL is a distinct query language and runtime — it uses a single endpoint with POST requests, while REST uses multiple endpoints with HTTP methods."
+    }
+  ]
+}

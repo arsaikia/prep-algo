@@ -1,0 +1,40 @@
+{
+  "slug": "event-loop-call-stack",
+  "title": "Event Loop and Call Stack",
+  "domain": "frontend",
+  "group": "DOM & Browser",
+  "order": 1,
+  "tags": [],
+  "lists": [
+    "FE ESSENTIALS"
+  ],
+  "type": "quiz",
+  "difficulty": "Easy",
+  "description": "Understand the JavaScript event loop, call stack, and task queue.",
+  "options": [
+    {
+      "id": "a",
+      "text": "setTimeout(fn, 0) guarantees fn executes immediately after the current function",
+      "isCorrect": false,
+      "explanation": "setTimeout(fn, 0) puts fn in the macrotask queue. It executes after the current call stack clears AND any pending microtasks (Promises) complete. It's not immediate."
+    },
+    {
+      "id": "b",
+      "text": "Microtasks (Promise.then) execute before macrotasks (setTimeout) when both are queued",
+      "isCorrect": true,
+      "explanation": "After each macrotask, the engine drains the entire microtask queue before picking up the next macrotask. Promise callbacks are microtasks; setTimeout callbacks are macrotasks."
+    },
+    {
+      "id": "c",
+      "text": "JavaScript can execute multiple functions simultaneously on different threads",
+      "isCorrect": false,
+      "explanation": "JavaScript is single-threaded — it has one call stack and executes one thing at a time. Web Workers provide separate threads but don't share the main thread's scope or DOM access."
+    },
+    {
+      "id": "d",
+      "text": "The event loop only processes events when the call stack is empty and there are no pending microtasks",
+      "isCorrect": false,
+      "explanation": "The event loop processes macrotasks one at a time from the task queue when the call stack is empty. Between macrotasks, ALL pending microtasks are processed. The statement is partially right but 'no pending microtasks' is misleading."
+    }
+  ]
+}

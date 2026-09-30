@@ -1,0 +1,40 @@
+{
+  "slug": "horizontal-vs-vertical-scaling",
+  "title": "Horizontal vs Vertical Scaling",
+  "domain": "system_design",
+  "group": "Scaling",
+  "order": 11,
+  "tags": [],
+  "lists": [
+    "SD TOP 25"
+  ],
+  "type": "quiz",
+  "difficulty": "Easy",
+  "description": "Understand when to scale horizontally vs vertically.",
+  "options": [
+    {
+      "id": "a",
+      "text": "Vertical scaling requires application code changes",
+      "isCorrect": false,
+      "explanation": "Vertical scaling (adding more CPU/RAM to existing server) typically requires NO code changes — the application runs on the same machine with more resources."
+    },
+    {
+      "id": "b",
+      "text": "Horizontal scaling adds complexity around data consistency and session management",
+      "isCorrect": true,
+      "explanation": "With multiple servers, you need load balancing, sticky sessions or externalized session stores, distributed caching, and strategies for data consistency across nodes."
+    },
+    {
+      "id": "c",
+      "text": "Vertical scaling has no upper limit",
+      "isCorrect": false,
+      "explanation": "Vertical scaling is bounded by the maximum hardware available — there's a ceiling on how much CPU/RAM a single machine can have."
+    },
+    {
+      "id": "d",
+      "text": "Horizontal scaling is always cheaper than vertical scaling",
+      "isCorrect": false,
+      "explanation": "For small to medium workloads, a single larger server can be cheaper than managing multiple smaller ones (no load balancer, simpler ops). Horizontal becomes cost-effective at scale."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "slug": "number-of-1-bits",
+  "title": "Number of 1 Bits",
+  "domain": "algorithms",
+  "group": "Bit Manipulation",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Easy",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}

@@ -1,0 +1,21 @@
+{
+  "slug": "reverse-nodes-in-k-group",
+  "title": "Reverse Nodes In K Group",
+  "domain": "algorithms",
+  "group": "Linked List",
+  "order": 0,
+  "tags": [],
+  "lists": [
+    "ALL",
+    "TOP 150"
+  ],
+  "type": "problem",
+  "difficulty": "Hard",
+  "description": "",
+  "templates": {
+    "python": "",
+    "javascript": ""
+  },
+  "exampleTestCases": [],
+  "testCases": []
+}
