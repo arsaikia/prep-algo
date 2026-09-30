@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { useTheme } from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Play, Save, Download, Link, Shuffle, Clock, Star, Code, Terminal, Eye, Settings } from 'react-feather';
+import { Play, Save, Download, Link, Shuffle, Clock, Code, Terminal, Eye, Settings } from 'react-feather';
 import { Timer, Pause, Play as PlayLucide, Square, Zap, Monitor, FileDown, FileText, Shuffle as ShuffleLucide, Code2, Terminal as TerminalLucide, Eye as EyeLucide, Settings as SettingsLucide, RotateCcw, Copy, Check, Minus, Plus, Lock } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { useSelector } from 'react-redux';
@@ -510,75 +510,6 @@ const TimerButton = styled(ModernButton)`
 `;
 
 
-
-const RatingSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-`;
-
-const RatingLabel = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors.text};
-  white-space: nowrap;
-`;
-
-const RatingButtons = styled.div`
-  display: flex;
-  gap: 6px;
-`;
-
-const RatingButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  font-size: 12px;
-  background: ${props => props.selected ? props.theme.colors.primary : 'transparent'};
-  color: ${props => props.selected ? '#ffffff' : props.theme.colors.textSecondary};
-  border: 1px solid ${props => props.selected ? props.theme.colors.primary : props.theme.colors.border};
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${props => props.selected ? props.theme.colors.primary : props.theme.colors.backgroundHover};
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
-const TagsSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-`;
-
-const TagsGrid = styled.div`
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-`;
-
-const TagButton = styled.button`
-  padding: 4px 10px;
-  font-size: 11px;
-  background: ${props => props.selected ? '#28a745' : 'transparent'};
-  color: ${props => props.selected ? '#ffffff' : props.theme.colors.textSecondary};
-  border: 1px solid ${props => props.selected ? '#28a745' : props.theme.colors.border};
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-
-  &:hover {
-    background: ${props => props.selected ? '#28a745' : props.theme.colors.backgroundHover};
-    border-color: #28a745;
-  }
-`;
-
 const EditorCard = styled.div`
   /* Fills its split pane; the drag handle owns the height, not a clamp(). */
   flex: 1;
@@ -951,63 +882,6 @@ const LoadingSpinner = styled.div`
   }
 `;
 
-// Modal components
-const SessionFeedbackModal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
-  backdrop-filter: blur(4px);
-`;
-
-const ModalContent = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 2px solid ${({ theme }) => theme.colors.border};
-  border-radius: 16px;
-  padding: 30px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: ${({ theme }) => theme.colors.shadowDropdown || '0 25px 50px rgba(0, 0, 0, 0.3)'};
-`;
-
-const ModalTitle = styled.h3`
-  margin-bottom: 24px;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-align: center;
-`;
-
-const SessionSummary = styled.div`
-  background: ${({ theme }) => theme.colors.background};
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  margin-bottom: 24px;
-`;
-
-const ModalActions = styled.div`
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  
-  @media (max-width: 480px) {
-    flex-direction: column;
-  }
-`;
-
 /**
  * Reads a question from the CDN, where bodies are published to be fetched on
  * open, so opening one costs the backend nothing. The API returns the same
@@ -1076,9 +950,6 @@ const CodeSandbox = () => {
   const loadSeqRef = useRef(0);
 
   // Time tracking states
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [sessionDifficultyRating, setSessionDifficultyRating] = useState(null);
-  const [selectedTags, setSelectedTags] = useState([]);
   const [timerStartTime, setTimerStartTime] = useState(null);
   const [displayTime, setDisplayTime] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -1149,9 +1020,7 @@ const CodeSandbox = () => {
     startTracking,
     stopTracking,
     pause: originalPause,
-    resume: originalResume,
-    addTags,
-    setDifficultyRating: setTrackerDifficulty
+    resume: originalResume
   } = useTimeTracker();
 
   // Custom pause/resume functions
@@ -1189,14 +1058,6 @@ const CodeSandbox = () => {
     return () => clearInterval(interval);
   }, [isTracking, timerStartTime, isPaused, pausedTime]);
 
-  // Available tags for categorizing sessions
-  const availableTags = [
-    'array', 'string', 'tree', 'graph', 'dynamic-programming',
-    'binary-search', 'sorting', 'hash-table', 'two-pointers',
-    'sliding-window', 'backtracking', 'greedy', 'math',
-    'struggled', 'easy-solve', 'multiple-attempts', 'learned-new-concept'
-  ];
-
   // Format time display
   const formatTime = (minutes) => {
     if (minutes < 1) {
@@ -1221,33 +1082,11 @@ const CodeSandbox = () => {
     }
   }, [currentQuestion, user.userId]);
 
-  // Handle session completion
-  const handleSessionComplete = async (success = true) => {
+  // Stops the clock. The solve itself was already recorded by the submit that
+  // graded it; `success` only decides whether today's batch is ticked off.
+  const handleSessionComplete = async (success) => {
     if (!isTracking) return;
-
-    try {
-      const sessionData = await stopTracking(success, sessionDifficultyRating, selectedTags);
-
-      setShowFeedbackModal(true);
-    } catch (error) {
-      console.error('❌ Error completing session:', error);
-    }
-  };
-
-  // Handle difficulty rating change
-  const handleDifficultyChange = (rating) => {
-    setSessionDifficultyRating(rating);
-    setTrackerDifficulty(rating);
-  };
-
-  // Handle tag selection
-  const handleTagToggle = (tag) => {
-    const newTags = selectedTags.includes(tag)
-      ? selectedTags.filter(t => t !== tag)
-      : [...selectedTags, tag];
-
-    setSelectedTags(newTags);
-    addTags(newTags);
+    await stopTracking(success);
   };
 
   // Check for question parameter in URL on component mount
@@ -1433,10 +1272,11 @@ const CodeSandbox = () => {
             : `${response.data.passedTests} of ${response.data.totalTests} tests passed. Review the failing cases below.`
         });
 
-        // Handle session completion based on results
-        const success = response.data.score === 100; // Require 100% success for Smart Hybrid recommendations
-        if (isTracking && user.userId !== 'guest') {
-          await handleSessionComplete(success);
+        // Only a recorded solve ends the timed session; after a failing run
+        // the clock keeps going while the user works on a fix. Not awaited,
+        // so bookkeeping never holds up the result.
+        if (response.data.progressSaved) {
+          handleSessionComplete(true);
         }
       } else {
         setExecutionFeedback({
@@ -2012,125 +1852,6 @@ const CodeSandbox = () => {
           </ConsolePane>
         </RightColumn>
       </MainContent>
-
-      {/* Enhanced Session Feedback Modal */}
-      {showFeedbackModal && (
-        <SessionFeedbackModal>
-          <ModalContent>
-            <ModalTitle>🎉 Coding Session Complete!</ModalTitle>
-
-            <SessionSummary>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                <div>
-                  <strong>⏱️ Time Spent:</strong><br />
-                  <span style={{ fontSize: '1.2rem', color: '#007bff' }}>{formatTime(displayTime)}</span>
-                </div>
-                <div>
-                  <strong>📝 Question:</strong><br />
-                  <span style={{ color: '#666' }}>{currentQuestion?.title || 'Unknown'}</span>
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <strong>👤 User:</strong><br />
-                  <span style={{ color: '#666' }}>{user.firstName} {user.lastName}</span>
-                </div>
-                <div>
-                  <strong>🎯 Language:</strong><br />
-                  <span style={{ color: '#666' }}>{language.charAt(0).toUpperCase() + language.slice(1)}</span>
-                </div>
-              </div>
-            </SessionSummary>
-
-            <RatingSection>
-              <RatingLabel>⭐ How difficult was this question for you?</RatingLabel>
-              <RatingButtons>
-                {[1, 2, 3, 4, 5].map(rating => (
-                  <RatingButton
-                    key={rating}
-                    selected={sessionDifficultyRating === rating}
-                    onClick={() => handleDifficultyChange(rating)}
-                  >
-                    <Star size={16} fill={sessionDifficultyRating === rating ? 'white' : 'none'} />
-                    {rating}
-                  </RatingButton>
-                ))}
-              </RatingButtons>
-              <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
-                1 = Very Easy, 5 = Very Hard
-              </div>
-            </RatingSection>
-
-            <TagsSection>
-              <RatingLabel>🏷️ Session Tags (select all that apply):</RatingLabel>
-              <TagsGrid>
-                {availableTags.map(tag => (
-                  <TagButton
-                    key={tag}
-                    selected={selectedTags.includes(tag)}
-                    onClick={() => handleTagToggle(tag)}
-                  >
-                    {tag}
-                  </TagButton>
-                ))}
-              </TagsGrid>
-              <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '8px' }}>
-                Selected: {selectedTags.length > 0 ? selectedTags.join(', ') : 'None'}
-              </div>
-            </TagsSection>
-
-            <ModalActions>
-              <ModernButton
-                onClick={() => {
-                  setShowFeedbackModal(false);
-                  // Don't reset data, keep for potential re-submission
-                }}
-                style={{ flex: 1 }}
-              >
-                💾 Save & Continue Coding
-              </ModernButton>
-              <ModernButton
-                variant="primary"
-                onClick={async () => {
-                  // Send updated session data with final difficulty rating and tags
-                  try {
-                    if (currentQuestion && user.userId && user.userId !== 'guest') {
-
-
-                      // Create updated session data with adaptive context
-                      const updatedSessionData = {
-                        userId: user.userId,
-                        questionId: currentQuestion.id,
-                        timeSpent: displayTime,
-                        success: true, // Assume success if they're completing the session
-                        difficultyRating: sessionDifficultyRating,
-                        tags: selectedTags,
-                        // NEW: Adaptive context
-                        strategy: currentQuestion.recommendationStrategy || 'general_practice',
-                        sessionNumber: 1, // Could be enhanced to track session position
-                        previousQuestionResult: null // Could be enhanced to track previous question
-                      };
-
-                      await apiClient.post('/solveHistory', updatedSessionData);
-                    }
-                  } catch (error) {
-                    // Error sending session data
-                  }
-
-                  setShowFeedbackModal(false);
-                  // Reset for next session
-                  setSessionDifficultyRating(null);
-                  setSelectedTags([]);
-
-                }}
-                style={{ flex: 1 }}
-              >
-                ✅ Complete Session
-              </ModernButton>
-            </ModalActions>
-          </ModalContent>
-        </SessionFeedbackModal>
-      )}
     </Container>
   );
 };

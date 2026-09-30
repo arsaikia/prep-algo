@@ -168,21 +168,6 @@ class TimeTracker {
 export const timeTracker = new TimeTracker();
 
 /**
- * Enhanced API call to update solve history with tracking data
- */
-export const updateSolveHistoryWithTracking = async (sessionData) => {
-    const response = await apiClient.post('/solveHistory', {
-        userId: sessionData.userId,
-        questionId: sessionData.questionId,
-        timeSpent: sessionData.timeSpent,
-        difficultyRating: sessionData.difficultyRating,
-        tags: sessionData.tags,
-        success: sessionData.success,
-    });
-    return response.data;
-};
-
-/**
  * Hook for React components to use time tracking
  */
 export const useTimeTracker = () => {
@@ -212,24 +197,25 @@ export const useTimeTracker = () => {
         setIsTracking(true);
     };
 
+    // Solves are recorded by the endpoint that grades them, never from here: a
+    // second client-side write double-counted every solve and recorded failed
+    // attempts as solved. The tracker only times the session and ticks it off
+    // today's recommendations.
     const stopTracking = async (success, difficultyRating, tags) => {
         const sessionData = timeTracker.stopTracking(success, difficultyRating, tags);
         setIsTracking(false);
         setCurrentTime(0);
 
-        if (sessionData) {
-            // Update solve history
-            await updateSolveHistoryWithTracking(sessionData);
-
-            // If successful, also mark as complete in recommendation system
-            if (success && sessionData.userId && sessionData.questionId) {
-                try {
-                    await apiClient.post(`/recommendations/${sessionData.userId}/complete`, {
-                        questionId: sessionData.questionId,
-                        timeSpent: sessionData.timeSpent,
-                        success: true,
-                    });
-                } catch (error) {
+        if (sessionData && success && sessionData.userId && sessionData.questionId) {
+            try {
+                await apiClient.post(`/recommendations/${sessionData.userId}/complete`, {
+                    questionId: sessionData.questionId,
+                    timeSpent: sessionData.timeSpent,
+                    success: true,
+                });
+            } catch (error) {
+                // 404: no batch today, or the question is not in it.
+                if (error?.response?.status !== 404) {
                     console.error('Error marking question complete:', error);
                 }
             }
