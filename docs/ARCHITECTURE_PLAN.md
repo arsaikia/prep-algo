@@ -343,7 +343,11 @@ Algorithms and Frontend are unchanged.
 
 ### Decision 3: Database — PostgreSQL (target), decision point at Step 6
 
-**Status: committed but reversible.** Nothing in Steps 0–5 depends on this choice.
+**Status: committed but reversible — and currently unspent.** Nothing in Steps 0–5
+depends on this choice, and **Step 6 is parked** (see "Parking Step 6" in the V2
+execution order), so no schema, Neon project or migration code should exist yet. The
+analysis below stands as written; it is the case to resume from, not a commitment
+already made.
 
 Once content leaves the database, 100% of what remains is uniform, per-user, transactional
 data — there is no document-shaped data left. The codebase is already doing relational
@@ -432,12 +436,43 @@ database-agnostic, so the Decision 3 commitment carries no sunk cost until Step 
 | 3 | **Content pipeline** — `content/` + Zod + `build:content` → hashed artifacts on CDN | ✅ **DONE** — 221 items, index **7.8 KB gz** (was 133 KB from the API), byte-reproducible, zero answer keys published (see ADR-009) |
 | **4** | **Frontend reads content from CDN**; `/api/v1/questions` behind a flag for rollback | ✅ **DONE** — guest list view makes **2 CDN requests and 0 backend requests**, measured on all three domains; index **14.1 KB gz** (was 133 KB from the API) |
 | **5** | **`Topic` + System Design reader** | ✅ **DONE** — `/system-design` is its own index and `/system-design/:slug` its own reader; no difficulty pill and no solved ring anywhere in the subtree, and topics no longer appear in the question list at all. **3 CDN requests, 0 backend requests** |
-| 6 | **Postgres schema + one-shot migration** (decision point) | per-user progress identical pre/post migration |
-| 7 | Home dashboard + guided study | — |
+| 6 | **Postgres schema + one-shot migration** (decision point) | ⏸ **PARKED** — deliberately deferred, not cancelled. Nothing downstream is blocked on it; see "Parking Step 6" below |
+| **7** | **Home dashboard + guided study** | ← **next**; runs on Mongo as-is |
 
 Steps 1 and 2 from the interim analysis (optimize the Mongo engine in place; cap the
-unbounded arrays) are **dropped**: both optimize code that Step 6 deletes. Retain them
-*only* if Step 6 is deferred indefinitely.
+unbounded arrays) were **dropped** on the grounds that both optimize code Step 6 deletes,
+and retained *only* if Step 6 were deferred indefinitely. **Step 6 is now parked, so that
+condition holds** — see below.
+
+### Parking Step 6
+
+Step 6 is deferred by choice. It is the only irreversible step in the plan and the only
+one that is not additive, and nothing built so far depends on it: Steps 0–5 are
+database-agnostic by construction, and Step 7 runs against Mongo unchanged.
+
+What parking it costs, and what to do about it:
+
+- **Decision 3 stays committed but unspent.** Postgres remains the target; no Neon
+  project, schema or migration code should be written until the park is lifted. The
+  reasoning in Decision 3 does not decay.
+- **Steps 1 and 2 come back into scope.** They were dropped only because Step 6 would
+  delete the code they optimize. With Step 6 parked, the `$nin` anti-join and the
+  unbounded `UserProfile` arrays are load-bearing for however long the park lasts, and
+  the arrays grow monotonically with use. Treat these as the next infrastructure work
+  *if* the park outlives one more feature step.
+- **Transactional correctness stays unfixed.** A solve still mutates `SolveHistory`,
+  `UserProfile` and the recommendation batch with zero transactions. This is a live
+  correctness gap that Postgres was going to close; parking Step 6 does not make it
+  smaller. Mitigate in Mongo if a torn write is ever observed.
+- **Step 7 loses its Postgres affordances.** The guided-study dashboard was scoped around
+  recursive CTEs and window functions for prerequisite chains and ranked progress. On
+  Mongo it ships with `$graphLookup` and `$setWindowFields` instead, or with the traversal
+  done in application code. Neither is a blocker; it is a different implementation, and
+  it is throwaway if Step 6 later lands.
+- **`buildQuestionGroups.js` survives.** It was scheduled for deletion in Step 6, so it
+  remains the CDN-index → list-shape adapter and must keep being maintained as such.
+
+**Lifting the park** requires no rework — resume at Step 6 exactly as written.
 
 **Naming:** the footer currently reads "RemindMe", and "PrepAlgo" understates a platform
 now spanning algorithms, system design and frontend. Product name and domain should be
@@ -561,8 +596,8 @@ Key files, dependencies, deployment changes.
 | **3** | Content pipeline (Zod + hashed artifacts) | 2 days | Build-time validation, content-as-code |
 | **4** | Frontend reads content from CDN | 1.5 days | Edge caching, backend scales to zero on browse |
 | **5** | `Topic` model + System Design reader | 3 days | Correcting a domain-modelling error |
-| **6** | Postgres schema + migration | 3 days | Storage engine selection, transactional correctness |
-| **7** | Home dashboard + guided study | 3 days | Recursive CTEs, window functions |
+| **6** | Postgres schema + migration | 3 days | ⏸ **PARKED** — storage engine selection, transactional correctness |
+| **7** | Home dashboard + guided study | 3 days | Study-path modelling. *Signal was recursive CTEs + window functions; with Step 6 parked this ships on Mongo aggregation instead — see below* |
 
 **Total V2: ~14 days.** Steps 0–5 (~8 days) are database-agnostic and can begin immediately.
 
@@ -605,4 +640,5 @@ Key files, dependencies, deployment changes.
 **Backward compatibility**: Every Phase 2 sub-phase deployable independently. V2 Steps 0–5
 are additive and independently deployable; **Step 6 is an intentional breaking change**
 delivered as a full dev→prod cutover, with rollback via Cloud Run revisions and Neon
-database branches rather than a parallel `/v2` API.
+database branches rather than a parallel `/v2` API. Step 6 is currently parked, so V2.6
+is not a gate on anything shipping today.
