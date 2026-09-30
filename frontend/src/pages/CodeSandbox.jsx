@@ -9,7 +9,9 @@ import { useSelector } from 'react-redux';
 import apiClient from '../api/client.js';
 import TestResults from '../components/TestResults.jsx';
 import McqSolver from '../components/McqSolver/McqSolver.jsx';
-import DesignDocSolver from '../components/DesignDocSolver/DesignDocSolver.jsx';
+import { loadIndex, loadItem } from '../content/loader.js';
+import { isCdnContentEnabled } from '../content/source.js';
+import { findQuestionEntry, toSandboxQuestion, toSlug } from '../content/sandboxQuestion.js';
 import { useTimeTracker } from '../utils/timeTracker.js';
 import { useTestUser } from '../contexts/TestUserContext';
 import { isFeatureEnabled, isDevMode } from '../utils/featureFlags';
@@ -1006,6 +1008,29 @@ const ModalActions = styled.div`
   }
 `;
 
+/**
+ * Reads a question from the CDN, where bodies are published to be fetched on
+ * open, so opening one costs the backend nothing. The API returns the same
+ * shape and is the fallback when the CDN is disabled, an artifact is missing,
+ * or the param is not in the index; a genuinely unknown question then fails
+ * with the API's 404.
+ */
+const loadQuestion = async (value) => {
+  if (isCdnContentEnabled()) {
+    try {
+      const entry = findQuestionEntry(await loadIndex(), value);
+      if (entry) {
+        return toSandboxQuestion(await loadItem(entry.slug, entry.h));
+      }
+    } catch (err) {
+      console.warn('Loading the question from the CDN failed; falling back to the API.', err);
+    }
+  }
+
+  const response = await apiClient.get(`/questions/${toSlug(value)}`);
+  return response.data;
+};
+
 const CodeSandbox = () => {
   const theme = useTheme();
   const location = useLocation();
@@ -1046,6 +1071,9 @@ const CodeSandbox = () => {
   // The template effect keys off object identity; without this guard any unrelated
   // re-render that produced a new `currentQuestion` would wipe typed code.
   const lastTemplateKeyRef = useRef('');
+  // Only the newest question load may touch state or redirect; an older one
+  // that resolves late would otherwise replace what the user just opened.
+  const loadSeqRef = useRef(0);
 
   // Time tracking states
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -1180,9 +1208,10 @@ const CodeSandbox = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Start tracking when a question is loaded
+  // Start tracking when a question is loaded. Progress is keyed on the legacy
+  // id, so content authored without one has nothing to track against.
   useEffect(() => {
-    if (currentQuestion && user.userId && user.userId !== 'guest') {
+    if (currentQuestion?.id && user.userId && user.userId !== 'guest') {
       startTracking(currentQuestion.id, user.userId);
       setTimerStartTime(Date.now()); // Set our direct timer start time
       setDisplayTime(0);
@@ -1453,6 +1482,9 @@ const CodeSandbox = () => {
       return;
     }
 
+    const seq = ++loadSeqRef.current;
+    const isStale = () => seq !== loadSeqRef.current;
+
     setIsLoading(true);
     setError('');
     setQuestionDescription('');
@@ -1461,14 +1493,22 @@ const CodeSandbox = () => {
     setDebugOutput('');
 
     try {
-      const response = await apiClient.get(`/questions/${questionToFetch}`);
+      const questionData = await loadQuestion(questionToFetch);
+      if (isStale()) return;
 
-      if (!response.data) {
+      if (!questionData) {
         setError('Question not found');
         return;
       }
 
-      const questionData = response.data;
+      // Topics are read, not solved. Old links and recommendation cards can
+      // still point here, so hand them to the System Design reader; `replace`
+      // keeps Back from bouncing through this redirect again.
+      if (questionData.type === 'topic') {
+        navigate(`/system-design/${questionData.slug}`, { replace: true });
+        return;
+      }
+
       setCurrentQuestion(questionData);
 
       // Check if description exists
@@ -1496,11 +1536,12 @@ const CodeSandbox = () => {
       // fallback silently replaced whatever the user had just opened.
       // Keeping it also makes the page shareable and survives a refresh.
     } catch (err) {
+      if (isStale()) return;
       setError(`Could not load that question. ${readApiError(err)}`);
       console.error('Error fetching question:', err);
       console.error('Error details:', err.response ? err.response.data : 'No response data');
     } finally {
-      setIsLoading(false);
+      if (!isStale()) setIsLoading(false);
     }
   };
 
@@ -1652,11 +1693,7 @@ const CodeSandbox = () => {
     : executionFeedback.status === 'error' ? 'error' : 'neutral';
 
   if (currentQuestion?.answerFormat === 'mcq') {
-    return <McqSolver question={currentQuestion} />;
-  }
-
-  if (currentQuestion?.answerFormat === 'design_doc') {
-    return <DesignDocSolver question={currentQuestion} />;
+    return <McqSolver key={currentQuestion.slug} question={currentQuestion} isGuest={isGuest} />;
   }
 
   return (
