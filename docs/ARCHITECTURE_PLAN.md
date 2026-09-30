@@ -535,13 +535,20 @@ As of 2026-09-30 production still runs the July 2025 build: the Hosting bundle i
 CRA build and the backend ignores `?domain=`. The next deploy ships Phases 1–3 and V2
 Steps 0–5 at once. It needs no Mongo migration and no Postgres:
 
+- **Production's database is the `prep-algo-dev` cluster.** The Cloud Run `MONGO_URI`
+  secret has had one version since April 2025, and both the live and candidate revisions
+  log a connection to `prep-algo-dev…/prepalgo`. That is the database a local backend
+  opens through `MONGO_URI_DEV`, so local testing writes live user data. The
+  `prep-algo-prod` cluster named by `MONGO_URI` in `backend/.env` is not used by any
+  deployment.
 - **Question ids already line up.** All 221 `_id`s served by the production API equal
   the `legacyId`s in `content/`, so existing solve records join to the catalog unchanged.
   The production `questions` collection simply goes unread.
 - **One backfill.** Records written before Phase 3 lack `domain`, and the
   spaced-repetition query filters on it. `backend/scripts/backfillSolveHistoryFields.js`
   fills `domain`, `questionGroup` and `questionDifficulty` from the catalog. It is a dry
-  run unless passed `--apply`, and reads `MONGO_URI` only.
+  run unless passed `--apply`. It connects only to `BACKFILL_MONGO_URI`, so a `.env`
+  cannot pick the cluster.
 
 Order:
 
@@ -552,8 +559,8 @@ Order:
    command for the replaced revision.
 3. `./deploy-to-firebase.sh` immediately after, since the old frontend predates JWT auth.
    Roll back with `firebase hosting:releases:rollback`.
-4. From `backend/`: `MONGO_URI=<prod> node scripts/backfillSolveHistoryFields.js`, then
-   again with `--apply`. It runs after the promote so the old backend cannot write more
+4. From `backend/`, run `node scripts/backfillSolveHistoryFields.js` with
+   `BACKFILL_MONGO_URI` set to the prep-algo-dev URI, then again with `--apply`. It runs after the promote so the old backend cannot write more
    records without `domain`. It is idempotent.
 
 Code execution on Cloud Run uses the subprocess runner. Cloud Run has no Docker daemon, so

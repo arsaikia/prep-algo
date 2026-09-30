@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
 import SolveHistory from '../models/SolveHistory.js';
@@ -16,13 +15,12 @@ import { getItemByLegacyId } from '../utils/contentStore.js';
  * (the item's `legacyId`), so this does not read the retired `questions`
  * collection. Run `npm run build:content` first.
  *
- * Dry run by default. Reads MONGO_URI (environment or `.env`) with no
- * MONGO_URI_DEV fallback, and prints the target host before touching it.
+ * Dry run by default. The target is BACKFILL_MONGO_URI, deliberately not
+ * MONGO_URI: `.env` files name clusters that production does not use. The
+ * script prints the target host before touching it.
  *
- * Usage:  MONGO_URI=... node scripts/backfillSolveHistoryFields.js [--apply]
+ * Usage:  BACKFILL_MONGO_URI=... node scripts/backfillSolveHistoryFields.js [--apply]
  */
-
-dotenv.config();
 
 const APPLY = process.argv.includes('--apply');
 const MISSING = [
@@ -35,9 +33,9 @@ const MISSING = [
 const redact = (uri) => uri.replace(/\/\/[^@/]+@/, '//***@');
 
 async function backfill() {
-    const uri = process.env.MONGO_URI;
+    const uri = process.env.BACKFILL_MONGO_URI;
     if (!uri) {
-        console.error('MONGO_URI is not set. Refusing to guess a database.');
+        console.error('BACKFILL_MONGO_URI is not set. Refusing to guess a database.');
         process.exit(1);
     }
 
