@@ -12,31 +12,46 @@ See [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) for Mermaid diagrams sh
 
 ---
 
-## Current Architecture (Post Phase 2b)
+## Current Architecture (Post Phase 3)
 
 | Layer | Tech | Hosting | Status |
 |-------|------|---------|--------|
-| Frontend | React 18 + Vite, Redux + Saga, styled-components, Monaco Editor | Firebase Hosting (`prepalgo.web.app`) | Working |
+| Frontend | React 18 + Vite, Redux + Saga, styled-components, Monaco Editor (CDN-loaded) | Firebase Hosting (`prepalgo.web.app`) | Working |
 | Backend | Express.js monolith (ESM), Mongoose 7 | Cloud Run (`us-central1`) | Working |
 | Database | MongoDB Atlas (denormalized fields + compound indexes) | Cloud | Working |
-| Auth | Google OAuth + JWT generation (NO route auth middleware) | — | **Broken** |
-| Cache | In-memory node-cache (dies on cold start, not shared) | — | **Weak** |
-| Rate Limit | express-rate-limit (in-memory, per-instance) | — | **Weak** |
-| Code Exec | Python3 child_process, 5s timeout, no sandbox | — | **Unsafe** |
-| CDN | Firebase default | — | **Unconfigured** |
+| Auth | Google OAuth + JWT, `protect` middleware on all private route groups, `requireSelf` ownership checks, `authorize('admin')` on content mutations | — | Working |
+| Cache | Two-tier: node-cache (L1) + Redis/Upstash (L2), stampede protection | — | Working |
+| Rate Limit | Distributed sliding window on Redis | — | Working |
+| Code Exec | Python3 `child_process.spawn`, 5s timeout, **no sandbox** | — | **Unsafe** |
+| CDN | Firebase Hosting headers (`immutable` hashed assets, `no-cache` index.html) + security headers | — | Working |
+| Async | BullMQ queue on Redis for code execution | — | Working |
+| Resilience | Circuit breakers (opossum) around MongoDB | — | Working |
+| Observability | pino structured logs, correlation IDs, deep `/health` | — | Partial (no `/metrics`) |
 
 **Key models**: Question, User, UserProfile, SolveHistory, DailyRecommendationBatch
-**Recommendation engine**: 5 weighted adaptive strategies, topic mastery, learning velocity
+**Recommendation engine**: 5 weighted adaptive strategies, topic mastery, learning velocity, domain-weighted slot allocation
 
 ### Critical Gaps
-1. **No auth middleware** — all API routes publicly accessible, anyone with a userId can read/write data
-2. **In-memory everything** — cache and rate limiter reset on cold start, not shared across Cloud Run instances
-3. **No API gateway** — routing, auth, rate limiting all tangled in Express middleware
-4. **No message queue** — code execution blocks request thread
-5. **No sandboxing** — arbitrary Python execution on server
-6. **No observability** — no distributed tracing, no structured logging, no correlation IDs
-7. **No circuit breakers** — MongoDB outage cascades to all requests
-8. **Single monolith** — all logic in one Express app
+
+Resolved since this list was written:
+- ~~**No auth middleware**~~ — resolved in Phase 2a; ownership + role checks added later.
+- ~~**In-memory everything**~~ — resolved in Phase 2a (Redis-backed cache + rate limiter).
+- ~~**No message queue**~~ — resolved in Phase 2b (BullMQ).
+- ~~**No observability**~~ — largely resolved in Phase 2b (pino, correlation IDs, deep `/health`).
+- ~~**No circuit breakers**~~ — resolved in Phase 2b (opossum around MongoDB).
+
+Still open:
+1. **No sandboxing** — arbitrary Python executed via `spawn('python3')` in
+   `backend/utils/codeExecution.js`; only a 5s timeout guards it. Highest-severity
+   remaining risk.
+2. **No `/metrics` endpoint** — request/latency/cache-hit metrics are not exposed;
+   only `/health` reports component state.
+3. **No API gateway** — routing, auth, and rate limiting remain tangled in Express
+   middleware. Deliberately deferred (see Phase 2c-deferred) as overkill at current scale.
+4. **Single monolith** — all logic in one Express app. Deliberately deferred.
+5. **Data modelling** — static content is stored and served as if it were dynamic; System
+   Design is modelled as solvable questions rather than readable topics; several embedded
+   arrays grow without bound. See [Architecture V2](#architecture-v2-contentuser-split--proposed).
 
 ---
 
@@ -52,7 +67,9 @@ Goal: Fix security gaps, add distributed primitives, document every decision. Ea
 **Why build**: Core security, must understand deeply.
 - Create `backend/middleware/auth.js` — verify JWT on every protected route
 - Extract user from token, attach to `req.user`
-- Public routes: `POST /auth/google`, `GET /health`, `GET /questions` (read-only)
+- Public routes: `POST /auth/google`, `GET /health`, `GET /questions` (read-only). Note: the
+  content-mutating `PUT` routes mounted under `/api/v1/questions` were later gated behind
+  `authorize('admin')`, so the router is public for reads only.
 - Protected routes: everything else (solve history, recommendations, submissions, user data)
 - Role support: `user`, `admin` (for future content management)
 - Reject expired/invalid tokens with proper HTTP 401/403
@@ -98,7 +115,9 @@ Goal: Fix security gaps, add distributed primitives, document every decision. Ea
 - Cache key namespacing: `prepalgo:cache:{route}:{params}`
 - **Cache stampede protection**: Mutex lock on cache miss (only one request rebuilds)
 - Bulk invalidation: `invalidateUserCache(userId)` clears all user-scoped keys via pattern
-- Cache hit/miss metrics (log, expose via health endpoint)
+- ❌ Cache hit/miss metrics (log, expose via health endpoint) — **not implemented**.
+  `backend/middleware/cache.js` records no hit/miss counters and `/health` does not
+  report cache statistics.
 
 **Files**:
 - `backend/middleware/cache.js` — rewrite with Redis
@@ -143,17 +162,16 @@ Goal: Fix security gaps, add distributed primitives, document every decision. Ea
 
 #### 2b.3 — Observability Foundation
 **Why**: Can't operate distributed system without visibility.
-- **Structured logging**: Replace `console.log` with `pino` (JSON structured logs)
-- **Correlation IDs**: Generate UUID per request, propagate through all log lines
-- **Request logging**: Method, path, status, duration, user ID, correlation ID
-- **Health checks**: Shallow (`/health` — is process alive) + Deep (`/health/ready` — DB connected, Redis connected, queue healthy)
-- **Metrics endpoint**: `/metrics` — request count, latency percentiles, cache hit rate, circuit breaker state, queue depth
+- **Structured logging** ✅: Replaced `console.log` with `pino` (JSON structured logs)
+- **Correlation IDs** ✅: Generate UUID per request, propagate through all log lines, echo as `X-Correlation-ID`
+- **Request logging** ✅: Method, path, status, duration, content length, user ID, correlation ID
+- **Health check** ✅: A single deep `GET /health` reports MongoDB, Redis, queue, and circuit-breaker state; returns 503 when unhealthy, 200 when `ok`/`degraded`. The originally planned shallow/deep split (`/health` + `/health/ready`) was collapsed into this one endpoint.
+- **Metrics endpoint** ❌ **NOT IMPLEMENTED**: `/metrics` (request count, latency percentiles, cache hit rate, circuit breaker state, queue depth) was planned but never built. Circuit-breaker and queue state are currently only observable through `/health`.
 
-**Files**:
-- `backend/middleware/requestLogger.js` — structured request logging with correlation ID
-- `backend/middleware/correlationId.js` — generate/propagate correlation ID
-- `backend/routes/health.js` — deep health check endpoint
-- `backend/utils/logger.js` — pino logger setup
+**Files** (as actually built — paths differ from the original plan):
+- `backend/middleware/correlationId.js` — generates/propagates the correlation ID **and** performs structured request logging (the planned separate `requestLogger.js` was never created; the two concerns were merged here)
+- `backend/config/logger.js` — pino logger setup (planned as `backend/utils/logger.js`)
+- `backend/server.js` — `/health` handler is defined inline (planned as `backend/routes/health.js`, which does not exist)
 - `docs/adr/007-observability.md`
 
 ### Phase 2c: Production Hardening (Lightweight) ✅
@@ -200,29 +218,249 @@ Goal: Fix security gaps, add distributed primitives, document every decision. Ea
 
 ---
 
-## Phase 3: Multi-Domain Content Expansion
+## Phase 3: Multi-Domain Content Expansion ✅ (with deviations)
 
 > Previously "Phase 2" in old plan. Deferred until infrastructure is solid.
 
-1. Add `domain`, `answerFormat`, `mcqConfig`, `topics` to Question schema
-2. Create Concept and DesignExercise models
-3. Add `runJavaScriptCode()` for frontend coding problems
-4. New API routes (concepts, design-exercises)
-5. Domain filtering on question/recommendation APIs
-6. Seed data for frontend + system design content
-7. Frontend pages: FrontendQuestions, SystemDesignQuestions, ConceptViewer, DesignExerciseWorkspace
-8. Navbar with domain navigation
+Shipped, but the design diverged from the plan below. **The as-built approach folds MCQ and
+design-doc content into the existing `Question` model rather than introducing separate
+`Concept` / `DesignExercise` models and routes.** Original plan items and their real status:
+
+1. ✅ (renamed) Added `domain` and `answerFormat` to the Question schema. The planned
+   `mcqConfig` shipped as **`mcqOptions`**, and design content as **`designPrompt`**.
+   No `topics` field was added — the pre-existing `group` and `list` fields serve that role.
+2. ❌ **Not built.** `Concept` and `DesignExercise` models do not exist. Models are still
+   `Question`, `User`, `UserProfile`, `SolveHistory`, `DailyRecommendationBatch`.
+3. ❌ **Not built.** There is no `runJavaScriptCode()`. Frontend-domain questions are
+   delivered as MCQ / design-doc formats, not as executable JS exercises.
+4. ❌ **Not built.** No `concepts` or `design-exercises` routes. All domains are served by
+   the existing `/api/v1/questions` routes, discriminated by `domain` + `answerFormat`.
+5. ✅ Domain filtering implemented in `questionController.js`, `smartRecommendations.js`,
+   and `solveHistory.js`.
+6. ✅ Seed data for frontend + system design content (32 questions: 16 SD, 16 FE).
+7. ⚠️ **Consolidated.** The planned `FrontendQuestions`, `SystemDesignQuestions`,
+   `ConceptViewer`, and `DesignExerciseWorkspace` pages do not exist. A single
+   `pages/AllQuestions.jsx` handles every domain via a `domain` prop, with
+   `components/McqSolver/` and `components/DesignDocSolver/` rendering the non-code
+   answer formats.
+8. ✅ Navbar with domain navigation; guest-accessible clean routes `/algorithms`,
+   `/system-design`, `/frontend`.
+
+Also delivered beyond the plan: the full 5-strategy recommendation engine with
+domain-weighted slot allocation, an MCQ validation endpoint, and ML-ready behavioral
+signals (`userAction`, `timeToFirstAction`, `codeSubmissions`, `hintsUsed`, `wasRecommended`).
 
 Full schema details preserved from original plan — see git history if needed.
 
-## Phase 4: Guided Study System
+---
+
+## Architecture V2: Content/User Split ⬜ PROPOSED
+
+**Supersedes the original sequencing of Phases 4 and 5.** Phase 4 as originally written
+would have built learning paths on top of a schema that models System Design as solvable
+questions — locking in a modelling error and forcing a second migration later. V2 pays
+that debt down first, and Phase 4 then falls out nearly free.
+
+Breaking changes are acceptable: cutover is a full dev→prod migration, not a rolling upgrade.
+
+### Findings that motivate V2
+
+Verified against running source, not docs.
+
+1. **Everything is a `Question`.** One collection serves three unrelated shapes via
+   `domain` + `answerFormat`. System Design (16 items, `design_doc`) is content to *read*,
+   not a problem to *solve*, yet `/system-design` renders difficulty pills, a `0/5 solved`
+   ring, and an Expand-All accordion. The schema is forcing the wrong product.
+2. **Static content is stored as if dynamic.** Content already lives as versioned JSON in
+   `backend/_data/` and is pushed to Mongo by `scripts/syncQuestionsFromJson.js`.
+   `GET /api/v1/questions` returns **133 KB across 221 docs** — full HTML descriptions and
+   example test cases — just to render a list. The 24 h cache TTL in `middleware/cache.js`
+   is an admission the data is static.
+3. **No home for teaching content.** There is no explanation/article/note field anywhere.
+   `SolveHistory.note` is a user's *private* note — a different concept.
+4. **Unbounded arrays.** `SolveHistory.solveHistory[]` and
+   `UserProfile.adaptiveWeights.adjustmentHistory[]` grow without limit;
+   `learningVelocity.weeklyHistory[]` is declared but never written (dead field). Only
+   `recentPerformance.last10Questions[]` is capped. Write amplification grows with
+   engagement, so the most valuable users degrade first.
+5. **Recommendation engine does 16–25 sequential round-trips.**
+   `controller/smartRecommendations.js` (1101 lines) passes an ever-growing
+   `$nin: [solvedIds]` into every query, calls `countDocuments()` in a 3-iteration loop,
+   runs up to 5 strategy queries per domain serially, and contains a true N+1
+   (`Question.findById` inside a loop). Four `SolveHistory.find({userId})` calls lack
+   projections; two add `.populate()`.
+6. **Frontend doesn't match the domain model.** All three domains route into one
+   `AllQuestions`; `CodeSandbox.jsx` (1504 lines) branches on `answerFormat` internally, so
+   a page named *CodeSandbox* is also the article viewer. `Home.jsx` is a 102-line shell —
+   no progress dashboard exists despite the "Learning Analytics" heading.
+
+### Decision 1: Content leaves the database
+
+Static content (questions, topic articles, test cases, prerequisites, notes) is authored in
+`content/`, validated by Zod at build time, and compiled to content-hashed artifacts served
+from Firebase Hosting alongside the JS bundle:
+
+```
+content/                          ← source of truth, in git
+      │  npm run build:content    ← schema violation fails CI, not prod
+      ▼
+frontend/dist/content/
+  index.<hash>.json               ← ~25 KB gz, list metadata only (target)
+  items/<slug>.<hash>.json        ← full body, fetched on open
+      ▼
+Firebase Hosting · Cache-Control: public, max-age=31536000, immutable
+```
+
+**Rationale.** The content is single-author, identical for every user, changes on deploy
+cadence, and has a read:write ratio around 100,000:1 — it is already code. Serving it from
+Mongo buys no query flexibility (it is fetched wholesale and cached 24 h) while costing DB
+capacity, a migration step per content edit, and a backend round-trip on the most common
+page view.
+
+**Cost consequence — the main prize.** Guest browse traffic (the majority of traffic to a
+portfolio project) stops invoking the backend entirely: CDN edge hit, no Cloud Run cold
+start, no DB read. Cloud Run stays scaled to zero for unauthenticated use.
+
+**Rejected:** a CMS. Git already provides review, diff, blame, rollback and atomic deploys
+for a single-author corpus.
+
+### Decision 2: Split the content types
+
+Replace the overloaded `Question` with three types sharing a common envelope
+(`id`, `slug`, `domain`, `title`, `tags[]`, `order`):
+
+| Type | Domain | Interaction | Progress semantics |
+|---|---|---|---|
+| `Problem` | algorithms, frontend | solve in sandbox | solved / attempted |
+| `Quiz` | any | answer MCQ | correct / incorrect |
+| **`Topic`** | system_design | **read + reflect** | **read / understood / needs-review** |
+
+`Topic` carries `body` (MDX), `keyTakeaways[]`, `relatedProblems[]`, and critically
+**`prerequisites[slug]`** — which *is* the Phase 4 learning-path graph. Building `Topic`
+now means Phase 4 becomes a traversal over data that already exists.
+
+Algorithms and Frontend are unchanged.
+
+### Decision 3: Database — PostgreSQL (target), decision point at Step 6
+
+**Status: committed but reversible.** Nothing in Steps 0–5 depends on this choice.
+
+Once content leaves the database, 100% of what remains is uniform, per-user, transactional
+data — there is no document-shaped data left. The codebase is already doing relational
+modelling in a document engine: 5 collections with string foreign keys, `.populate()` as
+client-side join emulation, a unique compound index standing in for a composite primary
+key, and `$nin` shipping the join key over the wire to fake an anti-join.
+
+Honest assessment of the margin:
+
+- **Performance: a wash.** At this scale both engines are fast. The `$nin` and N+1 issues
+  are fixable *in Mongo*. This is not the reason to move.
+- **Migration cost: favors Mongo.** Staying eliminates the only irreversible step.
+- **Transactional correctness: favors Postgres — and this is live, not theoretical.** A
+  solve mutates `SolveHistory` + `UserProfile` + the recommendation batch, and the codebase
+  uses **zero transactions** today.
+- **Phase 4/5 are analytics features: favors Postgres.** Prerequisite chains are a
+  recursive CTE; streaks are a window function; domain mastery is a `GROUP BY`. In Mongo
+  these become application-level loops over fetched data.
+- **Cost: favors Postgres.** Neon autosuspends to zero; Atlas paid tiers do not.
+
+**Target stack:** Postgres 16 on **Neon** (autosuspend + database branching).
+`session_context` and `adaptive_weights` become `JSONB` — flexibility retained exactly
+where it is real. **Avoid Cloud SQL**: it does not scale to zero and carries a floor charge.
+Cap the connection pool at 2–5 per Cloud Run instance and use a pooler; connection
+exhaustion is the most common way Postgres-on-serverless fails.
+
+`DailyRecommendationBatch` moves to **Redis** — it is a TTL'd cache and was never DB data.
+
+### Decision 4: Normalise user progress
+
+- **`attempts`** — immutable, append-only, one row per attempt. Partitionable by month.
+- **`progress`** — one row per `(user_id, content_slug)`, holding only current state
+  (`status`, `attempt_count`, `next_review_at`, `ease_factor`, `note`, `tags[]`).
+- **`user_profile`** — computed scalars and capped windows only; history moves to `attempts`.
+
+This eliminates the unbounded arrays structurally (they become rows), turns the `$nin`
+exclusion into an indexed anti-join executed inside the database, and reduces spaced
+repetition to a single indexed query on `(user_id, next_review_at)`.
+
+`UserProfile.domainPreferences` currently hard-codes the three domains as schema keys, so a
+fourth domain requires a migration. It becomes a keyed map, and the API returns
+`progress: [{ domain, completed, total, streak }]` from day one — so the Home redesign
+costs no schema work.
+
+### Decision 5: Routing
+
+```
+/algorithms            list    (unchanged)
+/algorithms/:slug      solve   (sandbox)
+/frontend              list    (unchanged)
+/frontend/:slug        solve   (sandbox / quiz)
+/system-design         topic index — grouped by theme, no difficulty pills, no solved ring
+/system-design/:slug   article reader — prose, diagrams, key takeaways
+```
+
+This also lets `CodeSandbox.jsx` shed its MCQ/design-doc branches and return to being a
+code sandbox.
+
+### Decision 6: Revert strategy — git, not a `/v2` API namespace
+
+API versioning exists to serve consumers that cannot be upgraded in lockstep. There is
+exactly one consumer — the frontend — deployed atomically with the backend. Running v1 and
+v2 side by side would mean maintaining two data-access paths against two different
+databases, reintroducing precisely the dual-write complexity that accepting a breaking
+change removes.
+
+Three layers of revert instead, all free:
+
+| Layer | Mechanism | Rollback |
+|---|---|---|
+| Code | git branch → trunk | — |
+| Runtime | **Cloud Run revisions** — deploy at 0% traffic, verify, shift to 100% | seconds |
+| Data | **Neon database branching** | instant |
+
+Caveat applying equally to all options: data written post-cutover does not exist in the old
+store, so a true revert has a data cost regardless of mechanism.
+
+### V2 execution order
+
+Each step ships independently; nothing is broken in between. Steps 0–5 are
+database-agnostic, so the Decision 3 commitment carries no sunk cost until Step 6.
+
+| # | Step | Exit criteria |
+|---|---|---|
+| **0** | **Sandbox the Python executor** — container, no network, read-only FS, mem/CPU caps | arbitrary code cannot reach FS or network |
+| 3 | Content pipeline — `content/` + Zod + `build:content` → hashed artifacts on CDN | artifacts build reproducibly; index < 30 KB gz; nothing consumes them yet |
+| 4 | Frontend reads content from CDN; `/api/v1/questions` behind a flag for rollback | list view makes zero backend content calls |
+| 5 | `Topic` + System Design reader | SD renders no difficulty pills and no solved ring |
+| 6 | **Postgres schema + one-shot migration** (decision point) | per-user progress identical pre/post migration |
+| 7 | Home dashboard + guided study | — |
+
+Steps 1 and 2 from the interim analysis (optimize the Mongo engine in place; cap the
+unbounded arrays) are **dropped**: both optimize code that Step 6 deletes. Retain them
+*only* if Step 6 is deferred indefinitely.
+
+**Naming:** the footer currently reads "RemindMe", and "PrepAlgo" understates a platform
+now spanning algorithms, system design and frontend. Product name and domain should be
+revisited during this rebuild — one breaking change rather than two. Independent of all
+engineering work above; must not block Step 0.
+
+---
+
+## Phase 4: Guided Study System ⬜ NOT STARTED
+
+Re-sequenced to follow Architecture V2 — see V2 execution order, Step 7. Building this
+first would cement the System Design modelling error. After V2, `Topic.prerequisites[]`
+supplies the path graph and `progress.next_review_at` supplies the scheduling, so most of
+the feature is a traversal rather than new infrastructure.
 
 1. LearningPath and UserLearningProgress models
 2. Adaptive next-item logic with path-aware daily recommendations
 3. Frontend: LearningPaths browse, LearningPathDetail timeline, LearningSession
 4. "Continue Learning" card on Home page
 
-## Phase 5: AI Review + Polish
+## Phase 5: AI Review + Polish ⬜ NOT STARTED
+
+None of the following exists in the codebase yet.
 
 1. Claude API integration for system design review
 2. Leitner spaced repetition
@@ -315,6 +553,19 @@ Key files, dependencies, deployment changes.
 
 **Total Phase 2: ~14 days**
 
+### Architecture V2
+
+| Step | Component | Effort | Staff Signal |
+|------|-----------|--------|-------------|
+| **0** | Sandbox Python executor | 1.5 days | Security isolation — highest open risk |
+| **3** | Content pipeline (Zod + hashed artifacts) | 2 days | Build-time validation, content-as-code |
+| **4** | Frontend reads content from CDN | 1.5 days | Edge caching, backend scales to zero on browse |
+| **5** | `Topic` model + System Design reader | 3 days | Correcting a domain-modelling error |
+| **6** | Postgres schema + migration | 3 days | Storage engine selection, transactional correctness |
+| **7** | Home dashboard + guided study | 3 days | Recursive CTEs, window functions |
+
+**Total V2: ~14 days.** Steps 0–5 (~8 days) are database-agnostic and can begin immediately.
+
 ---
 
 ## Verification Plan
@@ -322,5 +573,14 @@ Key files, dependencies, deployment changes.
 - **2a**: Auth middleware rejects unauthenticated requests. Redis cache survives cold start. Rate limiter shared across instances (test with 2 Cloud Run instances). Cache stampede test with concurrent requests.
 - **2b**: Code execution returns via job polling. Circuit breaker opens on DB kill, serves stale cache. Correlation IDs trace through logs.
 - **2c**: Gateway routes to correct service. Code execution sandboxed (can't access filesystem/network). CDN serves cached assets with correct headers.
+- **V2.0**: Executor cannot open a socket, read outside its jail, or exceed its memory cap.
+- **V2.3**: Malformed content fails CI. Artifacts are byte-identical across repeated builds.
+- **V2.4**: Loading `/algorithms` as a guest issues zero requests to Cloud Run.
+- **V2.5**: `/system-design` renders no difficulty pills and no solved ring.
+- **V2.6**: Per-user progress counts identical pre/post migration. Pool holds under a
+  simulated Cloud Run scale-out.
 
-**Backward compatibility**: Every sub-phase deployable independently. Frontend changes only needed for job polling (2b.1) and CDN headers (2c.3).
+**Backward compatibility**: Every Phase 2 sub-phase deployable independently. V2 Steps 0–5
+are additive and independently deployable; **Step 6 is an intentional breaking change**
+delivered as a full dev→prod cutover, with rollback via Cloud Run revisions and Neon
+database branches rather than a parallel `/v2` API.
