@@ -13,11 +13,143 @@
   "legacyId": "01685aa2-fd94-42d9-9ad9-cd1cdaf751c3",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>You have coin denominations in the array <code>coins</code> and want to make exactly <code>amount</code> units. You may use each denomination any number of times. Return the fewest coins needed, or <code>-1</code> when the amount cannot be formed. A coin contributes its face value; the arrangement of coins does not affect the minimum. Denominations may arrive in any order, and there is no promise that choosing the biggest coin first will succeed.</p>\n<p>Think of every smaller total as a subproblem: an optimal way to form total <code>x</code> can finish with some denomination <code>c</code>, following an optimal way to form <code>x-c</code>. Begin with a cost of zero for total zero and mark unreachable totals distinctly. Comparing all permitted last coins gives the answer without assuming a greedy currency system.</p>\n<p>An empty set of denominations can form only zero. The target zero always takes zero coins, even if the denominations list is empty. Duplicate denominations do not change the answer, and a denomination bigger than the target cannot help. Do not return a coin combination: only the numerical minimum is graded. In particular, with denominations 1, 3, and 4, six is best made by two threes rather than 4+1+1.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> coins = [1,3,4], amount = 6\n<strong>Output:</strong> 2</pre>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> coins = [2], amount = 3\n<strong>Output:</strong> -1</pre>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> coins = [], amount = 0\n<strong>Output:</strong> 0</pre>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= coins.length &lt;= 30</li><li>1 &lt;= coins[i] &lt;= 10,000</li><li>0 &lt;= amount &lt;= 10,000</li><li>Coins can be reused without limit.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def coinChange(self, coins: List[int], amount: int) -> int:\n        \"\"\"You have coin denominations in the array <code>coins</code> and want to make exactly <code>amount</code> units.\n\n        Return the result described above.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} coins\n * @param {number} amount\n * @return {number}\n */\nvar coinChange = function(coins, amount) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[1,3,4]",
+        "6"
+      ],
+      "expectedOutput": "2",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "[2]",
+        "3"
+      ],
+      "expectedOutput": "-1",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "[]",
+        "0"
+      ],
+      "expectedOutput": "0",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[1,3,4]",
+        "6"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[2]",
+        "3"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]",
+        "0"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]",
+        "7"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1]",
+        "1"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[4,6]",
+        "8"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,5,10,1]",
+        "27"
+      ],
+      "expectedOutput": "4",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[7,10]",
+        "14"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[5,7]",
+        "1"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,3,4]",
+        "999"
+      ],
+      "expectedOutput": "250",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[9,6,5,1]",
+        "321"
+      ],
+      "expectedOutput": "36",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY",
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

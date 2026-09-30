@@ -13,11 +13,120 @@
   "legacyId": "6a72f8b3-b77d-49a6-89f1-a7ece9ae04de",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>Each pair [start, end] describes a meeting that occupies a room from start until, but not including, end. Given meetings in arbitrary order, return the fewest rooms needed so every meeting can run at its scheduled time. A room freed at time t may immediately host a meeting starting at t. If there are no meetings, return 0.</p>\n  <p>Process meetings in increasing start order and release rooms whose current meeting has ended at or before the next start. The earliest available end time is the first room worth checking; if even that meeting is still running, all occupied rooms remain unavailable. A heap of end times tracks this frontier without needing to scan every room for every meeting.</p>\n  <p>This is the maximum number of simultaneous meetings, not the number of overlapping pairs. Several meetings can start together, and nested meetings may end in a different order from their starts. Treat the ranges as half-open rather than closed when deciding whether endpoints conflict.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> intervals = [[0,30],[5,10],[15,20]]\n<strong>Output:</strong> 2</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> intervals = [[7,10],[2,7]]\n<strong>Output:</strong> 1</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> intervals = []\n<strong>Output:</strong> 0</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 <= intervals.length <= 100,000</code></li>\n    <li><code>-1,000,000 <= start < end <= 1,000,000</code></li>\n    <li><code>Meeting order is arbitrary.</code></li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def minMeetingRooms(self, intervals: List[List[int]]) -> int:\n        \"\"\"Each pair [start, end] describes a meeting that occupies a room from start until, but not including, end. Return the specified result.\"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[][]} intervals\n * @return {number}\n */\nvar minMeetingRooms = function(intervals) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[[0,30],[5,10],[15,20]]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "At most two meetings run at once."
+    },
+    {
+      "inputs": [
+        "[[7,10],[2,7]]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "The second meeting frees its room at 7."
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "There is nothing to schedule."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[[0,30],[5,10],[15,20]]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[7,10],[2,7]]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[1,2]]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1,4],[1,4],[1,4]]"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1,10],[2,3],[4,5],[6,7]]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[-5,0],[0,5],[-2,2]]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[0,20],[1,2],[2,3],[3,4],[4,5]]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[5,6],[1,4],[2,5],[4,8],[6,9]]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[0,10],[1,11],[2,12],[3,13],[4,14],[5,15],[6,16],[7,17],[8,18],[9,19],[10,20],[11,21],[12,22],[13,23],[14,24],[15,25],[16,26],[17,27],[18,28],[19,29],[20,30],[21,31],[22,32],[23,33],[24,34],[25,35],[26,36],[27,37],[28,38],[29,39],[30,40],[31,41],[32,42],[33,43],[34,44],[35,45],[36,46],[37,47],[38,48],[39,49],[40,50],[41,51],[42,52],[43,53],[44,54],[45,55],[46,56],[47,57],[48,58],[49,59],[50,60],[51,61],[52,62],[53,63],[54,64],[55,65],[56,66],[57,67],[58,68],[59,69],[60,70],[61,71],[62,72],[63,73],[64,74],[65,75],[66,76],[67,77],[68,78],[69,79],[70,80],[71,81],[72,82],[73,83],[74,84],[75,85],[76,86],[77,87],[78,88],[79,89]]"
+      ],
+      "expectedOutput": "10",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

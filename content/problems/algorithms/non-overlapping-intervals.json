@@ -13,11 +13,120 @@
   "legacyId": "c91ad8a8-7bd9-443e-b25c-001df4df0ea1",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>Given intervals [start, end] in arbitrary order, remove as few as possible so the remaining intervals do not overlap. Each interval is half-open: it includes its start time but not its end time, so [1,2] and [2,3] can coexist. Return the minimum count removed, not the surviving ranges. An empty input needs zero removals.</p>\n  <p>Choose the interval that finishes first among overlapping options. Finishing earlier leaves at least as much room for every later interval as finishing later; therefore it is never worse to keep the earlier end. Sort by ascending end, breaking ties by ascending start, and accept a range only when its start is at least the end of the last accepted one.</p>\n  <p>Endpoints may be negative, and every input interval has positive duration. Deleting one wide interval can be better than deleting many small intervals contained in it; simply keeping the earliest starting meeting would be wrong. Tied end times need no special answer rule because only the number of removals is returned.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> intervals = [[1,2],[2,3],[3,4],[1,3]]\n<strong>Output:</strong> 1</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> intervals = [[1,2],[1,2],[1,2]]\n<strong>Output:</strong> 2</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> intervals = []\n<strong>Output:</strong> 0</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 <= intervals.length <= 100,000</code></li>\n    <li><code>-1,000,000 <= start < end <= 1,000,000</code></li>\n    <li><code>Each input interval has exactly two integer endpoints.</code></li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:\n        \"\"\"Given intervals [start, end] in arbitrary order, remove as few as possible so the remaining intervals do not overlap. Return the specified result.\"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[][]} intervals\n * @return {number}\n */\nvar eraseOverlapIntervals = function(intervals) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[[1,2],[2,3],[3,4],[1,3]]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "Remove [1,3] to keep three compatible ranges."
+    },
+    {
+      "inputs": [
+        "[[1,2],[1,2],[1,2]]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "Only one identical interval can remain."
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "Nothing needs removal."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[[1,2],[2,3],[3,4],[1,3]]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[1,2],[1,2],[1,2]]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[1,2]]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1,2],[2,3]]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1,100],[2,3],[3,4],[4,5]]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[-3,0],[-2,1],[0,3]]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1,4],[2,3],[3,4],[4,5]]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[0,10],[1,9],[2,8],[3,7]]"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,8],[7,9],[8,10],[9,11],[10,12],[11,13],[12,14],[13,15],[14,16],[15,17],[16,18],[17,19],[18,20],[19,21],[20,22],[21,23],[22,24],[23,25],[24,26],[25,27],[26,28],[27,29],[28,30],[29,31],[30,32],[31,33],[32,34],[33,35],[34,36],[35,37],[36,38],[37,39],[38,40],[39,41],[40,42],[41,43],[42,44],[43,45],[44,46],[45,47],[46,48],[47,49],[48,50],[49,51],[50,52],[51,53],[52,54],[53,55],[54,56],[55,57],[56,58],[57,59],[58,60],[59,61],[60,62],[61,63],[62,64],[63,65],[64,66],[65,67],[66,68],[67,69],[68,70],[69,71],[70,72],[71,73],[72,74],[73,75],[74,76],[75,77],[76,78],[77,79],[78,80],[79,81]]"
+      ],
+      "expectedOutput": "40",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

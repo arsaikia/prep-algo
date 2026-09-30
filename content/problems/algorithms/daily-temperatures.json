@@ -13,11 +13,112 @@
   "legacyId": "f65f3d37-02d3-4449-b820-da9ae5f88bf5",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>Given daily temperatures in chronological order, return an array of equal length. At each index, report how many days must pass before a strictly warmer temperature occurs. If no later day is warmer, report <code>0</code> for that index. An empty input produces an empty result.</p>\n  <p>A later day with the same temperature is not warm enough, and a warm day can resolve the waiting periods of several earlier days. Count the distance in indices, not the temperature difference. The answer refers only to later entries; a warmer day that occurred earlier does not count.</p>\n  <p>The interesting efficiency gain comes from remembering unresolved days in a monotone stack. When a new warm day arrives, it can settle every colder day at the top; the indices still in the stack have not yet seen a strictly warmer value. This avoids comparing every pair of days.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> temperatures = [73,74,75,71,69,72,76,73]\n<strong>Output:</strong> [1,1,4,2,1,1,0,0]</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> temperatures = [30,20,10]\n<strong>Output:</strong> [0,0,0]</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> temperatures = [30,40]\n<strong>Output:</strong> [1,0]</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 &lt;= temperatures.length &lt;= 100,000</code>.</li>\n    <li><code>-100 &lt;= temperatures[i] &lt;= 150</code>.</li>\n    <li>Return exactly one nonnegative count per input day.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def dailyTemperatures(self, temperatures: List[int]) -> List[int]:\n        \"\"\"Compute waits until the next strictly warmer day.\n\n        Args:\n            temperatures: Daily readings in time order\n\n        Returns:\n            List[int]: Waiting days, or zero when none exists\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} temperatures\n * @returns {number[]}\n */\nvar dailyTemperatures = function(temperatures) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[73,74,75,71,69,72,76,73]"
+      ],
+      "expectedOutput": "[1,1,4,2,1,1,0,0]",
+      "explanation": "Example 1 illustrates several days waiting at once."
+    },
+    {
+      "inputs": [
+        "[30,20,10]"
+      ],
+      "expectedOutput": "[0,0,0]",
+      "explanation": "Example 2 illustrates a cooling sequence."
+    },
+    {
+      "inputs": [
+        "[30,40]"
+      ],
+      "expectedOutput": "[1,0]",
+      "explanation": "Example 3 illustrates one warming step."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[73,74,75,71,69,72,76,73]"
+      ],
+      "expectedOutput": "[1,1,4,2,1,1,0,0]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[30,20,10]"
+      ],
+      "expectedOutput": "[0,0,0]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[30,40]"
+      ],
+      "expectedOutput": "[1,0]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "[]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[50,50,50]"
+      ],
+      "expectedOutput": "[0,0,0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[60,59,58,70]"
+      ],
+      "expectedOutput": "[3,2,1,0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[30,60,30,60,90]"
+      ],
+      "expectedOutput": "[1,3,1,1,0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,1,2,3,4,5,6,7,8,9]"
+      ],
+      "expectedOutput": "[1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[42]"
+      ],
+      "expectedOutput": "[0]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "ARRAY"
+  }
 }

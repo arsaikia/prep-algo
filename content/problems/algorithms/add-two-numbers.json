@@ -13,11 +13,125 @@
   "legacyId": "cfb4d5ef-f417-47fe-9a34-88494b3f578a",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>Two nonempty singly linked chains encode nonnegative integers in reverse digit order: the head holds the units digit, followed by tens, hundreds, and so on. Return a newly formed digit chain encoding their arithmetic sum in the same reverse order. Each node value is a single decimal digit.</p>\n  <p>The numbers may have different lengths. Keep carrying into later positions even when one input ends; a leftover carry creates a new final node. Zero is represented by the one-node chain <code>[0]</code>, not an empty chain. Aside from zero itself, the last node of each input is nonzero.</p>\n  <p>The subtlety is that addition can create an extra digit or propagate a carry across a long run of nines. Working from the two heads is convenient because those heads are the least significant digits, exactly where schoolbook addition begins. Input chains must not be interpreted as forward-order numbers.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> l1 = [2,4,3], l2 = [5,6,4]\n<strong>Output:</strong> [7,0,8]</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> l1 = [0], l2 = [0]\n<strong>Output:</strong> [0]</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> l1 = [9,9,9], l2 = [1]\n<strong>Output:</strong> [0,0,0,1]</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>1 &lt;= length of each chain &lt;= 100</code>.</li>\n    <li><code>0 &lt;= node.val &lt;= 9</code>.</li>\n    <li>No input has a leading zero in its usual written form unless it represents zero.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:\n        \"\"\"Add reverse-order digit chains.\n\n        Args:\n            l1: First number, units first\n            l2: Second number, units first\n\n        Returns:\n            Optional[ListNode]: Reverse-order digits of the sum\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {ListNode} l1\n * @param {ListNode} l2\n * @returns {ListNode}\n */\nvar addTwoNumbers = function(l1, l2) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[2,4,3]",
+        "[5,6,4]"
+      ],
+      "expectedOutput": "[7,0,8]",
+      "explanation": "Example 1 illustrates addition with a carry."
+    },
+    {
+      "inputs": [
+        "[0]",
+        "[0]"
+      ],
+      "expectedOutput": "[0]",
+      "explanation": "Example 2 illustrates two zero values."
+    },
+    {
+      "inputs": [
+        "[9,9,9]",
+        "[1]"
+      ],
+      "expectedOutput": "[0,0,0,1]",
+      "explanation": "Example 3 illustrates carry beyond both inputs."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[2,4,3]",
+        "[5,6,4]"
+      ],
+      "expectedOutput": "[7,0,8]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[0]",
+        "[0]"
+      ],
+      "expectedOutput": "[0]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[9,9,9]",
+        "[1]"
+      ],
+      "expectedOutput": "[0,0,0,1]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[1]",
+        "[9,9]"
+      ],
+      "expectedOutput": "[0,0,1]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[5,0,1]",
+        "[5,9]"
+      ],
+      "expectedOutput": "[0,0,2]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[9]",
+        "[9]"
+      ],
+      "expectedOutput": "[8,1]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0]",
+        "[1]"
+      ],
+      "expectedOutput": "[1]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9]",
+        "[1]"
+      ],
+      "expectedOutput": "[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0]",
+        "[9,9,1]"
+      ],
+      "expectedOutput": "[9,9,1]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "LINKEDLIST",
+      "LINKEDLIST"
+    ],
+    "output": "LINKEDLIST"
+  }
 }

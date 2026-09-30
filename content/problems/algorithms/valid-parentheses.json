@@ -13,11 +13,120 @@
   "legacyId": "2fb27369-1b2a-43a2-8376-db2f2eb858a0",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "",
+  "description": "<div>\n  <p>A string <code>s</code> contains only the bracket characters <code>()[]{}</code>. Return <code>true</code> if every opening bracket has a later matching closing bracket and the pairs are properly nested; otherwise return <code>false</code>. An empty string is valid because it contains no unmatched brackets.</p>\n  <p>Matching counts alone are insufficient: <code>(]</code> is invalid despite having an opener and a closer, and <code>([)]</code> is invalid because the close order crosses the opening order. Every closing bracket must match the most recent opening bracket that has not already been closed.</p>\n  <p>This makes the task a natural use of last-in, first-out memory. As characters arrive, retain unmatched openers; on a close, check the top and reject immediately if it is absent or of the wrong kind. A remaining opener at the end also makes the complete string invalid.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> s = \"()[]{}\"\n<strong>Output:</strong> true</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> s = \"([)]\"\n<strong>Output:</strong> false</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> s = \"{[]}\"\n<strong>Output:</strong> true</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 &lt;= s.length &lt;= 10,000</code>.</li>\n    <li><code>s</code> contains only <code>( ) [ ] { }</code> characters.</li>\n    <li>The result is a boolean, not a collection of matching pairs.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def isValid(self, s: str) -> bool:\n        \"\"\"Determine whether the brackets close in proper nesting order.\n\n        Args:\n            s: String consisting solely of brackets\n\n        Returns:\n            bool: True for a balanced string\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} s\n * @returns {boolean}\n */\nvar isValid = function(s) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"()[]{}\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "Example 1 illustrates three distinct matching pairs."
+    },
+    {
+      "inputs": [
+        "\"([)]\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "Example 2 illustrates crossed pairs."
+    },
+    {
+      "inputs": [
+        "\"{[]}\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "Example 3 illustrates nested different bracket kinds."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"()[]{}\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"([)]\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"{[]}\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\")(\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"(((((())))))\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"[({})]\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"([[[{}]]])\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((()))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"{}[](()())\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING"
+    ],
+    "output": "BOOLEAN"
+  }
 }

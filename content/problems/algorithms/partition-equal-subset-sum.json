@@ -13,11 +13,136 @@
   "legacyId": "705e55e6-007e-4899-9425-44c6dbfa1e20",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Given nonnegative integers in <code>nums</code>, decide whether you can split their indices into two disjoint groups whose sums are equal. Every element belongs to exactly one group, even if several elements have the same value. Return a boolean. A group may be empty; therefore an empty array can be split into two empty groups with equal sum, and an array of zeroes can also qualify.</p>\n<p>An equal split requires an even total and one group summing to exactly half of it. After processing a prefix, keep track of reachable subset sums. Each new value can either join the selected group or remain in the other group; process sums in descending order so a single occurrence cannot be reused within the same step. The subproblem is reachability, not finding the fewest elements or merely comparing the two largest values.</p>\n<p>With <code>[1,5,11,5]</code>, the single 11 can balance 1+5+5. In contrast, <code>[1,2,3,5]</code> has an odd total and cannot work. Duplicates are distinct occurrences, not infinitely reusable denominations. Return only true or false; no particular arrangement of groups needs to be produced. A greedy attempt to distribute large numbers one at a time can miss a valid partition.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> nums = [1,5,11,5]\n<strong>Output:</strong> true</pre>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> nums = [1,2,3,5]\n<strong>Output:</strong> false</pre>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> nums = []\n<strong>Output:</strong> true</pre>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= nums.length &lt;= 200</li><li>0 &lt;= nums[i] &lt;= 100</li><li>Each index must appear in exactly one of the two groups.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def canPartition(self, nums: List[int]) -> bool:\n        \"\"\"Given nonnegative integers in <code>nums</code>, decide whether you can split their indices into two disjoint groups whose sums are equal.\n\n        Return the result described above.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} nums\n * @return {boolean}\n */\nvar canPartition = function(nums) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[1,5,11,5]"
+      ],
+      "expectedOutput": "true",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "[1,2,3,5]"
+      ],
+      "expectedOutput": "false",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "true",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[1,5,11,5]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[1,2,3,5]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[1]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,2]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2,5]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[3,3,3,4,5]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2,3,4,5,5]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "BOOLEAN"
+  }
 }

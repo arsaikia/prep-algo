@@ -13,11 +13,120 @@
   "legacyId": "06327222-6934-4929-b845-865c9e30faa1",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "",
+  "description": "<div>\n  <p>A person receives a collection of meeting times, each represented as [start, end]. Meetings use half-open time ranges: a meeting beginning at the exact end of another does not clash with it. Return true if one person can attend every meeting in full, or false if any two meetings require their presence at the same instant. An empty schedule is attendable.</p>\n  <p>Sort by start time and compare each meeting with the one immediately before it. If the previous end extends beyond the next start, attendance is impossible. Otherwise there cannot be a hidden earlier conflict: after a sorted sequence of nonconflicting meetings, all earlier meetings finish no later than the immediately previous one. Sorting exposes the only neighboring boundary that needs checking.</p>\n  <p>The original list may arrive in any order, and meeting times may be negative. Endpoint contact is safe but a positive-length overlap is not. Return a Boolean, not a schedule or a count; do not mutate the input to express the result.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> intervals = [[0,30],[5,10],[15,20]]\n<strong>Output:</strong> false</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> intervals = [[7,10],[2,7]]\n<strong>Output:</strong> true</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> intervals = []\n<strong>Output:</strong> true</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 <= intervals.length <= 100,000</code></li>\n    <li><code>-1,000,000 <= start < end <= 1,000,000</code></li>\n    <li><code>Each interval has exactly two integer endpoints.</code></li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def canAttendMeetings(self, intervals: List[List[int]]) -> bool:\n        \"\"\"A person receives a collection of meeting times, each represented as [start, end]. Return the specified result.\"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[][]} intervals\n * @return {boolean}\n */\nvar canAttendMeetings = function(intervals) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[[0,30],[5,10],[15,20]]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "The first and second meetings overlap."
+    },
+    {
+      "inputs": [
+        "[[7,10],[2,7]]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "One meeting ends just as the next begins."
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "An empty schedule has no conflicts."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[[0,30],[5,10],[15,20]]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[7,10],[2,7]]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[0,1]]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1,2],[1,2]]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[-5,-2],[-2,0],[0,3]]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1,10],[2,3],[11,15]]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[8,9],[1,3],[4,5],[2,4]]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[10,11],[5,10],[0,5]]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[0,1],[2,3],[4,5],[6,7],[8,9],[10,11],[12,13],[14,15],[16,17],[18,19],[20,21],[22,23],[24,25],[26,27],[28,29],[30,31],[32,33],[34,35],[36,37],[38,39],[40,41],[42,43],[44,45],[46,47],[48,49],[50,51],[52,53],[54,55],[56,57],[58,59],[60,61],[62,63],[64,65],[66,67],[68,69],[70,71],[72,73],[74,75],[76,77],[78,79],[80,81],[82,83],[84,85],[86,87],[88,89],[90,91],[92,93],[94,95],[96,97],[98,99],[100,101],[102,103],[104,105],[106,107],[108,109],[110,111],[112,113],[114,115],[116,117],[118,119],[120,121],[122,123],[124,125],[126,127],[128,129],[130,131],[132,133],[134,135],[136,137],[138,139],[140,141],[142,143],[144,145],[146,147],[148,149],[150,151],[152,153],[154,155],[156,157],[158,159],[160,161],[162,163],[164,165],[166,167],[168,169],[170,171],[172,173],[174,175],[176,177],[178,179],[180,181],[182,183],[184,185],[186,187],[188,189],[190,191],[192,193],[194,195],[196,197],[198,199]]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "BOOLEAN"
+  }
 }

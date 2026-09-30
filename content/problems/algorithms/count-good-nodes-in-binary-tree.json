@@ -79,9 +79,31 @@
       "inputs": [
         "[10,5,15,3,7,12,18]"
       ],
-      "expectedOutput": "4",
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,2,2]"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[-1,-2,0]"
+      ],
+      "expectedOutput": "2",
       "explanation": "",
       "isHidden": true
     }
-  ]
+  ],
+  "types": {
+    "inputs": [
+      "TREE"
+    ],
+    "output": "NUMBER"
+  }
 }

@@ -13,11 +13,143 @@
   "legacyId": "590b2cf5-6c5e-4244-9087-e812bb2d88e9",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Given a string <code>s</code> and a collection <code>wordDict</code> of allowed words, decide whether the entire string can be segmented into a sequence of one or more dictionary words. Return true or false. Words may be used repeatedly, and the pieces must occur in order without leaving any characters unmatched. Dictionary entries are case-sensitive. No entry is empty.</p>\n<p>For each prefix position, ask whether the characters before it can already be segmented. A later position becomes reachable when an allowed word exactly matches the intervening substring. This prefix view shares work among many possible splits: trying the longest word first and refusing to backtrack can miss a valid shorter first piece. With an empty input string, the empty sequence of words is a valid segmentation, so return true even if the dictionary is empty.</p>\n<p>For a nonempty string and an empty dictionary, return false. Reusing a word costs nothing and there is no cap on how many pieces the segmentation contains. With <code>leetcode</code> and the words <code>leet</code> and <code>code</code>, the whole string is covered; a prefix match alone would not suffice if trailing characters remained. Only the existence of a complete decomposition matters, not its spelling or the number of decompositions.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> s = &quot;leetcode&quot;, wordDict = [&quot;leet&quot;,&quot;code&quot;]\n<strong>Output:</strong> true</pre>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> s = &quot;catsandog&quot;, wordDict = [&quot;cats&quot;,&quot;dog&quot;,&quot;sand&quot;,&quot;and&quot;,&quot;cat&quot;]\n<strong>Output:</strong> false</pre>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> s = &quot;&quot;, wordDict = []\n<strong>Output:</strong> true</pre>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= s.length &lt;= 300</li><li>0 &lt;= wordDict.length &lt;= 100</li><li>1 &lt;= wordDict[i].length &lt;= 20</li><li>s and dictionary words contain lowercase English letters.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def wordBreak(self, s: str, wordDict: List[str]) -> bool:\n        \"\"\"Given a string <code>s</code> and a collection <code>wordDict</code> of allowed words, decide whether the entire string can be segmented into a sequence of one or more dictionary words.\n\n        Return the result described above.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} s\n * @param {string[]} wordDict\n * @return {boolean}\n */\nvar wordBreak = function(s, wordDict) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"leetcode\"",
+        "[\"leet\",\"code\"]"
+      ],
+      "expectedOutput": "true",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "\"catsandog\"",
+        "[\"cats\",\"dog\",\"sand\",\"and\",\"cat\"]"
+      ],
+      "expectedOutput": "false",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "[]"
+      ],
+      "expectedOutput": "true",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"leetcode\"",
+        "[\"leet\",\"code\"]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"catsandog\"",
+        "[\"cats\",\"dog\",\"sand\",\"and\",\"cat\"]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "[]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "[]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "[\"a\"]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaa\"",
+        "[\"aaaa\",\"aaa\"]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"cars\"",
+        "[\"car\",\"ca\",\"rs\"]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"applepenapple\"",
+        "[\"apple\",\"pen\"]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\"",
+        "[\"a\",\"ab\",\"bab\"]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab\"",
+        "[\"a\",\"aa\",\"aaa\",\"aaaa\",\"aaaaa\"]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"",
+        "[\"a\",\"aa\",\"aaa\"]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "ARRAY"
+    ],
+    "output": "BOOLEAN"
+  }
 }

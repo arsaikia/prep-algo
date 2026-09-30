@@ -13,11 +13,136 @@
   "legacyId": "f4f87932-4b66-4d08-bbf7-4c50861da4b8",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "",
+  "description": "<div>\n<p>A staircase has exactly <code>n</code> steps above the floor. On each move you may advance either one step or two steps, and you must land precisely at the top. Return the number of distinct move sequences. Two climbs count as different when they choose different step lengths at any position; the order of moves matters, even if the totals are equal. For example, one-plus-two and two-plus-one are different routes.</p>\n<p>The answer for a height can be built from the answers for the preceding two heights: the last move came from either one step below or two steps below. Count the route that takes no moves as one way to stand at height zero. For a single step there is only the one-step route. This is a counting problem, not a request to print the routes, and every valid sequence is included exactly once. Use a running recurrence instead of constructing the exponentially many sequences.</p>\n<p>There are no blocked steps or restrictions on reusing either move size. Values are chosen so the count fits a signed 32-bit integer. The input is one integer, not a list of heights; return a single integer. A height of zero is allowed and represents staying at the floor, which is one completed climb.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> n = 4\n<strong>Output:</strong> 5</pre>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> n = 5\n<strong>Output:</strong> 8</pre>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> n = 0\n<strong>Output:</strong> 1</pre>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= n &lt;= 45</li><li>n = 0 has exactly one way: use no moves.</li><li>The result fits a signed 32-bit integer.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def climbStairs(self, n: int) -> int:\n        \"\"\"A staircase has exactly <code>n</code> steps above the floor.\n\n        Return the result described above.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number} n\n * @return {number}\n */\nvar climbStairs = function(n) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "4"
+      ],
+      "expectedOutput": "5",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "5"
+      ],
+      "expectedOutput": "8",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "0"
+      ],
+      "expectedOutput": "1",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "4"
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "5"
+      ],
+      "expectedOutput": "8",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "0"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "1"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "3"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "6"
+      ],
+      "expectedOutput": "13",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "10"
+      ],
+      "expectedOutput": "89",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "20"
+      ],
+      "expectedOutput": "10946",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "30"
+      ],
+      "expectedOutput": "1346269",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "40"
+      ],
+      "expectedOutput": "165580141",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "45"
+      ],
+      "expectedOutput": "1836311903",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

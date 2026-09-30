@@ -13,11 +13,128 @@
   "legacyId": "a5d9fc95-0fb6-4d4b-8453-77c7e321ae41",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Given the integer array <code>nums</code>, return the largest product obtainable from one nonempty contiguous segment. Contiguous means choosing indices from some start through some end with no gaps. You may choose a segment of just one element; you may not multiply an empty segment. The output is its numerical product, not the segment's boundaries.</p>\n<p>For a segment ending at a given position, keep both the largest and the smallest product possible. Multiplying by a negative value swaps their roles, so discarding the smallest product can lose the best answer later. A zero breaks any continuing product but is itself a valid one-element segment. Compare against the best seen anywhere, because the winning segment need not end at the last element.</p>\n<p>The array has at least one element. Negative numbers, positive numbers, and zeros can be mixed. Do not take the maximum over arbitrary subsequences: skipping a bad element would change the problem. With values <code>[2,3,-2,4]</code>, the best product is six from the first two elements, not twenty-four from skipping -2. Values and lengths are limited so products used in the supplied cases fit the signed 32-bit range.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> nums = [2,3,-2,4]\n<strong>Output:</strong> 6</pre>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> nums = [-2,0,-1]\n<strong>Output:</strong> 0</pre>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> nums = [-2,3,-4]\n<strong>Output:</strong> 24</pre>\n<p><strong>Constraints:</strong></p><ul><li>1 &lt;= nums.length &lt;= 100</li><li>-10 &lt;= nums[i] &lt;= 10</li><li>The product of every contiguous subarray fits a signed 32-bit integer.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def maxProduct(self, nums: List[int]) -> int:\n        \"\"\"Given the integer array <code>nums</code>, return the largest product obtainable from one nonempty contiguous segment.\n\n        Return the result described above.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} nums\n * @return {number}\n */\nvar maxProduct = function(nums) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[2,3,-2,4]"
+      ],
+      "expectedOutput": "6",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "[-2,0,-1]"
+      ],
+      "expectedOutput": "0",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "[-2,3,-4]"
+      ],
+      "expectedOutput": "24",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[2,3,-2,4]"
+      ],
+      "expectedOutput": "6",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[-2,0,-1]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[-2,3,-4]"
+      ],
+      "expectedOutput": "24",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[7]"
+      ],
+      "expectedOutput": "7",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[-7]"
+      ],
+      "expectedOutput": "-7",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[-2,-3,-4]"
+      ],
+      "expectedOutput": "12",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,-5,-2,-4,3]"
+      ],
+      "expectedOutput": "24",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,-2,-3,0,-4,-5]"
+      ],
+      "expectedOutput": "20",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,2,-3,4,-5,6,0,3,4]"
+      ],
+      "expectedOutput": "720",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

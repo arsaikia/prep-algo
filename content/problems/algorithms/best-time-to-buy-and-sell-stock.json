@@ -13,11 +13,120 @@
   "legacyId": "e6e23da1-2600-4733-87ba-7524a53c6020",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "",
+  "description": "<div>\n  <p>An array prices gives the quoted price of one share on successive days. Choose at most one day to buy and a strictly later day to sell; return the greatest profit you can make. If every possible trade loses money, decline to trade and return 0. An empty array also yields 0. You cannot sell before buying or make more than one purchase-and-sale pair.</p>\n  <p>Keep the cheapest price seen before the current day. A new day can improve a trade using that cheapest buy price, or become a cheaper future buy; older, dearer buy days can never become preferable again. This lets the candidate window move forward without revisiting prior days. Equal prices are legal and give a zero-profit trade, which is indistinguishable from making no trade.</p>\n  <p>The answer is a profit amount, not the two day indices. A high price that occurs before the lowest price must not be counted as a profitable sale: chronological order matters more than the difference between the overall maximum and minimum.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> prices = [7,1,5,3,6,4]\n<strong>Output:</strong> 5</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> prices = [7,6,4,3,1]\n<strong>Output:</strong> 0</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> prices = []\n<strong>Output:</strong> 0</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 <= prices.length <= 100,000</code></li>\n    <li><code>0 <= prices[i] <= 100,000</code></li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def maxProfit(self, prices: List[int]) -> int:\n        \"\"\"An array prices gives the quoted price of one share on successive days. Return the specified result.\"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} prices\n * @return {number}\n */\nvar maxProfit = function(prices) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[7,1,5,3,6,4]"
+      ],
+      "expectedOutput": "5",
+      "explanation": "Buy for 1, then sell for 6."
+    },
+    {
+      "inputs": [
+        "[7,6,4,3,1]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "No later price beats an earlier purchase."
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "There are no trading days."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[7,1,5,3,6,4]"
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[7,6,4,3,1]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[5]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,1]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[10,1,9,2,8]"
+      ],
+      "expectedOutput": "8",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,5,2,9,1,11]"
+      ],
+      "expectedOutput": "10",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[4,4,4]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[100,99,98,97,96,95,94,93,92,91,90,89,88,87,86,85,84,83,82,81,80,79,78,77,76,75,74,73,72,71,70,69,68,67,66,65,64,63,62,61,60,59,58,57,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41,40,39,38,37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0,1000]"
+      ],
+      "expectedOutput": "1000",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

@@ -13,11 +13,112 @@
   "legacyId": "605dff78-4512-417a-965f-4b7aa433d9bd",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n  <p>You are given <code>lists</code>, an array of zero or more singly linked chains. To express multiple chains in JSON, each input chain is supplied as an array of its values, in head-to-tail order; an empty array denotes an empty chain. Every chain is individually sorted in nondecreasing order. Return a single linked-chain head containing all values in nondecreasing order, including duplicates.</p>\n  <p>The input can contain zero chains or any number of empty chains, in which case return a null head (serialized as <code>null</code>). Return a <code>ListNode</code> head, not a flat array: the grader serializes nonempty returned chains into the output arrays shown below. Construct nodes from the supplied per-chain arrays when you need to manipulate links, or merge directly from their current indices.</p>\n  <p>The interesting trade-off is between repeatedly searching all current heads and selecting the next smallest efficiently. A heap of current candidates or pairwise merging makes many short chains manageable. Never assume the first list always supplies the next smallest element, and retain all equal values.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> lists = [[1,4,5],[1,3,4],[2,6]]\n<strong>Output:</strong> [1,1,2,3,4,4,5,6]</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> lists = []\n<strong>Output:</strong> null</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> lists = [[],[1,2],[],[3]]\n<strong>Output:</strong> [1,2,3]</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 &lt;= lists.length &lt;= 100</code>.</li>\n    <li><code>0 &lt;= length of each chain &lt;= 100</code>.</li>\n    <li><code>-10,000 &lt;= node.val &lt;= 10,000</code>.</li>\n    <li>Each inner array represents one sorted chain.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def mergeKLists(self, lists: List[List[int]]) -> Optional[ListNode]:\n        \"\"\"Merge an array of sorted chain representations.\n\n        Args:\n            lists: Sorted values of each linked chain\n\n        Returns:\n            Optional[ListNode]: Head of the globally sorted chain\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[][]} lists\n * @returns {ListNode|null}\n */\nvar mergeKLists = function(lists) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[[1,4,5],[1,3,4],[2,6]]"
+      ],
+      "expectedOutput": "[1,1,2,3,4,4,5,6]",
+      "explanation": "Example 1 illustrates three interleaved chains."
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "null",
+      "explanation": "Example 2 illustrates no chains."
+    },
+    {
+      "inputs": [
+        "[[],[1,2],[],[3]]"
+      ],
+      "expectedOutput": "[1,2,3]",
+      "explanation": "Example 3 illustrates empty chains mixed with nonempty ones."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[[1,4,5],[1,3,4],[2,6]]"
+      ],
+      "expectedOutput": "[1,1,2,3,4,4,5,6]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "null",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[],[1,2],[],[3]]"
+      ],
+      "expectedOutput": "[1,2,3]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[],[],[]]"
+      ],
+      "expectedOutput": "null",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[0]]"
+      ],
+      "expectedOutput": "[0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[-4,-4],[-4,2],[-3,10]]"
+      ],
+      "expectedOutput": "[-4,-4,-4,-3,2,10]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[0,3,6,9,12,15,18,21,24,27,30,33,36,39],[1,4,7,10,13,16,19,22,25,28,31,34,37],[2,5,8,11,14,17,20,23,26,29,32,35,38]]"
+      ],
+      "expectedOutput": "[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[5],[],[1,2,3],[4,6,7]]"
+      ],
+      "expectedOutput": "[1,2,3,4,5,6,7]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1,5],[2,5],[3,5],[4,5]]"
+      ],
+      "expectedOutput": "[1,2,3,4,5,5,5,5]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "LINKEDLIST"
+  }
 }

@@ -13,11 +13,128 @@
   "legacyId": "7030e99c-0f34-423f-8a6f-db1f4b5fa25a",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Given a string <code>s</code>, count all its nonempty contiguous substrings that are palindromes. A palindrome reads the same forward and backward, and substrings are identified by their positions rather than only by their text. Thus two occurrences of the same letter at different indices each add one to the count. Return an integer, not a list of substrings.</p>\n<p>Every palindrome has a center: either one character for odd lengths or a gap for even lengths. Expand while the characters on both sides agree, adding one for every matching span. This naturally counts overlapping spans and equal-looking substrings at different locations separately. Checking only whole words or only longest palindromes misses shorter palindromes nested inside them. Comparison is case-sensitive.</p>\n<p>The empty string has no nonempty substring and returns zero; a single character contributes one. For <code>aaa</code>, count all three single letters, both occurrences of <code>aa</code>, and the complete <code>aaa</code>, giving six. Do not count an empty span at any position. An alternating string such as <code>abab</code> still contains longer odd-length palindromes even though it has no matching neighboring letters.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> s = &quot;abc&quot;\n<strong>Output:</strong> 3</pre>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> s = &quot;aaa&quot;\n<strong>Output:</strong> 6</pre>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> s = &quot;&quot;\n<strong>Output:</strong> 0</pre>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= s.length &lt;= 1,000</li><li>s consists of English letters and decimal digits.</li><li>Count different index ranges separately, even if their texts match.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def countSubstrings(self, s: str) -> int:\n        \"\"\"Given a string <code>s</code>, count all its nonempty contiguous substrings that are palindromes.\n\n        Return the result described above.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} s\n * @return {number}\n */\nvar countSubstrings = function(s) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"abc\""
+      ],
+      "expectedOutput": "3",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "\"aaa\""
+      ],
+      "expectedOutput": "6",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "\"\""
+      ],
+      "expectedOutput": "0",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"abc\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"aaa\""
+      ],
+      "expectedOutput": "6",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\""
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"a\""
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aa\""
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abba\""
+      ],
+      "expectedOutput": "6",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abab\""
+      ],
+      "expectedOutput": "6",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aA\""
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abcba\""
+      ],
+      "expectedOutput": "7",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\""
+      ],
+      "expectedOutput": "7260",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\""
+      ],
+      "expectedOutput": "6480",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING"
+    ],
+    "output": "NUMBER"
+  }
 }

@@ -13,11 +13,112 @@
   "legacyId": "40f997ea-ca27-4b9a-8f53-05d71cb400bf",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>Evaluate an arithmetic expression given as an array <code>tokens</code> in postfix (reverse Polish) order. A token is either a signed base-10 integer or one of <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>. Return the final integer value after applying every operator.</p>\n  <p>An operator consumes the two most recent values, using the older as its left operand and the newer as its right operand. Division discards any fractional part toward zero, including for negative quotients. Expressions are guaranteed valid, with no zero divisor and exactly one final value. A lone integer token is a valid expression.</p>\n  <p>The challenge is respecting operand order and truncation: subtraction and division cannot exchange their operands, and flooring negative division gives a different answer from truncating toward zero. A stack holds the intermediate values until an operator combines them.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> tokens = [\"2\",\"1\",\"+\",\"3\",\"*\"]\n<strong>Output:</strong> 9</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> tokens = [\"4\",\"13\",\"5\",\"/\",\"+\"]\n<strong>Output:</strong> 6</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> tokens = [\"10\",\"6\",\"9\",\"3\",\"+\",\"-11\",\"*\",\"/\",\"*\",\"17\",\"+\",\"5\",\"+\"]\n<strong>Output:</strong> 22</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>1 &lt;= tokens.length &lt;= 10,000</code>.</li>\n    <li>Integer tokens and intermediate results fit within signed 32-bit integers.</li>\n    <li>Every operator has two available operands; no divisor is zero.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def evalRPN(self, tokens: List[str]) -> int:\n        \"\"\"Evaluate a valid postfix arithmetic expression.\n\n        Args:\n            tokens: Integer tokens and binary operators in postfix order\n\n        Returns:\n            int: Integer result, dividing toward zero\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {string[]} tokens\n * @returns {number}\n */\nvar evalRPN = function(tokens) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[\"2\",\"1\",\"+\",\"3\",\"*\"]"
+      ],
+      "expectedOutput": "9",
+      "explanation": "Example 1 illustrates addition followed by multiplication."
+    },
+    {
+      "inputs": [
+        "[\"4\",\"13\",\"5\",\"/\",\"+\"]"
+      ],
+      "expectedOutput": "6",
+      "explanation": "Example 2 illustrates division before addition."
+    },
+    {
+      "inputs": [
+        "[\"10\",\"6\",\"9\",\"3\",\"+\",\"-11\",\"*\",\"/\",\"*\",\"17\",\"+\",\"5\",\"+\"]"
+      ],
+      "expectedOutput": "22",
+      "explanation": "Example 3 illustrates nested operations and signed values."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[\"2\",\"1\",\"+\",\"3\",\"*\"]"
+      ],
+      "expectedOutput": "9",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"4\",\"13\",\"5\",\"/\",\"+\"]"
+      ],
+      "expectedOutput": "6",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"10\",\"6\",\"9\",\"3\",\"+\",\"-11\",\"*\",\"/\",\"*\",\"17\",\"+\",\"5\",\"+\"]"
+      ],
+      "expectedOutput": "22",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"-7\",\"3\",\"/\"]"
+      ],
+      "expectedOutput": "-2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"7\",\"-3\",\"/\"]"
+      ],
+      "expectedOutput": "-2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"5\"]"
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"3\",\"10\",\"-\"]"
+      ],
+      "expectedOutput": "-7",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\",\"11\",\"12\",\"13\",\"14\",\"15\",\"16\",\"17\",\"18\",\"19\",\"20\",\"21\",\"22\",\"23\",\"24\",\"25\",\"26\",\"27\",\"28\",\"29\",\"30\",\"31\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\",\"+\"]"
+      ],
+      "expectedOutput": "496",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"2\",\"3\",\"-\",\"4\",\"/\"]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

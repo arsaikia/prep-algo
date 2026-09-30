@@ -87,9 +87,34 @@
         "[10,5,15,3,7,12,18]",
         "4"
       ],
+      "expectedOutput": "10",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,1,3]",
+        "2"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[4,2,6,1,3,5,7]",
+        "7"
+      ],
       "expectedOutput": "7",
       "explanation": "",
       "isHidden": true
     }
-  ]
+  ],
+  "types": {
+    "inputs": [
+      "TREE",
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

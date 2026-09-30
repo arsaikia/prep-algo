@@ -13,11 +13,134 @@
   "legacyId": "413c4fe0-140a-4d5b-a28f-e38dbe1affd5",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n  <p>Given strings s and t, find the shortest contiguous substring of s containing every character of t at least as many times as it occurs in t. Character matching is case-sensitive, and repeated letters in t require separate occurrences. Return the substring itself, or the empty string if no such substring exists or t is empty. The source string may also be empty.</p>\n  <p>Track how many of each required character are present while expanding a window to the right. Once all counts are satisfied, try moving the left edge right to remove unnecessary characters, recording the shortest valid span along the way. If dropping a character breaks a requirement, every earlier start is at least as long, so the left boundary can advance without backtracking.</p>\n  <p>Several shortest substrings may exist. Return the leftmost one, meaning the one with the smallest starting index; update a saved answer only for a strictly shorter span. Extra characters, including those not in t, may appear inside the result. A letter in a different case does not satisfy a requirement.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> s = \"ADOBECODEBANC\", t = \"ABC\"\n<strong>Output:</strong> \"BANC\"</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> s = \"aa\", t = \"aa\"\n<strong>Output:</strong> \"aa\"</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> s = \"a\", t = \"aa\"\n<strong>Output:</strong> \"\"</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 <= s.length, t.length <= 100,000</code></li>\n    <li><code>s and t contain printable ASCII characters</code></li>\n    <li><code>If t.length > s.length, no window exists.</code></li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def minWindow(self, s: str, t: str) -> str:\n        \"\"\"Given strings s and t, find the shortest contiguous substring of s containing every character of t at least as many times as it occurs in t. Return the specified result.\"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} s\n * @param {string} t\n * @return {string}\n */\nvar minWindow = function(s, t) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"ADOBECODEBANC\"",
+        "\"ABC\""
+      ],
+      "expectedOutput": "\"BANC\"",
+      "explanation": "BANC is the shortest span holding A, B, and C."
+    },
+    {
+      "inputs": [
+        "\"aa\"",
+        "\"aa\""
+      ],
+      "expectedOutput": "\"aa\"",
+      "explanation": "Two a characters are required."
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"aa\""
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "The source lacks a second a."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"ADOBECODEBANC\"",
+        "\"ABC\""
+      ],
+      "expectedOutput": "\"BANC\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"aa\"",
+        "\"aa\""
+      ],
+      "expectedOutput": "\"aa\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"aa\""
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"x\""
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"\""
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"ab\"",
+        "\"b\""
+      ],
+      "expectedOutput": "\"b\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abdcab\"",
+        "\"ab\""
+      ],
+      "expectedOutput": "\"ab\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"ABaBc\"",
+        "\"ABC\""
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"cabbaac\"",
+        "\"aab\""
+      ],
+      "expectedOutput": "\"baa\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxABCDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxCBA\"",
+        "\"ABC\""
+      ],
+      "expectedOutput": "\"ABC\"",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "STRING"
+    ],
+    "output": "STRING"
+  }
 }

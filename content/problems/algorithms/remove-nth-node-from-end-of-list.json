@@ -13,11 +13,125 @@
   "legacyId": "546d9e2b-f232-4a88-adb6-68c2eb118efc",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>Given the head of a nonempty singly linked chain and a positive integer <code>n</code>, remove the node that is <code>n</code> positions from the end. The tail is position 1. Return the head of the resulting chain, even if the removed node was the original head. If no nodes remain, return a null head (<code>null</code> output).</p>\n  <p>The integer is guaranteed to be no larger than the chain length. Keep all other nodes in their original relative order; repeated values identify separate nodes, so the choice is positional rather than value-based. For a chain of length five, <code>n = 2</code> removes the fourth node.</p>\n  <p>This problem is interesting because a singly linked node cannot step backwards. Holding two pointers exactly <code>n</code> nodes apart allows the leading pointer to find the end while the trailing one arrives just before the node to unlink. A dummy predecessor makes deletion of the head follow the same pattern.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> head = [1,2,3,4,5], n = 2\n<strong>Output:</strong> [1,2,3,5]</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> head = [1], n = 1\n<strong>Output:</strong> null</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> head = [1,2,3], n = 3\n<strong>Output:</strong> [2,3]</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>1 &lt;= number of nodes &lt;= 5,000</code>.</li>\n    <li><code>1 &lt;= n &lt;= number of nodes</code>.</li>\n    <li><code>-1,000 &lt;= node.val &lt;= 1,000</code>.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def removeNthFromEnd(self, head: ListNode, n: int) -> Optional[ListNode]:\n        \"\"\"Remove the nth node counted backwards and return the new head.\n\n        Args:\n            head: Nonempty chain\n            n: Position counted from the tail\n\n        Returns:\n            Optional[ListNode]: Head after removal, possibly None\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {ListNode} head\n * @param {number} n\n * @returns {ListNode|null}\n */\nvar removeNthFromEnd = function(head, n) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[1,2,3,4,5]",
+        "2"
+      ],
+      "expectedOutput": "[1,2,3,5]",
+      "explanation": "Example 1 illustrates removing an internal node."
+    },
+    {
+      "inputs": [
+        "[1]",
+        "1"
+      ],
+      "expectedOutput": "null",
+      "explanation": "Example 2 illustrates removing the only node."
+    },
+    {
+      "inputs": [
+        "[1,2,3]",
+        "3"
+      ],
+      "expectedOutput": "[2,3]",
+      "explanation": "Example 3 illustrates removing the head."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[1,2,3,4,5]",
+        "2"
+      ],
+      "expectedOutput": "[1,2,3,5]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[1]",
+        "1"
+      ],
+      "expectedOutput": "null",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[1,2,3]",
+        "3"
+      ],
+      "expectedOutput": "[2,3]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[1,2]",
+        "1"
+      ],
+      "expectedOutput": "[1]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2]",
+        "2"
+      ],
+      "expectedOutput": "[2]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[8,8,8,9]",
+        "2"
+      ],
+      "expectedOutput": "[8,8,9]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]",
+        "1"
+      ],
+      "expectedOutput": "[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]",
+        "30"
+      ],
+      "expectedOutput": "[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[4,3,2,1]",
+        "3"
+      ],
+      "expectedOutput": "[4,2,1]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "LINKEDLIST",
+      "NUMBER"
+    ],
+    "output": "LINKEDLIST"
+  }
 }

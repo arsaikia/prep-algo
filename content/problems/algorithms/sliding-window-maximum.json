@@ -13,11 +13,134 @@
   "legacyId": "a93f86d9-4a1c-433d-a85b-35478e7aae8b",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n  <p>Given an integer array nums and a width k, report the largest value in each consecutive subarray of exactly k elements, moving the window one position at a time from left to right. Return the maxima in window-start order. For an empty array, k is 0 and the result is []; otherwise k is between 1 and the array length.</p>\n  <p>Maintain indices of candidates in a deque, ordered so their values decrease from front to back. When a new value arrives, discard older candidates no greater than it: the new value survives at least as long and is never a worse maximum. Remove a front index once it exits the window. Each index enters and leaves at most once, so no window needs to be rescanned from scratch.</p>\n  <p>Equal maxima should yield their value once for each window, not a distinct index. Negative numbers count normally: the largest of [-5,-2] is -2. If k equals 1, the output matches nums; if k equals the entire nonempty array length, the output has one element.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> nums = [1,3,-1,-3,5,3,6,7], k = 3\n<strong>Output:</strong> [3,3,5,5,6,7]</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> nums = [4,-2,4], k = 2\n<strong>Output:</strong> [4,4]</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> nums = [], k = 0\n<strong>Output:</strong> []</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 <= nums.length <= 100,000</code></li>\n    <li><code>-1,000,000 <= nums[i] <= 1,000,000</code></li>\n    <li><code>For nonempty nums, 1 <= k <= nums.length; for empty nums, k = 0.</code></li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def maxSlidingWindow(self, nums: List[int], k: int) -> List[int]:\n        \"\"\"Given an integer array nums and a width k, report the largest value in each consecutive subarray of exactly k elements, moving the window one position at a time from left to right. Return the specified result.\"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} nums\n * @param {number} k\n * @return {number[]}\n */\nvar maxSlidingWindow = function(nums, k) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[1,3,-1,-3,5,3,6,7]",
+        "3"
+      ],
+      "expectedOutput": "[3,3,5,5,6,7]",
+      "explanation": "Each value is the maximum of its three-element window."
+    },
+    {
+      "inputs": [
+        "[4,-2,4]",
+        "2"
+      ],
+      "expectedOutput": "[4,4]",
+      "explanation": "Both windows include a 4."
+    },
+    {
+      "inputs": [
+        "[]",
+        "0"
+      ],
+      "expectedOutput": "[]",
+      "explanation": "There are no windows."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[1,3,-1,-3,5,3,6,7]",
+        "3"
+      ],
+      "expectedOutput": "[3,3,5,5,6,7]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[4,-2,4]",
+        "2"
+      ],
+      "expectedOutput": "[4,4]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]",
+        "0"
+      ],
+      "expectedOutput": "[]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[5]",
+        "1"
+      ],
+      "expectedOutput": "[5]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[-5,-2,-9]",
+        "2"
+      ],
+      "expectedOutput": "[-2,-2]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2,3,4,5]",
+        "3"
+      ],
+      "expectedOutput": "[3,4,5]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[5,4,3,2,1]",
+        "3"
+      ],
+      "expectedOutput": "[5,4,3]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,2,2,2]",
+        "2"
+      ],
+      "expectedOutput": "[2,2,2]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[3,1,2]",
+        "3"
+      ],
+      "expectedOutput": "[3]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[-15,1,-14,2,-13,3,-12,4,-11,5,-10,6,-9,7,-8,8,-7,9,-6,10,-5,11,-4,12,-3,13,-2,14,-1,15,0,-15,1,-14,2,-13,3,-12,4,-11,5,-10,6,-9,7,-8,8,-7,9,-6,10,-5,11,-4,12,-3,13,-2,14,-1,15,0,-15,1,-14,2,-13,3,-12,4,-11,5,-10,6,-9,7,-8,8,-7,9,-6,10,-5,11,-4,12,-3,13,-2,14,-1,15,0,-15,1,-14,2,-13,3,-12,4,-11,5,-10,6,-9,7,-8,8,-7,9,-6,10,-5,11,-4,12,-3,13,-2]",
+        "17"
+      ],
+      "expectedOutput": "[8,9,9,10,10,11,11,12,12,13,13,14,14,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,8,8,9,9,10,10,11,11,12,12,13,13,14,14,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,8,8,9,9,10,10,11,11,12,12,13,13,14,14,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,8,8,9,9,10,10,11,11,12,12,13,13]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY",
+      "NUMBER"
+    ],
+    "output": "ARRAY"
+  }
 }

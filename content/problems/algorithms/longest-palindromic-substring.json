@@ -13,11 +13,128 @@
   "legacyId": "269f36e1-1ee1-4d38-b541-769ed36c69f6",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Given a string <code>s</code>, find a longest contiguous substring that reads identically from left to right and from right to left. Return the substring itself, not its length. A substring must use consecutive characters, unlike a subsequence that can skip positions. Comparisons are case-sensitive: uppercase and lowercase letters are distinct. Every one-character substring qualifies.</p>\n<p>There may be several equally long answers, so use this precise tie rule: choose the one with the smallest starting index in <code>s</code>. Expanding outward from a center can find both odd-length palindromes (one middle character) and even-length palindromes (a gap between characters). Compare their lengths and their starting positions before updating the winner. A shortcut that tests only odd centers misses strings such as <code>abba</code>.</p>\n<p>If the input is empty, return the empty string. The result must appear in the original input with exactly its original spelling. Do not reorder characters or return a reversed copy. For <code>babad</code>, both <code>bab</code> and <code>aba</code> have length three, but the required result is <code>bab</code> because it starts at index zero. Long strings with many repeated letters should not require enumerating every possible substring and separately reversing it.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> s = &quot;babad&quot;\n<strong>Output:</strong> &quot;bab&quot;</pre>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> s = &quot;cbbd&quot;\n<strong>Output:</strong> &quot;bb&quot;</pre>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> s = &quot;&quot;\n<strong>Output:</strong> &quot;&quot;</pre>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= s.length &lt;= 1,000</li><li>s consists of English letters and decimal digits.</li><li>On equal lengths return the palindrome with the earliest starting index.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def longestPalindrome(self, s: str) -> str:\n        \"\"\"Given a string <code>s</code>, find a longest contiguous substring that reads identically from left to right and from right to left.\n\n        Return the result described above.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} s\n * @return {string}\n */\nvar longestPalindrome = function(s) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"babad\""
+      ],
+      "expectedOutput": "\"bab\"",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "\"cbbd\""
+      ],
+      "expectedOutput": "\"bb\"",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "\"\""
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"babad\""
+      ],
+      "expectedOutput": "\"bab\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"cbbd\""
+      ],
+      "expectedOutput": "\"bb\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\""
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"a\""
+      ],
+      "expectedOutput": "\"a\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"ab\""
+      ],
+      "expectedOutput": "\"a\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abba\""
+      ],
+      "expectedOutput": "\"abba\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"ac\""
+      ],
+      "expectedOutput": "\"a\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"bananas\""
+      ],
+      "expectedOutput": "\"anana\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaabaaaaa\""
+      ],
+      "expectedOutput": "\"aaaaabaaaaa\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abcddcbaabccba\""
+      ],
+      "expectedOutput": "\"abcddcba\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\""
+      ],
+      "expectedOutput": "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING"
+    ],
+    "output": "STRING"
+  }
 }

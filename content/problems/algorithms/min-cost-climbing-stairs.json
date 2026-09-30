@@ -13,11 +13,120 @@
   "legacyId": "da2141c4-76b6-46e5-9d8a-acaf5f2be642",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "",
+  "description": "<div>\n<p>The array <code>cost</code> lists a price for landing on each numbered stair, from zero through <code>len(cost)-1</code>. The top is the position immediately after the last stair and has no price. You may start for free at stair zero or stair one; starting on a stair does not charge its price until you move away from it. Every move advances one or two positions, and leaving a numbered stair charges its listed cost. Return the minimum total price to reach the top.</p>\n<p>To reach a position, your last move must have come from one of its two predecessors. Compare the cheapest cost of reaching and leaving each predecessor, and store the better total for the new position. This captures the choice of starting stair as well as later skips, without branching over exponentially many paths. Choosing the cheapest immediate stair greedily need not give the cheapest complete route.</p>\n<p>For an empty array, you are already at the top and owe zero. For one stair, starting at position one puts you at the top for free, so the answer is also zero. For two stairs, either start is legal and the cheaper of those two costs is sufficient. All prices are nonnegative; the path may step over a stair without paying for it. Return only the cost, not the path you followed.</p>\n<p><strong>Example 1:</strong></p><pre><strong>Input:</strong> cost = [10,15,20]\n<strong>Output:</strong> 15</pre>\n<p><strong>Example 2:</strong></p><pre><strong>Input:</strong> cost = [1,100,1,1,1,100,1,1,100,1]\n<strong>Output:</strong> 6</pre>\n<p><strong>Example 3:</strong></p><pre><strong>Input:</strong> cost = []\n<strong>Output:</strong> 0</pre>\n<p><strong>Constraints:</strong></p><ul><li>0 &lt;= cost.length &lt;= 1,000</li><li>0 &lt;= cost[i] &lt;= 999</li><li>A move advances exactly one or two positions.</li></ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def minCostClimbingStairs(self, cost: List[int]) -> int:\n        \"\"\"The array <code>cost</code> lists a price for landing on each numbered stair, from zero through <code>len(cost)-1</code>.\n\n        Return the result described above.\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} cost\n * @return {number}\n */\nvar minCostClimbingStairs = function(cost) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[10,15,20]"
+      ],
+      "expectedOutput": "15",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "[1,100,1,1,1,100,1,1,100,1]"
+      ],
+      "expectedOutput": "6",
+      "explanation": ""
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": ""
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[10,15,20]"
+      ],
+      "expectedOutput": "15",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[1,100,1,1,1,100,1,1,100,1]"
+      ],
+      "expectedOutput": "6",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[9]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[5,3]"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,0,0]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2,3,4,5,6]"
+      ],
+      "expectedOutput": "9",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[5,1,1,100,1,1,5]"
+      ],
+      "expectedOutput": "4",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1]"
+      ],
+      "expectedOutput": "40",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]"
+      ],
+      "expectedOutput": "50",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }

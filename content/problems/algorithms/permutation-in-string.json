@@ -13,11 +13,134 @@
   "legacyId": "3a950d11-d4ec-44b3-84c4-0bc4f2ca064f",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>Decide whether s2 contains a contiguous substring that rearranges all the characters of s1. Each occurrence counts: for example, two a characters in s1 require two a characters in the substring. Return a Boolean. An empty s1 has an empty permutation and is considered present in every s2, including an empty one; a nonempty s1 cannot fit inside a shorter s2.</p>\n  <p>Any matching substring must have exactly the length of s1. Compare letter frequencies in a window of that length while sliding across s2, adding the entering character and removing the departing one. Every start before the current window has already been tested, so there is no reason to move the window backward. Matching totals rather than a sorted copy avoids repeatedly rebuilding candidate strings.</p>\n  <p>The input uses lowercase English letters only, and the order of occurrences inside a matching window is unrestricted. Characters elsewhere in s2 do not matter. A substring with the right letters plus an extra character is not a permutation because its length would be too great.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> s1 = \"ab\", s2 = \"eidbaooo\"\n<strong>Output:</strong> true</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> s1 = \"ab\", s2 = \"eidboaoo\"\n<strong>Output:</strong> false</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> s1 = \"\", s2 = \"\"\n<strong>Output:</strong> true</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 <= s1.length, s2.length <= 100,000</code></li>\n    <li><code>Both strings contain only a through z</code></li>\n    <li><code>s1 may be longer than s2.</code></li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def checkInclusion(self, s1: str, s2: str) -> bool:\n        \"\"\"Decide whether s2 contains a contiguous substring that rearranges all the characters of s1. Return the specified result.\"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} s1\n * @param {string} s2\n * @return {boolean}\n */\nvar checkInclusion = function(s1, s2) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"ab\"",
+        "\"eidbaooo\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "The substring ba rearranges ab."
+    },
+    {
+      "inputs": [
+        "\"ab\"",
+        "\"eidboaoo\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "No adjacent pair has one a and one b."
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "The empty permutation exists at the beginning."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"ab\"",
+        "\"eidbaooo\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"ab\"",
+        "\"eidboaoo\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "\"abc\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"a\"",
+        "\"\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aa\"",
+        "\"aba\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aabc\"",
+        "\"xxcaba\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"adc\"",
+        "\"dcda\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abc\"",
+        "\"bbbbac\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"abcdefghijklmnopqrst\"",
+        "\"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzztsrqponmlkjihgfedcba\""
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "STRING"
+    ],
+    "output": "BOOLEAN"
+  }
 }

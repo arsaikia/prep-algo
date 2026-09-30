@@ -72,7 +72,7 @@
       ],
       "expectedOutput": "0",
       "explanation": "",
-      "isHidden": false
+      "isHidden": true
     },
     {
       "inputs": [
@@ -80,7 +80,7 @@
       ],
       "expectedOutput": "0",
       "explanation": "",
-      "isHidden": false
+      "isHidden": true
     },
     {
       "inputs": [
@@ -88,7 +88,7 @@
       ],
       "expectedOutput": "6",
       "explanation": "",
-      "isHidden": false
+      "isHidden": true
     },
     {
       "inputs": [
@@ -96,7 +96,7 @@
       ],
       "expectedOutput": "6",
       "explanation": "",
-      "isHidden": false
+      "isHidden": true
     },
     {
       "inputs": [
@@ -104,7 +104,7 @@
       ],
       "expectedOutput": "30000",
       "explanation": "",
-      "isHidden": false
+      "isHidden": true
     },
     {
       "inputs": [
@@ -112,7 +112,7 @@
       ],
       "expectedOutput": "6",
       "explanation": "",
-      "isHidden": false
+      "isHidden": true
     },
     {
       "inputs": [
@@ -120,7 +120,7 @@
       ],
       "expectedOutput": "100",
       "explanation": "",
-      "isHidden": false
+      "isHidden": true
     }
   ],
   "types": {

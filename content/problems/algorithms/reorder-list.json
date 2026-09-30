@@ -13,11 +13,112 @@
   "legacyId": "f60ae024-5cbf-479d-b2a7-d5b6b8968ff2",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>Rearrange a singly linked chain by taking nodes alternately from its front and its back: first, last, second, second-to-last, and so on. Return the head of the rearranged chain. For odd lengths the center node appears last; for even lengths every node participates in a pair.</p>\n  <p>Change the links between existing nodes rather than changing their values. An empty chain returns an empty chain, and a one-node chain is unchanged. Repeated values are allowed, and each original node must appear exactly once: a cycle or an accidentally retained old link makes the result invalid.</p>\n  <p>The puzzle is that walking backward from the tail is not supported by a singly linked structure. Finding the midpoint, reversing the second half, and weaving the two halves together makes the required back-to-front order available without repeatedly rescanning for a predecessor.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> head = [1,2,3,4,5]\n<strong>Output:</strong> [1,5,2,4,3]</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> head = [1,2,3,4]\n<strong>Output:</strong> [1,4,2,3]</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> head = [8]\n<strong>Output:</strong> [8]</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 &lt;= number of nodes &lt;= 5,000</code>.</li>\n    <li><code>-10,000 &lt;= node.val &lt;= 10,000</code>.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def reorderList(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        \"\"\"Weave nodes from the front and back, returning the head.\n\n        Args:\n            head: Original singly linked chain\n\n        Returns:\n            Optional[ListNode]: Head of the reordered chain\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {ListNode|null} head\n * @returns {ListNode|null}\n */\nvar reorderList = function(head) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[1,2,3,4,5]"
+      ],
+      "expectedOutput": "[1,5,2,4,3]",
+      "explanation": "Example 1 illustrates an odd-length chain."
+    },
+    {
+      "inputs": [
+        "[1,2,3,4]"
+      ],
+      "expectedOutput": "[1,4,2,3]",
+      "explanation": "Example 2 illustrates an even-length chain."
+    },
+    {
+      "inputs": [
+        "[8]"
+      ],
+      "expectedOutput": "[8]",
+      "explanation": "Example 3 illustrates a single node."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[1,2,3,4,5]"
+      ],
+      "expectedOutput": "[1,5,2,4,3]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[1,2,3,4]"
+      ],
+      "expectedOutput": "[1,4,2,3]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[8]"
+      ],
+      "expectedOutput": "[8]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "null",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2]"
+      ],
+      "expectedOutput": "[1,2]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,1,1,2,2,2]"
+      ],
+      "expectedOutput": "[1,2,1,2,1,2]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]"
+      ],
+      "expectedOutput": "[1,31,2,30,3,29,4,28,5,27,6,26,7,25,8,24,9,23,10,22,11,21,12,20,13,19,14,18,15,17,16]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[-2,4,5,0,9,-3]"
+      ],
+      "expectedOutput": "[-2,-3,4,9,5,0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,1,2,3,4,5,6,7]"
+      ],
+      "expectedOutput": "[0,7,1,6,2,5,3,4]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "LINKEDLIST"
+    ],
+    "output": "LINKEDLIST"
+  }
 }

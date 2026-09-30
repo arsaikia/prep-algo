@@ -71,7 +71,7 @@
       "inputs": [
         "[1,-2,3]"
       ],
-      "expectedOutput": "3",
+      "expectedOutput": "4",
       "explanation": "",
       "isHidden": true
     },
@@ -82,6 +82,28 @@
       "expectedOutput": "48",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "[-1,-2,-3]"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,-1,-2]"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
     }
-  ]
+  ],
+  "types": {
+    "inputs": [
+      "TREE"
+    ],
+    "output": "NUMBER"
+  }
 }

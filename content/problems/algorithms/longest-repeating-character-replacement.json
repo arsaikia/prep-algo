@@ -13,11 +13,134 @@
   "legacyId": "e79235f4-867e-40c4-ac9e-ac589a2a96ef",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>Given an uppercase English-letter string s and a budget k, replace at most k individual characters with any uppercase letters. Return the length of the longest contiguous substring that can be made entirely one repeated letter. You choose the substring and the replacement letter; the replacements do not have to be used if the substring is already uniform.</p>\n  <p>For a proposed window of length w, making it uniform costs w minus the count of its most frequent letter. Extending the right edge adds one character; when a window needs too many changes, moving its left edge right restores a usable candidate. No discarded earlier start can improve the length at that right edge once it was already too expensive. Keep character frequencies for the moving window rather than trying every substring.</p>\n  <p>The output is only a length, not the altered string. If s is empty, return 0. A budget greater than the number of characters is allowed and cannot increase the answer past the string length.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> s = \"ABAB\", k = 2\n<strong>Output:</strong> 4</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> s = \"AABABBA\", k = 1\n<strong>Output:</strong> 4</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> s = \"\", k = 5\n<strong>Output:</strong> 0</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 <= s.length <= 100,000</code></li>\n    <li><code>s contains only A through Z</code></li>\n    <li><code>0 <= k <= 100,000</code></li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def characterReplacement(self, s: str, k: int) -> int:\n        \"\"\"Given an uppercase English-letter string s and a budget k, replace at most k individual characters with any uppercase letters. Return the specified result.\"\"\"\n        pass",
+    "javascript": "/**\n * @param {string} s\n * @param {number} k\n * @return {number}\n */\nvar characterReplacement = function(s, k) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"ABAB\"",
+        "2"
+      ],
+      "expectedOutput": "4",
+      "explanation": "Change both B characters to A."
+    },
+    {
+      "inputs": [
+        "\"AABABBA\"",
+        "1"
+      ],
+      "expectedOutput": "4",
+      "explanation": "A four-character window needs one change."
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "5"
+      ],
+      "expectedOutput": "0",
+      "explanation": "There is no nonempty substring."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"ABAB\"",
+        "2"
+      ],
+      "expectedOutput": "4",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"AABABBA\"",
+        "1"
+      ],
+      "expectedOutput": "4",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"\"",
+        "5"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"A\"",
+        "0"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"ABCD\"",
+        "0"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"ABCD\"",
+        "10"
+      ],
+      "expectedOutput": "4",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"AAAAABBBBB\"",
+        "1"
+      ],
+      "expectedOutput": "6",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"ABBBCCCCCBBBA\"",
+        "2"
+      ],
+      "expectedOutput": "7",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"BAAAB\"",
+        "2"
+      ],
+      "expectedOutput": "5",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"ABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABCABC\"",
+        "10"
+      ],
+      "expectedOutput": "16",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

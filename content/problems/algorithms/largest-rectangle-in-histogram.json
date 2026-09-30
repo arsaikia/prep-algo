@@ -13,11 +13,120 @@
   "legacyId": "98227cd0-da63-400e-98e8-a51e9ae86675",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n  <p>A histogram has one-unit-wide bars with nonnegative integer heights in <code>heights</code>. Return the greatest area of a rectangle contained entirely under adjacent bars. A rectangle may span one or more consecutive bars; its height cannot exceed the shortest bar in its span.</p>\n  <p>An empty histogram has area zero, as does a histogram whose bars are all height zero. Width is a count of bars, not a difference in height. The maximum need not use the tallest bar: several medium bars can form a larger rectangle than a single peak.</p>\n  <p>For each bar, imagine how far it could extend in both directions before meeting a shorter bar. A monotone stack of indices records candidate left boundaries; when a shorter bar arrives, taller candidates have just found their right boundary and their maximal areas can be calculated.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> heights = [2,1,5,6,2,3]\n<strong>Output:</strong> 10</pre>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> heights = [2,4]\n<strong>Output:</strong> 4</pre>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> heights = []\n<strong>Output:</strong> 0</pre>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 &lt;= heights.length &lt;= 100,000</code>.</li>\n    <li><code>0 &lt;= heights[i] &lt;= 10,000</code>.</li>\n    <li>Areas fit within a signed 32-bit integer for the supplied tests.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def largestRectangleArea(self, heights: List[int]) -> int:\n        \"\"\"Find the maximum contiguous histogram rectangle area.\n\n        Args:\n            heights: Nonnegative heights of width-one bars\n\n        Returns:\n            int: Largest possible area\n        \"\"\"\n        pass",
+    "javascript": "/**\n * @param {number[]} heights\n * @returns {number}\n */\nvar largestRectangleArea = function(heights) {\n    // Write your solution here\n};"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[2,1,5,6,2,3]"
+      ],
+      "expectedOutput": "10",
+      "explanation": "Example 1 illustrates middle bars taller than their neighbors."
+    },
+    {
+      "inputs": [
+        "[2,4]"
+      ],
+      "expectedOutput": "4",
+      "explanation": "Example 2 illustrates two increasing bars."
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "Example 3 illustrates an empty histogram."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[2,1,5,6,2,3]"
+      ],
+      "expectedOutput": "10",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[2,4]"
+      ],
+      "expectedOutput": "4",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[0]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[2,2,2,2]"
+      ],
+      "expectedOutput": "8",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,2,3,4,5]"
+      ],
+      "expectedOutput": "9",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[5,4,3,2,1]"
+      ],
+      "expectedOutput": "9",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[0,6,2,5,4,5,1,6]"
+      ],
+      "expectedOutput": "12",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]"
+      ],
+      "expectedOutput": "100",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[6,2,5,4,5,1,6]"
+      ],
+      "expectedOutput": "12",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "NUMBER"
+  }
 }
