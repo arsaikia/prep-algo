@@ -13,11 +13,120 @@
   "legacyId": "e859da8e-d6b7-43b6-ad1d-5cdfd3692a78",
   "type": "problem",
   "difficulty": "Hard",
-  "description": "",
+  "description": "<div>\n  <p>The words are listed in dictionary order for an unfamiliar alphabet. Infer an ordering of every lowercase letter that appears in the list. Comparing adjacent words, their first differing letters reveal which letter comes first.</p>\n  <p>Return the <strong>lexicographically smallest</strong> valid ordering as a string (using ordinary a-to-z order to break choices between letters with no dependency). Return an empty string if the observations conflict, including when an earlier word is a strict extension of the next word. A single word still contributes all its distinct letters.</p>\n\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> words = [&quot;wrt&quot;,&quot;wrf&quot;,&quot;er&quot;,&quot;ett&quot;,&quot;rftt&quot;]\n<strong>Output:</strong> &quot;wertf&quot;\n<strong>Explanation:</strong> The comparisons force w before e before r before t before f.</pre>\n\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> words = [&quot;za&quot;,&quot;zb&quot;,&quot;ca&quot;,&quot;cb&quot;]\n<strong>Output:</strong> &quot;abzc&quot;\n<strong>Explanation:</strong> a comes before b and z before c; among available letters the alphabetically first is chosen.</pre>\n\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> words = [&quot;abc&quot;,&quot;ab&quot;]\n<strong>Output:</strong> &quot;&quot;\n<strong>Explanation:</strong> A longer word cannot precede its own prefix.</pre>\n\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>1 &lt;= words.length &lt;= 100</code></li>\n    <li><code>1 &lt;= words[i].length &lt;= 20</code></li>\n    <li>Every word contains only lowercase English letters; repeated words are allowed.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def alienOrder(self, words: List[str]) -> str:\n        \"\"\"Return the result described above.\"\"\"\n        pass\n",
+    "javascript": "/**\n * @param {string[]} words\n * @return {string}\n */\nvar alienOrder = function(words) {\n    // your code here\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[\"wrt\",\"wrf\",\"er\",\"ett\",\"rftt\"]"
+      ],
+      "expectedOutput": "\"wertf\"",
+      "explanation": "The comparisons force w before e before r before t before f."
+    },
+    {
+      "inputs": [
+        "[\"za\",\"zb\",\"ca\",\"cb\"]"
+      ],
+      "expectedOutput": "\"abzc\"",
+      "explanation": "a comes before b and z before c; among available letters the alphabetically first is chosen."
+    },
+    {
+      "inputs": [
+        "[\"abc\",\"ab\"]"
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "A longer word cannot precede its own prefix."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[\"wrt\",\"wrf\",\"er\",\"ett\",\"rftt\"]"
+      ],
+      "expectedOutput": "\"wertf\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"za\",\"zb\",\"ca\",\"cb\"]"
+      ],
+      "expectedOutput": "\"abzc\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"abc\",\"ab\"]"
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[\"z\",\"x\",\"z\"]"
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"z\"]"
+      ],
+      "expectedOutput": "\"z\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"aa\",\"aa\"]"
+      ],
+      "expectedOutput": "\"a\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"a\",\"b\",\"c\"]"
+      ],
+      "expectedOutput": "\"abc\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"xy\",\"xz\"]"
+      ],
+      "expectedOutput": "\"xyz\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\",\"aaaaaaaaaaaaaaaaaaaa\"]"
+      ],
+      "expectedOutput": "\"a\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[\"ab\",\"ac\",\"ab\"]"
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "STRING"
+  }
 }

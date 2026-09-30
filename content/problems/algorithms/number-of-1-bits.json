@@ -13,11 +13,120 @@
   "legacyId": "54be2f73-ab49-4a58-bd4e-90848443d872",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "",
+  "description": "<div>\n<p>Count the bits set to 1 in the 32-bit unsigned binary representation of n. Leading zero bits count as part of the width but do not add to the total.</p>\n<p><strong>Example 1:</strong></p>\n<pre><strong>Input:</strong> n = 11\n<strong>Output:</strong> 3\n<strong>Explanation:</strong> The low bits of 11 are 1011, which contains three ones.</pre>\n<p><strong>Example 2:</strong></p>\n<pre><strong>Input:</strong> n = 128\n<strong>Output:</strong> 1\n<strong>Explanation:</strong> A power of two has exactly one set bit.</pre>\n<p><strong>Example 3:</strong></p>\n<pre><strong>Input:</strong> n = 0\n<strong>Output:</strong> 0\n<strong>Explanation:</strong> All 32 bits of zero are clear.</pre>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li><code>0 &lt;= n &lt;= 4,294,967,295</code> (an unsigned 32-bit integer).</li>\n<li>The answer is between 0 and 32 inclusive.</li>\n</ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def hammingWeight(self, n: int) -> int:\n        \"\"\"Count the bits set to 1 in the 32-bit unsigned binary representation of n.\"\"\"\n        pass\n",
+    "javascript": "var hammingWeight = function(n) {\n    // your code here\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "11"
+      ],
+      "expectedOutput": "3",
+      "explanation": "The low bits of 11 are 1011, which contains three ones."
+    },
+    {
+      "inputs": [
+        "128"
+      ],
+      "expectedOutput": "1",
+      "explanation": "A power of two has exactly one set bit."
+    },
+    {
+      "inputs": [
+        "0"
+      ],
+      "expectedOutput": "0",
+      "explanation": "All 32 bits of zero are clear."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "11"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "128"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "0"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "1"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "3"
+      ],
+      "expectedOutput": "2",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2147483648"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "4294967295"
+      ],
+      "expectedOutput": "32",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2863311530"
+      ],
+      "expectedOutput": "16",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "1431655765"
+      ],
+      "expectedOutput": "16",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "4294967294"
+      ],
+      "expectedOutput": "31",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

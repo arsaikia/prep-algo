@@ -13,11 +13,120 @@
   "legacyId": "b545d7ed-4cb5-4e85-be76-3ec95ae407b5",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "",
+  "description": "<div>\n<p>Starting from a positive integer n, replace it with the sum of the squares of its decimal digits. Repeat until you reach 1 or revisit a value. Return true exactly when the process reaches 1; noticing a repeated value lets you stop rather than loop forever.</p>\n<p><strong>Example 1:</strong></p>\n<pre><strong>Input:</strong> n = 19\n<strong>Output:</strong> true\n<strong>Explanation:</strong> 19 becomes 82, then 68, 100, and finally 1.</pre>\n<p><strong>Example 2:</strong></p>\n<pre><strong>Input:</strong> n = 2\n<strong>Output:</strong> false\n<strong>Explanation:</strong> The sequence starting at 2 enters a cycle without reaching 1.</pre>\n<p><strong>Example 3:</strong></p>\n<pre><strong>Input:</strong> n = 1\n<strong>Output:</strong> true\n<strong>Explanation:</strong> The starting value is already 1.</pre>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li><code>1 &lt;= n &lt;= 2,147,483,647</code>.</li>\n<li>The result is a boolean.</li>\n</ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def isHappy(self, n: int) -> bool:\n        \"\"\"Starting from a positive integer n, replace it with the sum of the squares of its decimal digits.\"\"\"\n        pass\n",
+    "javascript": "var isHappy = function(n) {\n    // your code here\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "19"
+      ],
+      "expectedOutput": "true",
+      "explanation": "19 becomes 82, then 68, 100, and finally 1."
+    },
+    {
+      "inputs": [
+        "2"
+      ],
+      "expectedOutput": "false",
+      "explanation": "The sequence starting at 2 enters a cycle without reaching 1."
+    },
+    {
+      "inputs": [
+        "1"
+      ],
+      "expectedOutput": "true",
+      "explanation": "The starting value is already 1."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "19"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "2"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "1"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "7"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "4"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "10"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "100"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "999"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2147483647"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "1111111"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "NUMBER"
+    ],
+    "output": "BOOLEAN"
+  }
 }

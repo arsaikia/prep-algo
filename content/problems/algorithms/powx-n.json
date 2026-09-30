@@ -13,11 +13,134 @@
   "legacyId": "55b5514b-02ca-4780-8f3d-d782dbfee296",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Calculate x raised to the integer exponent n and return the numeric result. Negative n means take the reciprocal of x raised to its positive magnitude. Avoid multiplying |n| times when exponentiation by squaring can reduce the work.</p>\n<p><strong>Example 1:</strong></p>\n<pre><strong>Input:</strong> x = 2, n = 10\n<strong>Output:</strong> 1024\n<strong>Explanation:</strong> Ten factors of 2 produce 1024.</pre>\n<p><strong>Example 2:</strong></p>\n<pre><strong>Input:</strong> x = 2, n = -2\n<strong>Output:</strong> 0.25\n<strong>Explanation:</strong> A negative exponent gives 1 divided by 2 squared.</pre>\n<p><strong>Example 3:</strong></p>\n<pre><strong>Input:</strong> x = -2, n = 3\n<strong>Output:</strong> -8\n<strong>Explanation:</strong> An odd exponent preserves the negative sign.</pre>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li><code>-2 &lt;= x &lt;= 2</code> and x is a finite number.</li>\n<li><code>-100 &lt;= n &lt;= 100</code>.</li>\n<li>If <code>x = 0</code>, then <code>n &gt; 0</code>.</li>\n<li>The result is a finite number.</li>\n</ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def myPow(self, x: float, n: int) -> float:\n        \"\"\"Calculate x raised to the integer exponent n and return the numeric result.\"\"\"\n        pass\n",
+    "javascript": "var myPow = function(x, n) {\n    // your code here\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "2",
+        "10"
+      ],
+      "expectedOutput": "1024",
+      "explanation": "Ten factors of 2 produce 1024."
+    },
+    {
+      "inputs": [
+        "2",
+        "-2"
+      ],
+      "expectedOutput": "0.25",
+      "explanation": "A negative exponent gives 1 divided by 2 squared."
+    },
+    {
+      "inputs": [
+        "-2",
+        "3"
+      ],
+      "expectedOutput": "-8",
+      "explanation": "An odd exponent preserves the negative sign."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "2",
+        "10"
+      ],
+      "expectedOutput": "1024",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "2",
+        "-2"
+      ],
+      "expectedOutput": "0.25",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "-2",
+        "3"
+      ],
+      "expectedOutput": "-8",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "0",
+        "3"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "1",
+        "-100"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "-1",
+        "99"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2",
+        "0"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "0.5",
+        "-4"
+      ],
+      "expectedOutput": "16",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2",
+        "100"
+      ],
+      "expectedOutput": "1.2676506002282294e+30",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2",
+        "-100"
+      ],
+      "expectedOutput": "7.888609052210118e-31",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "NUMBER",
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

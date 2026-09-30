@@ -13,11 +13,176 @@
   "legacyId": "6d3d60d6-0ee9-42d6-9a3a-bb6b6eb481ef",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n  <p>There are n numbered cities and directed flights <code>[from, to, price]</code>. Find the minimum total price from src to dst using at most k intermediate cities (that is, at most k + 1 flights). Return -1 if the destination cannot be reached within this limit. If src equals dst, the zero-flight journey costs 0.</p>\n  <p>Flight prices are positive, but the cheapest route with unlimited flights can violate the stop limit. Account for the flight count as well as the accumulated price.</p>\n\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> n = 3, flights = [[0,1,100],[1,2,100],[0,2,500]], src = 0, dst = 2, k = 1\n<strong>Output:</strong> 200\n<strong>Explanation:</strong> The two-flight route costs 200 and uses one stop.</pre>\n\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> n = 3, flights = [[0,1,100],[1,2,100],[0,2,500]], src = 0, dst = 2, k = 0\n<strong>Output:</strong> 500\n<strong>Explanation:</strong> With no stops only the direct flight is permitted.</pre>\n\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> n = 3, flights = [[0,1,20]], src = 0, dst = 2, k = 2\n<strong>Output:</strong> -1\n<strong>Explanation:</strong> No flight reaches city 2.</pre>\n\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>1 &lt;= n &lt;= 30</code>; city numbers are <code>0</code> through <code>n-1</code>.</li>\n    <li><code>0 &lt;= flights.length &lt;= 100</code>; each flight has three integers and distinct endpoints.</li>\n    <li>There is at most one flight for each ordered pair of cities; <code>1 &lt;= price &lt;= 1000</code>.</li>\n    <li><code>0 &lt;= src, dst &lt; n</code>; <code>0 &lt;= k &lt; n</code>.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def findCheapestPrice(self, n: int, flights: List[List[int]], src: int, dst: int, k: int) -> int:\n        \"\"\"Return the result described above.\"\"\"\n        pass\n",
+    "javascript": "/**\n * @param {number} n\n * @param {number[][]} flights\n * @param {number} src\n * @param {number} dst\n * @param {number} k\n * @return {number}\n */\nvar findCheapestPrice = function(n, flights, src, dst, k) {\n    // your code here\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "3",
+        "[[0,1,100],[1,2,100],[0,2,500]]",
+        "0",
+        "2",
+        "1"
+      ],
+      "expectedOutput": "200",
+      "explanation": "The two-flight route costs 200 and uses one stop."
+    },
+    {
+      "inputs": [
+        "3",
+        "[[0,1,100],[1,2,100],[0,2,500]]",
+        "0",
+        "2",
+        "0"
+      ],
+      "expectedOutput": "500",
+      "explanation": "With no stops only the direct flight is permitted."
+    },
+    {
+      "inputs": [
+        "3",
+        "[[0,1,20]]",
+        "0",
+        "2",
+        "2"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "No flight reaches city 2."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "3",
+        "[[0,1,100],[1,2,100],[0,2,500]]",
+        "0",
+        "2",
+        "1"
+      ],
+      "expectedOutput": "200",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "3",
+        "[[0,1,100],[1,2,100],[0,2,500]]",
+        "0",
+        "2",
+        "0"
+      ],
+      "expectedOutput": "500",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "3",
+        "[[0,1,20]]",
+        "0",
+        "2",
+        "2"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "1",
+        "[]",
+        "0",
+        "0",
+        "0"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2",
+        "[]",
+        "0",
+        "1",
+        "1"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "4",
+        "[[0,1,1],[1,2,1],[2,3,1],[0,3,50]]",
+        "0",
+        "3",
+        "1"
+      ],
+      "expectedOutput": "50",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "4",
+        "[[0,1,1],[1,2,1],[2,3,1],[0,3,50]]",
+        "0",
+        "3",
+        "2"
+      ],
+      "expectedOutput": "3",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "3",
+        "[[0,1,9],[1,0,1],[1,2,5]]",
+        "0",
+        "2",
+        "2"
+      ],
+      "expectedOutput": "14",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "30",
+        "[[0,1,18],[0,2,35],[0,3,52],[0,4,69],[0,5,86],[0,6,103],[0,7,120],[0,8,137],[0,9,154],[0,10,171],[0,11,188],[0,12,205],[0,13,222],[0,14,239],[0,15,256],[0,16,273],[0,17,290],[0,18,307],[0,19,324],[0,20,341],[0,21,358],[0,22,375],[0,23,392],[0,24,409],[0,25,426],[0,26,443],[0,27,460],[0,28,477],[0,29,494],[1,0,32],[1,2,66],[1,3,83],[1,4,100],[1,5,117],[1,6,134],[1,7,151],[1,8,168],[1,9,185],[1,10,202],[1,11,219],[1,12,236],[1,13,253],[1,14,270],[1,15,287],[1,16,304],[1,17,321],[1,18,338],[1,19,355],[1,20,372],[1,21,389],[1,22,406],[1,23,423],[1,24,440],[1,25,457],[1,26,474],[1,27,491],[1,28,508],[1,29,525],[2,0,63],[2,1,80],[2,3,114],[2,4,131],[2,5,148],[2,6,165],[2,7,182],[2,8,199],[2,9,216],[2,10,233],[2,11,250],[2,12,267],[2,13,284],[2,14,301],[2,15,318],[2,16,335],[2,17,352],[2,18,369],[2,19,386],[2,20,403],[2,21,420],[2,22,437],[2,23,454],[2,24,471],[2,25,488],[2,26,505],[2,27,522],[2,28,539],[2,29,556],[3,0,94],[3,1,111],[3,2,128],[3,4,162],[3,5,179],[3,6,196],[3,7,213],[3,8,230],[3,9,247],[3,10,264],[3,11,281],[3,12,298],[3,13,315]]",
+        "0",
+        "29",
+        "29"
+      ],
+      "expectedOutput": "494",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "2",
+        "[[0,1,1]]",
+        "1",
+        "0",
+        "0"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "NUMBER",
+      "ARRAY",
+      "NUMBER",
+      "NUMBER",
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }

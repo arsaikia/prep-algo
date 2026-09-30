@@ -13,11 +13,134 @@
   "legacyId": "1a5133f5-0c8f-458f-b820-ab6677da6588",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Multiply two nonnegative integers given as decimal strings and return their product as a decimal string. Do not convert either entire input to an integer or use a big-integer multiplication shortcut; accumulate digit products as in long multiplication. The output has no leading zeroes unless it is zero.</p>\n<p><strong>Example 1:</strong></p>\n<pre><strong>Input:</strong> num1 = \"2\", num2 = \"3\"\n<strong>Output:</strong> \"6\"\n<strong>Explanation:</strong> Two times three is six.</pre>\n<p><strong>Example 2:</strong></p>\n<pre><strong>Input:</strong> num1 = \"123\", num2 = \"456\"\n<strong>Output:</strong> \"56088\"\n<strong>Explanation:</strong> Long multiplication gives 56,088.</pre>\n<p><strong>Example 3:</strong></p>\n<pre><strong>Input:</strong> num1 = \"0\", num2 = \"999\"\n<strong>Output:</strong> \"0\"\n<strong>Explanation:</strong> Zero times any number is zero.</pre>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li><code>1 &lt;= num1.length, num2.length &lt;= 100</code>.</li>\n<li>Each string contains only digits and has no leading zeroes, except the string <code>\"0\"</code>.</li>\n</ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def multiply(self, num1: str, num2: str) -> str:\n        \"\"\"Multiply two nonnegative integers given as decimal strings and return their product as a decimal string.\"\"\"\n        pass\n",
+    "javascript": "var multiply = function(num1, num2) {\n    // your code here\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "\"2\"",
+        "\"3\""
+      ],
+      "expectedOutput": "\"6\"",
+      "explanation": "Two times three is six."
+    },
+    {
+      "inputs": [
+        "\"123\"",
+        "\"456\""
+      ],
+      "expectedOutput": "\"56088\"",
+      "explanation": "Long multiplication gives 56,088."
+    },
+    {
+      "inputs": [
+        "\"0\"",
+        "\"999\""
+      ],
+      "expectedOutput": "\"0\"",
+      "explanation": "Zero times any number is zero."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "\"2\"",
+        "\"3\""
+      ],
+      "expectedOutput": "\"6\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"123\"",
+        "\"456\""
+      ],
+      "expectedOutput": "\"56088\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"0\"",
+        "\"999\""
+      ],
+      "expectedOutput": "\"0\"",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "\"9\"",
+        "\"9\""
+      ],
+      "expectedOutput": "\"81\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"1\"",
+        "\"1\""
+      ],
+      "expectedOutput": "\"1\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"999\"",
+        "\"999\""
+      ],
+      "expectedOutput": "\"998001\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"10\"",
+        "\"10\""
+      ],
+      "expectedOutput": "\"100\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"1000\"",
+        "\"100\""
+      ],
+      "expectedOutput": "\"100000\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"1\"",
+        "\"9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\""
+      ],
+      "expectedOutput": "\"9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\"",
+        "\"9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\""
+      ],
+      "expectedOutput": "\"99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999980000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001\"",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "STRING",
+      "STRING"
+    ],
+    "output": "STRING"
+  }
 }

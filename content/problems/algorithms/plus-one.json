@@ -13,11 +13,120 @@
   "legacyId": "4217b6cc-d098-41c4-b91a-4be6b74b1095",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "",
+  "description": "<div>\n<p>An array digits spells a nonnegative integer, most significant digit first. Return the digit array representing one more than that integer. Carrying past the first digit may make the returned array longer; do not rely on converting the full array to a fixed-width integer.</p>\n<p><strong>Example 1:</strong></p>\n<pre><strong>Input:</strong> digits = [1,2,3]\n<strong>Output:</strong> [1,2,4]\n<strong>Explanation:</strong> Only the final digit changes.</pre>\n<p><strong>Example 2:</strong></p>\n<pre><strong>Input:</strong> digits = [9,9]\n<strong>Output:</strong> [1,0,0]\n<strong>Explanation:</strong> A carry creates a new leading digit.</pre>\n<p><strong>Example 3:</strong></p>\n<pre><strong>Input:</strong> digits = [0]\n<strong>Output:</strong> [1]\n<strong>Explanation:</strong> One more than zero is one.</pre>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li><code>1 &lt;= digits.length &lt;= 100</code>.</li>\n<li>Each digit is an integer from 0 through 9.</li>\n<li>The first digit is nonzero unless the entire array is <code>[0]</code>.</li>\n</ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def plusOne(self, digits: List[int]) -> List[int]:\n        \"\"\"An array digits spells a nonnegative integer, most significant digit first.\"\"\"\n        pass\n",
+    "javascript": "var plusOne = function(digits) {\n    // your code here\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[1,2,3]"
+      ],
+      "expectedOutput": "[1,2,4]",
+      "explanation": "Only the final digit changes."
+    },
+    {
+      "inputs": [
+        "[9,9]"
+      ],
+      "expectedOutput": "[1,0,0]",
+      "explanation": "A carry creates a new leading digit."
+    },
+    {
+      "inputs": [
+        "[0]"
+      ],
+      "expectedOutput": "[1]",
+      "explanation": "One more than zero is one."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[1,2,3]"
+      ],
+      "expectedOutput": "[1,2,4]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[9,9]"
+      ],
+      "expectedOutput": "[1,0,0]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[0]"
+      ],
+      "expectedOutput": "[1]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[9]"
+      ],
+      "expectedOutput": "[1,0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1]"
+      ],
+      "expectedOutput": "[2]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[4,3,9]"
+      ],
+      "expectedOutput": "[4,4,0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[9,0,9]"
+      ],
+      "expectedOutput": "[9,1,0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]"
+      ],
+      "expectedOutput": "[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9]"
+      ],
+      "expectedOutput": "[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8]"
+      ],
+      "expectedOutput": "[8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,9]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "ARRAY"
+  }
 }

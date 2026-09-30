@@ -13,11 +13,120 @@
   "legacyId": "2dfdc9e8-1011-4e1a-aa51-96082fea421c",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Return the entries of a rectangular matrix in clockwise spiral order, beginning at the upper-left corner and peeling one perimeter at a time. Stop once each cell has been visited exactly once; thin inner layers need special care.</p>\n<p><strong>Example 1:</strong></p>\n<pre><strong>Input:</strong> matrix = [[1,2,3],[4,5,6],[7,8,9]]\n<strong>Output:</strong> [1,2,3,6,9,8,7,4,5]\n<strong>Explanation:</strong> Read the outer ring clockwise, then the center.</pre>\n<p><strong>Example 2:</strong></p>\n<pre><strong>Input:</strong> matrix = [[1,2,3,4]]\n<strong>Output:</strong> [1,2,3,4]\n<strong>Explanation:</strong> A single row is already in spiral order.</pre>\n<p><strong>Example 3:</strong></p>\n<pre><strong>Input:</strong> matrix = []\n<strong>Output:</strong> []\n<strong>Explanation:</strong> There are no cells to visit.</pre>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li><code>0 &lt;= matrix.length &lt;= 10</code>.</li>\n<li>If the matrix is nonempty, <code>1 &lt;= matrix[0].length &lt;= 10</code> and all rows have that length.</li>\n<li>Each entry is an integer in <code>[-1000, 1000]</code>.</li>\n<li>An empty matrix produces an empty array.</li>\n</ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def spiralOrder(self, matrix: List[List[int]]) -> List[int]:\n        \"\"\"Return the entries of a rectangular matrix in clockwise spiral order, beginning at the upper-left corner and peeling one perimeter at a time.\"\"\"\n        pass\n",
+    "javascript": "var spiralOrder = function(matrix) {\n    // your code here\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[[1,2,3],[4,5,6],[7,8,9]]"
+      ],
+      "expectedOutput": "[1,2,3,6,9,8,7,4,5]",
+      "explanation": "Read the outer ring clockwise, then the center."
+    },
+    {
+      "inputs": [
+        "[[1,2,3,4]]"
+      ],
+      "expectedOutput": "[1,2,3,4]",
+      "explanation": "A single row is already in spiral order."
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "[]",
+      "explanation": "There are no cells to visit."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[[1,2,3],[4,5,6],[7,8,9]]"
+      ],
+      "expectedOutput": "[1,2,3,6,9,8,7,4,5]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[1,2,3,4]]"
+      ],
+      "expectedOutput": "[1,2,3,4]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[]"
+      ],
+      "expectedOutput": "[]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[7]]"
+      ],
+      "expectedOutput": "[7]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1],[2],[3]]"
+      ],
+      "expectedOutput": "[1,2,3]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[-1,-2],[-3,-4]]"
+      ],
+      "expectedOutput": "[-1,-2,-4,-3]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[0,0],[0,0]]"
+      ],
+      "expectedOutput": "[0,0,0,0]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1,2,3],[4,5,6]]"
+      ],
+      "expectedOutput": "[1,2,3,6,5,4]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[0,1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18,19],[20,21,22,23,24,25,26,27,28,29],[30,31,32,33,34,35,36,37,38,39],[40,41,42,43,44,45,46,47,48,49],[50,51,52,53,54,55,56,57,58,59],[60,61,62,63,64,65,66,67,68,69],[70,71,72,73,74,75,76,77,78,79],[80,81,82,83,84,85,86,87,88,89],[90,91,92,93,94,95,96,97,98,99]]"
+      ],
+      "expectedOutput": "[0,1,2,3,4,5,6,7,8,9,19,29,39,49,59,69,79,89,99,98,97,96,95,94,93,92,91,90,80,70,60,50,40,30,20,10,11,12,13,14,15,16,17,18,28,38,48,58,68,78,88,87,86,85,84,83,82,81,71,61,51,41,31,21,22,23,24,25,26,27,37,47,57,67,77,76,75,74,73,72,62,52,42,32,33,34,35,36,46,56,66,65,64,63,53,43,44,45,55,54]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000]]"
+      ],
+      "expectedOutput": "[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "ARRAY"
+  }
 }

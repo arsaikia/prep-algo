@@ -13,11 +13,120 @@
   "legacyId": "bc1b0031-9a58-4227-b086-ebebcea2abb5",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "",
+  "description": "<div>\n<p>Whenever a cell of the original matrix is zero, replace every cell in that cell's row and column with zero. Determine affected rows and columns from the original zeroes, not from zeroes introduced during the update. Modify the input matrix in place and return the modified matrix for grading; returning nothing is not accepted.</p>\n<p><strong>Example 1:</strong></p>\n<pre><strong>Input:</strong> matrix = [[1,1,1],[1,0,1],[1,1,1]]\n<strong>Output:</strong> [[1,0,1],[0,0,0],[1,0,1]]\n<strong>Explanation:</strong> Only the middle row and column are cleared.</pre>\n<p><strong>Example 2:</strong></p>\n<pre><strong>Input:</strong> matrix = [[0,1],[2,3]]\n<strong>Output:</strong> [[0,0],[0,3]]\n<strong>Explanation:</strong> A zero in the corner affects its row and column.</pre>\n<p><strong>Example 3:</strong></p>\n<pre><strong>Input:</strong> matrix = [[5]]\n<strong>Output:</strong> [[5]]\n<strong>Explanation:</strong> Without an original zero, nothing changes.</pre>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li><code>1 &lt;= matrix.length, matrix[0].length &lt;= 10</code>.</li>\n<li>Every row has the same length.</li>\n<li>Cell values are integers in <code>[-1000, 1000]</code>.</li>\n</ul>\n</div>",
   "templates": {
-    "python": "",
-    "javascript": ""
+    "python": "class Solution:\n    def setZeroes(self, matrix: List[List[int]]) -> List[List[int]]:\n        \"\"\"Whenever a cell of the original matrix is zero, replace every cell in that cell's row and column with zero.\"\"\"\n        pass\n",
+    "javascript": "var setZeroes = function(matrix) {\n    // your code here\n};\n"
   },
-  "exampleTestCases": [],
-  "testCases": []
+  "exampleTestCases": [
+    {
+      "inputs": [
+        "[[1,1,1],[1,0,1],[1,1,1]]"
+      ],
+      "expectedOutput": "[[1,0,1],[0,0,0],[1,0,1]]",
+      "explanation": "Only the middle row and column are cleared."
+    },
+    {
+      "inputs": [
+        "[[0,1],[2,3]]"
+      ],
+      "expectedOutput": "[[0,0],[0,3]]",
+      "explanation": "A zero in the corner affects its row and column."
+    },
+    {
+      "inputs": [
+        "[[5]]"
+      ],
+      "expectedOutput": "[[5]]",
+      "explanation": "Without an original zero, nothing changes."
+    }
+  ],
+  "testCases": [
+    {
+      "inputs": [
+        "[[1,1,1],[1,0,1],[1,1,1]]"
+      ],
+      "expectedOutput": "[[1,0,1],[0,0,0],[1,0,1]]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[0,1],[2,3]]"
+      ],
+      "expectedOutput": "[[0,0],[0,3]]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[5]]"
+      ],
+      "expectedOutput": "[[5]]",
+      "explanation": "",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "[[0]]"
+      ],
+      "expectedOutput": "[[0]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[-1,0,2]]"
+      ],
+      "expectedOutput": "[[0,0,0]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1],[0],[3]]"
+      ],
+      "expectedOutput": "[[0],[0],[0]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[0,0],[0,0]]"
+      ],
+      "expectedOutput": "[[0,0],[0,0]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1,2,3],[4,5,6]]"
+      ],
+      "expectedOutput": "[[1,2,3],[4,5,6]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000]]"
+      ],
+      "expectedOutput": "[[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "[[-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,0],[-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000],[-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000],[-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000],[-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000],[-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000],[-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000],[-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000],[-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000],[0,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000]]"
+      ],
+      "expectedOutput": "[[0,0,0,0,0,0,0,0,0,0],[0,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,0],[0,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,0],[0,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,0],[0,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,0],[0,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,0],[0,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,0],[0,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,0],[0,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,0],[0,0,0,0,0,0,0,0,0,0]]",
+      "explanation": "",
+      "isHidden": true
+    }
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY"
+    ],
+    "output": "ARRAY"
+  }
 }
