@@ -4,7 +4,7 @@
   "title": "Longest Palindromic Substring",
   "domain": "algorithms",
   "group": "1-D Dynamic Programming",
-  "order": 0,
+  "order": 50,
   "tags": [],
   "lists": [
     "ALL",

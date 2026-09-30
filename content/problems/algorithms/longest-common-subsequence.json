@@ -4,7 +4,7 @@
   "title": "Longest Common Subsequence",
   "domain": "algorithms",
   "group": "2-D Dynamic Programming",
-  "order": 0,
+  "order": 20,
   "tags": [],
   "lists": [
     "ALL",

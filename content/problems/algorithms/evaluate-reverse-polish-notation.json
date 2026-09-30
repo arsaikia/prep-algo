@@ -4,7 +4,7 @@
   "title": "Evaluate Reverse Polish Notation",
   "domain": "algorithms",
   "group": "Stack",
-  "order": 0,
+  "order": 30,
   "tags": [],
   "lists": [
     "ALL",

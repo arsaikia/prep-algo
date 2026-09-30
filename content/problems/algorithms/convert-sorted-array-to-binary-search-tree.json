@@ -4,7 +4,7 @@
   "title": "Convert Sorted Array to Binary Search Tree",
   "domain": "algorithms",
   "group": "Trees",
-  "order": 100103000,
+  "order": 100,
   "tags": [],
   "lists": [
     "ALL"

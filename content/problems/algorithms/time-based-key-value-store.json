@@ -4,7 +4,7 @@
   "title": "Time Based Key Value Store",
   "domain": "algorithms",
   "group": "Binary Search",
-  "order": 0,
+  "order": 60,
   "tags": [],
   "lists": [
     "ALL",

@@ -4,6 +4,7 @@ import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { GROUP_ORDER, groupRank } from '../../content/groupOrder.js';
 import { contentItemSchema, toIndexEntry } from '../../content/schema.js';
 
 /**
@@ -180,6 +181,11 @@ async function main() {
         if (item.type === 'quiz' && item.topic && !topicSlugs.has(item.topic)) {
             errors.push(`${rel}: topic "${item.topic}" does not exist`);
         }
+        if (GROUP_ORDER[item.domain] && groupRank(item.domain, item.group) === -1) {
+            errors.push(
+                `${rel}: group "${item.group}" is not listed in GROUP_ORDER.${item.domain} (content/groupOrder.js)`,
+            );
+        }
     }
 
     if (errors.length > 0) {
@@ -190,11 +196,14 @@ async function main() {
         process.exit(1);
     }
 
+    // The index order is the list order: the frontend groups entries in the
+    // order it reads them, so sections appear in learning order, not A–Z.
     items.sort((a, b) => {
         const A = a.item;
         const B = b.item;
         return (
             A.domain.localeCompare(B.domain) ||
+            groupRank(A.domain, A.group) - groupRank(B.domain, B.group) ||
             A.group.localeCompare(B.group) ||
             A.order - B.order ||
             A.slug.localeCompare(B.slug)

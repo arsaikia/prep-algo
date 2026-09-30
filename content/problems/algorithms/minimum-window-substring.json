@@ -4,7 +4,7 @@
   "title": "Minimum Window Substring",
   "domain": "algorithms",
   "group": "Sliding Window",
-  "order": 0,
+  "order": 50,
   "tags": [],
   "lists": [
     "ALL",

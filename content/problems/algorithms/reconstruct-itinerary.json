@@ -4,7 +4,7 @@
   "title": "Reconstruct Itinerary",
   "domain": "algorithms",
   "group": "Advanced Graphs",
-  "order": 0,
+  "order": 10,
   "tags": [],
   "lists": [
     "ALL",

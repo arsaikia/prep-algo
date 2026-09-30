@@ -4,7 +4,7 @@
   "title": "Longest Substring Without Repeating Characters",
   "domain": "algorithms",
   "group": "Sliding Window",
-  "order": 0,
+  "order": 20,
   "tags": [],
   "lists": [
     "ALL",

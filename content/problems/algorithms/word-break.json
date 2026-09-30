@@ -4,7 +4,7 @@
   "title": "Word Break",
   "domain": "algorithms",
   "group": "1-D Dynamic Programming",
-  "order": 0,
+  "order": 100,
   "tags": [],
   "lists": [
     "ALL",

@@ -4,7 +4,7 @@
   "title": "Find Median From Data Stream",
   "domain": "algorithms",
   "group": "Heap / Priority Queue",
-  "order": 0,
+  "order": 70,
   "tags": [],
   "lists": [
     "ALL",

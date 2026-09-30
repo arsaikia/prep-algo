@@ -4,7 +4,7 @@
   "title": "Redundant Connection",
   "domain": "algorithms",
   "group": "Graphs",
-  "order": 0,
+  "order": 150,
   "tags": [],
   "lists": [
     "ALL",

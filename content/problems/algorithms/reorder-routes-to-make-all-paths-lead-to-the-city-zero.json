@@ -4,7 +4,7 @@
   "title": "Reorder Routes to Make All Paths Lead to the City Zero",
   "domain": "algorithms",
   "group": "Graphs",
-  "order": 0,
+  "order": 80,
   "tags": [],
   "lists": [
     "ALL"

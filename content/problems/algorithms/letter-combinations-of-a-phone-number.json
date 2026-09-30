@@ -4,7 +4,7 @@
   "title": "Letter Combinations of a Phone Number",
   "domain": "algorithms",
   "group": "Backtracking",
-  "order": 0,
+  "order": 80,
   "tags": [],
   "lists": [
     "ALL",

@@ -4,7 +4,7 @@
   "title": "Binary Search",
   "domain": "algorithms",
   "group": "Binary Search",
-  "order": 0,
+  "order": 10,
   "tags": [],
   "lists": [
     "ALL",

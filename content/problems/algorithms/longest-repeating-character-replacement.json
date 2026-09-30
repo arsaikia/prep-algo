@@ -4,7 +4,7 @@
   "title": "Longest Repeating Character Replacement",
   "domain": "algorithms",
   "group": "Sliding Window",
-  "order": 0,
+  "order": 30,
   "tags": [],
   "lists": [
     "ALL",

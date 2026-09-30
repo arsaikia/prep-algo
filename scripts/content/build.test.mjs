@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { GROUP_ORDER } from '../../content/groupOrder.js';
 import { contentItemSchema } from '../../content/schema.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -172,4 +173,34 @@ test('index carries every field the question list renders', async () => {
     // to be a cheap first paint.
     const bytes = (await readFile(path.join(PUBLIC_OUT, manifest.index))).length;
     assert.ok(bytes < 400_000, `index is ${bytes} bytes uncompressed — budget exceeded`);
+});
+
+test('sections and problems appear in learning order', async () => {
+    const manifest = await readJson(path.join(PUBLIC_OUT, 'manifest.json'));
+    const index = await readJson(path.join(PUBLIC_OUT, manifest.index));
+
+    // The list renders sections in the order it first meets them in the
+    // index, so the index order is the curriculum order a learner sees.
+    for (const [domain, order] of Object.entries(GROUP_ORDER)) {
+        const entries = index.items.filter((e) => e.domain === domain);
+        const seen = [];
+        for (const e of entries) {
+            if (seen.at(-1) !== e.group) {
+                assert.ok(!seen.includes(e.group), `${domain}: section "${e.group}" is split in the index`);
+                seen.push(e.group);
+            }
+        }
+        assert.deepEqual(seen, order.filter((g) => seen.includes(g)), `${domain}: sections out of order`);
+
+        for (let i = 1; i < entries.length; i++) {
+            const [prev, cur] = [entries[i - 1], entries[i]];
+            if (prev.group === cur.group) {
+                assert.ok(prev.order <= cur.order, `${cur.slug} is ordered before ${prev.slug}`);
+            }
+        }
+    }
+
+    const algorithms = index.items.filter((e) => e.domain === 'algorithms');
+    assert.equal(algorithms[0].group, 'Arrays & Hashing');
+    assert.equal(algorithms.at(-1).group, 'Bit Manipulation');
 });

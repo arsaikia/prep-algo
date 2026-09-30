@@ -4,7 +4,7 @@
   "title": "Construct Binary Tree from Inorder and Postorder Traversal",
   "domain": "algorithms",
   "group": "Trees",
-  "order": 100102000,
+  "order": 230,
   "tags": [],
   "lists": [
     "ALL",

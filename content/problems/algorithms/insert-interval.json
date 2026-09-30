@@ -4,7 +4,7 @@
   "title": "Insert Interval",
   "domain": "algorithms",
   "group": "Intervals",
-  "order": 0,
+  "order": 10,
   "tags": [],
   "lists": [
     "ALL",

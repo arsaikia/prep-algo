@@ -4,7 +4,7 @@
   "title": "LRU Cache",
   "domain": "algorithms",
   "group": "Linked List",
-  "order": 0,
+  "order": 90,
   "tags": [],
   "lists": [
     "ALL",

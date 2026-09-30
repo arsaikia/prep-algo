@@ -4,7 +4,7 @@
   "title": "Network Delay Time",
   "domain": "algorithms",
   "group": "Advanced Graphs",
-  "order": 0,
+  "order": 30,
   "tags": [],
   "lists": [
     "ALL",

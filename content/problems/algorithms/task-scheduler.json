@@ -4,7 +4,7 @@
   "title": "Task Scheduler",
   "domain": "algorithms",
   "group": "Heap / Priority Queue",
-  "order": 0,
+  "order": 50,
   "tags": [],
   "lists": [
     "ALL",

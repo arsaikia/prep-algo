@@ -4,7 +4,7 @@
   "title": "Find Critical and Pseudo-Critical Edges in Minimum Spanning Tree",
   "domain": "algorithms",
   "group": "Advanced Graphs",
-  "order": 0,
+  "order": 70,
   "tags": [],
   "lists": [
     "ALL"

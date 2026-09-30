@@ -4,7 +4,7 @@
   "title": "Merge Triplets to Form Target Triplet",
   "domain": "algorithms",
   "group": "Greedy",
-  "order": 0,
+  "order": 60,
   "tags": [],
   "lists": [
     "ALL",
