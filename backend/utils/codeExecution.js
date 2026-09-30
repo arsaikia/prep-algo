@@ -148,26 +148,6 @@ const generateInputParser = (input, type) => {
 };
 
 /**
- * Generate Python code to normalize output based on detected type
- * @param {string} type - The detected type
- * @returns {string} - Python code to normalize the output
- */
-const generateOutputNormalizer = (type) => {
-    switch (type) {
-        case 'TREE':
-            return 'treeToList(result) if result else []';
-        case 'LINKEDLIST':
-            return 'linkedListToList(result) if result else []';
-        case 'ARRAY':
-        case 'STRING':
-        case 'BOOLEAN':
-        case 'NUMBER':
-        default:
-            return 'result';
-    }
-};
-
-/**
  * Run Python code against test cases
  * @param {string} code - The Python code to execute
  * @param {Array<{inputs: Array<string>, expectedOutput: string}>} testCases - Array of test cases
@@ -202,9 +182,6 @@ export const runPythonCode = async (code, testCases, questionTypes = null) => {
             const inputArgs = testCase.inputs.map((input, index) =>
                 generateInputParser(input, inputTypes[index])
             );
-
-            // Generate output normalization code
-            const outputNormalizer = generateOutputNormalizer(expectedOutputType);
 
             // Get existing imports and required typing imports
             const existingImports = extractImports(code);
@@ -341,7 +318,7 @@ if __name__ == "__main__":
         
         # Handle expected output - parse it based on detected type
         expected_str = ${JSON.stringify(testCase.expectedOutput)}
-        expected_type = ${JSON.stringify(expectedOutputType)}
+        expected_type = ${JSON.stringify(String(expectedOutputType).toLowerCase())}
         
         # Normalize output based on actual result type
         if result is None:
