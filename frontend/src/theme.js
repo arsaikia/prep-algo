@@ -1,11 +1,11 @@
 // ===================================================================
 // SIMPLIFIED THEME SYSTEM
 // Pre-computed color schemes with comprehensive theming
-// Uses original colors from theme-old.js for UI consistency
+// Uses the original brand palette for UI consistency
 // ALL colors change with color scheme for maximum visual impact
 // ===================================================================
 
-// Mathematical Color Transformations (from theme-old.js)
+// Mathematical Color Transformations
 const hexToRgb = (hex) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
@@ -34,7 +34,7 @@ const getTriadicColor = (hexColor) => {
     return rgbToHex(rgb.b, rgb.r, rgb.g);
 };
 
-// Original Color Palette (from theme-old.js)
+// Original Color Palette
 const originalPalette = {
     // Brand Colors
     violet: '#8B5CF6',
