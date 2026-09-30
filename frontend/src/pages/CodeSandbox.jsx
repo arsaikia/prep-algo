@@ -580,6 +580,9 @@ const OutputContent = styled.div`
 const FEEDBACK_TONES = {
   pending: { fg: '#2563eb', bg: 'rgba(37, 99, 235, 0.08)', border: 'rgba(37, 99, 235, 0.35)' },
   success: { fg: '#15803d', bg: 'rgba(21, 128, 61, 0.08)', border: 'rgba(21, 128, 61, 0.35)' },
+  // Used when the code was correct but something after grading went wrong, so
+  // the result reads as neither a clean pass nor a failed solution.
+  warning: { fg: '#b45309', bg: 'rgba(180, 83, 9, 0.08)', border: 'rgba(180, 83, 9, 0.35)' },
   error: { fg: '#b91c1c', bg: 'rgba(185, 28, 28, 0.08)', border: 'rgba(185, 28, 28, 0.35)' }
 };
 
@@ -1131,10 +1134,17 @@ const CodeSandbox = () => {
         setOutput(`Test results: ${response.data.passedTests}/${response.data.totalTests} tests passed (${response.data.score}% score)`);
 
         const allPassed = response.data.passedTests === response.data.totalTests;
+        // A pass that silently fails to persist is the bug this whole path had
+        // before, so the two outcomes are reported differently rather than both
+        // reading as success.
+        const passMessage = response.data.progressSaved
+          ? `All ${response.data.totalTests} tests passed — saved to your progress.`
+          : `All ${response.data.totalTests} tests passed, but we couldn't save it to your progress. Your solution is still correct; try submitting again.`;
+
         setExecutionFeedback({
-          status: allPassed ? 'success' : 'error',
+          status: allPassed && !response.data.progressSaved ? 'warning' : allPassed ? 'success' : 'error',
           message: allPassed
-            ? `All ${response.data.totalTests} tests passed. Nice work!`
+            ? passMessage
             : `${response.data.passedTests} of ${response.data.totalTests} tests passed. Review the failing cases below.`
         });
 

@@ -6,6 +6,7 @@ import SolveHistory from '../models/SolveHistory.js';
 import { runPythonCode } from '../utils/codeExecution.js';
 import logger from '../config/logger.js';
 import { mongoCircuitBreaker } from '../config/circuitBreakers.js';
+import { invalidateUserCache } from '../middleware/cache.js';
 
 /*
  * @desc     Get All Questions (without solve history)
@@ -112,10 +113,60 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
     return res.status(200).json(response);
 });
 
+/**
+ * Records a passing submission against the user's solve history.
+ *
+ * Until now nothing in the product ever wrote a solve: the frontend had a
+ * `MARK_QUESTION_AS_DONE` action and a saga behind it, but no component ever
+ * dispatched either, so a correct solution produced a score and then vanished.
+ * Recording it here rather than in the client keeps the write next to the
+ * grading that justifies it, so progress cannot disagree with the result the
+ * user was just shown.
+ *
+ * Bookkeeping must never fail the submission. The user's code ran and passed;
+ * reporting that is the endpoint's actual contract, so a write failure is
+ * logged and surfaced as `progressSaved: false` instead of thrown.
+ *
+ * Returns whether the solve was durably recorded.
+ */
+const recordSolvedQuestion = async (user, question) => {
+    const userId = user?._id || user?.id;
+    if (!userId) return false;
+
+    try {
+        const now = new Date();
+        await SolveHistory.findOneAndUpdate(
+            { userId: String(userId), questionId: String(question._id) },
+            {
+                // `solveCount` is required, so the insert has to establish it.
+                // $inc does both jobs: 1 on insert, +1 on every re-solve.
+                $inc: { solveCount: 1 },
+                $set: {
+                    lastUpdatedAt: now,
+                    domain: question.domain || 'algorithms',
+                    questionGroup: question.group,
+                    questionDifficulty: question.difficulty,
+                },
+                $push: { solveHistory: { solvedAt: now, success: true } },
+                $setOnInsert: { firstSolvedAt: now },
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+
+        // /progress is cached per user; without this the badge the user just
+        // earned would not appear until the cache expired.
+        await invalidateUserCache(String(userId));
+        return true;
+    } catch (error) {
+        logger.error({ err: error, questionId: String(question._id) }, 'failed to record solve');
+        return false;
+    }
+};
+
 /*
  * @desc     Submit code for a question and validate against test cases
  * @route    POST /api/v1/questions/:questionId/submit
- * @access   Public
+ * @access   Private (mounted behind `protect`)
  */
 const submitCode = async (req, res) => {
     try {
@@ -132,7 +183,7 @@ const submitCode = async (req, res) => {
                 { link: questionId },
                 { link: `${questionId}/` }
             ]
-        }).select('_id name description difficulty group exampleTestCases testCases templates types');
+        }).select('_id name description difficulty group domain exampleTestCases testCases templates types');
 
         if (!question) {
             return res.status(404).json({ error: 'Question not found' });
@@ -157,11 +208,17 @@ const submitCode = async (req, res) => {
         const totalTests = results.length;
         const score = (passedTests / totalTests) * 100;
 
+        const solved = totalTests > 0 && passedTests === totalTests;
+        const progressSaved = solved ? await recordSolvedQuestion(req.user, question) : false;
+
         res.json({
             results,
             score,
             passedTests,
-            totalTests
+            totalTests,
+            solved,
+            progressSaved,
+            questionId: String(question._id)
         });
     } catch (error) {
         logger.error({ err: error }, 'error in submitCode');
