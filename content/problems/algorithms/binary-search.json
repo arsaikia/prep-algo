@@ -117,5 +117,12 @@
       "explanation": "",
       "isHidden": false
     }
-  ]
+  ],
+  "types": {
+    "inputs": [
+      "ARRAY",
+      "NUMBER"
+    ],
+    "output": "NUMBER"
+  }
 }
