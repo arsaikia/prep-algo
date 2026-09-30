@@ -1,12 +1,20 @@
 import { spawnSync } from 'child_process';
 
 import logger from '../../config/logger.js';
+import { limitConcurrency } from '../limitConcurrency.js';
 
 import { POLICY } from './policy.js';
 import { buildGuardPrologue } from './pythonGuard.js';
 import { dockerRunner, subprocessRunner } from './runners.js';
 
 let dockerProbe = null;
+let runSlot = null;
+
+/** Built on first use: server.js loads .env only after its imports evaluate. */
+const withSlot = (fn) => {
+    runSlot ??= limitConcurrency(POLICY.maxConcurrent);
+    return runSlot(fn);
+};
 
 /** Probed once per process: the daemon's availability does not change often. */
 const dockerAvailable = () => {
@@ -50,9 +58,15 @@ const selectRunner = () => {
  */
 export const executePython = async ({ source, timeoutMs = POLICY.timeoutMs }) => {
     const runner = selectRunner();
-    const started = Date.now();
+    const queuedAt = Date.now();
+    let started = queuedAt;
 
-    const result = await runner(buildGuardPrologue() + source, timeoutMs);
+    // The runner starts its own clock, so time spent queued here does not
+    // count against the program's timeout.
+    const result = await withSlot(() => {
+        started = Date.now();
+        return runner(buildGuardPrologue() + source, timeoutMs);
+    });
 
     if (result.error) {
         logger.error(
@@ -64,6 +78,7 @@ export const executePython = async ({ source, timeoutMs = POLICY.timeoutMs }) =>
     logger.debug(
         {
             runner: result.runner,
+            queuedMs: started - queuedAt,
             durationMs: Date.now() - started,
             exitCode: result.exitCode,
             timedOut: result.timedOut,

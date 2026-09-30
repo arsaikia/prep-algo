@@ -39,6 +39,13 @@ export const POLICY = {
 
     /** CPU-seconds before SIGXCPU. Derived from the wall clock, floor of 1s. */
     get cpuSeconds() { return Math.max(1, Math.ceil(this.timeoutMs / 1000)); },
+
+    /**
+     * Programs running at once in this process; the rest queue. Each may use
+     * up to memoryMb, so this times memoryMb plus the server must fit the
+     * container: at 512Mi that is one.
+     */
+    get maxConcurrent() { return int(process.env.CODE_SANDBOX_MAX_CONCURRENT, 1); },
 };
 
 /**
