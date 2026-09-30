@@ -105,6 +105,10 @@ clean_build() {
 
 # Function to install dependencies
 install_dependencies() {
+    # The content build runs from the root package, which provides zod.
+    print_status "Installing root dependencies..."
+    npm install
+
     print_status "Installing frontend dependencies..."
     
     cd "$FRONTEND_DIR"
@@ -124,6 +128,11 @@ install_dependencies() {
 
 # Function to build the application
 build_application() {
+    # Question content ships from frontend/public/content/, a gitignored build
+    # artifact, so generate it before the Vite build copies it.
+    print_status "Building content bundles..."
+    npm run build:content
+
     print_status "Building React application..."
     
     cd "$FRONTEND_DIR"

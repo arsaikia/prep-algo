@@ -77,6 +77,11 @@ gcloud services enable cloudbuild.googleapis.com --quiet
 gcloud services enable containerregistry.googleapis.com --quiet
 gcloud services enable secretmanager.googleapis.com --quiet
 
+# The backend serves and grades questions from backend/content/, a gitignored
+# build artifact. Without it every question read 404s.
+echo -e "${YELLOW}📦 Building content bundles...${NC}"
+npm run build:content
+
 # Deploy using Cloud Build
 echo -e "${YELLOW}🚀 Deploying using Cloud Build...${NC}"
 

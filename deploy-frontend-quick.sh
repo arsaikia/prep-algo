@@ -19,8 +19,10 @@ VITE_API_BASE_URI=https://prep-algo-backend-419917211939.us-central1.run.app/api
 EOF
 fi
 
-# Clean and build
+# Clean and build. Question content ships from frontend/public/content/, a
+# gitignored build artifact, so generate it before the Vite build copies it.
 echo "Building frontend..."
+npm run build:content
 cd "$FRONTEND_DIR"
 rm -rf build
 npm install
