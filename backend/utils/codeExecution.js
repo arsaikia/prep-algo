@@ -136,6 +136,12 @@ const generateInputParser = (input, type) => {
             return `buildTree(json.loads(${JSON.stringify(input)}))`;
         case 'LINKEDLIST':
             return `buildLinkedList(json.loads(${JSON.stringify(input)}))`;
+        case 'LINKEDLIST_CYCLE':
+            return `buildCycleList(json.loads(${JSON.stringify(input)}))`;
+        case 'GRAPH':
+            return `buildGraph(json.loads(${JSON.stringify(input)}))`;
+        case 'RANDOM_LIST':
+            return `buildRandomList(json.loads(${JSON.stringify(input)}))`;
         case 'STRING':
             return `json.loads(${JSON.stringify(input)})`; // Remove quotes
         case 'BOOLEAN':
@@ -182,6 +188,15 @@ export const runPythonCode = async (code, testCases, questionTypes = null) => {
             // one long-lived object rather than by calling a pure function once.
             // The whole sequence is data, so a new design problem is content only.
             const opsMode = inputTypes[0] === 'OPS';
+
+            // Learners write `Node` for both clone-graph and copy-list, but the
+            // two carry different fields. Only one shape is ever in play for a
+            // given problem, so bind the name to the one this problem declared.
+            const nodeAlias = inputTypes.includes('GRAPH')
+                ? 'Node = GraphNode'
+                : inputTypes.includes('RANDOM_LIST')
+                    ? 'Node = RandomListNode'
+                    : '';
 
             if (opsMode) {
                 // Ops problems are always judged on the list of per-call return
@@ -297,6 +312,143 @@ def buildLinkedList(values):
     
     return head
 
+# --- Structured inputs -------------------------------------------------------
+#
+# Some problems are about the shape of a structure rather than the values in
+# it, so the structure cannot survive a round trip through a flat array. A
+# cycle, a random pointer and a graph edge all disappear when a linked list is
+# serialized the normal way.
+#
+# Each builder records the nodes it created. That record is what lets the
+# serializers answer the two questions those problems actually ask: "which node
+# did you return?" and "did you build new nodes, or hand back the originals?"
+
+__INPUT_NODES = []
+
+class GraphNode:
+    def __init__(self, val=0, neighbors=None):
+        self.val = val
+        self.neighbors = neighbors if neighbors is not None else []
+
+class RandomListNode:
+    def __init__(self, val=0, next=None, random=None):
+        self.val = val
+        self.next = next
+        self.random = random
+
+def buildCycleList(spec):
+    """Build a linked list whose tail may link back to an earlier node.
+
+    spec is {"values": [...], "pos": i}, where pos is the index the tail points
+    at, or -1 for no cycle.
+    """
+    global __INPUT_NODES
+    values = spec.get('values', [])
+    pos = spec.get('pos', -1)
+    if not values:
+        __INPUT_NODES = []
+        return None
+
+    nodes = [ListNode(v) for v in values]
+    for i in range(len(nodes) - 1):
+        nodes[i].next = nodes[i + 1]
+    if pos is not None and pos >= 0:
+        if pos >= len(nodes):
+            raise Exception("Test case points the tail at index %d of a %d node list" % (pos, len(nodes)))
+        nodes[-1].next = nodes[pos]
+
+    __INPUT_NODES = nodes
+    return nodes[0]
+
+def buildGraph(adjacency):
+    """Build an undirected graph from a 1-indexed adjacency list."""
+    global __INPUT_NODES
+    if not adjacency:
+        __INPUT_NODES = []
+        return None
+
+    nodes = [GraphNode(i + 1) for i in range(len(adjacency))]
+    for i, neighbors in enumerate(adjacency):
+        nodes[i].neighbors = [nodes[n - 1] for n in neighbors]
+
+    __INPUT_NODES = nodes
+    return nodes[0]
+
+def buildRandomList(pairs):
+    """Build a linked list with an extra random pointer.
+
+    pairs is [[val, random_index_or_null], ...].
+    """
+    global __INPUT_NODES
+    if not pairs:
+        __INPUT_NODES = []
+        return None
+
+    nodes = [RandomListNode(p[0]) for p in pairs]
+    for i, pair in enumerate(pairs):
+        if i + 1 < len(nodes):
+            nodes[i].next = nodes[i + 1]
+        target = pair[1] if len(pair) > 1 else None
+        nodes[i].random = nodes[target] if target is not None else None
+
+    __INPUT_NODES = nodes
+    return nodes[0]
+
+def nodeToIndex(node):
+    """Report which input node was returned, by position; -1 for None."""
+    if node is None:
+        return -1
+    for i, candidate in enumerate(__INPUT_NODES):
+        if candidate is node:
+            return i
+    raise Exception("Returned a node that is not part of the input list")
+
+def _rejectSharedNodes(reached):
+    """A copy problem is only solved if none of the originals come back."""
+    originals = {id(n) for n in __INPUT_NODES}
+    for node in reached:
+        if id(node) in originals:
+            raise Exception(
+                "Returned the original nodes instead of a copy. "
+                "Build new nodes rather than reusing the input."
+            )
+
+def graphToList(node):
+    """Serialize a graph back to a 1-indexed adjacency list."""
+    if node is None:
+        return []
+
+    seen = {}
+    stack = [node]
+    while stack:
+        current = stack.pop()
+        if current.val in seen:
+            continue
+        seen[current.val] = current
+        for neighbor in current.neighbors:
+            if neighbor.val not in seen:
+                stack.append(neighbor)
+
+    _rejectSharedNodes(seen.values())
+    return [sorted(n.val for n in seen[v].neighbors) for v in sorted(seen)]
+
+def randomListToList(head):
+    """Serialize a random-pointer list to [[val, random_index_or_null], ...]."""
+    nodes = []
+    current = head
+    while current is not None:
+        nodes.append(current)
+        current = current.next
+
+    _rejectSharedNodes(nodes)
+
+    position = {id(n): i for i, n in enumerate(nodes)}
+    result = []
+    for n in nodes:
+        target = position.get(id(n.random)) if n.random is not None else None
+        result.append([n.val, target])
+    return result
+
 def treeToList(root):
     """Convert a binary tree to a list (level-order traversal)"""
     if not root:
@@ -342,6 +494,7 @@ class PrintCapture:
 # code can reset the alarm or mask the signal, so a child cannot be trusted to
 # time itself out.
 
+${nodeAlias}
 ${codeWithoutImports}
 
 if __name__ == "__main__":
@@ -358,7 +511,18 @@ ${driverBlock}
         expected_type = ${JSON.stringify(String(expectedOutputType).toLowerCase())}
         
         # Normalize output based on actual result type
-        if result is None:
+        #
+        # The structured types are checked first and by name. The generic
+        # duck-typed checks below cannot tell a RandomListNode from a ListNode
+        # (both have .val and .next), so letting them run first would quietly
+        # serialize away the random pointer the problem is actually about.
+        if expected_type == 'node_index':
+            result = nodeToIndex(result)
+        elif expected_type == 'graph':
+            result = graphToList(result)
+        elif expected_type == 'random_list':
+            result = randomListToList(result)
+        elif result is None:
             # Handle None result - check if expected is empty list
             if expected_type == 'tree' or expected_type == 'array':
                 result = []
@@ -375,6 +539,12 @@ ${driverBlock}
             elif expected_type == 'tree':
                 expected = json.loads(expected_str)
             elif expected_type == 'linkedlist':
+                expected = json.loads(expected_str)
+            elif expected_type == 'graph':
+                expected = json.loads(expected_str)
+            elif expected_type == 'random_list':
+                expected = json.loads(expected_str)
+            elif expected_type == 'node_index':
                 expected = json.loads(expected_str)
             elif expected_type == 'string':
                 expected = json.loads(expected_str)

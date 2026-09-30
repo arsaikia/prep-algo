@@ -48,7 +48,19 @@ const testCase = z.object({
     explanation: z.string().default(''),
 });
 
-const IO_TYPE = z.enum(['ARRAY', 'TREE', 'STRING', 'NUMBER', 'BOOLEAN', 'LINKEDLIST', 'GRAPH', 'OPS']);
+const IO_TYPE = z.enum([
+    'ARRAY',
+    'TREE',
+    'STRING',
+    'NUMBER',
+    'BOOLEAN',
+    'LINKEDLIST',
+    'LINKEDLIST_CYCLE',
+    'GRAPH',
+    'RANDOM_LIST',
+    'NODE_INDEX',
+    'OPS',
+]);
 
 /**
  * Solved in the sandbox. Algorithms and frontend coding questions.

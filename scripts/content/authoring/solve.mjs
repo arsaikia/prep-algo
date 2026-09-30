@@ -147,7 +147,19 @@ const assertDraft = (draft, file) => {
 
 // OPS marks a design problem: the inputs are a recorded call sequence replayed
 // against one instance, not values passed to a single function.
-const VALID_TYPES = new Set(['ARRAY', 'TREE', 'LINKEDLIST', 'STRING', 'NUMBER', 'BOOLEAN', 'OPS']);
+const VALID_TYPES = new Set([
+    'ARRAY',
+    'TREE',
+    'LINKEDLIST',
+    'LINKEDLIST_CYCLE',
+    'GRAPH',
+    'RANDOM_LIST',
+    'NODE_INDEX',
+    'STRING',
+    'NUMBER',
+    'BOOLEAN',
+    'OPS',
+]);
 
 const assertTypes = (draft, file) => {
     const { inputs, output } = draft.types ?? {};
