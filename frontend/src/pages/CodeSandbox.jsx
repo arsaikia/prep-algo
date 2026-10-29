@@ -905,7 +905,7 @@ const CodeSandbox = () => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [isRunningExampleTests, setIsRunningExampleTests] = useState(false);
   const [exampleTestResults, setExampleTestResults] = useState(null);
-  // The language the server grades this question in; the other is editor-only.
+  // The only language offered: the one the server grades this question in.
   const gradedLanguage = currentQuestion?.types?.language ?? 'python';
   const gradedLanguageLabel = gradedLanguage === 'javascript' ? 'JavaScript' : 'Python';
   // A JavaScript test is one scenario script, not a list of arguments.
@@ -1592,8 +1592,8 @@ const CodeSandbox = () => {
 
         <TopBarActions>
           <LanguageSelector aria-label="Programming language" value={language} onChange={handleLanguageChange}>
-            {gradedLanguage === 'python' && <option value="python">Python</option>}
-            <option value="javascript">{gradedLanguage === 'javascript' ? 'JavaScript' : 'JavaScript (editor only)'}</option>
+            {/* Only the language this question is graded in is offered. */}
+            <option value={gradedLanguage}>{gradedLanguageLabel}</option>
           </LanguageSelector>
           <SandboxActionButton
             gated={isGuest}
