@@ -1,0 +1,20 @@
+{
+  "slug": "replica-freshness-check",
+  "title": "Read Your Own Profile Update",
+  "domain": "system_design",
+  "type": "quiz",
+  "group": "Data & Storage",
+  "topic": "replication-and-read-consistency",
+  "difficulty": "Medium",
+  "order": 1,
+  "tags": ["replication", "consistency"],
+  "lists": [],
+  "legacyId": "56a8d829-92bb-4495-82ab-b5bc8ce9c8e1",
+  "description": "A primary acknowledges a profile update. The next request reads an asynchronous replica and sees the old profile. Assuming no failover, which policy directly addresses read-after-write freshness?",
+  "options": [
+    { "id": "a", "text": "Add more asynchronous replicas and choose one at random.", "isCorrect": false, "explanation": "Additional replicas can spread reads but do not guarantee that the chosen replica has applied this write." },
+    { "id": "b", "text": "Sleep for 50 ms before every read.", "isCorrect": false, "explanation": "Lag varies with load and failures. A fixed delay is not proof that the write has been applied." },
+    { "id": "c", "text": "Route this freshness-sensitive read to the same authoritative primary, or wait for a replica to reach the write's version.", "isCorrect": true, "explanation": "The read must use a source known to contain the write. Primary routing or a verified replay position provides that link." },
+    { "id": "d", "text": "Treat the acknowledged write as failed and submit it again.", "isCorrect": false, "explanation": "A stale replica read does not prove that the primary failed to commit the write; resubmission can create a second effect." }
+  ]
+}

@@ -48,6 +48,7 @@ export function toSandboxQuestion(body) {
         })),
         topics: [body.group],
         templates: body.templates || { python: '', javascript: '' },
+        types: body.types ?? null,
     };
 
     if (body.type === 'quiz') {

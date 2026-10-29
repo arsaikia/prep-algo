@@ -19,6 +19,9 @@ import readApiError from '../utils/apiError.js';
 import { requestSignIn, contentUrl } from '../utils/navigation.js';
 import { timeTracker } from '../utils/timeTracker.js';
 import { readDraft, writeDraft, clearDraft } from '../utils/draftStorage.js';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeSanitize from 'rehype-sanitize';
 
 const Editor = lazy(() => import('@monaco-editor/react'));
 
@@ -1686,9 +1689,13 @@ const CodeSandbox = () => {
               </LoadingState>
             )}
 
-            {questionDescription && (
+            {questionDescription && (gradedLanguage === 'javascript' ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
+                {questionDescription}
+              </ReactMarkdown>
+            ) : (
               <div dangerouslySetInnerHTML={{ __html: questionDescription }} />
-            )}
+            ))}
           </QuestionDescription>
         </LeftPane>
 

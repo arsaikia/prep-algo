@@ -88,7 +88,17 @@ const MODULE = {
   availableForSolve: false
 };
 
-const ITEMS = [PROBLEM, BARE_PROBLEM, QUIZ, CASE_STUDY, MODULE];
+const JS_PROBLEM = {
+  ...PROBLEM,
+  slug: 'implement-debounce',
+  legacyId: 'legacy-js-problem',
+  title: 'Implement debounce',
+  domain: 'frontend',
+  types: { language: 'javascript', inputs: ['SCENARIO'], output: 'JSON', method: 'debounce' },
+  templates: { python: '', javascript: 'function debounce(func, wait) {}' },
+};
+
+const ITEMS = [PROBLEM, JS_PROBLEM, BARE_PROBLEM, QUIZ, CASE_STUDY, MODULE];
 
 const GRADING = {
   'binary-search': {
@@ -145,7 +155,7 @@ describe('sandbox question: CDN mapper matches the API', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  for (const item of [PROBLEM, BARE_PROBLEM, QUIZ, CASE_STUDY]) {
+  for (const item of [PROBLEM, JS_PROBLEM, BARE_PROBLEM, QUIZ, CASE_STUDY]) {
     test(`${item.type} "${item.slug}" is the same question from either source`, async () => {
       const api = await fetchFromApi(item.slug);
       assert.equal(api.status, 200);
@@ -154,6 +164,12 @@ describe('sandbox question: CDN mapper matches the API', () => {
       assert.deepEqual(fromCdn, withoutServerOnly(api.body));
     });
   }
+
+  test('both sources preserve JavaScript grading metadata', async () => {
+    const { body } = await fetchFromApi(JS_PROBLEM.slug);
+    assert.deepEqual(body.types, JS_PROBLEM.types);
+    assert.deepEqual(toSandboxQuestion(cdnBody(JS_PROBLEM)).types, JS_PROBLEM.types);
+  });
 
   test('the API adds only grading data the CDN never publishes', async () => {
     const { body } = await fetchFromApi(PROBLEM.slug);

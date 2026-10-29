@@ -45,6 +45,18 @@ test('content type and revision survive adaptation; missing items never resolve 
   assert.equal(grouped.questions.Design[0].solved, true);
 });
 
+test('sandbox preserves the graded language and JavaScript starter template', () => {
+  const types = { language: 'javascript', inputs: ['SCENARIO'], method: 'debounce', output: 'JSON' };
+  const question = toSandboxQuestion({
+    slug: 'implement-debounce', type: 'problem', types,
+    templates: { python: '', javascript: 'function debounce(func, wait) {}' },
+  });
+  assert.deepEqual(question.types, types);
+  assert.equal(question.types.language, 'javascript');
+  assert.match(question.templates.javascript, /function debounce/);
+  assert.equal(toSandboxQuestion({ type: 'problem' }).types, null);
+});
+
 test('authentication restoration, actual login result and logout are distinct; late restore cannot switch accounts', () => {
   let state = authReducer(undefined, {});
   assert.equal(state.status, 'unknown');

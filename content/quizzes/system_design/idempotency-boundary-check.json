@@ -1,0 +1,20 @@
+{
+  "slug": "idempotency-boundary-check",
+  "title": "Make Duplicate Delivery Safe",
+  "domain": "system_design",
+  "type": "quiz",
+  "group": "Distributed Systems",
+  "topic": "idempotency-and-delivery-guarantees",
+  "difficulty": "Medium",
+  "order": 1,
+  "tags": ["idempotency", "transactions"],
+  "lists": [],
+  "legacyId": "b3410cf6-33b2-47b1-8d79-8025917e729d",
+  "description": "A queue consumer updates a wallet and records the processed event ID in the same relational database. Which approach prevents a redelivered event from applying the balance change twice?",
+  "options": [
+    { "id": "a", "text": "Acknowledge the message before updating the database.", "isCorrect": false, "explanation": "A crash after acknowledgement but before the update can lose the effect entirely." },
+    { "id": "b", "text": "Read the processed-event table, then update the balance and insert the event ID in separate commits.", "isCorrect": false, "explanation": "Concurrent consumers can both pass the read check, and a crash between commits can leave the balance and deduplication state inconsistent." },
+    { "id": "c", "text": "Use a unique scoped event ID and commit the deduplication record with the balance change in one transaction, then acknowledge.", "isCorrect": true, "explanation": "The unique constraint handles concurrent duplicates and the transaction binds the business effect to its deduplication record. A crash before acknowledgement can then be safely retried." },
+    { "id": "d", "text": "Generate a new random event ID on every retry.", "isCorrect": false, "explanation": "Changing the ID makes the same logical operation look new and defeats deduplication." }
+  ]
+}

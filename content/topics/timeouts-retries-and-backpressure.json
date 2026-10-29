@@ -1,0 +1,22 @@
+{
+  "slug": "timeouts-retries-and-backpressure",
+  "title": "Timeouts, Retries and Backpressure",
+  "domain": "system_design",
+  "type": "topic",
+  "group": "Scalability & Reliability",
+  "module": "sd-scalability",
+  "kind": "concept",
+  "order": 1,
+  "tags": ["reliability", "backpressure", "retries"],
+  "lists": [],
+  "summary": "Keep a slow dependency from consuming your entire service, and avoid turning retries into an outage amplifier.",
+  "body": "A timeout means the caller stopped waiting. It does not prove that the remote operation failed or that its side effect did not happen. Reliability starts by separating these facts.\n\n## Budget the whole request\n\nSuppose a user request has a two-second deadline. Giving three sequential dependencies two seconds each does not respect that deadline. Propagate a remaining budget, reserve time to return a useful response and cancel work that no longer has a consumer where cancellation is supported. Cover connection establishment and the response, not just one socket operation.\n\nChoose timeout values from observed latency and the acceptable false-timeout rate. A timeout that is too short creates unnecessary retries; one that is too long ties up connections and memory.\n\n## Retry only recoverable, safe work\n\nA transient connection failure or a temporary overload may justify a retry. Invalid credentials or a malformed request usually do not. If a write might already have succeeded, use the same idempotency key rather than blindly executing a second write.\n\nUse capped exponential backoff with jitter so clients do not all retry at the same instant. Bound both retry count and total time, and honor a useful `Retry-After` response within that budget. Retry at one chosen layer when possible: three attempts at each of three nested layers can produce 27 calls to the deepest service.\n\n## Bound admission and queues\n\nA queue absorbs a burst; it cannot fix a permanent capacity deficit. If arrivals are 1,200 jobs per second and workers complete 1,000, backlog grows by 200 jobs per second. After one minute, the extra 12,000 jobs represent roughly 12 seconds of work even if arrivals stop.\n\nLimit concurrent work and waiting capacity. When full, reject or defer explicitly rather than buffering without a bound. Depending on the contract, that may mean HTTP 429 for a caller quota or 503 for temporary service capacity. Monitor oldest-job age as well as queue length: a small number of very slow jobs can still violate latency goals.\n\n## Isolate a failing dependency\n\nUse separate concurrency pools when one provider should not exhaust capacity needed by another. A circuit breaker can stop repeated calls to a failing dependency and allow controlled probes later. It does not replace timeouts, retry limits or recovery monitoring.\n\n## Interview exercise\n\nAn email provider slows from 100 ms to 10 seconds. Your API receives a steady 100 requests per second. Explain where work is durably accepted, how worker concurrency is limited, what happens when the queue is full, and how duplicate emails are handled after an ambiguous timeout. State what you would measure before increasing worker count.\n\n## Further reading\n\n[Amazon Builders' Library: timeouts, retries and backoff with jitter](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/) explains why retries can amplify load and why side effects require care.",
+  "keyTakeaways": [
+    "A timeout is an uncertain outcome, not proof that a side effect did not happen.",
+    "Use one overall deadline and bound retries, concurrency and waiting capacity.",
+    "Backoff with jitter reduces synchronized retry bursts but cannot create missing capacity.",
+    "Observe queue age and dependency saturation before scaling workers."
+  ],
+  "prerequisites": ["scaling-fundamentals", "rate-limiting-fundamentals"],
+  "relatedProblems": []
+}

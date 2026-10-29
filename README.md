@@ -32,8 +32,11 @@ the API deliberately refuses local execution in production. See
 
 - **Daily recommendations** that adapt to topic mastery, user level and tracked
   outcomes (weak areas, progressive difficulty, spaced repetition, exploration).
-- **Coding practice** with Python graded by an isolated private executor, and
-  **system-design quizzes** with retry-safe submissions.
+- **Coding practice** with Python for DSA and JavaScript for four frontend
+  exercises, graded by an isolated private executor.
+- **System Design learning path** with an interview framework, concept lessons,
+  knowledge checks and design case studies. Practice is self-guided; the
+  [AI interview workspace](docs/SD_INTERVIEW_DESIGN.md) is a deferred proposal.
 - **Progress analytics**: streaks, five-level topic mastery, focus areas.
 - Responsive React UI with dark/light themes and Google sign-in.
 
@@ -84,6 +87,7 @@ npm --prefix frontend run lint
 | [DEPLOYMENT_README.md](DEPLOYMENT_README.md) | Release runbook: Cloud Run, Firebase, executor, cost guard, rollback |
 | [docs/POSTGRES_MIGRATION.md](docs/POSTGRES_MIGRATION.md) | Database setup, Mongo import, backups, cutover, data semantics |
 | [docs/RECOMMENDATIONS.md](docs/RECOMMENDATIONS.md) | Recommendation API, mastery, classification, strategies |
+| [docs/SD_INTERVIEW_DESIGN.md](docs/SD_INTERVIEW_DESIGN.md) | Interview-first learning path and deferred Excalidraw/AI interview design |
 | [docs/ARCHITECTURE_PLAN.md](docs/ARCHITECTURE_PLAN.md) | Current architecture and decision history |
 | [docs/ARCHITECTURE_DIAGRAMS.md](docs/ARCHITECTURE_DIAGRAMS.md) | Current and historical diagrams |
 | [docs/adr/](docs/adr/) | Architecture decision records |

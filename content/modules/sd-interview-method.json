@@ -1,0 +1,11 @@
+{
+  "slug": "sd-interview-method",
+  "title": "Interview Method",
+  "domain": "system_design",
+  "type": "module",
+  "group": "Curriculum",
+  "order": 0,
+  "tags": [],
+  "lists": [],
+  "summary": "Start with a repeatable way to deliver a complete design. Learn the interview flow, connect requirements to technology choices, then practise before reading a walkthrough."
+}

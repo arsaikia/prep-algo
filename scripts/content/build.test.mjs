@@ -7,12 +7,48 @@ import { fileURLToPath } from 'node:url';
 
 import { GROUP_ORDER } from '../../content/groupOrder.js';
 import { contentItemSchema } from '../../content/schema.js';
+import { toSandboxQuestion } from '../../frontend/src/content/sandboxQuestion.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const PUBLIC_OUT = path.join(ROOT, 'frontend/public/content');
 const SERVER_OUT = path.join(ROOT, 'backend/content');
 
 const readJson = async (p) => JSON.parse(await readFile(p, 'utf8'));
+
+test('every JavaScript problem preserves its language and starter code in the sandbox', async () => {
+    const catalog = await readJson(path.join(SERVER_OUT, 'catalog.json'));
+    const problems = catalog.items.filter((item) => item.type === 'problem' && item.types?.language === 'javascript');
+    assert.ok(problems.length > 0);
+    for (const problem of problems) {
+        const question = toSandboxQuestion(problem);
+        assert.equal(question.types.language, 'javascript', problem.slug);
+        assert.ok(question.templates.javascript.trim(), `${problem.slug}: missing JavaScript starter`);
+        assert.equal(question.templates.python, '', `${problem.slug}: JavaScript-only exercise`);
+    }
+});
+
+test('interview-first curriculum has linked lessons, checks and a worked practice entry', async () => {
+    const { items } = await readJson(path.join(SERVER_OUT, 'catalog.json'));
+    const bySlug = new Map(items.map((item) => [item.slug, item]));
+    const modules = items.filter((item) => item.type === 'module').sort((a, b) => a.order - b.order);
+    assert.equal(modules[0].slug, 'sd-interview-method');
+    const framework = bySlug.get('system-design-interview-framework');
+    assert.equal(framework.module, modules[0].slug);
+    for (const slug of ['system-design-interview-framework', 'replication-and-read-consistency',
+        'timeouts-retries-and-backpressure', 'idempotency-and-delivery-guarantees']) {
+        const lesson = bySlug.get(slug);
+        assert.equal(lesson.kind, 'concept', slug);
+        assert.ok(bySlug.has(lesson.module), `${slug}: owning module`);
+        assert.equal(items.filter((item) => item.type === 'quiz' && item.topic === slug).length, 1, `${slug}: knowledge check`);
+        for (const prerequisite of lesson.prerequisites) {
+            assert.equal(bySlug.get(prerequisite)?.type, 'topic', `${slug}: ${prerequisite}`);
+        }
+    }
+    const practice = bySlug.get('design-url-shortener');
+    assert.ok(practice.prerequisites.includes(framework.slug));
+    assert.match(practice.body, /unique constraint/);
+    assert.match(practice.body, /not the only valid architecture/);
+});
 
 async function fingerprint(dir) {
     const out = [];

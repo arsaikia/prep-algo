@@ -114,7 +114,8 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
         testCases: publicCases,
         hiddenTestCaseCount: getHiddenTestCaseCount(item.slug),
         topics: [item.group],
-        templates: item.templates || { python: '', javascript: '' }
+        templates: item.templates || { python: '', javascript: '' },
+        types: item.types ?? null
     };
 
     if (item.type === 'quiz') {

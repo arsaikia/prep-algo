@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { Check, Code } from 'react-feather';
+import { ArrowLeft, ArrowRight, Check, Code } from 'react-feather';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
@@ -172,6 +172,26 @@ const Message = styled.p`
   padding: 3rem 1rem;
 `;
 
+const LessonNavigation = styled.nav`
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 100%;
+    color: ${({ theme }) => theme.colors.primary};
+    text-decoration: none;
+    line-height: 1.5;
+  }
+  a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+`;
+
 /**
  * Reader for one System Design topic.
  *
@@ -182,7 +202,7 @@ const Message = styled.p`
  */
 function TopicReader() {
   const { slug } = useParams();
-  const { quizByTopic } = useOutletContext() ?? {};
+  const { quizByTopic, modules = [] } = useOutletContext() ?? {};
   const [state, setState] = useState({ status: 'loading' });
   const [quiz, setQuiz] = useState(null);
   const [quizError, setQuizError] = useState('');
@@ -259,6 +279,10 @@ function TopicReader() {
   }
 
   const { topic, prerequisites, relatedProblems } = state;
+  const path = modules.flatMap((module) => module.topics);
+  const position = path.findIndex((entry) => entry.slug === slug);
+  const previous = position > 0 ? path[position - 1] : null;
+  const next = position >= 0 ? path[position + 1] : null;
 
   // Most bodies open with the same sentence as the summary — the summary is
   // written for the index card. Showing both prints it twice.
@@ -333,6 +357,11 @@ function TopicReader() {
         <button onClick={() => setQuizRetry((value) => value + 1)}>Retry quiz</button>
       </Panel>}
       <TopicQuiz key={slug} quiz={quiz?.topic === slug ? quiz : null} />
+      <LessonNavigation aria-label="Learning path">
+        {previous && <Link to={contentUrl(previous)} rel="prev"><ArrowLeft size={16} /> Previous: {previous.title}</Link>}
+        {next ? <Link to={contentUrl(next)} rel="next">Next: {next.title} <ArrowRight size={16} /></Link>
+          : <Link to="/system-design">Back to the learning path <ArrowRight size={16} /></Link>}
+      </LessonNavigation>
     </Container>
   );
 }

@@ -1,0 +1,22 @@
+{
+  "slug": "idempotency-and-delivery-guarantees",
+  "title": "Idempotency and Delivery Guarantees",
+  "domain": "system_design",
+  "type": "topic",
+  "group": "Distributed Systems",
+  "module": "sd-distributed-systems",
+  "kind": "concept",
+  "order": 1,
+  "tags": ["idempotency", "queues", "transactions"],
+  "lists": [],
+  "summary": "Make repeated delivery safe by defining the business effect and the atomic boundary, not by promising magical exactly-once transport.",
+  "body": "Imagine a worker charges a customer and crashes before acknowledging its message. The broker redelivers the message. Should the customer be charged again? A delivery guarantee alone cannot answer that business question.\n\n## Separate delivery from effect\n\nAt-most-once processing can avoid retries and lose work. At-least-once delivery retries unacknowledged work and can repeat it. Some systems provide exactly-once guarantees within a particular transaction or processing boundary, but that does not automatically extend to an external payment or email API.\n\nAn operation is idempotent when repeating the same logical request does not apply its intended effect again. This is not the same as making every request for the same amount a duplicate: two legitimate purchases may have identical bodies and still be distinct operations.\n\n## Scope and bind a request key\n\nA client generates a key for one logical operation and reuses it on retries. Bind the key to the authenticated tenant, operation and a canonical request fingerprint. A key reused with different parameters should produce an explicit conflict, not return an unrelated success.\n\nEnforce uniqueness atomically, for example with a database unique constraint on `(tenant_id, operation, key)`. A separate 'check then insert' sequence races under concurrency. Define pending, completed and failed states so a second caller knows whether to wait, retry or receive the recorded response.\n\n## Put the effect inside the right boundary\n\nIf the business write and the deduplication record live in the same database, commit them in one transaction. If a worker records 'done' before changing the balance, a crash can lose the effect; if it changes the balance and records 'done' later, a crash can repeat the effect.\n\nAn external provider cannot normally join that local transaction. Use its idempotency contract where available, keep a durable record of the intended operation and reconcile uncertain outcomes. A transactional outbox can atomically record a local state change and an event to publish, but the dispatcher may publish twice. Consumers must still handle duplicates.\n\n## Expiry is part of correctness\n\nA deduplication key is useful only while the system remembers it. Retention must cover the supported retry and redelivery window. A reused key after expiry may be a new operation. Document that boundary rather than promising duplicate protection forever.\n\n## Interview exercise\n\nDraw a queue consumer that updates a wallet in one database. Mark the transaction and the acknowledgement. Then replace the wallet update with an external payment call. Identify the new uncertain state and describe how the same operation can be safely retried or reconciled.\n\n## Further reading\n\n[Stripe's idempotent request documentation](https://docs.stripe.com/api/idempotent_requests) is a concrete provider contract. Its parameter checking and retention rules illustrate why 'use a UUID' is only the start of the design, not the whole solution.",
+  "keyTakeaways": [
+    "At-least-once delivery means consumers must expect duplicates.",
+    "Bind an idempotency key to caller, operation and payload, and enforce it atomically.",
+    "Local transactions do not automatically cover external side effects.",
+    "State the retention and retry window of any deduplication guarantee."
+  ],
+  "prerequisites": ["api-design-fundamentals", "timeouts-retries-and-backpressure"],
+  "relatedProblems": []
+}

@@ -1,0 +1,20 @@
+{
+  "slug": "interview-baseline-check",
+  "title": "Choose the Next Design Step",
+  "domain": "system_design",
+  "type": "quiz",
+  "group": "Interview Method",
+  "topic": "system-design-interview-framework",
+  "difficulty": "Easy",
+  "order": 1,
+  "tags": ["interview"],
+  "lists": [],
+  "legacyId": "c4543df4-9715-4f1e-ac97-06c34b1db577",
+  "description": "You have agreed on a notification service's requirements and interfaces. You have not yet explained how an accepted notification reaches a recipient. What is the most useful next step?",
+  "options": [
+    { "id": "a", "text": "Choose a sharding algorithm before drawing any request flow.", "isCorrect": false, "explanation": "Sharding addresses a particular bottleneck; you first need a complete baseline to know what needs scaling." },
+    { "id": "b", "text": "Trace acceptance, durable storage, processing and delivery in a working baseline.", "isCorrect": true, "explanation": "A complete baseline demonstrates that the system meets its core requirements and exposes meaningful places for deep dives." },
+    { "id": "c", "text": "List every possible product feature to avoid missing anything.", "isCorrect": false, "explanation": "The agreed scope should guide the design. Expanding it indiscriminately can prevent you from completing the core flow." },
+    { "id": "d", "text": "Calculate several storage totals even if none affects a decision.", "isCorrect": false, "explanation": "Estimates are most useful when they determine a design choice, rather than as an isolated arithmetic exercise." }
+  ]
+}

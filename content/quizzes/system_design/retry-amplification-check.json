@@ -1,0 +1,20 @@
+{
+  "slug": "retry-amplification-check",
+  "title": "Bound Retry Amplification",
+  "domain": "system_design",
+  "type": "quiz",
+  "group": "Scalability & Reliability",
+  "topic": "timeouts-retries-and-backpressure",
+  "difficulty": "Medium",
+  "order": 1,
+  "tags": ["retries", "backpressure"],
+  "lists": [],
+  "legacyId": "88311b77-440a-4a98-b14f-5ff09d352a41",
+  "description": "Three nested service layers each make up to three attempts, including the first attempt, whenever their downstream call fails. In the worst case, how many calls can one top-level request cause to the deepest service?",
+  "options": [
+    { "id": "a", "text": "3, because each layer has the same limit.", "isCorrect": false, "explanation": "A local attempt limit does not cover attempts made independently by downstream layers." },
+    { "id": "b", "text": "9, because retry counts are added.", "isCorrect": false, "explanation": "Each attempt at one layer can trigger all attempts at the next, so the counts multiply rather than add." },
+    { "id": "c", "text": "27; use a shared deadline and a chosen retry layer to bound amplification.", "isCorrect": true, "explanation": "Three attempts at each of three layers can produce 3 x 3 x 3 = 27 deepest calls. Jitter spreads their timing but does not reduce this worst-case count by itself." },
+    { "id": "d", "text": "1 if exponential backoff is enabled.", "isCorrect": false, "explanation": "Backoff changes when attempts occur, not how many are permitted." }
+  ]
+}
