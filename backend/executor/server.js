@@ -6,11 +6,13 @@ import { pathToFileURL } from 'node:url';
 import { dockerRunner } from '../utils/sandbox/runners.js';
 import { LANGUAGES } from '../utils/sandbox/policy.js';
 import { limitConcurrency } from '../utils/limitConcurrency.js';
-import { requestExecutionSignal } from '../utils/executionBudget.js';
+import { requestExecutionSignal, SUBMISSION_DEADLINE_MS } from '../utils/executionBudget.js';
 import logger from '../config/logger.js';
 
 const identity = new OAuth2Client();
 const execFileAsync = promisify(execFile);
+// One request runs every test of a submission, so it may use the whole submission budget.
+const MAX_EXECUTION_MS = SUBMISSION_DEADLINE_MS;
 
 export async function verifyCaller(token) {
     const audience = process.env.EXECUTOR_AUDIENCE;
@@ -46,7 +48,7 @@ export function createExecutorApp({ verify = verifyCaller, run = dockerRunner, r
     }, express.json({ limit: '256kb' }), async (req, res, next) => {
         const { source, timeoutMs, language = 'python' } = req.body || {};
         if (typeof source !== 'string' || !source.length || source.length > 100000 ||
-            !Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 5000 || !LANGUAGES.includes(language)) {
+            !Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > MAX_EXECUTION_MS || !LANGUAGES.includes(language)) {
             return res.status(400).json({ error: 'Invalid execution request' });
         }
         if (!languages.includes(language)) {

@@ -14,7 +14,7 @@ import { BLOCKED_MODULES, POLICY } from './policy.js';
  * process runs without one, and it closes the routes that casual and
  * semi-targeted attempts actually use.
  */
-export const buildGuardPrologue = () => {
+export const buildGuardPrologue = ({ cpuSeconds = POLICY.cpuSeconds } = {}) => {
     const memoryBytes = POLICY.memoryMb * 1024 * 1024;
     const blocked = BLOCKED_MODULES.map((m) => `'${m}'`).join(', ');
 
@@ -45,7 +45,7 @@ try:
         except Exception:
             pass
     _limit('RLIMIT_AS', ${memoryBytes})       # address space
-    _limit('RLIMIT_CPU', ${POLICY.cpuSeconds})  # CPU seconds, then SIGXCPU
+    _limit('RLIMIT_CPU', ${cpuSeconds})  # CPU seconds, then SIGXCPU
     _limit('RLIMIT_FSIZE', 0)                  # zero-byte files: no writes land
     _limit('RLIMIT_NPROC', ${POLICY.maxProcesses})
     _limit('RLIMIT_NOFILE', 256)
@@ -53,6 +53,23 @@ try:
 except Exception:
     pass
 
+# Per-test wall-clock limit for harnesses that run several tests in one
+# process. signal and os are bound here, before the firewall closes them; the
+# parent's overall deadline remains the hard limit if submitted code interferes.
+try:
+    import signal as _signal_mod
+    import os as _os_mod
+    def _install_case_timer(on_timeout, _sig=_signal_mod, _exit=_os_mod._exit):
+        def _fire(*_args):
+            try:
+                on_timeout()
+            finally:
+                _exit(0)
+        _sig.signal(_sig.SIGALRM, _fire)
+        return lambda seconds: _sig.setitimer(_sig.ITIMER_REAL, seconds)
+    del _signal_mod, _os_mod
+except Exception:
+    _install_case_timer = None
 _BLOCKED = frozenset([${blocked}])
 
 class _ImportFirewall:

@@ -38,22 +38,6 @@ class Solution:
         tail.next = a or b
         return dummy.next
 
-# @solution scan-all-heads-each-step tle
-class Solution:
-    def mergeKLists(self, lists):
-        heads = list(lists)
-        dummy = tail = ListNode()
-        while True:
-            best = -1
-            for i, node in enumerate(heads):
-                if node and (best == -1 or node.val < heads[best].val):
-                    best = i
-            if best == -1:
-                return dummy.next
-            tail.next = heads[best]
-            tail = tail.next
-            heads[best] = heads[best].next
-
 # @solution returns-first-list reject
 class Solution:
     def mergeKLists(self, lists):

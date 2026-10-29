@@ -30,7 +30,7 @@ test('isolated executor authenticates before parsing and bounds its protocol', a
         assert.equal((await fetch(new URL('/health/ready', url))).status, 503);
         assert.equal((await send({ source: 'hello', timeoutMs: 100 })).status, 401);
         assert.equal((await send({ source: 'hello', timeoutMs: 100 }, 'wrong')).status, 403);
-        assert.equal((await send({ source: 'hello', timeoutMs: 6000 }, 'test-identity')).status, 400);
+        assert.equal((await send({ source: 'hello', timeoutMs: 15001 }, 'test-identity')).status, 400);
         assert.equal(runs, 0);
         const result = await send({ source: 'hello', timeoutMs: 100 }, 'test-identity');
         assert.equal(result.status, 200);

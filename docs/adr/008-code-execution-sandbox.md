@@ -295,6 +295,16 @@ writes without affecting pipes), and denies `open`/`input`/`breakpoint`/`exit`.
 cap with early termination, and process-tree kill. Owned by Node, so submitted
 code cannot reach them.
 
+**One sandbox per submission.** All test cases of a submission run in a single
+container. The harness times each case in-process (`SIGALRM` per-case timer in
+Python, a fresh `vm` realm plus a timer per case in JavaScript) and emits one
+marker line per case. Container startup is therefore not counted as runtime and
+a burstable executor is not drained by one launch per case. The per-case timer
+is only for fairness and messages; the parent deadline (pending cases x 5s + 3s
+startup, capped by the 15s submission budget) and `RLIMIT_CPU` stay the hard
+limits. After a timeout the remaining cases are reported as skipped; Python
+module-level state persists between cases (like LeetCode), JavaScript does not.
+
 Source is piped to `python3 -I -S -` (isolated mode, no site-packages, no temp
 file). Mode is selected by `CODE_SANDBOX_MODE` = `docker` | `subprocess` |
 `auto`; `auto` prefers Docker and logs a loud warning if it falls back in

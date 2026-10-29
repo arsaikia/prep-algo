@@ -187,6 +187,8 @@ export const runPythonCode = runCode;
 // Room left for the round trip and verdict once a case's own limit expires.
 const DEADLINE_RESERVE_MS = 1500;
 const MIN_CASE_TIMEOUT_MS = 1000;
+// Allowance for starting the sandbox once per submission.
+const BATCH_STARTUP_MS = 3000;
 // Larger results are reported as a digest so they fit the sandbox output cap.
 const INLINE_RESULT_LIMIT = 200_000;
 
@@ -206,84 +208,122 @@ const outcome = (testCase, { status, actualOutput = null, error = null, debugOut
     ...(digest ? { digest } : {}),
 });
 
-/**
- * Runs one prepared program and grades its marked result line on the server.
- * Shared by every grading language so limits and verdicts stay identical.
- */
-const executeCase = async ({ testCase, source, marker, questionTypes, language }) => {
-    const budget = getExecutionBudget();
-    const remainingMs = budget?.deadline ? budget.deadline - Date.now() - DEADLINE_RESERVE_MS : EXECUTION_TIMEOUT;
-    const timeoutMs = Math.min(EXECUTION_TIMEOUT, Math.floor(remainingMs));
-    if (timeoutMs < MIN_CASE_TIMEOUT_MS) {
-        return {
-            stopReason: 'Not run: the submission used up its total time budget',
-            result: outcome(testCase, { status: 'tle', error: 'Time Limit Exceeded: the submission used up its total time budget' }),
-        };
-    }
+const seconds = (ms) => `${(ms / 1000).toFixed(ms % 1000 ? 1 : 0)} seconds`;
 
-    const started = Date.now();
-    const execution = await executeProgram({ source, timeoutMs, language });
-    const runtimeMs = Date.now() - started;
-    getExecutionBudget()?.signal.throwIfAborted();
-
-    if (execution.timedOut) {
-        return {
-            stopReason: 'Not run: an earlier test exceeded the time limit',
-            result: outcome(testCase, {
-                status: 'tle',
-                runtimeMs,
-                error: `Time Limit Exceeded: took longer than ${(timeoutMs / 1000).toFixed(timeoutMs % 1000 ? 1 : 0)} seconds`,
-            }),
-        };
+/** Grades one marked result line on the server. */
+const gradePayload = (testCase, payload, questionTypes, line, marker) => {
+    const runtimeMs = Number.isFinite(payload.ms) ? payload.ms : null;
+    if (payload.tle || runtimeMs > EXECUTION_TIMEOUT) {
+        return outcome(testCase, { status: 'tle', runtimeMs, error: `Time Limit Exceeded: took longer than ${seconds(EXECUTION_TIMEOUT)}` });
     }
-    if (execution.oom) {
-        return { result: outcome(testCase, { status: 'mle', runtimeMs, error: `Memory Limit Exceeded: used more than ${POLICY.memoryMb}MB` }) };
-    }
-
-    // The harness prints one marked line carrying the returned value;
-    // anything else on stdout is the submission's own output.
-    const line = execution.stdout.split('\n').reverse().find((l) => l.startsWith(marker));
-    if (!line) {
-        const detail = execution.stderr.trim() || (execution.exitCode === 0
-            ? 'Program exited before returning a result'
-            : 'Execution failed');
-        return { result: outcome(testCase, { status: 'error', runtimeMs, error: detail }) };
-    }
-    const payload = JSON.parse(line.slice(marker.length));
     if (payload.error) {
-        return { result: outcome(testCase, { status: 'error', runtimeMs, error: payload.error, debugOutput: payload.debugOutput }) };
+        return outcome(testCase, { status: 'error', runtimeMs, error: payload.error, debugOutput: payload.debugOutput });
     }
-
     // Judge the exact value; the display copy may round integers beyond 2^53.
     const exact = payload.digest ? null : parseJson(line.slice(marker.length)).result;
     const passed = judge(exact, testCase.expectedOutput, questionTypes, testCase.inputs, payload.digest ?? null);
-    return { result: outcome(testCase, {
+    return outcome(testCase, {
         status: passed ? 'passed' : 'wrong',
         runtimeMs,
         actualOutput: payload.digest ? `${payload.preview}… (${payload.size} characters)` : payload.result,
         digest: payload.digest,
         debugOutput: payload.debugOutput,
-    }) };
+    });
+};
+
+/**
+ * Runs every prepared test of a submission in one sandbox process and grades
+ * each marked result line on the server. Shared by every grading language so
+ * limits and verdicts stay identical. A test that runs past the per-test limit
+ * ends the run; later tests are reported as not run.
+ */
+const executeBatch = async ({ testCases, failed, source, marker, questionTypes, language }) => {
+    const results = testCases.map((testCase, index) => failed.get(index) ?? null);
+    const skipRest = (from, error) => {
+        for (let index = from; index < results.length; index++) {
+            results[index] ??= outcome(testCases[index], { status: 'skipped', error });
+        }
+        return results;
+    };
+    if (!source) return results;
+
+    const budget = getExecutionBudget();
+    const remainingMs = budget?.deadline ? budget.deadline - Date.now() - DEADLINE_RESERVE_MS : Infinity;
+    const pending = results.filter((result) => !result).length;
+    const timeoutMs = Math.floor(Math.min(remainingMs, pending * EXECUTION_TIMEOUT + BATCH_STARTUP_MS));
+    const first = results.findIndex((result) => !result);
+    if (timeoutMs < MIN_CASE_TIMEOUT_MS) {
+        results[first] = outcome(testCases[first], { status: 'tle', error: 'Time Limit Exceeded: the submission used up its total time budget' });
+        return skipRest(first, 'Not run: the submission used up its total time budget');
+    }
+
+    const execution = await executeProgram({ source, timeoutMs, language });
+    getExecutionBudget()?.signal.throwIfAborted();
+
+    // Each test prints one marked line; anything else on stdout is the
+    // submission's own output. The first line for each test counts.
+    const lines = new Map();
+    for (const line of execution.stdout.split('\n')) {
+        if (!line.startsWith(marker)) continue;
+        try {
+            const payload = JSON.parse(line.slice(marker.length));
+            if (Number.isInteger(payload.i) && !lines.has(payload.i)) lines.set(payload.i, { payload, line });
+        } catch {
+            // A truncated or forged line is ignored; the test is then reported as not finished.
+        }
+    }
+
+    let usedMs = 0;
+    for (let index = 0; index < results.length; index++) {
+        if (results[index]) continue;
+        const testCase = testCases[index];
+        const reported = lines.get(index);
+        if (reported) {
+            results[index] = gradePayload(testCase, reported.payload, questionTypes, reported.line, marker);
+            usedMs += results[index].runtimeMs ?? 0;
+            if (results[index].status === 'tle') return skipRest(index + 1, 'Not run: an earlier test exceeded the time limit');
+            continue;
+        }
+        // The process stopped before this test reported a result.
+        if (execution.timedOut) {
+            const ownLimit = usedMs + EXECUTION_TIMEOUT <= timeoutMs;
+            results[index] = outcome(testCase, {
+                status: 'tle',
+                error: ownLimit
+                    ? `Time Limit Exceeded: took longer than ${seconds(EXECUTION_TIMEOUT)}`
+                    : 'Time Limit Exceeded: the submission used up its total time budget',
+            });
+            return skipRest(index + 1, ownLimit
+                ? 'Not run: an earlier test exceeded the time limit'
+                : 'Not run: the submission used up its total time budget');
+        }
+        if (execution.oom) {
+            results[index] = outcome(testCase, { status: 'mle', error: `Memory Limit Exceeded: used more than ${POLICY.memoryMb}MB` });
+        } else {
+            const detail = execution.stderr.trim() || (execution.exitCode === 0
+                ? 'Program exited before returning a result'
+                : 'Execution failed');
+            results[index] = outcome(testCase, { status: 'error', error: detail });
+        }
+        return skipRest(index + 1, 'Not run: the program stopped during an earlier test');
+    }
+    return results;
 };
 
 const runTestCases = async (code, testCases, questionTypes) => {
-    const results = [];
+    getExecutionBudget()?.signal.throwIfAborted();
+    const language = questionTypes?.language === 'javascript' ? 'javascript' : 'python';
+    // Every test of a submission runs in one sandbox process: one container
+    // start per submission, and each test is timed on its own inside it.
+    const marker = `__PREPALGO_RESULT_${randomBytes(8).toString('hex')}__`;
+    const failed = new Map();
+    const cases = [];
+    let shared = null;
 
-    let stopReason = null;
-
-    for (const testCase of testCases) {
-        getExecutionBudget()?.signal.throwIfAborted();
-        if (stopReason) {
-            results.push(outcome(testCase, { status: 'skipped', error: stopReason }));
-            continue;
-        }
+    for (const [index, testCase] of testCases.entries()) {
         try {
-            if (questionTypes?.language === 'javascript') {
-                const marker = `__PREPALGO_RESULT_${randomBytes(8).toString('hex')}__`;
-                const source = buildJavaScriptProgram({ code, scenario: testCase.inputs[0], entry: questionTypes.method, marker });
-                const graded = await executeCase({ testCase, source, marker, questionTypes, language: 'javascript' });
-                if (graded.stopReason) stopReason = graded.stopReason;
-                results.push(graded.result);
+            if (language === 'javascript') {
+                cases.push({ index, scenario: testCase.inputs[0] });
                 continue;
             }
 
@@ -411,17 +451,64 @@ ${argLines}
             const robotBlock = !opsMode && inputTypes.includes('ROBOT_ROOM') ? `
 
         result = ["".join("1" if (r, c) in _robot_cells else "0" for c in range(width)) for r, width in enumerate(_robot_shape)]` : '';
-            const marker = `__PREPALGO_RESULT_${randomBytes(8).toString('hex')}__`;
+            const outputType = JSON.stringify(String(expectedOutputType).toLowerCase());
+            shared ??= { nodeAlias };
+            cases.push({ index, body: `${driverBlock}${inPlaceBlock}${robotBlock}
 
-            // Get existing imports and required typing imports
-            const existingImports = extractImports(code);
-            const requiredTypingImports = getRequiredTypingImports(code);
-            const codeWithoutImports = removeImports(code);
+        output_type = ${outputType}
 
-            const testCode = `
-import json
+        # The structured types are checked first and by name. The generic
+        # duck-typed checks below cannot tell a RandomListNode from a ListNode
+        # (both have .val and .next), so letting them run first would quietly
+        # serialize away the random pointer the problem is actually about.
+        if output_type == 'node_index':
+            result = nodeToIndex(result)
+        elif output_type == 'tree_node':
+            result = None if result is None else result.val
+        elif output_type == 'graph':
+            result = graphToList(result)
+        elif output_type == 'random_list':
+            result = randomListToList(result)
+        elif result is None:
+            # An empty tree or list is None in Python and [] when serialized.
+            if output_type in ('tree', 'array', 'linkedlist'):
+                result = []
+        elif hasattr(result, 'val') and hasattr(result, 'left') and hasattr(result, 'right'):
+            result = treeToList(result)
+        elif hasattr(result, 'val') and hasattr(result, 'next'):
+            result = linkedListToList(result)
+
+        return _report(_to_jsonable(result), _COMPARE_MODE)` });
+        } catch (error) {
+            getExecutionBudget()?.signal.throwIfAborted();
+            if (error.statusCode) throw error;
+            failed.set(index, outcome(testCase, { status: 'error', error: error.message }));
+        }
+    }
+
+    let source = null;
+    if (cases.length && language === 'javascript') {
+        source = buildJavaScriptProgram({ code, cases, entry: questionTypes.method, marker, limitMs: EXECUTION_TIMEOUT });
+    } else if (cases.length) {
+        source = buildPythonProgram({
+            code, cases, marker, nodeAlias: shared.nodeAlias,
+            compareMode: questionTypes?.checker ? 'checker' : (questionTypes?.compare ?? 'exact'),
+        });
+    }
+    return executeBatch({ testCases, failed, source, marker, questionTypes, language });
+};
+
+/** One Python program: shared helpers and the submission once, then one function per test. */
+const buildPythonProgram = ({ code, cases, marker, nodeAlias, compareMode }) => {
+    const existingImports = extractImports(code);
+    const requiredTypingImports = getRequiredTypingImports(code);
+    const codeWithoutImports = removeImports(code);
+    const order = cases.map(({ index }) => `(${index}, _case_${index})`).join(', ');
+    return `import json
 import sys
 import io
+import time
+import gc
 import contextlib
 # LeetCode allows deep recursion (e.g. DFS over a 100 x 200 grid).
 sys.setrecursionlimit(100000)
@@ -823,65 +910,52 @@ def _to_jsonable(value, depth=0):
         return [_to_jsonable(v, depth + 1) for v in value]
     raise Exception("Return value of type '%s' cannot be graded" % type(value).__name__)
 
-# Timeouts are enforced by the parent process and by RLIMIT_CPU inside the
-# sandbox guard. A self-imposed SIGALRM was removed deliberately: submitted
-# code can reset the alarm or mask the signal, so a child cannot be trusted to
-# time itself out.
+# The parent's deadline for the whole run and RLIMIT_CPU are the hard limits.
+# The guard's per-test timer only ends one slow test early; submitted code that
+# tampers with it gains nothing beyond the parent's deadline.
+_COMPARE_MODE = ${JSON.stringify(compareMode)}
+_emit_out = sys.stdout
+_dumps = json.dumps
+_perf = time.perf_counter
+_running = [-1]
+
+def _case_timed_out():
+    _emit_out.write(${JSON.stringify(marker)} + _dumps({'i': _running[0], 'tle': True}) + "\\n")
+    _emit_out.flush()
+
+_set_case_timer = _install_case_timer(_case_timed_out) if globals().get('_install_case_timer') else None
+
 
 ${nodeAlias}
 ${codeWithoutImports}
 
+${cases.map(({ index, body }) => `def _case_${index}():\n${body}`).join('\n\n')}
+
 if __name__ == "__main__":
-    # Only the returned value leaves the sandbox. The expected answer is never
-    # part of this program and the verdict is decided by the server.
-    print_capture = PrintCapture()
-    original_stdout = sys.stdout
-    try:
+    # Only returned values leave the sandbox. Expected answers are never part
+    # of this program and every verdict is decided by the server.
+    for _i, _case in (${order},):
+        print_capture = PrintCapture()
         sys.stdout = print_capture
-
-${driverBlock}${inPlaceBlock}${robotBlock}
-
-        output_type = ${JSON.stringify(String(expectedOutputType).toLowerCase())}
-
-        # The structured types are checked first and by name. The generic
-        # duck-typed checks below cannot tell a RandomListNode from a ListNode
-        # (both have .val and .next), so letting them run first would quietly
-        # serialize away the random pointer the problem is actually about.
-        if output_type == 'node_index':
-            result = nodeToIndex(result)
-        elif output_type == 'tree_node':
-            result = None if result is None else result.val
-        elif output_type == 'graph':
-            result = graphToList(result)
-        elif output_type == 'random_list':
-            result = randomListToList(result)
-        elif result is None:
-            # An empty tree or list is None in Python and [] when serialized.
-            if output_type in ('tree', 'array', 'linkedlist'):
-                result = []
-        elif hasattr(result, 'val') and hasattr(result, 'left') and hasattr(result, 'right'):
-            result = treeToList(result)
-        elif hasattr(result, 'val') and hasattr(result, 'next'):
-            result = linkedListToList(result)
-
-        payload = _report(_to_jsonable(result), ${JSON.stringify(questionTypes?.checker ? 'checker' : (questionTypes?.compare ?? 'exact'))})
-    except BaseException as e:
-        payload = {'error': '%s: %s' % (type(e).__name__, e)}
-    sys.stdout = original_stdout
-    payload['debugOutput'] = ''.join(print_capture.output)[:20000]
-    original_stdout.write(${JSON.stringify(marker)} + json.dumps(payload) + "\\n")
-    original_stdout.flush()
+        _running[0] = _i
+        if _set_case_timer:
+            _set_case_timer(${EXECUTION_TIMEOUT / 1000})
+        _started = _perf()
+        try:
+            payload = _case()
+        except BaseException as e:
+            payload = {'error': '%s: %s' % (type(e).__name__, e)}
+        _elapsed = _perf() - _started
+        if _set_case_timer:
+            _set_case_timer(0)
+        sys.stdout = _emit_out
+        payload['i'] = _i
+        payload['ms'] = int(_elapsed * 1000)
+        payload['debugOutput'] = ''.join(print_capture.output)[:20000]
+        _emit_out.write(${JSON.stringify(marker)} + _dumps(payload) + "\\n")
+        _emit_out.flush()
+        if _elapsed * 1000 > ${EXECUTION_TIMEOUT}:
+            break
+        gc.collect()
 `;
-
-            const graded = await executeCase({ testCase, source: testCode, marker, questionTypes, language: 'python' });
-            if (graded.stopReason) stopReason = graded.stopReason;
-            results.push(graded.result);
-        } catch (error) {
-            getExecutionBudget()?.signal.throwIfAborted();
-            if (error.statusCode) throw error;
-            results.push(outcome(testCase, { status: 'error', error: error.message }));
-        }
-    }
-
-    return results;
 }; 

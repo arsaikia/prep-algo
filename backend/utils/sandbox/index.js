@@ -69,7 +69,7 @@ export const executeProgram = async ({
     if (!LANGUAGES.includes(language)) throw new Error(`Unsupported sandbox language: ${language}`);
     const runner = selectRunner();
     // The import firewall is Python-specific; Node relies on --permission.
-    const program = language === 'python' ? buildGuardPrologue() + source : source;
+    const program = language === 'python' ? buildGuardPrologue({ cpuSeconds: Math.max(1, Math.ceil(timeoutMs / 1000)) }) + source : source;
     const queuedAt = Date.now();
     let started = queuedAt;
 

@@ -1,5 +1,5 @@
 /**
- * Program text for grading one JavaScript test case.
+ * Program text for grading JavaScript test cases.
  *
  * A JavaScript test is a scenario: the body of an async function that drives
  * the learner's function and returns a JSON value, which the server compares
@@ -94,25 +94,37 @@ const REALM_BOOTSTRAP = `(log, uncaught) => {
 }`;
 
 /**
+ * One program that grades every test of a submission in order, so a
+ * submission costs one sandbox start. Each test gets a fresh realm and its own
+ * time limit; one marked line per test carries `{ i, ms, result | error }`.
+ *
  * @param {object} options
  * @param {string} options.code      the learner's submission
- * @param {string} options.scenario  async function body returning the graded value
+ * @param {Array<{index: number, scenario: string}>} options.cases
+ *                                   async function bodies returning the graded value
  * @param {string} options.entry     function name from the starter template
- * @param {string} options.marker    nonce prefix of the single result line
+ * @param {string} options.marker    nonce prefix of the result lines
+ * @param {number} options.limitMs   per-test wall-clock limit
  */
-export const buildJavaScriptProgram = ({ code, scenario, entry, marker }) => {
+export const buildJavaScriptProgram = ({ code, cases, entry, marker, limitMs }) => {
     if (!IDENTIFIER.test(entry ?? '')) throw new Error('JavaScript problem has no entry function in its starter template');
     return `'use strict';
 const vm = require('node:vm');
 const write = process.stdout.write.bind(process.stdout);
 const stringify = JSON.stringify;
 const setImmediateReal = setImmediate;
+const setTimeoutReal = setTimeout;
+const clearTimeoutReal = clearTimeout;
+const exit = process.exit.bind(process);
+const realNow = Date.now;
 const MARKER = ${JSON.stringify(marker)};
 const ENTRY = ${JSON.stringify(entry)};
+const CASES = ${JSON.stringify(cases.map(({ index, scenario }) => [index, scenario]))};
+const LIMIT_MS = ${Number(limitMs)};
 const RESULT_LIMIT = 200000;
 const MAX_TIMERS_PER_TICK = 100000;
 
-const logs = [];
+let logs = [];
 let logBytes = 0;
 const log = (line) => {
     if (logBytes > 20000) return;
@@ -127,39 +139,39 @@ const describe = (error) => {
         return 'Uncaught exception';
     }
 };
-
-let reported = false;
-const report = (payload) => {
-    if (reported) return;
-    reported = true;
-    payload.debugOutput = logs.join('').slice(0, 20000);
-    write(MARKER + stringify(payload) + '\\n');
-};
+const emit = (payload) => write(MARKER + stringify(payload) + '\\n');
 // A browser only logs these; a rejection the learner never handled is not a crash.
 process.on('unhandledRejection', () => {});
-process.on('beforeExit', () => report({ error: 'Error: the test is still waiting on a promise that never settled' }));
+let stalled = null;
+process.on('beforeExit', () => stalled?.());
 
 const flush = () => new Promise((resolve) => setImmediateReal(resolve));
+const solution = (() => {
+    try {
+        return { script: new vm.Script(${JSON.stringify(code)} + '\\n;(typeof ' + ENTRY + ' === "function" ? ' + ENTRY + ' : undefined)', { filename: 'solution.js' }) };
+    } catch (error) {
+        return { error: describe(error) };
+    }
+})();
 
-(async () => {
+const runCase = async (scenarioSource) => {
+    if (solution.error) return { error: solution.error };
     const context = vm.createContext({}, { name: 'solution', codeGeneration: { strings: true, wasm: false } });
     const clock = vm.runInContext(${JSON.stringify(REALM_BOOTSTRAP)}, context)(log, (error) => log('Uncaught ' + describe(error)));
     vm.runInContext('globalThis.module = { exports: {} }; globalThis.exports = module.exports;', context);
 
     let fn;
     try {
-        fn = new vm.Script(${JSON.stringify(code)} + '\\n;(typeof ' + ENTRY + ' === "function" ? ' + ENTRY + ' : undefined)', {
-            filename: 'solution.js',
-        }).runInContext(context, { timeout: 2000 });
+        fn = solution.script.runInContext(context, { timeout: 2000 });
     } catch (error) {
-        return report({ error: describe(error) });
+        return { error: describe(error) };
     }
     if (typeof fn !== 'function') {
         const exported = vm.runInContext('module.exports', context);
         fn = typeof exported === 'function' ? exported : exported?.[ENTRY];
     }
     if (typeof fn !== 'function') {
-        return report({ error: 'ReferenceError: solution has no function ' + ENTRY + '. Keep the function name from the starter code.' });
+        return { error: 'ReferenceError: solution has no function ' + ENTRY + '. Keep the function name from the starter code.' };
     }
 
     const api = {
@@ -184,15 +196,43 @@ const flush = () => new Promise((resolve) => setImmediateReal(resolve));
     };
 
     try {
-        const scenario = vm.runInContext('(async (' + ENTRY + ', clock) => {\\n' + ${JSON.stringify(scenario)} + '\\n})', context, {
+        const scenario = vm.runInContext('(async (' + ENTRY + ', clock) => {\\n' + scenarioSource + '\\n})', context, {
             filename: 'test.js',
         });
-        const value = await scenario(fn, api);
-        const json = stringify(value === undefined ? null : value);
-        if (json.length > RESULT_LIMIT) return report({ error: 'Error: result is larger than ' + RESULT_LIMIT + ' characters' });
-        report({ result: JSON.parse(json) });
+        const neverSettled = new Promise((resolve) => {
+            stalled = () => resolve({ error: 'Error: the test is still waiting on a promise that never settled' });
+        });
+        const outcome = await Promise.race([scenario(fn, api).then((value) => ({ value })), neverSettled]);
+        if (outcome.error) return outcome;
+        const json = stringify(outcome.value === undefined ? null : outcome.value);
+        if (json.length > RESULT_LIMIT) return { error: 'Error: result is larger than ' + RESULT_LIMIT + ' characters' };
+        return { result: JSON.parse(json) };
     } catch (error) {
-        report({ error: describe(error) });
+        return { error: describe(error) };
+    } finally {
+        stalled = null;
+    }
+};
+
+(async () => {
+    for (const [index, scenario] of CASES) {
+        logs = [];
+        logBytes = 0;
+        const started = realNow();
+        // Unref'd, so a test that only waits on a promise that never settles
+        // ends through beforeExit instead of being held open to the limit.
+        const timer = setTimeoutReal(() => {
+            emit({ i: index, tle: true });
+            exit(0);
+        }, LIMIT_MS);
+        timer.unref();
+        const payload = await runCase(scenario);
+        clearTimeoutReal(timer);
+        payload.i = index;
+        payload.ms = realNow() - started;
+        payload.debugOutput = logs.join('').slice(0, 20000);
+        emit(payload);
+        if (payload.ms > LIMIT_MS) break;
     }
 })();
 `;

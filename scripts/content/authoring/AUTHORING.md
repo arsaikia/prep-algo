@@ -147,6 +147,9 @@ node scripts/content/authoring/record-cases.mjs <slug> --rerecord tests:0,3|exam
 `verify-solutions` fails unless `accept` passes everything well inside the
 limit, `tle` times out without a wrong answer, and `reject` fails somewhere.
 Use `--mode docker` before release; it matches production's 0.5-CPU executor.
+Container startup is not counted (all cases share one sandbox and are timed
+in-process), so a `tle` solution must be clearly over the limit, ideally about
+10x. Drop brute forces that only time out by a small margin.
 
 `record-cases` computes expected values by running every `accept` solution and
 requiring them to agree, then writes them into the problem file. Hidden tests

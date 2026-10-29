@@ -65,6 +65,18 @@ describe('JavaScript grading', () => {
         assert.match(never.error, /never settled/);
     });
 
+    it('runs every test in one process and moves on after a test that never settles', async () => {
+        const code = 'let calls = 0;\nfunction debounce(x) { calls += 1; return x === "hang" ? new Promise(() => {}) : calls; }';
+        const cases = [
+            { inputs: ['return debounce(1);'], expectedOutput: '1' },
+            { inputs: ['return await debounce("hang");'], expectedOutput: 'null' },
+            { inputs: ['return debounce(3);'], expectedOutput: '1' },
+        ];
+        const results = await runCode(code, cases, TYPES);
+        assert.deepEqual(results.map((r) => r.status), ['passed', 'error', 'passed']);
+        assert.match(results[1].error, /never settled/);
+    });
+
     it('turns an infinite loop into Time Limit Exceeded and skips the rest', async () => {
         const results = await runCode('function debounce() { for (;;) {} }', [CASE[0], CASE[0]], TYPES);
         assert.deepEqual(results.map((r) => r.status), ['tle', 'skipped']);

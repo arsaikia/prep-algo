@@ -291,3 +291,52 @@ describe('review regressions', () => {
         assert.ok(!judge(2n ** 70n, String(2n ** 70n + 1n), null));
     });
 });
+
+describe('one sandbox process per submission', () => {
+    const NUMBER_TYPES = { inputs: ['NUMBER'], output: 'NUMBER', method: 'f' };
+    const cases = (n) => Array.from({ length: n }, (_, i) => ({ inputs: [String(i)], expectedOutput: String(i + 1) }));
+
+    it('runs every test in one process and times each test on its own', async () => {
+        const counter = `seen = []
+class Solution:
+    def f(self, n):
+        seen.append(n)
+        return len(seen)
+`;
+        const results = await runPythonCode(counter, cases(3), NUMBER_TYPES);
+        assert.deepEqual(results.map((r) => r.status), ['passed', 'passed', 'passed']);
+        assert.ok(results.every((r) => Number.isInteger(r.runtimeMs) && r.runtimeMs < 1000));
+    });
+
+    it('ends a slow test at its own limit and reports later tests as not run', async () => {
+        const slow = `class Solution:
+    def f(self, n):
+        while n == 1:
+            pass
+        return n + 1
+`;
+        const started = Date.now();
+        const results = await runPythonCode(slow, cases(3), NUMBER_TYPES);
+        assert.deepEqual(results.map((r) => r.status), ['passed', 'tle', 'skipped']);
+        assert.match(results[1].error, /took longer than 5 seconds/);
+        assert.match(results[2].error, /earlier test exceeded the time limit/);
+        assert.ok(Date.now() - started < 9000, 'the per-test timer, not the whole-run deadline, ended the run');
+    });
+
+    it('keeps results reported before the program stops', async () => {
+        const crash = `import sys
+class Solution:
+    def f(self, n):
+        if n == 1:
+            sys.setrecursionlimit(10 ** 9)
+            def down(k):
+                return down(k + 1) + 1
+            down(0)
+        return n + 1
+`;
+        const results = await runPythonCode(crash, cases(3), NUMBER_TYPES);
+        assert.equal(results[0].status, 'passed');
+        assert.ok(['error', 'mle'].includes(results[1].status), results[1].status);
+        assert.ok(['skipped', 'passed'].includes(results[2].status));
+    });
+});
