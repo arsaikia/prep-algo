@@ -124,9 +124,20 @@ verified real Google sign-in, coding execution and submission
 (`majority-element`), system-design quiz submission
 (`caching-strategies-deep-dive`), and recommendation tracking. All requests
 returned 200, and both attempts and their progress rows persisted in PostgreSQL.
-Production still serves the pre-migration Mongo revision; no promotion or
-frontend release was performed. Keep the existing source database and do not
-treat that Mongo revision as a write-preserving rollback after PostgreSQL cutover.
+Keep the existing source database and do not treat the pre-migration Mongo
+revision (`00045-5fk`) as a write-preserving rollback after PostgreSQL cutover.
+
+## Production cutover (2026-10-29)
+
+Before cutover, Cloud Run request logs showed zero writes to the Mongo
+revision in 30 days, and a fresh pre-cutover PostgreSQL backup passed restore
+verification (table counts and row digests). Candidate
+`prep-algo-backend-00051-qow` (schema label `002`) passed hosted acceptance and
+now serves 100% of traffic. The frontend was released with the first-inventory
+bootstrap (`HOSTING_BOOTSTRAP=1`); old hashed assets still resolve, unknown
+assets return 404, and frontend/backend content revisions match. Failure
+response is `maintenance.mjs on` and fix forward (see `DEPLOYMENT_README.md`
+"Rollback").
 
 ## Follow-up correctness and scale changes
 
