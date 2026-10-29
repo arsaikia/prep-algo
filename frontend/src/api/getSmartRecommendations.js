@@ -1,10 +1,10 @@
 import apiClient from './client.js';
 
 export const getSmartDailyRecommendations = async (userId, options = {}) => {
-    const { count = 5, forceRefresh = false } = options;
+    const { count = 5 } = options;
 
     const response = await apiClient.get(`/recommendations/${userId}/daily`, {
-        params: { count, forceRefresh },
+        params: { count },
     });
 
     if (!response.data.success) {

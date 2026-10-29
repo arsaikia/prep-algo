@@ -1,237 +1,33 @@
-/**
- * Time Tracking Utility for Question Solving
- * Tracks time spent, difficulty ratings, and tags
- */
 import React from 'react';
-import apiClient from '../api/client.js';
+import { TimeTracker } from './timerState.js';
 
-class TimeTracker {
-    constructor() {
-        this.startTime = null;
-        this.endTime = null;
-        this.pausedTime = 0;
-        this.isPaused = false;
-        this.sessionData = {};
-    }
+export const timeTracker = new TimeTracker({
+  onStorageError: () => queueMicrotask(() => window.dispatchEvent(new Event('prep:storage-unavailable'))),
+});
 
-    /**
-     * Start tracking time for a question
-     * @param {string} questionId 
-     * @param {string} userId 
-     */
-    startTracking(questionId, userId) {
-        this.startTime = new Date();
-        this.endTime = null;
-        this.pausedTime = 0;
-        this.isPaused = false;
-        this.sessionData = {
-            questionId,
-            userId,
-            startTime: this.startTime,
-            tags: [],
-            difficultyRating: null
-        };
-
-        // Store in localStorage for persistence
-        localStorage.setItem('currentSession', JSON.stringify(this.sessionData));
-    }
-
-    /**
-     * Pause the timer
-     */
-    pause() {
-        if (!this.isPaused && this.startTime) {
-            this.isPaused = true;
-            this.pauseStartTime = new Date();
-        }
-    }
-
-    /**
-     * Resume the timer
-     */
-    resume() {
-        if (this.isPaused && this.pauseStartTime) {
-            this.pausedTime += new Date() - this.pauseStartTime;
-            this.isPaused = false;
-            this.pauseStartTime = null;
-        }
-    }
-
-    /**
-     * Stop tracking and return session data
-     * @param {boolean} success - Whether the question was solved successfully
-     * @param {number} difficultyRating - User's difficulty rating (1-5)
-     * @param {Array} tags - Additional tags for the session
-     * @returns {Object} Session data with time spent
-     */
-    stopTracking(success = true, difficultyRating = null, tags = []) {
-        if (!this.startTime) {
-            return null;
-        }
-
-        this.endTime = new Date();
-        const totalTime = this.endTime - this.startTime - this.pausedTime;
-        const timeSpentMinutes = Math.round(totalTime / 1000 / 60 * 10) / 10; // Round to 1 decimal
-
-        const sessionResult = {
-            ...this.sessionData,
-            endTime: this.endTime,
-            timeSpent: timeSpentMinutes,
-            success,
-            difficultyRating,
-            tags: [...this.sessionData.tags, ...tags]
-        };
-
-        // Clear localStorage
-        localStorage.removeItem('currentSession');
-
-        return sessionResult;
-    }
-
-    /**
-     * Get current elapsed time in minutes
-     * @returns {number} Current elapsed time
-     */
-    getCurrentTime() {
-        if (!this.startTime) return 0;
-
-        const now = new Date();
-        let elapsed = now - this.startTime;
-
-        // Subtract paused time
-        elapsed -= this.pausedTime;
-
-        // If currently paused, subtract the current pause duration
-        if (this.isPaused && this.pauseStartTime) {
-            elapsed -= (now - this.pauseStartTime);
-        }
-
-        // Convert to minutes with higher precision
-        const minutes = elapsed / (1000 * 60);
-        return Math.max(0, minutes); // Ensure never negative
-    }
-
-    /**
-     * Add tags to current session
-     * @param {Array} newTags 
-     */
-    addTags(newTags) {
-        if (this.sessionData.tags) {
-            this.sessionData.tags = [...new Set([...this.sessionData.tags, ...newTags])];
-            localStorage.setItem('currentSession', JSON.stringify(this.sessionData));
-        }
-    }
-
-    /**
-     * Set difficulty rating for current session
-     * @param {number} rating 
-     */
-    setDifficultyRating(rating) {
-        if (rating >= 1 && rating <= 5) {
-            this.sessionData.difficultyRating = rating;
-            localStorage.setItem('currentSession', JSON.stringify(this.sessionData));
-        }
-    }
-
-    /**
-     * Restore session from localStorage (useful for page refreshes)
-     * @returns {boolean} Whether session was restored
-     */
-    restoreSession() {
-        const savedSession = localStorage.getItem('currentSession');
-        if (savedSession) {
-            try {
-                this.sessionData = JSON.parse(savedSession);
-                this.startTime = new Date(this.sessionData.startTime);
-                return true;
-            } catch (error) {
-                localStorage.removeItem('currentSession');
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Reset the tracker
-     */
-    reset() {
-        this.startTime = null;
-        this.endTime = null;
-        this.pausedTime = 0;
-        this.isPaused = false;
-        this.sessionData = {};
-        localStorage.removeItem('currentSession');
-    }
+export function useTimeTracker() {
+  const [snapshot, setSnapshot] = React.useState({ currentTime: 0, isTracking: false, isPaused: false });
+  const sync = () => setSnapshot({
+    currentTime: timeTracker.getCurrentTime(),
+    isTracking: timeTracker.isTracking,
+    isPaused: timeTracker.isPaused,
+  });
+  React.useEffect(() => {
+    const interval = setInterval(sync, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  const act = (method) => (...args) => {
+    const result = timeTracker[method](...args);
+    sync();
+    return result;
+  };
+  return {
+    ...snapshot,
+    startTracking: act('startTracking'),
+    stopTracking: act('stopTracking'),
+    pause: act('pause'),
+    resume: act('resume'),
+    addTags: act('addTags'),
+    setDifficultyRating: act('setDifficultyRating'),
+  };
 }
-
-// Export singleton instance
-export const timeTracker = new TimeTracker();
-
-/**
- * Hook for React components to use time tracking
- */
-export const useTimeTracker = () => {
-    const [currentTime, setCurrentTime] = React.useState(0);
-    const [isTracking, setIsTracking] = React.useState(false);
-
-    React.useEffect(() => {
-        let interval;
-        if (isTracking) {
-            // Update every 100ms for smooth display, but round to seconds
-            interval = setInterval(() => {
-                setCurrentTime(timeTracker.getCurrentTime());
-            }, 100); // Changed from 1000ms to 100ms for smoother updates
-        }
-        return () => clearInterval(interval);
-    }, [isTracking]);
-
-    // Restore session on component mount
-    React.useEffect(() => {
-        if (timeTracker.restoreSession()) {
-            setIsTracking(true);
-        }
-    }, []);
-
-    const startTracking = (questionId, userId) => {
-        timeTracker.startTracking(questionId, userId);
-        setIsTracking(true);
-    };
-
-    // Solves are recorded by the endpoint that grades them, never from here: a
-    // second client-side write double-counted every solve and recorded failed
-    // attempts as solved. The tracker only times the session and ticks it off
-    // today's recommendations.
-    const stopTracking = async (success, difficultyRating, tags) => {
-        const sessionData = timeTracker.stopTracking(success, difficultyRating, tags);
-        setIsTracking(false);
-        setCurrentTime(0);
-
-        if (sessionData && success && sessionData.userId && sessionData.questionId) {
-            try {
-                await apiClient.post(`/recommendations/${sessionData.userId}/complete`, {
-                    questionId: sessionData.questionId,
-                    timeSpent: sessionData.timeSpent,
-                    success: true,
-                });
-            } catch (error) {
-                // 404: no batch today, or the question is not in it.
-                if (error?.response?.status !== 404) {
-                    console.error('Error marking question complete:', error);
-                }
-            }
-        }
-
-        return sessionData;
-    };
-
-    return {
-        currentTime,
-        isTracking,
-        startTracking,
-        stopTracking,
-        pause: () => timeTracker.pause(),
-        resume: () => timeTracker.resume(),
-        addTags: (tags) => timeTracker.addTags(tags),
-        setDifficultyRating: (rating) => timeTracker.setDifficultyRating(rating)
-    };
-}; 

@@ -14,7 +14,7 @@ function* handleQuestionDone(action) {
     yield call(setQuestionAsDone, action.payload);
     yield put(getQuestions(action.payload.userId));
   } catch (error) {
-
+    console.error('Could not save question completion.', error);
   }
 }
 

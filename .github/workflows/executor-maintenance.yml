@@ -1,0 +1,43 @@
+name: Executor maintenance reminders
+
+# Free reminders for the manual executor upkeep described in ADR-008.
+# GitHub disables scheduled workflows after 60 days without repository activity;
+# re-enable it from the Actions tab if that happens.
+on:
+  schedule:
+    - cron: '0 9 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Open due reminders
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          open_once() {
+            if [ "$(gh issue list --state open --search "in:title \"$1\"" --json number --jq length)" = 0 ]; then
+              gh issue create --title "$1" --body "$2"
+            fi
+          }
+          case "$(date -u +%m)" in
+            01|04|07|10)
+              open_once "Executor patch window $(date -u +%Y-%m)" \
+                "Run \`scripts/executor/patch-window.sh\` (about 10 minutes, ~\$0.005 of temporary IP). Also run it out of cycle for urgent kernel, Docker/runc or Node 22 security fixes. See docs/adr/008-code-execution-sandbox.md." ;;
+          esac
+          days=$(node scripts/executor/trust.mjs)
+          echo "Executor certificate days remaining: $days"
+          if [ "$days" -lt 60 ]; then
+            open_once "Rotate executor TLS certificate" \
+              "The executor certificate expires in $days days. Follow the rotation steps in docs/adr/008-code-execution-sandbox.md (scripts/executor/rotate-cert.sh). Backend tests fail inside 30 days."
+          fi
+          [ "$days" -ge 30 ]

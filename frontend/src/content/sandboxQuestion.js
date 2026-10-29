@@ -34,6 +34,7 @@ export function toSandboxQuestion(body) {
     const question = {
         id: body.legacyId ?? null,
         slug: body.slug,
+        revision: body.revision,
         type: body.type,
         title: body.title,
         description: body.description || body.summary || 'No description available',

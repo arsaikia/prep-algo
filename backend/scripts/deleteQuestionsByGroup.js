@@ -1,3 +1,4 @@
+import './retiredMongoScript.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Question from '../models/Question.js';

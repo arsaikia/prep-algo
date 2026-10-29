@@ -1,5 +1,5 @@
 import {
-    all, call, put, takeEvery,
+    all, call, put, select, takeLatest,
 } from 'redux-saga/effects';
 import apiClient from '../api/client.js';
 
@@ -28,7 +28,7 @@ function* fetchFromApi(userId, domain) {
         throw new Error(`Question request failed with status ${response.status}`);
     }
 
-    return response.data.data;
+    return { data: response.data.data, progressRows: null, progressError: null };
 }
 
 /**
@@ -41,7 +41,8 @@ function* fetchFromApi(userId, domain) {
 function* fetchProgress(userId) {
     try {
         const response = yield call([apiClient, 'get'], `/progress/${userId}`);
-        return response.data.data;
+        if (!Array.isArray(response.data.data)) throw new Error('Invalid progress response');
+        return { rows: response.data.data, error: null };
     } catch (error) {
         // Progress is an enhancement, not a prerequisite: a failure here must
         // cost the user their solved badges, never the question list itself.
@@ -49,15 +50,20 @@ function* fetchProgress(userId) {
             `[questions] progress lookup failed for "${userId}" — rendering without solved badges.`,
             error,
         );
-        return null;
+        const cached = yield select((state) => state.questions);
+        return {
+            rows: cached.progressUserId === userId ? cached.progressRows : null,
+            error: 'Your saved progress is unavailable. Any displayed solved badges may be out of date.',
+        };
     }
 }
 
 function* fetchFromCdn(userId, domain) {
-    const [index, progressRows] = yield all([
+    const [index, progressResult] = yield all([
         call(loadIndex),
         call(fetchProgress, userId),
     ]);
+    const progressRows = progressResult.rows;
 
     const items = domain
         ? index.items.filter((item) => item.domain === domain)
@@ -75,7 +81,7 @@ function* fetchFromCdn(userId, domain) {
         );
     }
 
-    return groups;
+    return { data: groups, progressRows, progressError: progressResult.error };
 }
 
 function* fetchAllQuestions(action) {
@@ -84,15 +90,20 @@ function* fetchAllQuestions(action) {
     try {
         const { userId, domain } = action;
 
-        const data = yield call(
+        const result = yield call(
             isCdnContentEnabled() ? fetchFromCdn : fetchFromApi,
             userId,
             domain,
         );
+        const { data, progressRows, progressError } = result;
 
         yield put({
             payload: data,
             type: GET_ALL_QUESTIONS,
+            userId,
+            domain,
+            progressRows,
+            progressError,
         });
 
         // The solved-questions store holds only the progress half, so derive
@@ -114,16 +125,19 @@ function* fetchAllQuestions(action) {
         yield put({
             payload: solvedQuestions,
             type: GET_SOLVED_QUESTIONS,
+            userId,
+            domain,
         });
     } catch (error) {
         console.error('[questions] failed to load the question list.', error);
+        yield put({ type: 'QUESTION_LIST_FAILURE', userId: action.userId, domain: action.domain, payload: error.message || 'Could not load questions.' });
     }
 
     yield put({ type: HIDE_FETCH_LOADING });
 }
 
 function* getQuestionsWatcher() {
-    yield takeEvery(GET_QUESTIONS, fetchAllQuestions);
+    yield takeLatest(GET_QUESTIONS, fetchAllQuestions);
 }
 
 export default getQuestionsWatcher;

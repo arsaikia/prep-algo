@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { contentUrl } from '../../utils/navigation';
 import styled, { keyframes } from 'styled-components';
 import { CheckCircle } from 'react-feather';
 import { getSmartDailyRecommendations, replaceCompletedQuestions } from '../../api/getSmartRecommendations';
@@ -154,7 +156,7 @@ const CompletedSectionTitle = styled.h3`
     font-size: 1rem;
     font-weight: 600;
     color: ${({ theme }) => theme.colors.textSecondary};
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 `;
 
 const CompletedSectionLine = styled.div`
@@ -166,7 +168,11 @@ const CompletedSectionLine = styled.div`
     );
 `;
 
-const RecommendationCard = styled.div`
+const RecommendationCard = styled(Link)`
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    &:focus-visible { outline: 3px solid ${({ theme }) => theme.colors.primary}; outline-offset: 3px; }
     background: ${({ theme, $isCompleted }) =>
         $isCompleted
             ? theme.colors.difficultyEasy + '08'  // Very subtle green background tint (same as questions page)
@@ -179,7 +185,7 @@ const RecommendationCard = styled.div`
     };
     border-radius: 16px;
     padding: 24px;
-    cursor: ${({ $isCompleted }) => $isCompleted ? 'default' : 'pointer'};
+    cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: ${({ theme, $isCompleted }) =>
         $isCompleted
@@ -610,7 +616,7 @@ const GUEST_ANALYSIS = {
     adaptiveFeatures: { enabled: false, level: 'basic' },
 };
 
-const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => {
+const DailyRecommendations = ({ userId, isGuest = false }) => {
     const [recommendations, setRecommendations] = useState([]);
     const [analysis, setAnalysis] = useState(null);
     const [progress, setProgress] = useState(null);
@@ -619,6 +625,7 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
     const [error, setError] = useState(null);
 
     const [replacingCompleted, setReplacingCompleted] = useState(false);
+    const requestSeq = useRef(0);
 
     const trackRecommendationClick = (questionId) => {
         if (isGuest || !userId) return;
@@ -626,10 +633,17 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
             questionId,
             action: 'attempted',
             clickedAt: new Date().toISOString(),
-        }).catch(() => {});
+        }).catch((err) => console.warn('Recommendation click tracking unavailable', err));
     };
 
     useEffect(() => {
+        requestSeq.current += 1;
+        setError(null);
+        setRecommendations([]);
+        setAnalysis(null);
+        setProgress(null);
+        setBatchInfo(null);
+        setReplacingCompleted(false);
         if (isGuest) {
             setRecommendations(GUEST_SAMPLE_RECOMMENDATIONS);
             setAnalysis(GUEST_ANALYSIS);
@@ -641,38 +655,31 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
         if (userId) {
             fetchRecommendations();
         }
+        return () => { requestSeq.current += 1; };
     }, [userId, isGuest]);
 
     const fetchRecommendations = async () => {
+        const seq = ++requestSeq.current;
         try {
             setLoading(true);
 
             const data = await getSmartDailyRecommendations(userId, {
                 count: 5,
-                forceRefresh: false
             });
+            if (seq !== requestSeq.current) return;
 
             setRecommendations(data.recommendations || []);
             setAnalysis(data.analysis || null);
             setProgress(data.progress || null);
             setBatchInfo(data.batchInfo || null);
 
-            if (!data.analysis && data.strategy) {
-                setAnalysis({
-                    userLevel: data.strategy,
-                    totalSolved: 0,
-                    recentActivity: 0,
-                    weakAreas: [],
-                    strongAreas: []
-                });
-            }
-
             setError(null);
         } catch (err) {
+            if (seq !== requestSeq.current) return;
             console.error('Error fetching recommendations:', err);
             setError('Failed to fetch recommendations');
         } finally {
-            setLoading(false);
+            if (seq === requestSeq.current) setLoading(false);
         }
     };
 
@@ -689,18 +696,21 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
         if (!userId || replacingCompleted) return;
 
         setReplacingCompleted(true);
+        const seq = ++requestSeq.current;
         try {
             const data = await replaceCompletedQuestions(userId);
+            if (seq !== requestSeq.current) return;
             setRecommendations(data.recommendations);
             setAnalysis(data.analysis);
             setProgress(data.progress);
             setBatchInfo(data.batchInfo);
             setError(null);
         } catch (err) {
+            if (seq !== requestSeq.current) return;
             console.error('Error replacing completed questions:', err);
             setError(err.message || 'Failed to replace completed questions');
         } finally {
-            setReplacingCompleted(false);
+            if (seq === requestSeq.current) setReplacingCompleted(false);
         }
     };
 
@@ -724,7 +734,7 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
         );
     }
 
-    if (error) {
+    if (error && recommendations.length === 0) {
         return (
             <Container className="error">
                 <h3>⚠️ Error</h3>
@@ -739,18 +749,23 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
     return (
         <MobileContainer>
             <Container>
+                {isGuest && <p>Guest preview · Sample recommendations, not saved progress.</p>}
+                {error && <p role="alert">{error} <button onClick={fetchRecommendations}>Retry</button></p>}
+                {!analysis && <p>Learning analytics are unavailable right now. Your recommendations are still available below.</p>}
                 {/* Analytics Dashboard */}
                 <AnalyticsDashboard
                     analysis={analysis}
                     progress={progress}
                     batchInfo={batchInfo}
+                    preview={isGuest}
                 />
 
                 <RecommendationsList>
                     {recommendations.length === 0 ? (
                         <NoRecommendations>
-                            <h3>🎉 Great job!</h3>
-                            <p>You've solved all available questions in your current categories. Try exploring new topics!</p>
+                            <h3>No recommendations available right now</h3>
+                            <p>Browse the question library or try again later.</p>
+                            <Link to="/all">Browse questions</Link>
                         </NoRecommendations>
                     ) : (
                         (() => {
@@ -780,9 +795,9 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
                                                 $isCompleted={false}
                                                 priority={rec.priority}
                                                 data-completed={false}
+                                                to={contentUrl(rec.question)}
                                                 onClick={() => {
                                                     trackRecommendationClick(rec.question._id);
-                                                    onQuestionSelect && onQuestionSelect(rec.question);
                                                 }}
                                             >
                                                 <RecommendationHeader>
@@ -838,7 +853,7 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
                                     {completedQuestions.length > 0 && (
                                         <>
                                             <CompletedSectionDivider>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', minWidth: 0, flexWrap: 'wrap', gap: '12px' }}>
                                                     <CompletedSectionTitle>
                                                         ✅ Completed Questions ({completedQuestions.length})
                                                     </CompletedSectionTitle>
@@ -869,7 +884,7 @@ const DailyRecommendations = ({ userId, onQuestionSelect, isGuest = false }) => 
                                                         $isCompleted={isCompleted}
                                                         priority={rec.priority}
                                                         data-completed={isCompleted}
-                                                        onClick={() => !isCompleted && onQuestionSelect && onQuestionSelect(rec.question)}
+                                                        to={contentUrl(rec.question)}
                                                     >
                                                         <RecommendationHeader>
                                                             <PriorityIndicator

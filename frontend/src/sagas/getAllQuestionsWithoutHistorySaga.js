@@ -7,6 +7,7 @@ import {
 import {
     GET_ALL_QUESTIONS_WITHOUT_HISTORY,
     GET_ALL_QUESTIONS_WITHOUT_HISTORY_SUCCESS,
+    GET_ALL_QUESTIONS_WITHOUT_HISTORY_FAILURE,
     HIDE_FETCH_LOADING,
     SHOW_FETCH_LOADING,
 } from '../actions/types';
@@ -46,16 +47,12 @@ function* fetchAllQuestionsWithoutHistory() {
             isCdnContentEnabled() ? fetchFromCdn : fetchFromApi,
         );
 
-        if (questionWithGroups.groups.length === 0) {
-            throw new Error('No questions available');
-        }
-
         yield put({
             payload: questionWithGroups,
             type: GET_ALL_QUESTIONS_WITHOUT_HISTORY_SUCCESS,
         });
     } catch (error) {
-        // Error handling without logging
+        yield put({ type: GET_ALL_QUESTIONS_WITHOUT_HISTORY_FAILURE, payload: error.message || 'Could not load the question library.' });
     } finally {
         yield put({ type: HIDE_FETCH_LOADING });
     }

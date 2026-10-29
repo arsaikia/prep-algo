@@ -112,6 +112,7 @@ function loadCatalog() {
         const raw = loadBundle(bundlePath('catalog.json'), 'catalog');
         const items = Array.isArray(raw.items) ? raw.items : [];
         catalogCache = {
+            revision: raw.revision || null,
             items,
             bySlug: new Map(items.map((item) => [item.slug, item])),
             byLegacyId: new Map(
@@ -125,6 +126,18 @@ function loadCatalog() {
 /** Every catalog item in index order. Shared — callers must not mutate. */
 export function listItems() {
     return loadCatalog().items;
+}
+
+export function getContentRevision() {
+    return loadCatalog().revision;
+}
+
+export function assertContentRevision(item, revision) {
+    if (revision !== undefined && revision !== item?.revision) {
+        const error = new Error('This content has changed. Reload the question before submitting.');
+        error.statusCode = 409;
+        throw error;
+    }
 }
 
 /** Look up by slug. Accepts legacy `link` values, which are the slug plus a trailing slash. */

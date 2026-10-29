@@ -5,6 +5,8 @@ import styled from 'styled-components';
 import { Check, Code } from 'react-feather';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
+import remarkGfm from 'remark-gfm';
+import { contentUrl } from '../utils/navigation';
 
 import { loadIndex, loadItem } from '../content/loader';
 import FullScreenLoader from '../components/Loader/FullScreenLoader';
@@ -50,6 +52,12 @@ const Summary = styled.p`
 const Article = styled.div`
   line-height: 1.7;
   font-size: 1rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  .table-scroll { overflow-x: auto; margin: 1rem 0; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { padding: .6rem .8rem; border: 1px solid ${({ theme }) => theme.colors.border}; text-align: left; min-width: 110px; }
+  th { background: ${({ theme }) => theme.colors.backgroundTertiary}; }
 
   h2 {
     font-size: 1.3rem;
@@ -177,11 +185,15 @@ function TopicReader() {
   const { quizByTopic } = useOutletContext() ?? {};
   const [state, setState] = useState({ status: 'loading' });
   const [quiz, setQuiz] = useState(null);
+  const [quizError, setQuizError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const [quizRetry, setQuizRetry] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setState({ status: 'loading' });
     setQuiz(null);
+    setQuizError('');
 
     (async () => {
       const index = await loadIndex();
@@ -209,21 +221,25 @@ function TopicReader() {
         relatedProblems: resolve(topic.relatedProblems),
       });
 
-      // The quiz is a second network round trip, and it sits at the bottom of
-      // a long article. Fetching it after the topic renders keeps it off the
-      // critical path for reading.
-      const quizEntry = quizByTopic?.get(slug);
-      if (!quizEntry) return;
-      const quiz = await loadItem(quizEntry.slug, quizEntry.h);
-      if (!cancelled) setQuiz(quiz);
     })().catch((err) => {
       if (!cancelled) setState({ status: 'error', message: err.message });
     });
 
     return () => { cancelled = true; };
-  }, [slug, quizByTopic]);
+  }, [slug, retry]);
 
-  if (state.status === 'loading') return <FullScreenLoader show />;
+  useEffect(() => {
+    let cancelled = false;
+    const entry = quizByTopic?.get(slug);
+    setQuiz(null);
+    setQuizError('');
+    if (entry) loadItem(entry.slug, entry.h)
+      .then((body) => { if (!cancelled) setQuiz(body); })
+      .catch((err) => { if (!cancelled) setQuizError(err.message); });
+    return () => { cancelled = true; };
+  }, [slug, quizByTopic, quizRetry]);
+
+  if (state.status === 'loading' || (state.status === 'ready' && state.topic.slug !== slug)) return <FullScreenLoader show />;
 
   if (state.status === 'missing') {
     return (
@@ -237,6 +253,7 @@ function TopicReader() {
     return (
       <Container>
         <Message>Could not load this topic: {state.message}</Message>
+        <button onClick={() => setRetry((value) => value + 1)}>Retry topic</button>
       </Container>
     );
   }
@@ -260,7 +277,7 @@ function TopicReader() {
           <PanelTitle>Read these first</PanelTitle>
           <LinkRow>
             {prerequisites.map((item) => (
-              <Pill key={item.slug} to={`/system-design/${item.slug}`}>
+              <Pill key={item.slug} to={contentUrl(item)}>
                 {item.title}
               </Pill>
             ))}
@@ -269,7 +286,13 @@ function TopicReader() {
       )}
 
       <Article>
-        <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeSanitize]}
+          components={{ table: ({ children }) => (
+            <div className="table-scroll" role="region" aria-label="Article table" tabIndex={0}><table>{children}</table></div>
+          ) }}
+        >
           {topic.body}
         </ReactMarkdown>
       </Article>
@@ -295,7 +318,7 @@ function TopicReader() {
             {relatedProblems.map((item) => (
               <Pill
                 key={item.slug}
-                to={`/codesandbox?question=${item.link || item.slug}`}
+                to={contentUrl(item)}
               >
                 <Code size={14} />
                 {item.title}
@@ -305,7 +328,11 @@ function TopicReader() {
         </Panel>
       )}
 
-      <TopicQuiz quiz={quiz} />
+      {quizError && <Panel role="alert">
+        <p>Could not load the optional quiz: {quizError}</p>
+        <button onClick={() => setQuizRetry((value) => value + 1)}>Retry quiz</button>
+      </Panel>}
+      <TopicQuiz key={slug} quiz={quiz?.topic === slug ? quiz : null} />
     </Container>
   );
 }

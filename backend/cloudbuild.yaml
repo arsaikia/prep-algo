@@ -1,12 +1,16 @@
 # Builds the backend image and deploys it as a Cloud Run revision that
 # receives NO traffic. The revision is reachable at its tag URL
 # (https://<_TAG>---prep-algo-backend-...run.app) for smoke tests;
-# `deploy-to-cloudrun.sh --promote` then shifts traffic to it.
-# Environment variables and secrets are NOT set here. The new revision inherits
-# whatever the service already has, so configuration edited in the Cloud Run
-# console survives a deploy.
+# `deploy-to-cloudrun.sh --promote EXACT_REVISION` then shifts traffic to it.
+# Secrets and application settings are inherited. Private executor networking
+# and its public trust certificate are set explicitly for the candidate.
 substitutions:
   _TAG: candidate
+  _MAX_INSTANCES: '2'
+  _CONCURRENCY: '8'
+  _PG_POOL_MAX: '3'
+  # Latest migration version this image expects; set by deploy-to-cloudrun.sh.
+  _SCHEMA: '000'
 
 steps:
   # Tag with the build id so every revision pins an immutable image.
@@ -28,6 +32,20 @@ steps:
           --platform managed \
           --allow-unauthenticated \
           --no-traffic \
+          --min-instances 0 \
+          --max-instances "${_MAX_INSTANCES}" \
+          --concurrency "${_CONCURRENCY}" \
+          --cpu 1 \
+          --memory 512Mi \
+          --timeout 30s \
+          --service-account "prepalgo-api@$PROJECT_ID.iam.gserviceaccount.com" \
+          --remove-secrets MONGO_URI,MONGO_URI_DEV \
+          --network default \
+          --subnet prepalgo-run \
+          --network-tags prepalgo-api \
+          --vpc-egress private-ranges-only \
+          --update-env-vars "PG_POOL_MAX=${_PG_POOL_MAX},CODE_EXECUTOR_URL=https://10.128.0.2,CODE_EXECUTOR_AUDIENCE=https://executor.prepalgo.com,NODE_EXTRA_CA_CERTS=/app/config/executor-trust.crt" \
+          --update-labels "prepalgo-schema=${_SCHEMA}" \
           --tag "${_TAG}"
 
 images:

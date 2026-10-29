@@ -1,4 +1,5 @@
 import { getRedis } from '../../config/redis.js';
+import logger from '../../config/logger.js';
 
 const TOKEN_BUCKET_SCRIPT = `
 local key = KEYS[1]
@@ -37,6 +38,14 @@ end
 
 export function createTokenBucketLimiter({ capacity, refillRate, keyPrefix }) {
   const inMemoryStore = new Map();
+  let lastWarning = 0;
+  const maxIdleMs = Math.ceil(capacity / refillRate * 1000);
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, bucket] of inMemoryStore) {
+      if (now - bucket.lastRefill > maxIdleMs) inMemoryStore.delete(key);
+    }
+  }, 60000).unref();
 
   async function checkLimit(identifier) {
     const redis = getRedis();
@@ -50,9 +59,13 @@ export function createTokenBucketLimiter({ capacity, refillRate, keyPrefix }) {
           limited: result[0] === 1,
           remaining: result[0] === 0 ? result[1] : 0,
           retryAfterMs: result[0] === 1 ? result[1] : 0,
+          backend: 'redis',
         };
       } catch (err) {
-        // Redis token bucket error — falling back to in-memory
+        if (Date.now() - lastWarning > 60000) {
+          lastWarning = Date.now();
+          logger.warn({ keyPrefix, code: err.code }, 'distributed execution limit unavailable; using per-instance fallback');
+        }
       }
     }
 
@@ -61,6 +74,9 @@ export function createTokenBucketLimiter({ capacity, refillRate, keyPrefix }) {
     let bucket = inMemoryStore.get(key);
 
     if (!bucket) {
+      if (inMemoryStore.size >= 10000) {
+        return { limited: true, remaining: 0, retryAfterMs: maxIdleMs, backend: 'local_capacity' };
+      }
       bucket = { tokens: capacity, lastRefill: now };
       inMemoryStore.set(key, bucket);
     }
@@ -72,10 +88,10 @@ export function createTokenBucketLimiter({ capacity, refillRate, keyPrefix }) {
 
     if (bucket.tokens > 0) {
       bucket.tokens--;
-      return { limited: false, remaining: bucket.tokens, retryAfterMs: 0 };
+      return { limited: false, remaining: bucket.tokens, retryAfterMs: 0, backend: 'local' };
     }
 
-    return { limited: true, remaining: 0, retryAfterMs: Math.ceil(1000 / refillRate) };
+    return { limited: true, remaining: 0, retryAfterMs: Math.ceil(1000 / refillRate), backend: 'local' };
   }
 
   return checkLimit;

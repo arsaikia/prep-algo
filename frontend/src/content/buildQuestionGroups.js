@@ -1,4 +1,4 @@
-import groupBy from '../utils/groupBy';
+import groupBy from '../utils/groupBy.js';
 
 /**
  * Adapts a CDN index entry to the shape the question list components expect.

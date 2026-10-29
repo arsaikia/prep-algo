@@ -1,7 +1,12 @@
 # ADR 006: Circuit Breaker Pattern
 
 ## Status
-Accepted
+Accepted (amended for PostgreSQL)
+
+The database breaker is now `postgresCircuitBreaker` in
+`backend/config/circuitBreakers.js` (same thresholds) and opens only on
+network-level connection failures, not statement errors. Mongo/mongoose
+references below are historical.
 
 ## Context
 MongoDB outages or external API failures (Google OAuth) cause cascading request failures with slow timeouts. Without circuit breaking, every request during an outage waits for the full timeout before failing, exhausting connection pools and degrading the entire service.

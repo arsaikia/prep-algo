@@ -1,6 +1,5 @@
 import React, {
   useEffect,
-  useState,
   useCallback,
   useMemo,
 } from 'react';
@@ -22,7 +21,7 @@ import {
   getListNamesAndCounts,
   filterQuestionsByList,
 } from '../utils/questions';
-import { getQuestions } from '../actions/actions';
+import { getQuestions, getAllQuestionsWithoutHistory } from '../actions/actions';
 import { useTestUser } from '../contexts/TestUserContext';
 import { isDevMode } from '../utils/featureFlags';
 
@@ -34,6 +33,9 @@ const Container = styled.div`
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   min-height: 100vh;
+  min-width: 0;
+  box-sizing: border-box;
+  @media (max-width: 480px) { padding: 12px 0; }
 `;
 
 const Header = styled.div`
@@ -99,6 +101,7 @@ const StatsSection = styled.div`
   display: flex;
   align-items: center;
   gap: 24px;
+  @media (max-width: 600px) { flex-wrap: wrap; gap: 12px; }
 `;
 
 const CircularProgress = styled.div`
@@ -307,6 +310,8 @@ const LeftFilters = styled.div`
   gap: 16px;
   align-items: center;
   flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
 `;
 
 const RightActions = styled.div`
@@ -314,12 +319,14 @@ const RightActions = styled.div`
   gap: 12px;
   align-items: center;
   flex-shrink: 0;
+  flex-wrap: wrap;
 `;
 
 const SearchContainer = styled.div`
   position: relative;
   flex: 1;
   overflow: visible;
+  min-width: min(220px, 100%);
 `;
 
 const SearchInput = styled.input`
@@ -457,6 +464,9 @@ const DifficultyStats = styled.div`
   display: flex;
   gap: 20px;
   flex: 1;
+  flex-wrap: wrap;
+  min-width: 0;
+  @media (max-width: 480px) { gap: 12px; }
   
   @media (max-width: 768px) {
     width: 100%;
@@ -640,12 +650,18 @@ const DOMAIN_TITLES = {
 const AllQuestions = ({ domain: domainProp }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const domain = domainProp || searchParams.get('domain') || null;
   const {
     allQuestions,
     allQuestionsWithoutHistory,
     isFetchingQuestions,
+    progressStatus,
+    progressError,
+    contentError,
+    progressRows,
+    progressUserId,
+    progressDomain,
   } = useSelector((state) => state.questions);
 
   // Get authenticated user from Redux store
@@ -661,14 +677,31 @@ const AllQuestions = ({ domain: domainProp }) => {
   const defaultList = domain === 'system_design' ? 'SD TOP 25'
     : domain === 'frontend' ? 'FE ESSENTIALS'
     : 'TOP 150';
-  const [activeList, setActiveList] = useState(defaultList);
+  const activeList = searchParams.get('list') || defaultList;
+  const updateQuery = (key, value) => setSearchParams((previous) => {
+    const next = new URLSearchParams(previous);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    return next;
+  }, { replace: true });
+  const setActiveList = (value) => updateQuery('list', value);
 
   // State for search and filters
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  const searchTerm = searchParams.get('search') || '';
+  const setSearchTerm = (value) => updateQuery('search', value);
+  const selectedDifficulty = searchParams.get('difficulty') || 'All';
+  const setSelectedDifficulty = (value) => updateQuery('difficulty', value === 'All' ? '' : value);
 
   // State to track expanded groups
-  const [expandedGroups, setExpandedGroups] = useState({});
+  const expandedGroups = useMemo(() => Object.fromEntries(searchParams.getAll('open').map((name) => [name, true])), [searchParams]);
+  const setExpandedGroups = (value) => setSearchParams((previous) => {
+    const current = Object.fromEntries(previous.getAll('open').map((name) => [name, true]));
+    const expanded = typeof value === 'function' ? value(current) : value;
+    const next = new URLSearchParams(previous);
+    next.delete('open');
+    Object.entries(expanded).forEach(([name, open]) => { if (open) next.append('open', name); });
+    return next;
+  }, { replace: true });
 
   // Determine which user ID to use for fetching questions
   const getUserIdForQuestions = () => {
@@ -698,7 +731,7 @@ const AllQuestions = ({ domain: domainProp }) => {
 
   // For guests, build question data from the public store (already loaded by QuestionsLoader)
   const guestQuestions = useMemo(() => {
-    if (!isGuest || !allQuestionsWithoutHistory?.questions) return null;
+    if (!allQuestionsWithoutHistory?.questions) return null;
     if (!domain) return allQuestionsWithoutHistory;
     const filtered = {};
     Object.entries(allQuestionsWithoutHistory.questions).forEach(([group, questions]) => {
@@ -709,22 +742,25 @@ const AllQuestions = ({ domain: domainProp }) => {
       groups: Object.keys(filtered),
       questions: filtered,
     };
-  }, [isGuest, domain, allQuestionsWithoutHistory]);
+  }, [domain, allQuestionsWithoutHistory]);
 
   // Use guest data when available, otherwise fetch from protected endpoint
-  const questionsData = guestQuestions || allQuestions;
+  const scopeMatches = progressUserId === questionUserId && progressDomain === domain;
+  const questionsData = !isGuest && scopeMatches ? allQuestions : guestQuestions;
+  const progressAvailable = !isGuest && scopeMatches
+    && (progressStatus === 'ready' || Array.isArray(progressRows));
 
   // Fetch questions with user data when authenticated
   useEffect(() => {
-    if (!isGuest) {
+    if (!isGuest && authUser.status === 'authenticated') {
       dispatch(getQuestions(questionUserId, domain));
     }
-  }, [dispatch, questionUserId, domain, isGuest]);
+  }, [dispatch, questionUserId, domain, isGuest, authUser.status]);
 
   // Get all unique list names and their counts from questions
   const listNamesAndCounts = useMemo(() => {
     if (!questionsData?.questions) {
-      return {};
+      return [];
     }
     return getListNamesAndCounts(questionsData);
   }, [questionsData]);
@@ -776,7 +812,7 @@ const AllQuestions = ({ domain: domainProp }) => {
     const easyCompleted = allQuestions.filter(q => q.difficulty === 'Easy' && q.solved).length;
     const mediumCompleted = allQuestions.filter(q => q.difficulty === 'Medium' && q.solved).length;
     const hardCompleted = allQuestions.filter(q => q.difficulty === 'Hard' && q.solved).length;
-    const totalCompleted = easyCompleted + mediumCompleted + hardCompleted;
+    const totalCompleted = allQuestions.filter(q => q.solved).length;
 
     const easyCompletionPercentage = easyCount > 0 ? Math.round((easyCompleted / easyCount) * 100) : 0;
     const mediumCompletionPercentage = mediumCount > 0 ? Math.round((mediumCompleted / mediumCount) * 100) : 0;
@@ -800,20 +836,20 @@ const AllQuestions = ({ domain: domainProp }) => {
   }, [finalFilteredQuestions]);
 
   // Handle difficulty filter change
-  const handleDifficultyFilter = useCallback((difficulty) => {
-    setSelectedDifficulty(prev => prev === difficulty ? 'All' : difficulty);
-  }, []);
+  const handleDifficultyFilter = (difficulty) => {
+    setSelectedDifficulty(selectedDifficulty === difficulty ? 'All' : difficulty);
+  };
 
   // Toggle group expansion
-  const toggleGroup = useCallback((groupName) => {
+  const toggleGroup = (groupName) => {
     setExpandedGroups(prev => ({
       ...prev,
       [groupName]: !prev[groupName]
     }));
-  }, []);
+  };
 
   // Expand or collapse all groups
-  const toggleAllGroups = useCallback(() => {
+  const toggleAllGroups = () => {
     const allGroupNames = Object.keys(finalFilteredQuestions);
     const allExpanded = allGroupNames.every(name => expandedGroups[name]);
 
@@ -828,7 +864,7 @@ const AllQuestions = ({ domain: domainProp }) => {
       });
       setExpandedGroups(newState);
     }
-  }, [finalFilteredQuestions, expandedGroups]);
+  };
 
   // Check if all groups are expanded
   const allGroupsExpanded = useMemo(() => {
@@ -847,7 +883,7 @@ const AllQuestions = ({ domain: domainProp }) => {
   }, [searchTerm, selectedDifficulty, expandedGroups]);
 
   // Show loading indicator when fetching questions (skip for guests using cached data)
-  if (isFetchingQuestions && !guestQuestions) {
+  if ((isFetchingQuestions && !guestQuestions?.groups?.length) || ['unknown', 'restoring'].includes(authUser.status)) {
     return <FullScreenLoader show={true} />;
   }
 
@@ -857,6 +893,9 @@ const AllQuestions = ({ domain: domainProp }) => {
         <Title>{domain ? DOMAIN_TITLES[domain] || 'All Questions' : '📚 All Questions'}</Title>
         <Subtitle>Browse and filter questions by list</Subtitle>
       </Header>
+      {contentError && <p role="alert">Could not refresh the question library: {contentError} <button onClick={() => dispatch(isGuest ? getAllQuestionsWithoutHistory() : getQuestions(questionUserId, domain))}>Retry library</button></p>}
+      {!isGuest && progressError && <p role="alert">{progressError} <button onClick={() => dispatch(getQuestions(questionUserId, domain))}>Retry progress</button></p>}
+      <p>{isGuest ? 'Guest preview · Sign in to view saved progress.' : progressAvailable ? 'Progress for the questions matching your current list and filters.' : 'Saved progress is loading or unavailable; counts below are question totals, not solved counts.'}</p>
 
       <ContentSection>
         <TabsCardContainer>
@@ -894,6 +933,7 @@ const AllQuestions = ({ domain: domainProp }) => {
                     <Tab
                       key={name}
                       isActive={activeList === name}
+                      aria-pressed={activeList === name}
                       onClick={() => setActiveList(name)}
                       title={`${tabInfo.displayName} - ${tabInfo.description} (${count} questions)`}
                     >
@@ -906,11 +946,11 @@ const AllQuestions = ({ domain: domainProp }) => {
               </TabsContainer>
             </TabsSection>
 
-            <StatsSection>
+            {progressAvailable ? <StatsSection>
               <CircularProgress percentage={stats.totalCompletionPercentage}>
                 <CircularProgressContent>
                   <CircularProgressNumber>{stats.totalCompletionPercentage}%</CircularProgressNumber>
-                  <CircularProgressLabel>Total</CircularProgressLabel>
+                  <CircularProgressLabel>Filtered</CircularProgressLabel>
                 </CircularProgressContent>
               </CircularProgress>
 
@@ -952,7 +992,7 @@ const AllQuestions = ({ domain: domainProp }) => {
                   </CompletionLabel>
                 </DifficultyItem>
               </DifficultyStats>
-            </StatsSection>
+            </StatsSection> : <p>{stats.totalQuestions} matching questions</p>}
           </TabsAndStatsHeader>
         </TabsCardContainer>
       </ContentSection>
@@ -965,6 +1005,7 @@ const AllQuestions = ({ domain: domainProp }) => {
                 <SearchIcon />
                 <SearchInput
                   type="text"
+                  aria-label="Search questions"
                   placeholder="Search questions..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -976,18 +1017,21 @@ const AllQuestions = ({ domain: domainProp }) => {
                 </FilterLabel>
                 <DifficultyFilter
                   isActive={selectedDifficulty === 'Easy'}
+                  aria-pressed={selectedDifficulty === 'Easy'}
                   onClick={() => handleDifficultyFilter('Easy')}
                 >
                   Easy
                 </DifficultyFilter>
                 <DifficultyFilter
                   isActive={selectedDifficulty === 'Medium'}
+                  aria-pressed={selectedDifficulty === 'Medium'}
                   onClick={() => handleDifficultyFilter('Medium')}
                 >
                   Medium
                 </DifficultyFilter>
                 <DifficultyFilter
                   isActive={selectedDifficulty === 'Hard'}
+                  aria-pressed={selectedDifficulty === 'Hard'}
                   onClick={() => handleDifficultyFilter('Hard')}
                 >
                   Hard
@@ -1016,8 +1060,12 @@ const AllQuestions = ({ domain: domainProp }) => {
               {(searchTerm || selectedDifficulty !== 'All') && (
                 <ClearFiltersButton
                   onClick={() => {
-                    setSearchTerm('');
-                    setSelectedDifficulty('All');
+                    setSearchParams((previous) => {
+                      const next = new URLSearchParams(previous);
+                      next.delete('search');
+                      next.delete('difficulty');
+                      return next;
+                    }, { replace: true });
                   }}
                 >
                   <X size={14} />
@@ -1048,6 +1096,7 @@ const AllQuestions = ({ domain: domainProp }) => {
               groupName={groupName}
               questions={finalFilteredQuestions[groupName]}
               isExpanded={shouldShowExpanded(groupName)}
+              progressAvailable={progressAvailable}
               onToggle={() => toggleGroup(groupName)}
               showToggle={!searchTerm && selectedDifficulty === 'All'}
             />

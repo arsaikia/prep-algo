@@ -1,11 +1,22 @@
+// Must stay first: imported modules (rate limiter, queue, Google client)
+// read process.env while loading.
+import 'dotenv/config';
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
-import mongoose from 'mongoose';
 import logger from './config/logger.js';
-import { connectDB } from './config/db.js';
+import {
+    connectPostgres,
+    disconnectPostgres,
+    getPostgresStatus,
+    getPool,
+    assertSchemaReady,
+    syncContentCatalog,
+    withTransaction,
+} from './config/postgres.js';
 import { connectRedis, disconnectRedis, isRedisAvailable, isRedisConfigured } from './config/redis.js';
 import { getAllCircuitBreakerStats } from './config/circuitBreakers.js';
 import { getCodeExecutionQueue, getQueueEvents, getQueueStats, closeQueue, isQueueEnabled } from './config/queue.js';
@@ -23,8 +34,9 @@ import testRoute from './routes/test.js';
 import quiz from './routes/quiz.js';
 import { solveHistory } from './routes/solveHistory.js';
 import smartRecommendations from './routes/smartRecommendations.js';
-
-dotenv.config();
+import { getContentRevision } from './utils/contentStore.js';
+import { getExecutionLoad } from './utils/executionBudget.js';
+import { getMigrationStatus } from './scripts/migratePostgres.js';
 
 const app = express();
 
@@ -37,12 +49,12 @@ app.use(correlationId);
 app.use(helmet());
 app.use(compression());
 
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: '256kb' }));
+app.use(express.urlencoded({ extended: true, limit: '256kb' }));
 
 const corsOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
-    : ["http://localhost:3000", "http://localhost:5173", "https://prepalgo.web.app"];
+    : ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173", "https://prepalgo.web.app"];
 
 logger.info({ origins: corsOrigins }, 'CORS origins configured');
 
@@ -86,18 +98,106 @@ app.use((req, res, next) => {
     next();
 });
 
+// Lifecycle flags read by the readiness probe. `startupComplete` flips once
+// Postgres is reachable, the schema is migrated and the catalog is synced.
+const lifecycle = { startupComplete: false, shuttingDown: false };
+
+// Summary/liveness stay cheap. Only explicit readiness probes query Postgres.
+function postgresComponent() {
+    const cached = getPostgresStatus();
+    const breaker = getAllCircuitBreakerStats().postgres.state;
+    return {
+        status: cached.status,
+        circuitBreaker: breaker,
+        lastCheckedAt: cached.lastCheckedAt,
+        source: 'cached',
+        pool: cached.pool,
+    };
+}
+
+// Liveness: the process is up and serving HTTP. No dependency checks.
+app.get('/health/live', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+export async function probePostgres({ pool = getPool(), timeoutMs = 2500 } = {}) {
+    let client;
+    let timedOut = false;
+    let failed = false;
+    let timer;
+    try {
+        await Promise.race([
+            (async () => {
+                client = await pool.connect();
+                if (timedOut) {
+                    client.release(true);
+                    client = null;
+                    return;
+                }
+                await client.query({ text: 'SELECT 1', query_timeout: timeoutMs });
+            })(),
+            new Promise((resolve, reject) => {
+                timer = setTimeout(() => {
+                    timedOut = true;
+                    reject(new Error('PostgreSQL readiness timed out'));
+                }, timeoutMs);
+            }),
+        ]);
+    } catch (error) {
+        failed = true;
+        throw error;
+    } finally {
+        clearTimeout(timer);
+        // Destroy a timed-out client rather than returning an in-flight query
+        // to the pool. A late connection acquisition is released above.
+        client?.release(timedOut || failed);
+    }
+}
+
+export function createReadinessHandler({
+    state = lifecycle,
+    probe = probePostgres,
+    component = postgresComponent,
+} = {}) {
+    return async (req, res) => {
+        const postgres = { ...component(), source: 'probe' };
+        const reasons = [];
+        if (state.shuttingDown) reasons.push('shutting_down');
+        if (!state.startupComplete) reasons.push('starting');
+        try {
+            await probe();
+            postgres.status = 'ok';
+        } catch {
+            postgres.status = 'down';
+            reasons.push('postgres_down');
+        }
+        postgres.lastCheckedAt = new Date().toISOString();
+        if (postgres.circuitBreaker === 'OPEN') reasons.push('postgres_circuit_open');
+
+        const ready = reasons.length === 0;
+        res.status(ready ? 200 : 503).json({
+            status: ready ? 'ready' : 'not_ready',
+            ...(ready ? {} : { reasons }),
+            timestamp: new Date().toISOString(),
+            components: { postgres },
+        });
+    };
+}
+
+// Readiness explicitly wakes/checks the database with a bounded SELECT 1.
+app.get('/health/ready', createReadinessHandler());
+
 app.get('/health', async (req, res) => {
-    const mongoStatus = mongoose.connection.readyState === 1 ? 'ok' : 'down';
+    const postgres = postgresComponent();
     const redisStatus = !isRedisConfigured() ? 'disabled' : isRedisAvailable() ? 'ok' : 'down';
     const breakers = getAllCircuitBreakerStats();
-    const mongoBreaker = breakers.mongodb.state;
     const queueStats = isQueueEnabled() ? await getQueueStats() : null;
     const queue = !isQueueEnabled()
         ? { status: 'disabled' }
         : queueStats ? { status: 'ok', ...queueStats } : { status: 'down' };
 
     let status = 'ok';
-    if (mongoStatus === 'down' || mongoBreaker === 'OPEN') status = 'unhealthy';
+    if (lifecycle.shuttingDown || postgres.status !== 'ok' || postgres.circuitBreaker === 'OPEN') status = 'unhealthy';
     else if (redisStatus === 'down') status = 'degraded';
 
     const code = status === 'unhealthy' ? 503 : 200;
@@ -105,10 +205,16 @@ app.get('/health', async (req, res) => {
         status,
         timestamp: new Date().toISOString(),
         uptime: Math.floor(process.uptime()),
+        release: { revision: process.env.K_REVISION || 'local', content: getContentRevision() },
         components: {
-            mongodb: { status: mongoStatus, circuitBreaker: mongoBreaker },
+            postgres,
             redis: { status: redisStatus },
             queue,
+            execution: {
+                status: process.env.CODE_EXECUTOR_URL ? 'remote_configured'
+                    : process.env.NODE_ENV === 'production' ? 'disabled' : 'local_development',
+                ...getExecutionLoad(),
+            },
             circuitBreakers: breakers,
         },
     });
@@ -142,6 +248,7 @@ app.use((err, req, res, next) => {
     log.error({ err }, 'unhandled error');
 
     const statusCode = err.statusCode || err.status || 500;
+    if (err.retryAfter) res.set('Retry-After', String(err.retryAfter));
     const errorMessage = process.env.NODE_ENV === 'production'
         ? (statusCode < 500 ? err.message : 'Internal Server Error')
         : err.message;
@@ -153,10 +260,51 @@ app.use((err, req, res, next) => {
     });
 });
 
-const startServer = async () => {
+// Arbitrary constant so concurrent instances serialize their catalog sync.
+const CATALOG_SYNC_LOCK_ID = 7_340_212;
+
+// Migrations are applied out of band (`npm run db:migrate`) before deploys;
+// an instance only verifies the schema and refuses to start without it.
+async function preparePostgres() {
+    await connectPostgres();
+    await assertSchemaReady();
+    // Newer applied migrations are expected after a rollback; expand/contract
+    // keeps them compatible (scripts/release/rollback.mjs enforces it).
+    const migrations = await getMigrationStatus({ pool: getPool(), allowNewer: true });
+    if (migrations.pending.length) throw new Error('Pending PostgreSQL migrations; run npm run db:migrate before starting');
+    if (migrations.newer.length) {
+        logger.warn({ newer: migrations.newer }, 'database schema is newer than this release (rollback)');
+    }
+    if (process.env.CONTENT_CATALOG_SYNC === 'false') {
+        logger.warn('CONTENT_CATALOG_SYNC=false — skipping content catalog sync');
+        return;
+    }
+    const revision = getContentRevision();
+    if (!revision) throw new Error('Content release identity missing; rebuild content before starting');
+    const current = await getPool().query('SELECT revision FROM content_catalog_state WHERE singleton');
+    if (current.rows[0]?.revision === revision) {
+        logger.info({ revision }, 'content catalog already current');
+        return;
+    }
+    const result = await withTransaction(async (client) => {
+        await client.query('SELECT pg_advisory_xact_lock($1)', [CATALOG_SYNC_LOCK_ID]);
+        const existing = await client.query('SELECT revision FROM content_catalog_state WHERE singleton');
+        if (existing.rows[0]?.revision === revision) return { skipped: true };
+        const result = await syncContentCatalog(client);
+        await client.query(`INSERT INTO content_catalog_state (singleton, revision) VALUES (true, $1)
+            ON CONFLICT (singleton) DO UPDATE SET revision = EXCLUDED.revision, updated_at = now()`, [revision]);
+        return result;
+    });
+    logger.info(result, 'content catalog synced');
+}
+
+let httpServer = null;
+
+export async function startServer() {
     try {
+        if (isQueueEnabled()) throw new Error('Colocated BullMQ execution is retired; configure CODE_EXECUTOR_URL instead');
         // Independent connections; connecting them together shortens a cold start.
-        await Promise.all([connectDB(), connectRedis()]);
+        await Promise.all([preparePostgres(), connectRedis()]);
 
         if (isQueueEnabled() && isRedisAvailable()) {
             getCodeExecutionQueue();
@@ -165,24 +313,81 @@ const startServer = async () => {
         }
 
         const PORT = process.env.PORT || 8080;
-        app.listen(PORT, '0.0.0.0', () => {
-            logger.info({ port: PORT }, 'server started');
+        await new Promise((resolve, reject) => {
+            httpServer = app.listen(PORT, '0.0.0.0', resolve);
+            httpServer.once('error', reject);
         });
+        lifecycle.startupComplete = true;
+        logger.info({ port: PORT }, 'server started');
     } catch (error) {
         logger.fatal({ err: error }, 'failed to start server');
+        await releaseResources();
         process.exit(1);
     }
-};
+}
+
+async function closeHttpServer() {
+    if (!httpServer) return;
+    const server = httpServer;
+    httpServer = null;
+    await new Promise((resolve) => {
+        server.close((err) => {
+            if (err) logger.warn({ err }, 'HTTP server did not close cleanly');
+            resolve();
+        });
+        // Let in-flight requests finish, then drop idle keep-alive sockets.
+        server.closeIdleConnections?.();
+    });
+}
+
+async function releaseResources() {
+    const steps = [
+        ['worker', stopCodeExecutionWorker],
+        ['queue', closeQueue],
+        ['redis', disconnectRedis],
+        ['postgres', disconnectPostgres],
+    ];
+    for (const [name, step] of steps) {
+        try {
+            await step();
+        } catch (err) {
+            logger.warn({ err, component: name }, 'shutdown step failed');
+        }
+    }
+}
+
+const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 async function gracefulShutdown(signal) {
+    if (lifecycle.shuttingDown) return;
+    lifecycle.shuttingDown = true;
     logger.info({ signal }, 'shutting down');
-    await stopCodeExecutionWorker();
-    await closeQueue();
-    await disconnectRedis();
+
+    const forceExit = setTimeout(() => {
+        logger.error('graceful shutdown timed out — forcing exit');
+        process.exit(1);
+    }, SHUTDOWN_TIMEOUT_MS);
+    forceExit.unref();
+
+    await closeHttpServer();
+    await releaseResources();
+    clearTimeout(forceExit);
     process.exit(0);
 }
 
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+function isEntrypoint() {
+    if (!process.argv[1]) return false;
+    try {
+        return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+    } catch {
+        return false;
+    }
+}
 
-startServer();
+export { app };
+
+if (isEntrypoint()) {
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    startServer();
+}

@@ -1,0 +1,25 @@
+{
+  "displayName": "PrepAlgo API p95 latency",
+  "documentation": {
+    "content": "API p95 exceeds 5 seconds for 5 minutes. Inspect slow PostgreSQL transaction poolWaitMs, execution duration/queue pressure, Redis rate-limit fallbacks and Cloud Run instance limits. Grading requests can legitimately take several seconds; tune after observing real traffic.",
+    "mimeType": "text/markdown"
+  },
+  "combiner": "OR",
+  "enabled": true,
+  "notificationChannels": ["projects/prepalgo/notificationChannels/REPLACE_ME"],
+  "conditions": [{
+    "displayName": "Sustained slow responses",
+    "conditionThreshold": {
+      "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"prep-algo-backend\" AND metric.type=\"run.googleapis.com/request_latencies\"",
+      "comparison": "COMPARISON_GT",
+      "thresholdValue": 5000,
+      "duration": "300s",
+      "aggregations": [{
+        "alignmentPeriod": "60s",
+        "perSeriesAligner": "ALIGN_PERCENTILE_95"
+      }],
+      "trigger": {"count": 1}
+    }
+  }],
+  "alertStrategy": {"autoClose": "1800s"}
+}

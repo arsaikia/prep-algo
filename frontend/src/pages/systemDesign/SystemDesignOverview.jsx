@@ -1,4 +1,5 @@
 import React from 'react';
+import { contentUrl } from '../../utils/navigation';
 
 import { Link, useOutletContext } from 'react-router-dom';
 import styled from 'styled-components';
@@ -137,7 +138,7 @@ function SystemDesignOverview() {
                     {module.summary && <ModuleSummary>{module.summary}</ModuleSummary>}
 
                     {module.topics.map((topic) => (
-                        <TopicRow key={topic.slug} to={`/system-design/${topic.slug}`}>
+                        <TopicRow key={topic.slug} to={contentUrl(topic)}>
                             {quizByTopic.has(topic.slug) && <QuizMark size={13} />}
                             {topic.title}
                             <ArrowRight size={15} />

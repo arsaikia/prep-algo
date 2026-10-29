@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -21,7 +19,7 @@ import {
 import {
   Container, Flex, CenteredFlex, StyledNavLink, BlankButton,
 } from '../styles';
-import GoogleLoginModal from './Auth/GoogleLoginModal';
+import { requestSignIn } from '../utils/navigation';
 import useTheme from '../hooks/useTheme';
 import TestUserSelector from './TestUserSelector/TestUserSelector';
 import { useTestUser } from '../contexts/TestUserContext';
@@ -272,7 +270,9 @@ const UserProfile = styled.div`
   position: relative;
 `;
 
-const ProfilePicture = styled.div`
+const ProfilePicture = styled.button`
+  border: none;
+  padding: 0;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -324,7 +324,12 @@ const DropdownMenu = styled.div`
   display: ${props => props.isOpen ? 'block' : 'none'};
 `;
 
-const DropdownItem = styled.div`
+const DropdownItem = styled.button`
+  width: 100%;
+  font: inherit;
+  background: none;
+  border: none;
+  text-align: left;
   padding: 12px 16px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -368,7 +373,7 @@ const SignOutButton = styled.button`
   }
 `;
 
-const LoginButton = styled(NavLink)`
+const LoginButton = styled.button`
   background-color: ${({ theme }) => theme.colors.primary};
   color: white;
   border: none;
@@ -440,6 +445,12 @@ const MobileMenuContainer = styled.div`
 `;
 
 const MobileNavLink = styled(NavLink)`
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: none;
   display: block;
   padding: 15px 20px;
   color: ${({ theme }) => theme.colors.text};
@@ -644,7 +655,6 @@ function Navbar() {
   // State management
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [profilePictureError, setProfilePictureError] = useState(false);
@@ -655,6 +665,8 @@ function Navbar() {
   const navigate = useNavigate();
   const [cookies, setCookie, removeCookie] = useCookies(['userId', 'name', 'authToken']);
   const dropdownRef = useRef(null);
+  const menuButtonRef = useRef(null);
+  const profileButtonRef = useRef(null);
 
   // Redux state
   const userAuthState = useSelector((state) => state.auth);
@@ -671,8 +683,9 @@ function Navbar() {
 
   // Safely access cookie values with fallbacks
   const userIdInCookie = cookies?.userId || '';
-  const userName = cookies?.name || '';
-  const isUserAuthenticated = !!userIdInCookie;
+  const userName = userAuthState.firstName || '';
+  const isUserAuthenticated = userAuthState.status === 'authenticated';
+  const restoring = ['unknown', 'restoring'].includes(userAuthState.status);
   const userPicture = userAuthState?.picture || '';
 
   // Determine effective user for dev mode display
@@ -723,6 +736,16 @@ function Navbar() {
     };
   }, []);
 
+  useEffect(() => {
+    const escape = (event) => {
+      if (event.key !== 'Escape') return;
+      if (isMobileMenuOpen) { setIsMobileMenuOpen(false); menuButtonRef.current?.focus(); }
+      if (isDropdownOpen) { setIsDropdownOpen(false); profileButtonRef.current?.focus(); }
+    };
+    document.addEventListener('keydown', escape);
+    return () => document.removeEventListener('keydown', escape);
+  }, [isMobileMenuOpen, isDropdownOpen]);
+
   // Handle toast display
   useEffect(() => {
     let timer;
@@ -747,7 +770,7 @@ function Navbar() {
       // Clear all auth-related cookies with secure options
       const cookieOptions = {
         path: '/',
-        secure: true,
+        secure: window.location.protocol === 'https:',
         sameSite: 'strict',
       };
 
@@ -782,7 +805,8 @@ function Navbar() {
   };
 
   const handleLoginClick = () => {
-    setIsLoginModalOpen(true);
+    setIsMobileMenuOpen(false);
+    requestSignIn();
   };
 
   const handleProfilePictureError = () => {
@@ -881,7 +905,7 @@ function Navbar() {
 
             {isUserAuthenticated ? (
               <UserProfile ref={dropdownRef}>
-                <ProfilePicture onClick={toggleDropdown}>
+                <ProfilePicture ref={profileButtonRef} onClick={toggleDropdown} aria-label="Account options" aria-expanded={isDropdownOpen} aria-controls="account-options">
                   {userPicture && !profilePictureError ? (
                     <img
                       src={userPicture}
@@ -894,7 +918,7 @@ function Navbar() {
                     </div>
                   )}
                 </ProfilePicture>
-                <DropdownMenu isOpen={isDropdownOpen}>
+                <DropdownMenu id="account-options" isOpen={isDropdownOpen}>
                   <DropdownItem onClick={signOutHandler}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -907,14 +931,14 @@ function Navbar() {
               </UserProfile>
             ) : (
               <>
-                {location.pathname !== '/login' && (
+                {!restoring && location.pathname !== '/login' && (
                   <LoginButton onClick={handleLoginClick}>Login</LoginButton>
                 )}
               </>
             )}
           </UserSection>
 
-          <MobileMenuButton onClick={toggleMobileMenu} isOpen={isMobileMenuOpen}>
+          <MobileMenuButton ref={menuButtonRef} onClick={toggleMobileMenu} isOpen={isMobileMenuOpen} aria-label="Navigation menu" aria-expanded={isMobileMenuOpen} aria-controls="mobile-navigation">
             <span></span>
             <span></span>
             <span></span>
@@ -922,7 +946,7 @@ function Navbar() {
         </NavContent>
       </NavContainer>
 
-      <MobileMenuContainer isOpen={isMobileMenuOpen}>
+      <MobileMenuContainer id="mobile-navigation" isOpen={isMobileMenuOpen}>
         <MobileNavLink to="/algorithms">Algorithms</MobileNavLink>
         <MobileNavLink to="/system-design">System Design</MobileNavLink>
         <MobileNavLink to="/frontend">Frontend</MobileNavLink>
@@ -948,18 +972,14 @@ function Navbar() {
             </MobileSignOutButton>
           </>
         ) : (
-          location.pathname !== '/login' && (
-            <MobileNavLink to="#" onClick={handleLoginClick}>
+          !restoring && location.pathname !== '/login' && (
+            <MobileNavLink as="button" type="button" onClick={handleLoginClick}>
               Login
             </MobileNavLink>
           )
         )}
       </MobileMenuContainer>
 
-      <GoogleLoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      />
 
       <NavbarSpacer />
     </>

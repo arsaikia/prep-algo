@@ -1,3 +1,4 @@
+import './retiredMongoScript.js';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { mkdir, writeFile } from 'node:fs/promises';

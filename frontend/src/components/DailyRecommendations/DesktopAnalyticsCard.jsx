@@ -14,7 +14,7 @@ import {
     MetricsGrid
 } from './DesktopAnalyticsCard.styles';
 
-const DesktopAnalyticsCard = ({ analysis, progress, batchInfo }) => {
+const DesktopAnalyticsCard = ({ analysis, progress, batchInfo, preview = false }) => {
     const navigate = useNavigate();
 
     if (!analysis && !progress) {
@@ -34,7 +34,7 @@ const DesktopAnalyticsCard = ({ analysis, progress, batchInfo }) => {
                         <SparkleIcon>✨</SparkleIcon> Learning Analytics
                     </TitleMain>
                     <TitleSub>
-                        Your personalized learning insights and today's progress
+                        {preview ? 'Sample insights · Sign in for your own progress' : 'Your personalized learning insights and today’s progress'}
                     </TitleSub>
                 </Title>
 
@@ -48,11 +48,11 @@ const DesktopAnalyticsCard = ({ analysis, progress, batchInfo }) => {
                     {progress && (
                         <MetricCard
                             icon={<ProgressRing
-                                percentage={(progress.completed / progress.total) * 100}
+                                percentage={progress.total > 0 ? (progress.completed / progress.total) * 100 : 0}
                                 size="large"
                             />}
                             label="Today's Progress"
-                            subtext={`${progress.completed}/${progress.total} completed`}
+                            subtext={`${progress.completed}/${progress.total} assigned questions completed`}
                         />
                     )}
 

@@ -1,10 +1,10 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useEffect } from 'react';
 
 import {
   useDispatch, useSelector,
 } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { localReturnTo } from '../utils/navigation';
 import styled from 'styled-components';
 
 import GoogleAuth from '../components/Auth/GoogleAuth';
@@ -45,22 +45,24 @@ const LoginSection = styled.div`
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = localReturnTo(new URLSearchParams(location.search).get('returnTo') || location.state?.returnTo);
 
   // Get states using useSelector ( state -> reducerName )
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      navigate(returnTo, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, returnTo]);
 
   return (
     <GlassBackground>
       <CenteredFlex minHeight="100vh">
         <LoginCard>
           <AppIcon>✨</AppIcon>
-          <ModernTitle>Welcome to RemindMe</ModernTitle>
+          <ModernTitle>Welcome to PrepAlgo</ModernTitle>
           <LoginSection>
             <GoogleAuth />
           </LoginSection>

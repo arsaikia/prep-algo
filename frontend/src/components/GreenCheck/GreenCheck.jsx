@@ -1,6 +1,5 @@
 import React from 'react';
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { func } from 'prop-types';
 import styled from 'styled-components';
 

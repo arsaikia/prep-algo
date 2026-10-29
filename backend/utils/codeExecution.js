@@ -1,4 +1,5 @@
 import { executePython, POLICY } from './sandbox/index.js';
+import { getExecutionBudget, runSubmission } from './executionBudget.js';
 
 // Constants
 const EXECUTION_TIMEOUT = POLICY.timeoutMs;
@@ -160,10 +161,14 @@ const generateInputParser = (input, type) => {
  * @param {Object} questionTypes - Optional question types object with inputs and output arrays
  * @returns {Promise<Array<{input: string, expectedOutput: string, actualOutput: string, isCorrect: boolean, error: string|null, debugOutput: string}>>}
  */
-export const runPythonCode = async (code, testCases, questionTypes = null) => {
+export const runPythonCode = (code, testCases, questionTypes = null, options = {}) =>
+    runSubmission(() => runTestCases(code, testCases, questionTypes), options);
+
+const runTestCases = async (code, testCases, questionTypes) => {
     const results = [];
 
     for (const testCase of testCases) {
+        getExecutionBudget()?.signal.throwIfAborted();
         try {
             // Determine input and output types
             let inputTypes, expectedOutputType;
@@ -625,6 +630,7 @@ ${driverBlock}
                 source: testCode,
                 timeoutMs: EXECUTION_TIMEOUT,
             });
+            getExecutionBudget()?.signal.throwIfAborted();
 
             if (execution.timedOut) {
                 throw new Error(`Execution timed out (exceeded ${EXECUTION_TIMEOUT / 1000} seconds)`);
@@ -655,6 +661,8 @@ ${driverBlock}
                 debugOutput: result.debugOutput || ''
             });
         } catch (error) {
+            getExecutionBudget()?.signal.throwIfAborted();
+            if (error.statusCode) throw error;
             results.push({
                 input: testCase.inputs,
                 expectedOutput: testCase.expectedOutput,

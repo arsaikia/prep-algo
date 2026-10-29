@@ -1,3 +1,4 @@
+import './retiredMongoScript.js';
 import mongoose from 'mongoose';
 
 import SolveHistory from '../models/SolveHistory.js';

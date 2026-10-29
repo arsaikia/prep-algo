@@ -1,4 +1,4 @@
-import { call, put, takeEvery } from 'redux-saga/effects';
+import { call, put, takeLatest } from 'redux-saga/effects';
 import { getUserInfo } from '../api/login';
 import {
     FETCH_USER_INFO,
@@ -7,6 +7,7 @@ import {
 } from '../actions/types';
 
 function* fetchUserInfoSaga(action) {
+    if (action.type !== FETCH_USER_INFO) return;
     try {
         const response = yield call(getUserInfo, action.payload);
 
@@ -27,7 +28,7 @@ function* fetchUserInfoSaga(action) {
 }
 
 function* fetchUserInfoWatcher() {
-    yield takeEvery(FETCH_USER_INFO, fetchUserInfoSaga);
+    yield takeLatest([FETCH_USER_INFO, 'GOOGLE_LOGIN', 'RESET_AUTH_SUCCESS', 'AUTH_EXPIRED'], fetchUserInfoSaga);
 }
 
 export default fetchUserInfoWatcher; 

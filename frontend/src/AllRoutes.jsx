@@ -6,6 +6,7 @@ import {
   Navigate,
   Route,
   Routes,
+  useLocation,
 } from 'react-router-dom';
 
 import FullScreenLoader from './components/Loader/FullScreenLoader';
@@ -23,6 +24,11 @@ const SystemDesignLayout = lazy(() => import('./pages/systemDesign/SystemDesignL
 const SystemDesignOverview = lazy(() => import('./pages/systemDesign/SystemDesignOverview'));
 const TopicReader = lazy(() => import('./pages/TopicReader'));
 const Error = lazy(() => import('./pages/Error'));
+
+function SandboxRoute() {
+  const { search } = useLocation();
+  return <CodeSandbox key={search} />;
+}
 
 function AllRoutes() {
   return (
@@ -43,7 +49,7 @@ function AllRoutes() {
         </Route>
         <Route path="/frontend" element={<AllQuestions domain="frontend" />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/codesandbox" element={<CodeSandbox />} />
+        <Route path="/codesandbox" element={<SandboxRoute />} />
         <Route path="/404" element={<Error />} />
         <Route path="*" element={<Navigate replace to="/404" />} />
       </Routes>

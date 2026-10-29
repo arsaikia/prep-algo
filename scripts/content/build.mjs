@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -210,7 +210,6 @@ async function main() {
         );
     });
 
-    await rm(PUBLIC_OUT, { recursive: true, force: true });
     await mkdir(path.join(PUBLIC_OUT, 'items'), { recursive: true });
     await mkdir(SERVER_OUT, { recursive: true });
 
@@ -220,7 +219,7 @@ async function main() {
     const quizAnswers = {};
 
     for (const { item } of items) {
-        const pub = publicBody(item);
+        const pub = { ...publicBody(item), revision: hash(stable(item)) };
         const body = stable(pub);
         const h = hash(body);
         const entry = toIndexEntry(item);
@@ -249,16 +248,17 @@ async function main() {
 
     // Unhashed pointer, served with a short TTL. Everything it points at is
     // immutable, so this is the only request that ever needs revalidating.
+    const revision = hash(stable(items.map(({ item }) => item)));
     await writeFile(
         path.join(PUBLIC_OUT, 'manifest.json'),
-        `${JSON.stringify({ version: 1, index: `index.${indexHash}.json` }, null, 2)}\n`,
+        `${JSON.stringify({ version: 1, revision, index: `index.${indexHash}.json` }, null, 2)}\n`,
     );
 
     await writeFile(path.join(SERVER_OUT, 'testcases.json'), `${stable(hiddenTests)}\n`);
     await writeFile(path.join(SERVER_OUT, 'quiz-answers.json'), `${stable(quizAnswers)}\n`);
     await writeFile(
         path.join(SERVER_OUT, 'catalog.json'),
-        `${stable({ version: 1, count: catalog.length, items: catalog })}\n`,
+        `${stable({ version: 1, revision, count: catalog.length, items: catalog })}\n`,
     );
 
     const indexKb = (Buffer.byteLength(indexBody) / 1024).toFixed(1);

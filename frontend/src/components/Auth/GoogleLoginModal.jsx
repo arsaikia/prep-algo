@@ -1,92 +1,45 @@
-import React from 'react';
-import { GoogleLogin } from '@react-oauth/google';
+import React, { useEffect } from 'react';
+import Modal from 'react-modal';
 import styled from 'styled-components';
-import { useDispatch, useSelector } from 'react-redux';
-import { loginWithGoogle } from '../../actions/actions';
-import {
-  ModalOverlay,
-  GlassCard,
-  ModernCloseButton,
-  AppIcon,
-  ModernTitle,
-  ModernSubtitle,
-  GoogleButtonContainer,
-  slideUp
-} from './loginStyles';
+import { useSelector } from 'react-redux';
+import GoogleAuth from './GoogleAuth';
+import { GlassCard, ModernCloseButton, ModernTitle, ModernSubtitle } from './loginStyles';
 
-// Modal-specific styled components
-const ModalContent = styled(GlassCard)`
-  padding: 40px 32px;
+const Content = styled(GlassCard)`
+  position: relative;
+  padding: 32px 20px;
+  width: min(400px, calc(100vw - 32px));
+  box-sizing: border-box;
   text-align: center;
-  max-width: 400px;
-  width: 100%;
-  animation: ${slideUp} 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  
-  @media (max-width: 480px) {
-    padding: 32px 24px;
-    border-radius: 20px;
-    margin: 0 16px;
-  }
 `;
 
-const ModalGoogleContainer = styled(GoogleButtonContainer)`
-  margin-top: 24px;
-  
-  @media (max-width: 480px) {
-    margin-top: 20px;
-  }
-`;
-
-const GoogleLoginModal = ({ isOpen, onClose }) => {
-  const dispatch = useDispatch();
-  const isDarkMode = useSelector((state) => state.theme.isDarkModeEnabled);
-
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      // The credential token is in credentialResponse.credential
-      // We need to pass just the token string, not the entire response object
-      if (!credentialResponse.credential) {
-        console.error('No credential token found in response');
-        return;
-      }
-
-      // Pass just the credential token to the login action
-      await dispatch(loginWithGoogle(credentialResponse.credential));
-      onClose();
-    } catch (error) {
-      console.error('Google login failed:', error);
+function GoogleLoginModal({ isOpen, onClose, onAuthenticated }) {
+  const authenticated = useSelector((state) => state.auth.status === 'authenticated');
+  useEffect(() => {
+    if (isOpen && authenticated) {
+      if (onAuthenticated) onAuthenticated();
+      else onClose();
     }
-  };
-
-  const handleGoogleError = () => {
-    console.error('Google login failed');
-  };
-
-  if (!isOpen) return null;
-
+  }, [isOpen, authenticated, onClose, onAuthenticated]);
   return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={e => e.stopPropagation()}>
-        <ModernCloseButton onClick={onClose}>×</ModernCloseButton>
-        <AppIcon size={56}>✨</AppIcon>
-        <ModernTitle size="medium">Welcome Back!</ModernTitle>
-        <ModernSubtitle>
-          Continue your coding journey with RemindMe
-        </ModernSubtitle>
-        <ModalGoogleContainer>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-            theme={isDarkMode ? "filled_black" : "outline"}
-            size="large"
-            width="100%"
-            text="continue_with"
-            shape="rectangular"
-          />
-        </ModalGoogleContainer>
-      </ModalContent>
-    </ModalOverlay>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onClose}
+      appElement={document.getElementById('root')}
+      contentLabel="Sign in to PrepAlgo"
+      style={{
+        overlay: { zIndex: 3000, background: 'rgba(0,0,0,.65)', display: 'grid', placeItems: 'center' },
+        content: { position: 'static', padding: 0, border: 0, background: 'transparent', overflow: 'auto', maxHeight: '95dvh' },
+      }}
+    >
+      <Content>
+        <ModernCloseButton aria-label="Close sign-in" onClick={onClose}>×</ModernCloseButton>
+        <ModernTitle size="medium">Sign in to PrepAlgo</ModernTitle>
+        <ModernSubtitle>Your current page and work stay here.</ModernSubtitle>
+        <GoogleAuth />
+      </Content>
+    </Modal>
   );
-};
+}
 
-export default GoogleLoginModal; 
+export default GoogleLoginModal;

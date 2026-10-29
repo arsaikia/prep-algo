@@ -4,6 +4,7 @@ node_modules/
 .pnp.js
 package-lock.json
 **/package-lock.json
+!/backend/package-lock.json
 
 # Environment variables
 .env
@@ -62,6 +63,8 @@ frontend/.env.production
 
 # Firebase
 .firebase/
+/firebase.generated.json
+/.cloudrun-candidate.json
 
 # Internal planning documents
 RECOMMENDATION_IMPROVEMENTS.md

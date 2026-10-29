@@ -87,6 +87,7 @@ export const BLOCKED_MODULES = [
  */
 export const dockerArgs = () => [
     'run', '--rm', '--interactive',
+    '--pull=never',
     '--network=none',
     '--read-only',
     '--tmpfs', '/tmp:rw,noexec,nosuid,size=8m',

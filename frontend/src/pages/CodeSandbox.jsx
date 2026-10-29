@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { useTheme } from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Play, Save, Download, Link, Shuffle, Clock, Code, Terminal, Eye, Settings } from 'react-feather';
 import { Timer, Pause, Play as PlayLucide, Square, Zap, Monitor, FileDown, FileText, Shuffle as ShuffleLucide, Code2, Terminal as TerminalLucide, Eye as EyeLucide, Settings as SettingsLucide, RotateCcw, Copy, Check, Minus, Plus, Lock } from 'lucide-react';
-import Editor from '@monaco-editor/react';
 import { useSelector } from 'react-redux';
 import apiClient from '../api/client.js';
 import TestResults from '../components/TestResults.jsx';
@@ -16,44 +15,20 @@ import { useTimeTracker } from '../utils/timeTracker.js';
 import { useTestUser } from '../contexts/TestUserContext';
 import { isFeatureEnabled, isDevMode } from '../utils/featureFlags';
 import readApiError from '../utils/apiError.js';
+import { requestSignIn, contentUrl } from '../utils/navigation.js';
+import { timeTracker } from '../utils/timeTracker.js';
+import { readDraft, writeDraft, clearDraft } from '../utils/draftStorage.js';
+
+const Editor = lazy(() => import('@monaco-editor/react'));
 
 // The editor is the only place a user's work lives before it is submitted, so an
 // unsaved buffer is kept in localStorage per (question, language). Without this a
 // refresh, a tab switch or an accidental back-navigation silently discarded the
 // solution and dropped the user back onto untouched boilerplate.
-const DRAFT_PREFIX = 'sandbox-draft';
 const FONT_SIZE_KEY = 'sandbox-font-size';
 const MIN_FONT_SIZE = 12;
 const MAX_FONT_SIZE = 22;
 const DEFAULT_FONT_SIZE = 14;
-
-const draftKey = (questionKey, lang) => `${DRAFT_PREFIX}:${questionKey || 'scratch'}:${lang}`;
-
-// Storage can throw (Safari private mode, disabled cookies). A lost draft is a
-// degraded experience, never a broken page, so every access fails soft.
-const readDraft = (questionKey, lang) => {
-  try {
-    return window.localStorage.getItem(draftKey(questionKey, lang)) || '';
-  } catch {
-    return '';
-  }
-};
-
-const writeDraft = (questionKey, lang, value) => {
-  try {
-    window.localStorage.setItem(draftKey(questionKey, lang), value);
-  } catch {
-    // Storage unavailable — the in-memory buffer still works for this session.
-  }
-};
-
-const clearDraft = (questionKey, lang) => {
-  try {
-    window.localStorage.removeItem(draftKey(questionKey, lang));
-  } catch {
-    // Storage unavailable — nothing to clear.
-  }
-};
 
 const readStoredFontSize = () => {
   try {
@@ -891,23 +866,23 @@ const LoadingSpinner = styled.div`
  */
 const loadQuestion = async (value) => {
   if (isCdnContentEnabled()) {
-    try {
-      const entry = findQuestionEntry(await loadIndex(), value);
-      if (entry) {
-        return toSandboxQuestion(await loadItem(entry.slug, entry.h));
-      }
-    } catch (err) {
-      console.warn('Loading the question from the CDN failed; falling back to the API.', err);
+    const entry = findQuestionEntry(await loadIndex(), value);
+    if (!entry) {
+      const error = new Error('Question not found');
+      error.status = 404;
+      throw error;
     }
+    return toSandboxQuestion(await loadItem(entry.slug, entry.h));
   }
 
-  const response = await apiClient.get(`/questions/${toSlug(value)}`);
+  const response = await apiClient.get(`/questions/${encodeURIComponent(toSlug(value))}`);
   return response.data;
 };
 
 const CodeSandbox = () => {
   const theme = useTheme();
   const location = useLocation();
+  const requestedQuestion = new URLSearchParams(location.search).get('question');
   const navigate = useNavigate();
   const { selectedUserId } = useTestUser();
   const [language, setLanguage] = useState('python');
@@ -915,7 +890,9 @@ const CodeSandbox = () => {
   const [output, setOutput] = useState('');
   const [leetcodeUrl, setLeetcodeUrl] = useState('');
   const [questionDescription, setQuestionDescription] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [missing, setMissing] = useState(false);
+  const [storageWarning, setStorageWarning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // One explicit lifecycle shared by the two code-execution actions (run examples,
   // submit): idle -> pending -> success | error. The previous code spread this across
@@ -938,10 +915,12 @@ const CodeSandbox = () => {
   const [isEditorReady, setIsEditorReady] = useState(false);
   const editorRef = useRef(null);
   const draftTimerRef = useRef(null);
+  const pendingDraftRef = useRef(null);
   const copyTimerRef = useRef(null);
   // Monaco commands are registered once on mount and would otherwise capture the
   // first render's closures, firing stale handlers for the rest of the session.
   const shortcutHandlersRef = useRef({});
+  const pendingSubmissionRef = useRef(null);
   // The template effect keys off object identity; without this guard any unrelated
   // re-render that produced a new `currentQuestion` would wipe typed code.
   const lastTemplateKeyRef = useRef('');
@@ -950,11 +929,6 @@ const CodeSandbox = () => {
   const loadSeqRef = useRef(0);
 
   // Time tracking states
-  const [timerStartTime, setTimerStartTime] = useState(null);
-  const [displayTime, setDisplayTime] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [pausedTime, setPausedTime] = useState(0);
-  const [pauseStartTime, setPauseStartTime] = useState(null);
 
   // Get user data from Redux store, but override with test user for development
   const userFromRedux = useSelector((state) => state.auth);
@@ -1012,51 +986,28 @@ const CodeSandbox = () => {
 
   const user = getEffectiveUser();
   const isGuest = !user.isAuthenticated || user.userId === 'guest';
+  const executionIdentity = `${location.search}:${user.userId}:${language}`;
+  const activeExecutionIdentityRef = useRef(executionIdentity);
+  activeExecutionIdentityRef.current = executionIdentity;
+  useEffect(() => {
+    setIsSubmitting(false);
+    setIsRunningExampleTests(false);
+    setTestResults(null);
+    setExampleTestResults(null);
+    setExecutionFeedback({ status: 'idle', message: '' });
+    pendingSubmissionRef.current = null;
+  }, [executionIdentity]);
 
   // Initialize time tracker
   const {
-    currentTime,
+    currentTime: displayTime,
     isTracking,
+    isPaused,
     startTracking,
     stopTracking,
-    pause: originalPause,
-    resume: originalResume
+    pause,
+    resume,
   } = useTimeTracker();
-
-  // Custom pause/resume functions
-  const pause = () => {
-    if (!isPaused && isTracking) {
-      setIsPaused(true);
-      setPauseStartTime(Date.now());
-      originalPause(); // Also pause the original tracker
-      // Timer paused
-    }
-  };
-
-  const resume = () => {
-    if (isPaused && pauseStartTime) {
-      const pauseDuration = Date.now() - pauseStartTime;
-      setPausedTime(prev => prev + pauseDuration);
-      setIsPaused(false);
-      setPauseStartTime(null);
-      originalResume(); // Also resume the original tracker
-      // Timer resumed
-    }
-  };
-
-  // Direct timer update effect
-  useEffect(() => {
-    let interval;
-    if (isTracking && timerStartTime && !isPaused) {
-      interval = setInterval(() => {
-        const now = Date.now();
-        const elapsedMinutes = (now - timerStartTime - pausedTime) / (1000 * 60);
-        setDisplayTime(Math.max(0, elapsedMinutes));
-        // Timer update
-      }, 1000); // Update every second
-    }
-    return () => clearInterval(interval);
-  }, [isTracking, timerStartTime, isPaused, pausedTime]);
 
   // Format time display
   const formatTime = (minutes) => {
@@ -1072,15 +1023,10 @@ const CodeSandbox = () => {
   // Start tracking when a question is loaded. Progress is keyed on the legacy
   // id, so content authored without one has nothing to track against.
   useEffect(() => {
-    if (currentQuestion?.id && user.userId && user.userId !== 'guest') {
-      startTracking(currentQuestion.id, user.userId);
-      setTimerStartTime(Date.now()); // Set our direct timer start time
-      setDisplayTime(0);
-      setIsPaused(false);
-      setPausedTime(0);
-      setPauseStartTime(null);
+    if (currentQuestion?.slug && currentQuestion.answerFormat === 'code') {
+      startTracking(currentQuestion.slug, user.userId);
     }
-  }, [currentQuestion, user.userId]);
+  }, [currentQuestion?.slug, user.userId]);
 
   // Stops the clock. The solve itself was already recorded by the submit that
   // graded it; `success` only decides whether today's batch is ticked off.
@@ -1100,13 +1046,10 @@ const CodeSandbox = () => {
       // Automatically fetch the question
       fetchLeetCodeQuestion(questionParam);
     } else {
-      // For testing: Auto-load two-sum if no question specified and not in dev mode
-      if (!isDevMode()) {
-        const testQuestion = 'two-sum';
-        setLeetcodeUrl(testQuestion);
-        fetchLeetCodeQuestion(testQuestion);
-      }
+      setMissing(true);
+      setIsLoading(false);
     }
+    return () => { loadSeqRef.current += 1; };
   }, [location.search]);
 
   const getDefaultTemplate = (language, question) => {
@@ -1142,6 +1085,10 @@ const CodeSandbox = () => {
   };
 
   const handleLanguageChange = (e) => {
+    const draft = pendingDraftRef.current;
+    if (draft) writeDraft(draft.question, draft.language, draft.value);
+    pendingDraftRef.current = null;
+    clearTimeout(draftTimerRef.current);
     const newLanguage = e.target.value;
     setLanguage(newLanguage);
   };
@@ -1149,11 +1096,15 @@ const CodeSandbox = () => {
   const handleEditorChange = (value) => {
     const next = value ?? '';
     setCode(next);
-    if (!leetcodeUrl) return;
+    if (!isTracking && currentQuestion) startTracking(currentQuestion.slug, user.userId);
+    if (!currentQuestion?.slug) return;
     // Debounced so a fast typist does not hit localStorage on every keystroke.
     clearTimeout(draftTimerRef.current);
+    const questionKey = currentQuestion.slug;
+    pendingDraftRef.current = { question: questionKey, language, value: next };
     draftTimerRef.current = setTimeout(() => {
-      writeDraft(leetcodeUrl, language, next);
+      writeDraft(questionKey, language, next);
+      pendingDraftRef.current = null;
     }, 400);
   };
 
@@ -1162,9 +1113,12 @@ const CodeSandbox = () => {
   };
 
   const resetToTemplate = () => {
+    if (!window.confirm('Reset your code to the starter template? This replaces your current draft.')) return;
     const template = getDefaultTemplate(language, currentQuestion);
     clearTimeout(draftTimerRef.current);
-    clearDraft(leetcodeUrl, language);
+    pendingDraftRef.current = null;
+    clearDraft(currentQuestion.slug, language);
+    if (requestedQuestion && requestedQuestion !== currentQuestion.slug) clearDraft(requestedQuestion, language);
     setCode(template);
     setDraftRestored(false);
     editorRef.current?.focus();
@@ -1214,6 +1168,8 @@ const CodeSandbox = () => {
   }, []);
 
   const runCode = async () => {
+    const seq = loadSeqRef.current;
+    const stale = () => seq !== loadSeqRef.current || executionIdentity !== activeExecutionIdentityRef.current;
     if (language !== 'python') {
       setExecutionFeedback({
         status: 'error',
@@ -1229,11 +1185,19 @@ const CodeSandbox = () => {
       setTestResults(null);
       setExecutionFeedback({ status: 'pending', message: 'Submitting your solution…' });
 
-      const questionId = leetcodeUrl.replace(/\/$/, '');
-
-      const response = await apiClient.post(`/questions/${questionId}/submit`, {
-        code
+      const questionId = currentQuestion.slug;
+      const signature = JSON.stringify([user.userId, questionId, currentQuestion.revision, language, code]);
+      if (pendingSubmissionRef.current?.signature !== signature) {
+        pendingSubmissionRef.current = { signature, id: crypto.randomUUID(), timeTaken: timeTracker.getElapsedSeconds() };
+      }
+      const response = await apiClient.post(`/questions/${encodeURIComponent(questionId)}/submit`, {
+        code,
+        submissionId: pendingSubmissionRef.current.id,
+        timeTaken: pendingSubmissionRef.current.timeTaken,
+        contentRevision: currentQuestion.revision,
       });
+      if (stale()) return;
+      if (response.data.attemptSaved) pendingSubmissionRef.current = null;
 
       // Format the results for display
       if (response.data && Array.isArray(response.data.results)) {
@@ -1285,20 +1249,15 @@ const CodeSandbox = () => {
         });
       }
     } catch (error) {
+      if (stale()) return;
       setExecutionFeedback({
         status: 'error',
         message: readApiError(error, 'Your solution could not be submitted.')
       });
       console.error('Error submitting solution:', error);
     } finally {
-      setIsSubmitting(false);
+      if (!stale()) setIsSubmitting(false);
     }
-  };
-
-  const saveCode = () => {
-    // In a real app, this would save to a database or local storage
-    localStorage.setItem(`savedCode_${language}_${leetcodeUrl}`, code);
-    alert('Code saved!');
   };
 
   const downloadCode = () => {
@@ -1326,6 +1285,8 @@ const CodeSandbox = () => {
     const isStale = () => seq !== loadSeqRef.current;
 
     setIsLoading(true);
+    setMissing(false);
+    setCurrentQuestion(null);
     setError('');
     setQuestionDescription('');
     setTestResults(null);
@@ -1344,9 +1305,14 @@ const CodeSandbox = () => {
       // Topics are read, not solved. Old links and recommendation cards can
       // still point here, so hand them to the System Design reader; `replace`
       // keeps Back from bouncing through this redirect again.
-      if (questionData.type === 'topic') {
-        navigate(`/system-design/${questionData.slug}`, { replace: true });
+      if (questionData.type === 'topic' || questionData.answerFormat === 'design_doc') {
+        navigate(contentUrl(questionData), { replace: true });
         return;
+      }
+      if (questionData.type === 'quiz') questionData.answerFormat = 'mcq';
+      if (questionData.type === 'problem') questionData.answerFormat = 'code';
+      if (!questionData.slug || !['code', 'mcq'].includes(questionData.answerFormat)) {
+        throw new Error('This question has an unsupported content format.');
       }
 
       setCurrentQuestion(questionData);
@@ -1377,6 +1343,7 @@ const CodeSandbox = () => {
       // Keeping it also makes the page shareable and survives a refresh.
     } catch (err) {
       if (isStale()) return;
+      if (err.status === 404 || err.response?.status === 404) setMissing(true);
       setError(`Could not load that question. ${readApiError(err)}`);
       console.error('Error fetching question:', err);
       console.error('Error details:', err.response ? err.response.data : 'No response data');
@@ -1386,6 +1353,8 @@ const CodeSandbox = () => {
   };
 
   const runExampleTests = async () => {
+    const seq = loadSeqRef.current;
+    const stale = () => seq !== loadSeqRef.current || executionIdentity !== activeExecutionIdentityRef.current;
     if (language !== 'python') {
       setExecutionFeedback({
         status: 'error',
@@ -1400,12 +1369,14 @@ const CodeSandbox = () => {
       setExampleTestResults(null);
       setExecutionFeedback({ status: 'pending', message: 'Running the example tests…' });
 
-      const questionId = leetcodeUrl.replace(/\/$/, '');
+      const questionId = currentQuestion.slug;
 
       const response = await apiClient.post('/code/execute/example', {
         code,
-        questionId
+        questionId,
+        contentRevision: currentQuestion.revision,
       });
+      if (stale()) return;
 
       // Format the results for display
       if (response.data && response.data.summary && Array.isArray(response.data.results)) {
@@ -1440,13 +1411,14 @@ const CodeSandbox = () => {
         });
       }
     } catch (error) {
+      if (stale()) return;
       setExecutionFeedback({
         status: 'error',
         message: readApiError(error, 'The example tests could not be run.')
       });
       console.error('Error executing example tests:', error);
     } finally {
-      setIsRunningExampleTests(false);
+      if (!stale()) setIsRunningExampleTests(false);
     }
   };
 
@@ -1459,20 +1431,24 @@ const CodeSandbox = () => {
   // wins over boilerplate, so returning to a problem resumes where you left off.
   useEffect(() => {
     if (!currentQuestion) return;
-    const templateKey = `${leetcodeUrl}:${language}`;
+    if (currentQuestion.answerFormat !== 'code') return;
+    const templateKey = `${currentQuestion.slug}:${language}`;
     if (lastTemplateKeyRef.current === templateKey) return;
     lastTemplateKeyRef.current = templateKey;
 
     const template = getDefaultTemplate(language, currentQuestion);
-    const saved = readDraft(leetcodeUrl, language);
-    if (saved && saved !== template) {
+    let saved = readDraft(currentQuestion.slug, language);
+    if (saved === null && requestedQuestion && requestedQuestion !== currentQuestion.slug) {
+      saved = readDraft(requestedQuestion, language);
+    }
+    if (saved !== null && saved !== template) {
       setCode(saved);
       setDraftRestored(true);
     } else {
       setCode(template);
       setDraftRestored(false);
     }
-  }, [language, currentQuestion, leetcodeUrl]);
+  }, [language, currentQuestion, requestedQuestion]);
 
   // Keep the Monaco key bindings pointed at the current closures, and refuse to fire
   // while a run is already in flight or for a guest who cannot execute anything.
@@ -1484,9 +1460,24 @@ const CodeSandbox = () => {
     };
   });
 
-  useEffect(() => () => {
-    clearTimeout(draftTimerRef.current);
-    clearTimeout(copyTimerRef.current);
+  useEffect(() => {
+    const flush = () => {
+      clearTimeout(draftTimerRef.current);
+      const draft = pendingDraftRef.current;
+      if (draft) writeDraft(draft.question, draft.language, draft.value);
+      pendingDraftRef.current = null;
+    };
+    const warn = () => setStorageWarning(true);
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', flush);
+    window.addEventListener('prep:storage-unavailable', warn);
+    return () => {
+      flush();
+      clearTimeout(copyTimerRef.current);
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', flush);
+      window.removeEventListener('prep:storage-unavailable', warn);
+    };
   }, []);
 
   /*
@@ -1532,12 +1523,23 @@ const CodeSandbox = () => {
     ? 'success'
     : executionFeedback.status === 'error' ? 'error' : 'neutral';
 
-  if (currentQuestion?.answerFormat === 'mcq') {
+  if (isLoading || ['unknown', 'restoring'].includes(userFromRedux.status)) {
+    return <Container><p role="status">Loading your workspace…</p></Container>;
+  }
+  if (missing || !currentQuestion) {
+    return <Container><h1>{missing ? 'Question not found' : 'Could not load question'}</h1>
+      <p role="alert">{error || 'Choose a question from the library to begin.'}</p>
+      {!missing && <button onClick={() => fetchLeetCodeQuestion()}>Retry</button>}
+      <a href="/all">Browse questions</a>
+    </Container>;
+  }
+  if (currentQuestion.answerFormat === 'mcq') {
     return <McqSolver key={currentQuestion.slug} question={currentQuestion} isGuest={isGuest} />;
   }
 
   return (
     <Container>
+      {storageWarning && <p role="alert">Draft storage is unavailable. Keep this page open or download your code before leaving.</p>}
       <TopBar>
         <ProblemTitle title={currentQuestion?.title || 'Code Sandbox'}>
           {currentQuestion?.title || 'Code Sandbox'}
@@ -1562,6 +1564,7 @@ const CodeSandbox = () => {
             <TimerButton onClick={resume} disabled={!isTracking || !isPaused} title="Resume timer" aria-label="Resume timer">
               <PlayLucide size={12} />
             </TimerButton>
+            {!isTracking && <TimerButton onClick={() => startTracking(currentQuestion.slug, user.userId)} aria-label="Restart timer">Restart</TimerButton>}
             <TimerButton
               variant="danger"
               onClick={() => handleSessionComplete(false)}
@@ -1575,14 +1578,14 @@ const CodeSandbox = () => {
         )}
 
         <TopBarActions>
-          <LanguageSelector value={language} onChange={handleLanguageChange}>
+          <LanguageSelector aria-label="Programming language" value={language} onChange={handleLanguageChange}>
             <option value="python">Python</option>
             <option value="javascript">JavaScript (editor only)</option>
           </LanguageSelector>
           <SandboxActionButton
             gated={isGuest}
             gatedLabel="Sign in to Run"
-            onGatedClick={() => navigate('/login')}
+            onGatedClick={() => requestSignIn(() => shortcutHandlersRef.current.run?.())}
             pending={isRunningExampleTests}
             pendingLabel="Running..."
             busy={isSubmitting || isRunningExampleTests}
@@ -1595,7 +1598,7 @@ const CodeSandbox = () => {
             variant="primary"
             gated={isGuest}
             gatedLabel="Sign in to Submit"
-            onGatedClick={() => navigate('/login')}
+            onGatedClick={() => requestSignIn(() => shortcutHandlersRef.current.submit?.())}
             pending={isSubmitting}
             pendingLabel="Submitting..."
             busy={isSubmitting || isRunningExampleTests}
@@ -1609,8 +1612,8 @@ const CodeSandbox = () => {
 
       {isGuest && (
         <GuestBanner>
-          <span>👀 Viewing in read-only mode. Sign in to run and submit code.</span>
-          <GuestSignInButton onClick={() => navigate('/login')}>Sign In</GuestSignInButton>
+          <span>Draft code locally. Sign in to run and submit; your work stays here.</span>
+          <GuestSignInButton onClick={requestSignIn}>Sign In</GuestSignInButton>
         </GuestBanner>
       )}
 
@@ -1677,6 +1680,15 @@ const CodeSandbox = () => {
         </LeftPane>
 
         <VerticalHandle
+          tabIndex={0}
+          aria-valuemin={22}
+          aria-valuemax={70}
+          aria-valuenow={Math.round(leftPct)}
+          onKeyDown={(e) => {
+            if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+            e.preventDefault();
+            setLeftPct((pct) => Math.min(70, Math.max(22, pct + (e.key === 'ArrowRight' ? 2 : -2))));
+          }}
           role="separator"
           aria-orientation="vertical"
           aria-label="Resize description panel"
@@ -1694,6 +1706,9 @@ const CodeSandbox = () => {
                 </CardTitle>
                 <EditorActions>
                   <EditorToolGroup>
+                    <IconButton type="button" onClick={downloadCode} title="Download code" aria-label="Download code">
+                      <FileDown size={14} />
+                    </IconButton>
                     <IconButton
                       type="button"
                       onClick={() => changeFontSize(-1)}
@@ -1727,6 +1742,7 @@ const CodeSandbox = () => {
                 </EditorActions>
               </EditorHeader>
               <EditorContainer>
+                <Suspense fallback={<EditorLoading>Loading editor…</EditorLoading>}>
                 <Editor
                   height="100%"
                   defaultLanguage={getEditorLanguage()}
@@ -1745,7 +1761,7 @@ const CodeSandbox = () => {
                     lineHeight: 1.6,
                     roundedSelection: false,
                     scrollBeyondLastLine: false,
-                    readOnly: isGuest,
+                    readOnly: false,
                     automaticLayout: true,
                     tabSize: 4,
                     insertSpaces: true,
@@ -1760,6 +1776,7 @@ const CodeSandbox = () => {
                     wordWrap: 'off'
                   }}
                 />
+                </Suspense>
               </EditorContainer>
               <EditorStatusBar>
                 <StatusGroup>
@@ -1775,7 +1792,7 @@ const CodeSandbox = () => {
                   {isGuest && (
                     <StatusItem>
                       <Lock size={12} />
-                      Read-only — sign in to edit
+                      Local draft — sign in to run
                     </StatusItem>
                   )}
                 </StatusGroup>
@@ -1798,6 +1815,15 @@ const CodeSandbox = () => {
           </EditorPane>
 
           <HorizontalHandle
+            tabIndex={0}
+            aria-valuemin={20}
+            aria-valuemax={85}
+            aria-valuenow={Math.round(editorPct)}
+            onKeyDown={(e) => {
+              if (!['ArrowUp', 'ArrowDown'].includes(e.key)) return;
+              e.preventDefault();
+              setEditorPct((pct) => Math.min(85, Math.max(20, pct + (e.key === 'ArrowDown' ? 2 : -2))));
+            }}
             role="separator"
             aria-orientation="horizontal"
             aria-label="Resize console panel"

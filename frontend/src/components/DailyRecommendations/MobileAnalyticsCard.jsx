@@ -21,7 +21,7 @@ import {
     CollapseToggle
 } from './MobileAnalyticsCard.styles';
 
-const MobileAnalyticsCard = ({ analysis, progress, batchInfo }) => {
+const MobileAnalyticsCard = ({ analysis, progress, batchInfo, preview = false }) => {
     const navigate = useNavigate();
     const [isMobileCollapsed, setIsMobileCollapsed] = useState(true);
 
@@ -46,7 +46,7 @@ const MobileAnalyticsCard = ({ analysis, progress, batchInfo }) => {
                         <SparkleIcon>✨</SparkleIcon> Learning Analytics
                     </TitleMain>
                     <TitleSub>
-                        Your personalized learning insights and today's progress
+                        {preview ? 'Sample insights · Sign in for your own progress' : 'Your personalized learning insights and today’s progress'}
                     </TitleSub>
                 </Title>
 
@@ -61,10 +61,10 @@ const MobileAnalyticsCard = ({ analysis, progress, batchInfo }) => {
                     {progress && (
                         <QuickStatCard>
                             <ProgressRing
-                                percentage={(progress.completed / progress.total) * 100}
+                                percentage={progress.total > 0 ? (progress.completed / progress.total) * 100 : 0}
                                 size="small"
                             />
-                            <QuickMetricLabel>{progress.completed}/{progress.total} completed</QuickMetricLabel>
+                            <QuickMetricLabel>{progress.completed}/{progress.total} assigned completed</QuickMetricLabel>
                         </QuickStatCard>
                     )}
                     <QuickStatCard>
@@ -76,7 +76,7 @@ const MobileAnalyticsCard = ({ analysis, progress, batchInfo }) => {
             )}
 
             {/* Collapsible content */}
-            <CollapsibleContent $isCollapsed={isMobileCollapsed}>
+            <CollapsibleContent id="mobile-analytics-details" $isCollapsed={isMobileCollapsed} inert={isMobileCollapsed ? '' : undefined} aria-hidden={isMobileCollapsed}>
                 {analysis && (
                     <MetricsGrid>
                         <MetricCard
@@ -118,6 +118,9 @@ const MobileAnalyticsCard = ({ analysis, progress, batchInfo }) => {
 
             {/* Collapse toggle */}
             <CollapseToggle
+                aria-label={isMobileCollapsed ? 'Show more analytics' : 'Show less analytics'}
+                aria-expanded={!isMobileCollapsed}
+                aria-controls="mobile-analytics-details"
                 onClick={toggleMobileCollapse}
                 title={isMobileCollapsed ? "Show more analytics" : "Show less"}
             >

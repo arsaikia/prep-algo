@@ -9,8 +9,12 @@ import { POLICY, dockerArgs } from './policy.js';
  * a child that is wedged, forking, or has had its own alarm handlers replaced
  * cannot be trusted to time itself out.
  */
-const drive = (command, args, source, { timeoutMs, onKill }) => new Promise((resolve) => {
-    const child = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'] });
+const drive = (command, args, source, { timeoutMs, onKill, signal }) => new Promise((resolve) => {
+    signal?.throwIfAborted();
+    const child = spawn(command, args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { PATH: process.env.PATH, LANG: 'C.UTF-8', HOME: '/tmp' },
+    });
 
     const chunks = { stdout: [], stderr: [] };
     let bytes = { stdout: 0, stderr: 0 };
@@ -51,16 +55,20 @@ const drive = (command, args, source, { timeoutMs, onKill }) => new Promise((res
         timedOut = true;
         terminate();
     }, timeoutMs);
+    const aborted = () => terminate();
+    signal?.addEventListener('abort', aborted, { once: true });
+    if (signal?.aborted) aborted();
 
-    const settle = (exitCode, signal, error) => {
+    const settle = (exitCode, terminationSignal, error) => {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        signal?.removeEventListener('abort', aborted);
         resolve({
             stdout: Buffer.concat(chunks.stdout).toString('utf8'),
             stderr: Buffer.concat(chunks.stderr).toString('utf8'),
             exitCode,
-            signal,
+            signal: terminationSignal,
             timedOut,
             truncated,
             error,
@@ -85,19 +93,20 @@ const drive = (command, args, source, { timeoutMs, onKill }) => new Promise((res
  * The program arrives on stdin, so nothing is ever written to the host
  * filesystem and a stock upstream image needs no customisation.
  */
-export const dockerRunner = async (source, timeoutMs) => {
+export const dockerRunner = async (source, timeoutMs, { signal } = {}) => {
     const name = `prepalgo-exec-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     const args = dockerArgs();
     args.splice(2, 0, '--name', name);
 
     const result = await drive('docker', args, source, {
         timeoutMs,
+        signal,
         // Killing the client leaves the container running; kill the container.
         onKill: () => spawn('docker', ['kill', name], { stdio: 'ignore' }).unref(),
     });
 
     // 137 is SIGKILL, which the OOM killer uses when the cgroup limit is hit.
-    const oom = result.exitCode === 137 && !result.timedOut;
+    const oom = result.exitCode === 137 && !result.timedOut && !signal?.aborted;
 
     // 125 is the Docker CLI itself failing (dead daemon, bad flag, missing
     // image) rather than the program. Surfacing it as a generic execution
@@ -122,9 +131,10 @@ export const dockerRunner = async (source, timeoutMs) => {
  * -S skips site.py. Together they stop the surrounding environment from
  * reintroducing import paths the guard has not vetted.
  */
-export const subprocessRunner = async (source, timeoutMs) => {
+export const subprocessRunner = async (source, timeoutMs, { signal } = {}) => {
     const result = await drive('python3', ['-I', '-S', '-'], source, {
         timeoutMs,
+        signal,
         onKill: null,
     });
 

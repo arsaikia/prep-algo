@@ -21,8 +21,7 @@ const run = (schema, body) =>
 const body = {
   userId: 'user-1',
   questionId: '4fad4819-3db1-4333-8932-6a0c5440273d',
-  timeSpent: 0.5,
-  success: true,
+  note: 'Review this problem',
 };
 
 describe('validate', () => {
@@ -39,10 +38,17 @@ describe('validate', () => {
     );
   });
 
-  test('passes a valid body through with defaults applied', async () => {
+  test('passes valid annotations through without creating solve defaults', async () => {
     const result = await run(solveHistorySchema, body);
     assert.equal(result.kind, 'next');
-    assert.equal(result.body.sessionNumber, 1);
+    assert.equal(result.body.note, body.note);
+    assert.equal(result.body.success, undefined);
+  });
+
+  test('rejects client attempts to declare a solve', async () => {
+    const result = await run(solveHistorySchema, { ...body, success: true, solveCount: 1 });
+    assert.equal(result.kind, 'response');
+    assert.equal(result.code, 400);
   });
 
   test('forwards errors that are not validation failures', async () => {

@@ -1,310 +1,141 @@
-import mongoose from 'mongoose';
 import { v4 as UUID_V4 } from 'uuid';
+import {
+    readBatch, createBatch, saveBatch, completeVerifiedItem, cleanupExpiredBatches
+} from '../repositories/recommendationRepository.js';
 
-const dailyRecommendationBatchSchema = new mongoose.Schema({
-    _id: { type: String, default: UUID_V4 },
-    userId: {
-        type: String,
-        required: true,
-        index: true
-    },
-    date: {
-        type: String, // Store as YYYY-MM-DD string for easy querying
-        required: true,
-        index: true
-    },
-    recommendations: [{
-        question: {
-            type: String,
-            ref: 'Question',
-            required: true
-        },
-        domain: {
-            type: String,
-            enum: ['algorithms', 'system_design', 'frontend'],
-            default: 'algorithms'
-        },
-        reason: {
-            type: String,
-            required: true
-        },
-        priority: {
-            type: String,
-            enum: ['high', 'medium', 'low'],
-            required: true
-        },
-        strategy: {
-            type: String,
-            enum: ['weak_area_reinforcement', 'progressive_difficulty', 'spaced_repetition', 'topic_exploration', 'general_practice'],
-            required: true
-        },
-        adaptiveContext: {
-            weightUsed: Number,
-            timeOptimized: String,
-            personalizedReason: String,
-            isCarriedOver: { type: Boolean, default: false },
-            originalBatchTime: Date
-        },
-        userAction: {
-            type: String,
-            enum: ['attempted', 'skipped', 'ignored'],
-            default: 'ignored'
-        },
-        timeToFirstAction: Number,
-        clickedAt: Date,
-        addedAt: {
-            type: Date,
-            default: Date.now
-        }
-    }],
-    analysis: {
-        userLevel: String,
-        totalSolved: Number,
-        weakAreas: [String],
-        strongAreas: [String],
-        recentActivity: Number,
-        strugglingQuestions: Array,
-        adaptiveWeights: Object,
-        timePreferences: Object,
-        adaptiveFeatures: Object,
-        domainDistribution: {
-            algorithms: { type: Number, default: 0 },
-            system_design: { type: Number, default: 0 },
-            frontend: { type: Number, default: 0 }
-        },
-        // NEW: Enhanced analytics for Learning Streaks & Topic Mastery
-        streakInfo: {
-            currentStreak: Number,
-            longestStreak: Number,
-            lastActivityDate: String,
-            totalActiveDays: Number
-        },
-        topicMastery: [{
-            topic: String,
-            level: {
-                type: String,
-                enum: ['beginner', 'learning', 'practicing', 'proficient', 'mastered']
-            },
-            totalQuestions: Number,
-            solvedQuestions: Number, // Updated field name for clarity
-            difficulties: {
-                Easy: Number,
-                Medium: Number,
-                Hard: Number
-            },
-            averageAttempts: Number,
-            solveRate: Number, // Updated field name for clarity
-            totalAvailable: Number, // NEW: Total questions available in this topic
-            topicCoveragePercentage: Number, // NEW: Percentage of topic covered
-            firstStudied: Date,
-            lastStudied: Date,
-            progress: {
-                completed: Number,
-                total: Number,
-                percentage: Number,
-                topicCoverage: Number // NEW: Percentage of available questions attempted
+const dateFields = new Set([
+    'generatedAt', 'expiresAt', 'lastRefreshAt', 'createdAt', 'updatedAt',
+    'completedAt', 'clickedAt', 'addedAt', 'originalBatchTime',
+    'firstStudied', 'lastStudied', 'lastSolved'
+]);
+
+function hydrate(value) {
+    if (Array.isArray(value)) return value.map(hydrate);
+    if (!value || typeof value !== 'object' || value instanceof Date) return value;
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [
+        key, dateFields.has(key) && child ? new Date(child) : hydrate(child)
+    ]));
+}
+
+/** Daily planning domain object; completions live exclusively in item rows. */
+export default class DailyRecommendationBatch {
+    constructor(data = {}, version) {
+        const expiresAt = new Date();
+        expiresAt.setUTCDate(expiresAt.getUTCDate() + 1);
+        expiresAt.setUTCHours(6, 0, 0, 0);
+        Object.assign(this, {
+            _id: UUID_V4(), recommendations: [], questionsCompleted: [], analysis: {},
+            generatedAt: new Date(), expiresAt, refreshCount: 0, isStale: false,
+            batchType: 'daily', createdAt: new Date(), updatedAt: new Date(),
+            ...hydrate(data),
+            metadata: {
+                totalRefreshes: 0, questionsCarriedOver: 0, questionsReplaced: 0,
+                ...data.metadata
             }
-        }],
-        dailyActivity: [{
-            date: String,
-            questionsCompleted: Number,
-            topics: [String],
-            difficulties: {
-                Easy: Number,
-                Medium: Number,
-                Hard: Number
-            }
-        }]
-    },
-    generatedAt: {
-        type: Date,
-        default: Date.now,
-        index: true
-    },
-    expiresAt: {
-        type: Date,
-        default: () => {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(6, 0, 0, 0); // Expire at 6 AM next day
-            return tomorrow;
-        },
-        index: true
-    },
-    questionsCompleted: [{
-        questionId: String,
-        completedAt: Date,
-        timeSpent: Number,
-        success: Boolean
-    }],
-    refreshCount: {
-        type: Number,
-        default: 0
-    },
-    lastRefreshAt: Date,
-    isStale: {
-        type: Boolean,
-        default: false
-    },
-    batchType: {
-        type: String,
-        enum: ['daily', 'refresh', 'bonus', 'selective_refresh'],
-        default: 'daily'
-    },
-    metadata: {
-        totalRefreshes: { type: Number, default: 0 },
-        questionsCarriedOver: { type: Number, default: 0 },
-        questionsReplaced: { type: Number, default: 0 },
-        averageTimeToRefresh: Number, // Average time before user requests refresh
-        userSatisfactionScore: Number // Based on completion rate
-    }
-}, {
-    timestamps: true
-});
-
-// Compound indexes for efficient querying
-dailyRecommendationBatchSchema.index({ userId: 1, date: 1 }, { unique: true });
-dailyRecommendationBatchSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-dailyRecommendationBatchSchema.index({ userId: 1, generatedAt: -1 });
-
-// Instance methods
-dailyRecommendationBatchSchema.methods.shouldRefresh = function (userId) {
-    const now = new Date();
-    const timeSinceGeneration = now - this.generatedAt;
-    const timeSinceLastRefresh = this.lastRefreshAt ? now - this.lastRefreshAt : Infinity;
-
-    // Check if this is a different day (next day refresh logic)
-    const batchDate = new Date(this.generatedAt);
-    const today = new Date();
-    const isDifferentDay = batchDate.toDateString() !== today.toDateString();
-
-    // Refresh conditions
-    const conditions = {
-        // Only allow refresh if it's a different day AND user made progress
-        nextDayWithProgress: isDifferentDay && this.questionsCompleted.length > 0,
-
-        // Allow immediate refresh only if ALL questions completed
-        allCompleted: this.questionsCompleted.length >= this.recommendations.length,
-
-        // Batch marked as stale (manual override)
-        isStale: this.isStale,
-
-        // Recent refresh cooldown (1 hour)
-        recentRefresh: timeSinceLastRefresh < (60 * 60 * 1000),
-
-        // Legacy conditions (for backward compatibility)
-        questionsCompleted: this.questionsCompleted.length >= 2,
-        timeThreshold: timeSinceGeneration > (6 * 60 * 60 * 1000) // 6 hours
-    };
-
-    // NEW HYBRID LOGIC:
-    // 1. Same day: Only refresh if ALL completed
-    // 2. Next day: Refresh if user made ANY progress (completed 1+ questions)
-    // 3. Manual refresh always allowed (via isStale flag)
-    // 4. Respect cooldown period
-    const shouldRefresh = (
-        conditions.nextDayWithProgress ||
-        conditions.allCompleted ||
-        conditions.isStale
-    ) && !conditions.recentRefresh;
-
-    return {
-        allowed: shouldRefresh,
-        reasons: conditions,
-        strategy: isDifferentDay ? 'next_day_refresh' : 'same_day_stable',
-        nextRefreshAvailable: conditions.recentRefresh ?
-            new Date(this.lastRefreshAt.getTime() + 60 * 60 * 1000) :
-            new Date(),
-        canReplaceCompleted: this.questionsCompleted.length > 0
-    };
-};
-
-dailyRecommendationBatchSchema.methods.markQuestionCompleted = function (questionId, completionData = {}) {
-    // Check if this question is part of the daily recommendations
-    const isRecommendedQuestion = this.recommendations.some(rec =>
-        (rec.question._id && rec.question._id.toString() === questionId) ||
-        (rec.question && rec.question.toString() === questionId)
-    );
-
-    if (!isRecommendedQuestion) {
-        // Question not part of daily recommendations — skipping completion tracking
-        return Promise.resolve(this); // Return resolved promise without saving
+        });
+        Object.defineProperty(this, '_version', { value: version, writable: true });
+        Object.defineProperty(this, '_observedCompleted', {
+            value: this.questionsCompleted.map(item => item.questionId), writable: true
+        });
     }
 
-    // Remove if already exists (prevent duplicates)
-    this.questionsCompleted = this.questionsCompleted.filter(
-        q => q.questionId !== questionId
-    );
+    static fromRow(row) {
+        if (!row) return null;
+        const completed = row.items.filter(item => item.completed_at && item.success !== false);
+        return new this({
+            ...row.data, _id: row.id, userId: row.user_id,
+            date: typeof row.batch_date === 'string' ? row.batch_date.slice(0, 10) : row.batch_date.toISOString().slice(0, 10),
+            metadata: {
+                ...row.data.metadata,
+                userSatisfactionScore: row.items.length ? completed.length / row.items.length : 0
+            },
+            recommendations: row.items.map(item => ({
+                domain: 'algorithms', userAction: 'ignored', ...item.data, question: item.content_id
+            })),
+            questionsCompleted: completed.map(item => ({
+                questionId: item.content_id, completedAt: item.completed_at,
+                timeSpent: item.time_spent, success: item.success
+            }))
+        }, row.version);
+    }
 
-    // Add completion record
-    this.questionsCompleted.push({
-        questionId,
-        completedAt: new Date(),
-        timeSpent: completionData.timeSpent || null,
-        success: completionData.success !== undefined ? completionData.success : true
-    });
+    header() {
+        const analysis = { ...this.analysis };
+        if (analysis.dailyActivity) analysis.dailyActivity = analysis.dailyActivity.slice(0, 366);
+        if (analysis.strugglingQuestions) analysis.strugglingQuestions = analysis.strugglingQuestions.slice(0, 100);
+        return {
+            analysis, generatedAt: this.generatedAt, expiresAt: this.expiresAt,
+            refreshCount: this.refreshCount, lastRefreshAt: this.lastRefreshAt,
+            isStale: this.isStale, batchType: this.batchType, metadata: this.metadata,
+            createdAt: this.createdAt, updatedAt: new Date()
+        };
+    }
 
-    // Update metadata
-    this.metadata.userSatisfactionScore = this.questionsCompleted.length / this.recommendations.length;
+    async save() {
+        const fresh = this.constructor.fromRow(await saveBatch(this, this.header()));
+        Object.assign(this, fresh);
+        this._version = fresh._version;
+        this._observedCompleted = fresh._observedCompleted;
+        return this;
+    }
 
-    // Question marked as completed in daily recommendations
-    return this.save();
-};
+    async markQuestionCompleted(questionId) {
+        if (!this.recommendations.some(rec => String(rec.question?._id ?? rec.question) === String(questionId))) return this;
+        const fresh = this.constructor.fromRow(await completeVerifiedItem(this, questionId));
+        Object.assign(this, fresh);
+        this._version = fresh._version;
+        this._observedCompleted = fresh._observedCompleted;
+        return this;
+    }
 
-dailyRecommendationBatchSchema.methods.getProgress = function () {
-    const total = this.recommendations.length;
-    const completed = this.questionsCompleted.length;
-    const remaining = Math.max(0, total - completed);
+    getProgress() {
+        const ids = new Set(this.recommendations.map(rec => String(rec.question?._id ?? rec.question)));
+        const completed = new Set(this.questionsCompleted.filter(q => ids.has(String(q.questionId))).map(q => q.questionId)).size;
+        const total = ids.size;
+        return {
+            total, completed, remaining: Math.max(0, total - completed),
+            percentage: total ? Math.round(completed / total * 100) : 0,
+            isComplete: completed >= total
+        };
+    }
 
-    return {
-        total,
-        completed,
-        remaining,
-        percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
-        isComplete: completed >= total
-    };
-};
+    shouldRefresh() {
+        const now = new Date();
+        const progress = this.getProgress();
+        const isDifferentDay = this.generatedAt.toISOString().slice(0, 10) !== now.toISOString().slice(0, 10);
+        const conditions = {
+            nextDayWithProgress: isDifferentDay && progress.completed > 0,
+            allCompleted: progress.isComplete,
+            isStale: this.isStale,
+            recentRefresh: this.lastRefreshAt ? now - this.lastRefreshAt < 3600000 : false,
+            questionsCompleted: progress.completed >= 2,
+            timeThreshold: now - this.generatedAt > 6 * 3600000
+        };
+        return {
+            allowed: (conditions.nextDayWithProgress || conditions.allCompleted || conditions.isStale) && !conditions.recentRefresh,
+            reasons: conditions, strategy: isDifferentDay ? 'next_day_refresh' : 'same_day_stable',
+            nextRefreshAvailable: conditions.recentRefresh ? new Date(this.lastRefreshAt.getTime() + 3600000) : now,
+            canReplaceCompleted: progress.completed > 0
+        };
+    }
 
-// Static methods
-dailyRecommendationBatchSchema.statics.findTodaysBatch = function (userId) {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    // Question refs stay bare ids; controllers attach catalog summaries.
-    return this.findOne({ userId, date: today });
-};
+    static async findTodaysBatch(userId) {
+        return this.fromRow(await readBatch(userId, new Date().toISOString().slice(0, 10)));
+    }
 
-dailyRecommendationBatchSchema.statics.createDailyBatch = async function (userId, recommendations, analysis) {
-    const today = new Date().toISOString().split('T')[0];
+    static async createDailyBatch(userId, recommendations, analysis) {
+        const now = new Date();
+        const batch = new this({
+            userId, date: now.toISOString().slice(0, 10), analysis,
+            recommendations: recommendations.map(rec => ({
+                ...rec, addedAt: now,
+                adaptiveContext: { ...rec.adaptiveContext, isCarriedOver: false, originalBatchTime: now }
+            }))
+        });
+        return this.fromRow(await createBatch(batch, batch.header()));
+    }
 
-    // Remove any existing batch for today
-    await this.deleteOne({ userId, date: today });
-
-    // Create new batch
-    const batch = new this({
-        userId,
-        date: today,
-        recommendations: recommendations.map(rec => ({
-            ...rec,
-            adaptiveContext: {
-                ...rec.adaptiveContext,
-                isCarriedOver: false,
-                originalBatchTime: new Date()
-            }
-        })),
-        analysis,
-        batchType: 'daily'
-    });
-
-    return batch.save();
-};
-
-dailyRecommendationBatchSchema.statics.cleanupExpiredBatches = function () {
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-
-    return this.deleteMany({
-        expiresAt: { $lt: new Date() }
-    });
-};
-
-const DailyRecommendationBatch = mongoose.model('DailyRecommendationBatch', dailyRecommendationBatchSchema);
-export default DailyRecommendationBatch; 
+    static cleanupExpiredBatches() {
+        return cleanupExpiredBatches();
+    }
+}

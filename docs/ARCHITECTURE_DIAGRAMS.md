@@ -1,8 +1,33 @@
-# PrepAlgo — Architecture Evolution Diagrams
+# PrepAlgo — Architecture Diagrams
 
-Visual reference for each phase of the architecture. All diagrams use Mermaid.
+The first section is the current system. Everything after it is **historical**
+phase evolution (MongoDB, BullMQ, gateway plans) kept for design context; see
+[ARCHITECTURE_PLAN.md](ARCHITECTURE_PLAN.md#current-architecture).
 
 ---
+
+## Current State (2026-10-29)
+
+```mermaid
+flowchart TB
+  U[Browser] -->|SPA + hashed content| H[Firebase Hosting / CDN]
+  U -->|/api/v1, JWT| A[Cloud Run: prep-algo-backend<br/>identity prepalgo-api]
+  A -->|TLS, pooled| P[(Neon PostgreSQL<br/>users, attempts, progress,<br/>recommendations)]
+  A -->|TLS| R[(Upstash Redis<br/>rate limits)]
+  A -->|Direct VPC egress<br/>Google OIDC + pinned TLS| X[prepalgo-executor VM 10.128.0.2<br/>Docker sandbox, no public IP,<br/>no internet egress]
+  SM[Secret Manager] -.-> A
+  B[Billing budget ₹1,000] -->|Pub/Sub| G[prepalgo-budget-guard]
+  G -. "actual ≥ ₹2,000: ingress internal" .-> A
+  G -. maintenance release .-> H
+```
+
+Code submission: the API validates the payload and content revision, calls the
+executor with an OIDC token over the private network, then records the attempt,
+progress and recommendation completion in one PostgreSQL transaction.
+
+---
+
+## Historical phase diagrams
 
 ## Phase 1: Monolith (Baseline)
 
@@ -390,7 +415,10 @@ stateDiagram-v2
 
 ---
 
-## Cost Efficiency Notes
+## Cost Efficiency Notes (historical)
+
+Current cost controls: scale-to-zero Cloud Run, Neon autosuspend (liveness runs no SQL), no paid NAT/IP/alert policies, and the budget guard above.
+
 
 | Component | Cost Strategy |
 |-----------|--------------|

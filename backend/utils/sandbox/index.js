@@ -6,14 +6,16 @@ import { limitConcurrency } from '../limitConcurrency.js';
 import { POLICY } from './policy.js';
 import { buildGuardPrologue } from './pythonGuard.js';
 import { dockerRunner, subprocessRunner } from './runners.js';
+import { getExecutionBudget } from '../executionBudget.js';
+import { remoteRunner } from './remote.js';
 
 let dockerProbe = null;
 let runSlot = null;
 
 /** Built on first use: server.js loads .env only after its imports evaluate. */
-const withSlot = (fn) => {
+const withSlot = (fn, options) => {
     runSlot ??= limitConcurrency(POLICY.maxConcurrent);
-    return runSlot(fn);
+    return runSlot(fn, options);
 };
 
 /** Probed once per process: the daemon's availability does not change often. */
@@ -32,6 +34,10 @@ const dockerAvailable = () => {
 };
 
 const selectRunner = () => {
+    if (process.env.CODE_EXECUTOR_URL) return remoteRunner;
+    if (process.env.NODE_ENV === 'production') {
+        throw Object.assign(new Error('Isolated execution service is not configured'), { statusCode: 503 });
+    }
     if (POLICY.mode === 'docker') return dockerRunner;
     if (POLICY.mode === 'subprocess') return subprocessRunner;
 
@@ -56,7 +62,7 @@ const selectRunner = () => {
  * @returns {Promise<{stdout: string, stderr: string, exitCode: number|null,
  *   timedOut: boolean, oom: boolean, truncated: boolean, runner: string}>}
  */
-export const executePython = async ({ source, timeoutMs = POLICY.timeoutMs }) => {
+export const executePython = async ({ source, timeoutMs = POLICY.timeoutMs, signal = getExecutionBudget()?.signal }) => {
     const runner = selectRunner();
     const queuedAt = Date.now();
     let started = queuedAt;
@@ -65,17 +71,18 @@ export const executePython = async ({ source, timeoutMs = POLICY.timeoutMs }) =>
     // count against the program's timeout.
     const result = await withSlot(() => {
         started = Date.now();
-        return runner(buildGuardPrologue() + source, timeoutMs);
-    });
+        return runner(buildGuardPrologue() + source, timeoutMs, { signal });
+    }, { signal });
 
     if (result.error) {
         logger.error(
             { runner: result.runner, err: result.error.message },
             'Code sandbox failed to start',
         );
+        throw Object.assign(new Error('Execution infrastructure failed to start'), { statusCode: 503 });
     }
 
-    logger.debug(
+    logger.info(
         {
             runner: result.runner,
             queuedMs: started - queuedAt,

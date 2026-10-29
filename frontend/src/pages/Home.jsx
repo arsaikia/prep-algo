@@ -1,11 +1,11 @@
-import React, { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import DailyRecommendations from '../components/DailyRecommendations/DailyRecommendations';
 import { useTestUser } from '../contexts/TestUserContext';
 import { isDevMode } from '../utils/featureFlags';
+import { requestSignIn } from '../utils/navigation';
 
 // Styled components
 const Container = styled.div`
@@ -15,6 +15,9 @@ const Container = styled.div`
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   min-height: 100vh;
+  min-width: 0;
+  box-sizing: border-box;
+  @media (max-width: 480px) { padding: 12px 0; }
 `;
 
 
@@ -28,11 +31,17 @@ const GuestBanner = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
   font-size: 0.95rem;
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
-const GuestBannerLink = styled.span`
+const GuestBannerLink = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
   color: ${({ theme }) => theme.colors.primary || '#7c3aed'};
   cursor: pointer;
   font-weight: 500;
@@ -40,19 +49,11 @@ const GuestBannerLink = styled.span`
 `;
 
 const Home = () => {
-  const navigate = useNavigate();
   const { selectedUserId } = useTestUser();
 
   // Get authenticated user from Redux store
   const authUser = useSelector(state => state.auth);
-  const { isAuthenticated, userId: authUserId, firstName, email } = authUser;
-
-  // Handle question selection from daily recommendations
-  const handleQuestionSelect = useCallback((question) => {
-    // Navigate to CodeSandbox with the selected question
-    const questionLink = question.link || question.name.toLowerCase().replace(/\s+/g, '-');
-    navigate(`/codesandbox?question=${questionLink}`);
-  }, [navigate]);
+  const { isAuthenticated, userId: authUserId } = authUser;
 
   // Determine which user ID to use for recommendations
   const getUserIdForRecommendations = () => {
@@ -83,19 +84,19 @@ const Home = () => {
 
   return (
     <Container>
-      {isGuest && (
+      {isGuest && authUser.status === 'guest' && (
         <GuestBanner>
           <span>👋 Browsing as guest.</span>
-          <GuestBannerLink onClick={() => navigate('/login')}>
+          <GuestBannerLink onClick={requestSignIn}>
             Sign in to track progress and get personalized recommendations
           </GuestBannerLink>
         </GuestBanner>
       )}
-      <DailyRecommendations
+      {['unknown', 'restoring'].includes(authUser.status) ? <p role="status">Restoring your session…</p> : <DailyRecommendations
+        key={recommendationUserId}
         userId={recommendationUserId}
-        onQuestionSelect={handleQuestionSelect}
         isGuest={isGuest}
-      />
+      />}
     </Container>
   );
 };

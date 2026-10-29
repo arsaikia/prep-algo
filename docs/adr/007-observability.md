@@ -1,7 +1,12 @@
 # ADR 007: Structured Logging and Observability
 
 ## Status
-Accepted
+Accepted (amended)
+
+Health is now split: `/health/live` (no dependency calls), `/health/ready`
+(explicit PostgreSQL/Redis check, used sparingly so Neon can sleep) and
+`/health` (component status including PostgreSQL pool utilization and breaker
+state). MongoDB and BullMQ entries below are historical.
 
 ## Context
 All logging used `console.log/error/warn` with emoji prefixes and unstructured string output. No correlation between related log entries across a request lifecycle. No structured data for log aggregation in Cloud Run / GCP Logging. Health check returned a static `{ status: 'ok' }` with no dependency verification.

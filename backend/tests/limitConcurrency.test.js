@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { limitConcurrency } from '../utils/limitConcurrency.js';
+import { getExecutionLoad, runSubmission } from '../utils/executionBudget.js';
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
@@ -24,6 +25,25 @@ describe('limitConcurrency', () => {
 
         assert.deepEqual(results, [1, 2, 3, 4, 5, 6, 7]);
         assert.equal(peak, 2);
+    });
+
+    it('submission admission permits exactly one active and eight waiting requests', async () => {
+        let release;
+        const active = runSubmission(() => new Promise(resolve => { release = resolve; }));
+        const controller = new AbortController();
+        const queued = Array.from({ length: 8 }, () => runSubmission(
+            () => assert.fail('cancelled submission ran'), { signal: controller.signal },
+        ));
+        const settled = Promise.allSettled(queued);
+        assert.equal(getExecutionLoad().active, 1);
+        assert.equal(getExecutionLoad().waiting, 8);
+        await assert.rejects(runSubmission(() => {}), error => error.statusCode === 503);
+        controller.abort();
+        assert.ok((await settled).every(result => result.status === 'rejected'));
+        release();
+        await active;
+        assert.equal(getExecutionLoad().active, 0);
+        assert.equal(getExecutionLoad().waiting, 0);
     });
 
     it('starts queued tasks in arrival order', async () => {
@@ -64,5 +84,23 @@ describe('limitConcurrency', () => {
         await Promise.all([second, third]);
 
         assert.equal(peak, 1);
+    });
+
+    it('bounds capacity and removes expired and cancelled waiters without leaking slots', async () => {
+        const run = limitConcurrency(1, { maxQueue: 1, queueTimeoutMs: 20 });
+        let release;
+        const first = run(() => new Promise(resolve => { release = resolve; }));
+        const expired = run(() => assert.fail('expired waiter ran'));
+        await assert.rejects(run(() => {}), error => error.statusCode === 503 && error.retryAfter === 2);
+        await assert.rejects(expired, error => error.statusCode === 503);
+        const controller = new AbortController();
+        const cancelled = run(() => assert.fail('cancelled waiter ran'), { signal: controller.signal });
+        controller.abort();
+        await assert.rejects(cancelled, error => error.name === 'AbortError');
+        release();
+        await first;
+        assert.equal(await run(() => 'recovered'), 'recovered');
+        assert.equal(run.stats().waiting, 0);
+        assert.equal(run.stats().active, 0);
     });
 });

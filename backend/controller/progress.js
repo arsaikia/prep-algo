@@ -1,5 +1,5 @@
 import asyncHandler from '../middleware/async.js';
-import SolveHistory from '../models/SolveHistory.js';
+import { listProgress } from '../repositories/progress.js';
 
 /*
  * @desc     Per-user solve progress, with no content attached
@@ -12,19 +12,13 @@ import SolveHistory from '../models/SolveHistory.js';
  * now ships from the CDN, so the API's only remaining job is the part that
  * genuinely differs per user and per request.
  *
- * Keyed by `questionId` because progress is still keyed by ObjectId. The
- * client joins it to content via each item's `legacyId`. Step 6 rekeys both
- * sides to `slug` and this mapping disappears.
+ * Stable catalog IDs are retained so existing clients and imported test data
+ * continue to join progress to the CDN's legacyId.
  */
 const getProgress = asyncHandler(async (req, res) => {
     const { userId } = req.params;
 
-    // Projected deliberately. `solveHistory[]` on these documents is an
-    // unbounded append-only array; selecting the whole document would grow
-    // this response without bound as a user practises.
-    const rows = await SolveHistory.find({ userId })
-        .select('questionId solveCount firstSolvedAt lastUpdatedAt domain')
-        .lean();
+    const rows = await listProgress(userId);
 
     const items = rows.map((row) => ({
         questionId: String(row.questionId),

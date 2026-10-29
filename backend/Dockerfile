@@ -1,5 +1,4 @@
-# Use Node.js 18 as the base image
-FROM node:18-slim
+FROM node:22-slim
 
 # Install Python3 and required packages
 RUN apt-get update && apt-get install -y \

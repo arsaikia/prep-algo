@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted — implemented in Step 3 of the V2 architecture plan.
+Accepted — implemented in Step 3 of the V2 architecture plan. Mongo has since
+been replaced by PostgreSQL for user data only; legacy `/questions` reads and the
+export script are retired, so the transition notes below are historical.
 
 ## Context
 

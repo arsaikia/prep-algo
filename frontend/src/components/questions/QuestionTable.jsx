@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { contentUrl } from '../../utils/navigation';
 import { Play, CheckCircle } from 'react-feather';
-import { formatLeetCodeUrl } from '../../utils/questions';
 
 // Styled components - Updated to match home page card design
 const TableContainer = styled.div`
@@ -10,6 +10,8 @@ const TableContainer = styled.div`
   gap: 12px;
   margin-bottom: 2rem;
   padding: 16px;
+  min-width: 0;
+  @media (max-width: 480px) { padding: 8px 0; }
 `;
 
 const QuestionCard = styled.div`
@@ -20,7 +22,7 @@ const QuestionCard = styled.div`
       border: 2px solid ${props => props.theme.colors.border};
   border-radius: 12px;
   padding: 16px 20px;
-  cursor: pointer;
+  @media (max-width: 480px) { padding: 12px; }
   transition: all 0.3s ease;
       box-shadow: ${props => props.theme.colors.shadowCard};
   position: relative;
@@ -50,6 +52,7 @@ const QuestionHeader = styled.div`
   align-items: center;
   gap: 16px;
   margin-bottom: 8px;
+  @media (max-width: 600px) { flex-wrap: wrap; gap: 12px; }
 `;
 
 const QuestionNumber = styled.div`
@@ -123,9 +126,11 @@ const QuestionActions = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+  @media (max-width: 600px) { width: 100%; }
 `;
 
-const QuestionLink = styled.a`
+const QuestionLink = styled(Link)`
   text-decoration: none;
   color: ${props => props.theme.colors.primary};
   font-weight: 500;
@@ -142,7 +147,8 @@ const QuestionLink = styled.a`
   }
 `;
 
-const SolveButton = styled.button`
+const SolveButton = styled(Link)`
+  text-decoration: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -219,13 +225,6 @@ const QuestionTable = ({
   onQuestionCompleted = null,
   isSmartMode = false
 }) => {
-  const navigate = useNavigate();
-
-  const handleSolveClick = (question) => {
-    // Navigate to Code Sandbox with the question link as a parameter
-    navigate(`/codesandbox?question=${question.link}`);
-  };
-
   const handleMarkComplete = (question) => {
     if (onQuestionCompleted) {
       onQuestionCompleted(question._id || question.id, {
@@ -246,7 +245,7 @@ const QuestionTable = ({
         const available = isQuestionAvailable(question);
 
         return (
-          <QuestionCard key={question._id} solved={question.solved}>
+          <QuestionCard key={question.slug || question._id} solved={question.solved}>
             <QuestionHeader>
               <QuestionNumber solved={question.solved}>
                 {index + 1}
@@ -274,18 +273,13 @@ const QuestionTable = ({
               </QuestionInfo>
               <QuestionActions>
                 <QuestionLink
-                  href={formatLeetCodeUrl(question)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  to={contentUrl(question)}
                 >
                   View Problem
                 </QuestionLink>
                 {available && (
                   <SolveButton
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleSolveClick(question);
-                    }}
+                    to={contentUrl(question)}
                     title="Solve this question"
                   >
                     <Play size={14} />

@@ -3,6 +3,14 @@ import { z } from 'zod';
 export const executeCodeSchema = z.object({
   code: z.string().min(1, 'Code is required').max(50000),
   questionId: z.string().min(1, 'Question ID is required'),
+  contentRevision: z.string().regex(/^[a-f0-9]{10}$/).optional(),
+});
+
+export const gradeCodeSchema = z.object({
+  code: z.string().min(1, 'Code is required').max(50000),
+  submissionId: z.string().uuid().optional(),
+  timeTaken: z.number().finite().min(0).max(86400).optional(),
+  contentRevision: z.string().regex(/^[a-f0-9]{10}$/).optional(),
 });
 
 export const submitCodeSchema = z.object({
@@ -54,6 +62,9 @@ export const updateQuestionSchema = z.object({
 
 export const submitMcqSchema = z.object({
   selectedOptionId: z.string().min(1, 'Option ID is required'),
+  submissionId: z.string().uuid().optional(),
+  timeTaken: z.number().finite().min(0).max(86400).optional(),
+  contentRevision: z.string().regex(/^[a-f0-9]{10}$/).optional(),
 });
 
 export const trackRecommendationSchema = z.object({
@@ -65,11 +76,7 @@ export const trackRecommendationSchema = z.object({
 export const solveHistorySchema = z.object({
   userId: z.string().min(1),
   questionId: z.string().min(1),
-  timeSpent: z.number().positive().optional(),
+  note: z.string().max(10000).optional(),
   difficultyRating: z.number().min(1).max(5).optional(),
-  tags: z.array(z.string()).optional(),
-  success: z.boolean().optional().default(true),
-  sessionNumber: z.number().positive().optional().default(1),
-  previousQuestionResult: z.any().optional(),
-  strategy: z.string().optional(),
-});
+  tags: z.array(z.string().max(100)).max(30).optional(),
+}).strict();

@@ -1,6 +1,9 @@
 # ADR-002: Redis Integration (Upstash Serverless)
 
-## Status: Accepted
+## Status: Accepted (narrowed)
+
+Redis now backs distributed rate limits only. Response caching (ADR-004) and the
+BullMQ queue (ADR-005) were retired, so idle command usage stays near zero.
 
 ## Context
 In-memory caching (node-cache) and rate limiting (express-rate-limit) reset on every Cloud Run cold start and are not shared across instances. As traffic grows, multiple Cloud Run instances will have inconsistent rate limit counters and duplicated cache misses.

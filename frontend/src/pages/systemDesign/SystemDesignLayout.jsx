@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
@@ -7,6 +7,7 @@ import {
 } from 'react-feather';
 
 import useCurriculum from '../../content/useCurriculum';
+import { contentUrl } from '../../utils/navigation';
 
 const Shell = styled.div`
   display: flex;
@@ -30,11 +31,12 @@ const Sidebar = styled.nav`
    * it into an accordion above the article buries the article.
    */
   @media (max-width: 900px) {
+    visibility: ${({ $open }) => ($open ? 'visible' : 'hidden')};
     position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
-    z-index: 40;
+    z-index: 1200;
     width: min(320px, 85vw);
     transform: translateX(${({ $open }) => ($open ? '0' : '-100%')});
     transition: transform 0.22s ease;
@@ -49,7 +51,7 @@ const Scrim = styled.div`
     display: ${({ $open }) => ($open ? 'block' : 'none')};
     position: fixed;
     inset: 0;
-    z-index: 35;
+    z-index: 1100;
     background: rgba(0, 0, 0, 0.45);
   }
 `;
@@ -207,8 +209,39 @@ const SidebarMessage = styled.p`
  */
 function SystemDesignLayout() {
     const { pathname } = useLocation();
-    const { status, modules, quizByTopic, error } = useCurriculum();
+    const { status, modules, quizByTopic, error, retry } = useCurriculum();
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 900px)').matches);
+    const drawerRef = useRef(null);
+    const openerRef = useRef(null);
+    const readerRef = useRef(null);
+    const close = () => setDrawerOpen(false);
+    useEffect(() => {
+      const media = window.matchMedia('(max-width: 900px)');
+      const update = () => { setMobile(media.matches); if (!media.matches) setDrawerOpen(false); };
+      media.addEventListener('change', update);
+      return () => media.removeEventListener('change', update);
+    }, []);
+    useEffect(() => { setDrawerOpen(false); readerRef.current?.scrollTo(0, 0); }, [pathname]);
+    useEffect(() => {
+      if (!drawerOpen || !mobile) return undefined;
+      const drawer = drawerRef.current;
+      drawer.querySelector('button')?.focus();
+      const keydown = (event) => {
+        if (event.key === 'Escape') { event.preventDefault(); setDrawerOpen(false); }
+        if (event.key !== 'Tab') return;
+        const nodes = [...drawer.querySelectorAll('button, a[href]')];
+        const first = nodes[0];
+        const last = nodes[nodes.length - 1];
+        if (event.shiftKey && (document.activeElement === first || !drawer.contains(document.activeElement))) {
+          event.preventDefault(); last?.focus();
+        } else if (!event.shiftKey && (document.activeElement === last || !drawer.contains(document.activeElement))) {
+          event.preventDefault(); first?.focus();
+        }
+      };
+      document.addEventListener('keydown', keydown);
+      return () => { document.removeEventListener('keydown', keydown); openerRef.current?.focus(); };
+    }, [drawerOpen, mobile]);
     // Explicit user overrides only. Absence means "use the default", which
     // depends on which topic is open — so this cannot be seeded up front.
     const [overrides, setOverrides] = useState({});
@@ -238,22 +271,26 @@ function SystemDesignLayout() {
 
     return (
         <Shell>
-            <Scrim $open={drawerOpen} onClick={() => setDrawerOpen(false)} />
+            <Scrim $open={drawerOpen} onClick={close} />
 
-            <Sidebar $open={drawerOpen}>
+            <Sidebar id="curriculum-contents" ref={drawerRef} $open={drawerOpen}
+              aria-label="System Design contents" role={mobile && drawerOpen ? 'dialog' : 'navigation'}
+              aria-modal={mobile && drawerOpen ? true : undefined}
+              aria-hidden={mobile && !drawerOpen ? true : undefined}
+              inert={mobile && !drawerOpen ? '' : undefined}>
                 <SidebarHeader>
                     <SidebarTitle>
                         <Layers size={16} />
                         System Design
                     </SidebarTitle>
-                    <CloseDrawer onClick={() => setDrawerOpen(false)} aria-label="Close contents">
+                    <CloseDrawer onClick={close} aria-label="Close contents">
                         <X size={18} />
                     </CloseDrawer>
                 </SidebarHeader>
 
                 {status === 'loading' && <SidebarMessage>Loading curriculum…</SidebarMessage>}
                 {status === 'error' && (
-                    <SidebarMessage>Could not load the curriculum: {error}</SidebarMessage>
+                    <SidebarMessage>Could not load the curriculum: {error} <button onClick={retry}>Retry curriculum</button></SidebarMessage>
                 )}
 
                 {status === 'ready' && modules.map((module) => {
@@ -271,7 +308,7 @@ function SystemDesignLayout() {
                                     {module.topics.map((topic) => (
                                         <TopicLink
                                             key={topic.slug}
-                                            to={`/system-design/${topic.slug}`}
+                                            to={contentUrl(topic)}
                                             onClick={() => setDrawerOpen(false)}
                                         >
                                             {topic.title}
@@ -287,9 +324,9 @@ function SystemDesignLayout() {
                 })}
             </Sidebar>
 
-            <Reader>
+            <Reader ref={readerRef} inert={mobile && drawerOpen ? '' : undefined}>
                 <MobileBar>
-                    <MobileBarButton onClick={() => setDrawerOpen(true)}>
+                    <MobileBarButton ref={openerRef} aria-expanded={drawerOpen} aria-controls="curriculum-contents" onClick={() => setDrawerOpen(true)}>
                         <Menu size={15} />
                         Contents
                     </MobileBarButton>

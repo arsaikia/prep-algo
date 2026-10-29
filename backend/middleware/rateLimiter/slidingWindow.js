@@ -1,4 +1,5 @@
 import { getRedis } from '../../config/redis.js';
+import logger from '../../config/logger.js';
 
 const SLIDING_WINDOW_SCRIPT = `
 local key = KEYS[1]
@@ -26,6 +27,7 @@ end
 
 export function createSlidingWindowLimiter({ windowMs, max, keyPrefix }) {
   const inMemoryStore = new Map();
+  let lastWarning = 0;
 
   function cleanupInMemory() {
     const now = Date.now();
@@ -53,25 +55,32 @@ export function createSlidingWindowLimiter({ windowMs, max, keyPrefix }) {
           limited: result[0] === 1,
           remaining: result[1],
           resetMs: result[2],
+          backend: 'redis',
         };
       } catch (err) {
-        // Redis rate limit error — falling back to in-memory
+        if (Date.now() - lastWarning > 60000) {
+          lastWarning = Date.now();
+          logger.warn({ keyPrefix, code: err.code }, 'distributed rate limit unavailable; using per-instance fallback');
+        }
       }
     }
 
     const now = Date.now();
     const key = `${keyPrefix}:${identifier}`;
+    if (!inMemoryStore.has(key) && inMemoryStore.size >= 10000) {
+      return { limited: true, remaining: 0, resetMs: windowMs, backend: 'local_capacity' };
+    }
     let timestamps = inMemoryStore.get(key) || [];
     timestamps = timestamps.filter(t => t > now - windowMs);
 
     if (timestamps.length < max) {
       timestamps.push(now);
       inMemoryStore.set(key, timestamps);
-      return { limited: false, remaining: max - timestamps.length, resetMs: windowMs };
+      return { limited: false, remaining: max - timestamps.length, resetMs: windowMs, backend: 'local' };
     }
 
     const resetMs = timestamps[0] + windowMs - now;
-    return { limited: true, remaining: 0, resetMs };
+    return { limited: true, remaining: 0, resetMs, backend: 'local' };
   }
 
   return checkLimit;

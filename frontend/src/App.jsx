@@ -15,18 +15,17 @@ import styled from 'styled-components';
 
 import {
   getAllQuestionsWithoutHistory,
-  getQuestions,
   resetAuthState,
   fetchUserInfo,
 } from './actions/actions';
 import AllRoutes from './AllRoutes';
-import FullScreenLoader from './components/Loader/FullScreenLoader';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Container } from './styles';
 import { createTheme } from './theme';
 import useTheme from './hooks/useTheme';
 import { TestUserProvider } from './contexts/TestUserContext';
+import GoogleLoginModal from './components/Auth/GoogleLoginModal';
 
 // CodeSection is a modal that stays closed until the user asks to view code.
 // Loading it lazily keeps its syntax-highlighting dependency off the critical path.
@@ -83,16 +82,27 @@ function isImmersiveRoute(pathname) {
 // Wrapper component to access location
 function AppContent() {
   const location = useLocation();
-  // Pages that render their own loading state; the global spinner would
-  // double up. System Design's reader (/system-design/:slug) manages its own
-  // fetch too, so match the whole subtree rather than the index alone.
-  const isAllQuestionsPage = ['/all', '/questions', '/algorithms', '/frontend'].includes(location.pathname)
-    || location.pathname.startsWith('/system-design');
-  const isLoginPage = location.pathname === '/login';
+  const [signInOpen, setSignInOpen] = React.useState(false);
+  const signInIntent = React.useRef(null);
+  useEffect(() => {
+    signInIntent.current = null;
+    setSignInOpen(false);
+  }, [location.key]);
+  useEffect(() => {
+    const open = (event) => {
+      signInIntent.current = event.detail?.onSuccess || null;
+      setSignInOpen(true);
+    };
+    window.addEventListener('prep:sign-in', open);
+    window.addEventListener('prep:auth-expired', open);
+    return () => {
+      window.removeEventListener('prep:sign-in', open);
+      window.removeEventListener('prep:auth-expired', open);
+    };
+  }, []);
   const { isDarkModeEnabled, colorScheme } = useTheme();
 
   // Get states using useSelector ( state->reducerName )
-  const isFetchingQuestions = useSelector((state) => state.questions.isFetchingQuestions);
   // Mount the code modal only once something wants to show it, so its chunk is
   // never downloaded during an ordinary visit.
   const needsCodeModal = useSelector(
@@ -117,11 +127,6 @@ function AppContent() {
     };
   }, [isDarkModeEnabled, colorScheme]);
 
-  // Only show loading indicator if we're not on the AllQuestions page or Login page
-  if (isFetchingQuestions && !isAllQuestionsPage && !isLoginPage) {
-    return <FullScreenLoader show />;
-  }
-
   const currentTheme = createTheme(isDarkModeEnabled ? 'dark' : 'light', colorScheme);
   const immersive = isImmersiveRoute(location.pathname);
 
@@ -139,6 +144,15 @@ function AppContent() {
       <AppWrapper $immersive={immersive}>
         <MainContent $immersive={immersive}>
           <Navbar />
+          <GoogleLoginModal isOpen={signInOpen}
+            onClose={() => { signInIntent.current = null; setSignInOpen(false); }}
+            onAuthenticated={() => {
+              const intent = signInIntent.current;
+              signInIntent.current = null;
+              setSignInOpen(false);
+              if (intent) queueMicrotask(intent);
+            }}
+          />
           {immersive ? routes : (
             <Container width="calc(100% - 2rem)" padding="0 1rem">
               {routes}
@@ -154,11 +168,7 @@ function AppContent() {
 // QuestionsLoader component to handle initial data fetching
 function QuestionsLoader({ children }) {
   const dispatch = useDispatch();
-  const [cookies] = useCookies(['userId']);
-  const userIdInCookie = cookies.userId;
-  const userId = userIdInCookie || 'guest';
   const hasFetchedRef = React.useRef(false);
-  const hasFetchedUserRef = React.useRef(false);
 
   // Fetch questions immediately when this component mounts
   useEffect(() => {
@@ -168,13 +178,6 @@ function QuestionsLoader({ children }) {
       hasFetchedRef.current = true;
     }
   }, [dispatch]);
-
-  useEffect(() => {
-    if (userId !== 'guest' && !hasFetchedUserRef.current) {
-      dispatch(fetchUserInfo(userId));
-      hasFetchedUserRef.current = true;
-    }
-  }, [dispatch, userId]);
 
   return children;
 }
@@ -187,16 +190,27 @@ function App() {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const userIdInAuthStore = useSelector((state) => state.auth.userId);
   const userNameIdInAuthStore = useSelector((state) => state.auth.firstName);
-  const { isDarkModeEnabled } = useTheme();
   const authToken = useSelector((state) => state.auth.token);
 
-  const userIdInCookie = cookies.userId;
-  const userId = userIdInCookie || userIdInAuthStore || 'guest';
+  const userId = userIdInAuthStore || 'guest';
+  const authStatus = useSelector((state) => state.auth.status);
 
-  // Log feature flags on app startup
   useEffect(() => {
-    // Feature flags initialization (no logging)
-  }, []);
+    if (authStatus !== 'unknown') return;
+    if (cookies.userId && cookies.authToken) dispatch(fetchUserInfo(cookies.userId));
+    else dispatch({ type: 'AUTH_GUEST' });
+  }, [authStatus, cookies.userId, cookies.authToken, dispatch]);
+
+  useEffect(() => {
+    const expired = () => dispatch({ type: 'AUTH_EXPIRED' });
+    window.addEventListener('prep:auth-expired', expired);
+    return () => window.removeEventListener('prep:auth-expired', expired);
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (authStatus !== 'guest') return;
+    ['userId', 'name', 'authToken'].forEach((key) => removeCookie(key, { path: '/' }));
+  }, [authStatus, removeCookie]);
 
   // Set cookie when user logs in
   useEffect(() => {
@@ -207,7 +221,7 @@ function App() {
     // Set secure cookie options
     const cookieOptions = {
       path: '/',
-      secure: true, // Only send over HTTPS
+      secure: window.location.protocol === 'https:',
       sameSite: 'strict', // Prevent CSRF attacks
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
     };
@@ -223,25 +237,26 @@ function App() {
 
   // Check for session timeout
   useEffect(() => {
-    let sessionTimeout;
-
-    if (isAuthenticated) {
-      // Set session timeout to 30 minutes of inactivity
-      sessionTimeout = setTimeout(() => {
-        // Clear all auth cookies
-        removeCookie('userId');
-        removeCookie('name');
-        removeCookie('authToken');
-
-        // Dispatch reset auth action
-        dispatch(resetAuthState());
-      }, 30 * 60 * 1000); // 30 minutes
-    }
-
-    return () => {
-      if (sessionTimeout) {
-        clearTimeout(sessionTimeout);
+    if (!isAuthenticated) return undefined;
+    let lastActivity = Date.now();
+    const expire = () => {
+      ['userId', 'name', 'authToken'].forEach((key) => removeCookie(key, { path: '/' }));
+      dispatch(resetAuthState());
+    };
+    const activity = () => {
+      if (Date.now() - lastActivity >= 30 * 60 * 1000) expire();
+      else lastActivity = Date.now();
+    };
+    const events = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach((event) => window.addEventListener(event, activity, { passive: true, capture: true }));
+    const sessionTimeout = setInterval(() => {
+      if (Date.now() - lastActivity >= 30 * 60 * 1000) {
+        expire();
       }
+    }, 10000);
+    return () => {
+      clearInterval(sessionTimeout);
+      events.forEach((event) => window.removeEventListener(event, activity, true));
     };
   }, [isAuthenticated, removeCookie, dispatch]);
 

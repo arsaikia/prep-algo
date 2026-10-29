@@ -60,6 +60,7 @@ test('server catalog mirrors the public items and never carries answer keys', as
     const catalog = JSON.parse(raw);
     const manifest = await readJson(path.join(PUBLIC_OUT, 'manifest.json'));
     const index = await readJson(path.join(PUBLIC_OUT, manifest.index));
+    assert.equal(manifest.revision, catalog.revision, 'frontend and backend share a content release');
     assert.equal(catalog.count, catalog.items.length);
     assert.deepEqual(
         catalog.items.map((i) => i.slug),
@@ -69,6 +70,7 @@ test('server catalog mirrors the public items and never carries answer keys', as
 
     const byLegacyId = new Set();
     for (const item of catalog.items) {
+        assert.match(item.revision, /^[a-f0-9]{10}$/, 'each question binds display to grading content');
         assert.equal(typeof item.availableForSolve, 'boolean', `${item.slug}: availableForSolve`);
         // Example explanations are public; per-option explanations reveal
         // the answer, so quiz options may carry nothing beyond id and text.

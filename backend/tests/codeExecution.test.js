@@ -61,6 +61,16 @@ describe('runPythonCode: grading still works through the sandbox', () => {
         assert.equal(results.length, 2);
         assert.ok(results.every((r) => r.passed), JSON.stringify(results));
     });
+
+    it('cancels a disconnected request rather than grading or continuing its remaining cases', async () => {
+        const signal = AbortSignal.timeout(100);
+        await assert.rejects(runPythonCode(
+            'class Solution:\n    def twoSum(self, nums, target):\n        while True: pass',
+            [...TWO_SUM_CASE, ...TWO_SUM_CASE], TWO_SUM_TYPES, { signal },
+        ), error => error.name === 'TimeoutError');
+        const [result] = await runPythonCode(CORRECT, TWO_SUM_CASE, TWO_SUM_TYPES);
+        assert.equal(result.passed, true, 'cancelled execution releases admission');
+    });
 });
 
 describe('runPythonCode: hostile submissions', () => {

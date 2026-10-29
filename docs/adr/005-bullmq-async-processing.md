@@ -1,7 +1,13 @@
 # ADR 005: BullMQ Async Code Execution
 
 ## Status
-Accepted
+Deprecated — superseded by ADR-008.
+
+Grading now runs on the private executor VM. A colocated queue added a Redis hop
+and metered Upstash polling without isolation, so startup fails if
+`CODE_EXECUTION_QUEUE=bullmq` is set. `config/queue.js` and
+`workers/codeExecution.js` remain only behind that rejected flag and can be
+removed. The original decision is kept below for history.
 
 ## Context
 Code execution routes (`POST /execute/example`, `/execute/submit`) run user Python code synchronously via `child_process.spawn`, blocking the Express request handler for up to 5 seconds per test case. Under load, this saturates the event loop and limits throughput.

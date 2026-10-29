@@ -13,7 +13,8 @@ import {
     getAllQuestionsWithUserProgress
 } from '../controller/questionController.js';
 import { validate } from '../middleware/validate.js';
-import { submitMcqSchema } from '../schemas/code.js';
+import { gradeCodeSchema, submitMcqSchema } from '../schemas/code.js';
+import { codeExecutionLimiter } from '../middleware/rateLimiter/index.js';
 
 router.get('/', cacheMiddleware, getQuestions);
 
@@ -21,7 +22,7 @@ router.get('/get-questions/:userId', protect, requireSelf(), getAllQuestionsWith
 
 router.get('/:questionId', cacheMiddleware, getQuestionById);
 
-router.post('/:questionId/submit', protect, submitCode);
+router.post('/:questionId/submit', protect, codeExecutionLimiter, validate(gradeCodeSchema), submitCode);
 
 router.post('/:questionId/submit-mcq', protect, validate(submitMcqSchema), submitMcqAnswer);
 

@@ -11,11 +11,20 @@ const GroupContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.background};
 `;
 
-const GroupHeader = styled.div`
+const GroupHeader = styled.button`
+  width: 100%;
+  box-sizing: border-box;
+  gap: 8px;
+  border: none;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  &:focus-visible { outline: 2px solid ${({ theme }) => theme.colors.primary}; outline-offset: 2px; }
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
+  @media (max-width: 480px) { padding: 12px; }
   cursor: pointer;
   background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   transition: all 0.2s ease;
@@ -31,12 +40,15 @@ const GroupTitleSection = styled.div`
   align-items: center;
   gap: 12px;
   flex: 1;
+  min-width: 0;
+  @media (max-width: 480px) { gap: 6px; }
 `;
 
 const ExpandIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   color: ${({ theme }) => theme.colors.textSecondary};
   transition: transform 0.2s ease;
 `;
@@ -46,6 +58,8 @@ const GroupTitle = styled.h3`
   font-size: 1.3rem;
   font-weight: 600;
   color: ${({ theme }) => theme.colors.text};
+  overflow-wrap: anywhere;
+  @media (max-width: 480px) { font-size: 1.05rem; }
 `;
 
 const QuestionCount = styled.div`
@@ -54,6 +68,7 @@ const QuestionCount = styled.div`
   gap: 12px;
   font-size: 0.85rem;
   font-weight: 600;
+  flex-shrink: 0;
 `;
 
 const CombinedCountBadge = styled.div`
@@ -73,6 +88,7 @@ const CombinedCountBadge = styled.div`
   cursor: pointer;
   min-width: 80px;
   justify-content: center;
+  @media (max-width: 480px) { min-width: 44px; padding: 6px 10px; }
   
   &::before {
     content: '';
@@ -157,7 +173,7 @@ const QuestionsContainer = styled.div`
   margin-top: 8px;
 `;
 
-const QuestionGroup = ({ groupName, questions, isExpanded, onToggle }) => {
+const QuestionGroup = ({ groupName, questions, isExpanded, onToggle, progressAvailable = true }) => {
   const [showTooltip, setShowTooltip] = React.useState(false);
   const solvedCount = questions.filter(question => question.solved).length;
   const totalCount = questions.length;
@@ -165,7 +181,7 @@ const QuestionGroup = ({ groupName, questions, isExpanded, onToggle }) => {
 
   return (
     <GroupContainer>
-      <GroupHeader onClick={() => onToggle(groupName)}>
+      <GroupHeader aria-expanded={isExpanded} onClick={() => onToggle(groupName)}>
         <GroupTitleSection>
           <ExpandIcon>
             {isExpanded ? (
@@ -182,13 +198,12 @@ const QuestionGroup = ({ groupName, questions, isExpanded, onToggle }) => {
             onMouseLeave={() => setShowTooltip(false)}
           >
             <CountContent>
-              <CountDisplay show={!showTooltip}>
-                <SolvedNumber>{solvedCount}</SolvedNumber>
-                <Separator>/</Separator>
+              <CountDisplay show={!showTooltip} aria-hidden={showTooltip}>
+                {progressAvailable && <><SolvedNumber>{solvedCount}</SolvedNumber><Separator>/</Separator></>}
                 <TotalNumber>{totalCount}</TotalNumber>
               </CountDisplay>
-              <PercentageDisplay show={showTooltip}>
-                {completionPercentage}%
+              <PercentageDisplay show={showTooltip} aria-hidden={!showTooltip}>
+                {progressAvailable ? `${completionPercentage}%` : `${totalCount} questions`}
               </PercentageDisplay>
             </CountContent>
           </CombinedCountBadge>

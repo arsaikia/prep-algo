@@ -18,7 +18,7 @@ const MetricCard = ({
             )}
 
             <Content mobile={mobile}>
-                {value && (
+                {value !== null && value !== undefined && (
                     <Value
                         mobile={mobile}
                         className={valueClass}

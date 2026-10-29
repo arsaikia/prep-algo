@@ -1,136 +1,25 @@
 import NodeCache from 'node-cache';
-import { getRedis } from '../config/redis.js';
+import logger from '../config/logger.js';
 
-const localCache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
+// Only immutable-in-this-process public catalog routes use this cache.
+// Redis adds no consistency benefit for content already bundled in each revision.
+const cache = new NodeCache({ stdTTL: 300, checkperiod: 60, maxKeys: 500, useClones: false });
 
-const TTL_CONFIG = {
-  questions: 86400,
-  recommendations: 300,
-  user: 1800,
-  default: 3600,
-};
-
-// Redis outlives deploys, and the catalog ships inside the image. Keying by
-// revision stops a new build from serving the previous build's bodies; old
-// namespaces age out on their TTL.
-const CACHE_VERSION = process.env.K_REVISION || 'local';
-const CACHE_PREFIX = `prepalgo:cache:${CACHE_VERSION}:`;
-const LOCK_PREFIX = `prepalgo:lock:${CACHE_VERSION}:`;
-const LOCK_TTL_MS = 5000;
-
-function getTTL(url) {
-  if (url.includes('/questions')) return TTL_CONFIG.questions;
-  if (url.includes('/recommendations') || url.includes('/smart-recommendations')) return TTL_CONFIG.recommendations;
-  if (url.includes('/authentication/user/')) return TTL_CONFIG.user;
-  return TTL_CONFIG.default;
-}
-
-async function getFromRedis(key) {
-  const redis = getRedis();
-  if (!redis) return null;
-  try {
-    return await redis.get(key);
-  } catch {
-    return null;
-  }
-}
-
-async function setInRedis(key, value, ttlSeconds) {
-  const redis = getRedis();
-  if (!redis) return;
-  try {
-    await redis.set(key, value, 'EX', ttlSeconds);
-  } catch (err) {
-    // Redis cache set failed — silent fallback to local cache
-  }
-}
-
-async function acquireLock(key) {
-  const redis = getRedis();
-  if (!redis) return true;
-  try {
-    const result = await redis.set(key, '1', 'PX', LOCK_TTL_MS, 'NX');
-    return result === 'OK';
-  } catch {
-    return true;
-  }
-}
-
-async function releaseLock(key) {
-  const redis = getRedis();
-  if (!redis) return;
-  try {
-    await redis.del(key);
-  } catch {}
-}
-
-const cacheMiddleware = (req, res, next) => {
-  if (req.method !== 'GET') return next();
-
-  const cacheKey = `${CACHE_PREFIX}${req.originalUrl || req.url}`;
-  const lockKey = `${LOCK_PREFIX}${req.originalUrl || req.url}`;
-  const ttl = getTTL(req.originalUrl);
-
-  (async () => {
-    const redisValue = await getFromRedis(cacheKey);
-    if (redisValue) {
-      return res.status(200).type('json').send(redisValue);
-    }
-
-    const localValue = localCache.get(cacheKey);
-    if (localValue) {
-      return res.status(200).type('json').send(localValue);
-    }
-
-    const gotLock = await acquireLock(lockKey);
-    if (!gotLock) {
-      await new Promise(r => setTimeout(r, 100));
-      const retryValue = await getFromRedis(cacheKey);
-      if (retryValue) {
-        return res.status(200).type('json').send(retryValue);
-      }
-    }
-
-    const originalSend = res.send;
+export default function cacheMiddleware(req, res, next) {
+    if (req.method !== 'GET' || req.headers.authorization) return next();
+    const key = req.originalUrl || req.url;
+    const value = cache.get(key);
+    if (value !== undefined) return res.status(200).type('json').send(value);
+    const send = res.send;
     res.send = function (body) {
-      if (res.statusCode === 200) {
-        localCache.set(cacheKey, body, Math.min(ttl, 300));
-        setInRedis(cacheKey, typeof body === 'string' ? body : JSON.stringify(body), ttl);
-        releaseLock(lockKey);
-      }
-      originalSend.call(this, body);
+        if (res.statusCode === 200) {
+            try {
+                cache.set(key, body);
+            } catch (error) {
+                logger.warn({ code: error.errorcode }, 'public content cache capacity reached');
+            }
+        }
+        return send.call(this, body);
     };
-
-    next();
-  })();
-};
-
-export async function invalidateCache(pattern) {
-  const localKeys = localCache.keys();
-  for (const key of localKeys) {
-    if (key.includes(pattern)) {
-      localCache.del(key);
-    }
-  }
-
-  const redis = getRedis();
-  if (redis) {
-    try {
-      const keys = await redis.keys(`${CACHE_PREFIX}*${pattern}*`);
-      if (keys.length > 0) {
-        await redis.del(...keys);
-      }
-    } catch (err) {
-      // Redis cache invalidation failed — local cache already cleared
-    }
-  }
+    return next();
 }
-
-export async function invalidateUserCache(userId) {
-  await invalidateCache(`/recommendations/${userId}`);
-  await invalidateCache(`/smart-recommendations/${userId}`);
-  await invalidateCache(`/solveHistory/${userId}`);
-  await invalidateCache(`/get-questions/${userId}`);
-}
-
-export default cacheMiddleware;

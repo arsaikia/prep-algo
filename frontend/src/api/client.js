@@ -7,7 +7,8 @@ const apiClient = axios.create({
 
 function getAuthToken() {
   const match = document.cookie.match(/(?:^|;\s*)authToken=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : null;
+  try { return match ? decodeURIComponent(match[1]) : null; }
+  catch { return null; }
 }
 
 apiClient.interceptors.request.use((config) => {
@@ -21,11 +22,14 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const token = getAuthToken();
+    const requestToken = error.config?.headers?.Authorization || null;
+    const sameSession = requestToken === (token ? `Bearer ${token}` : null);
+    if (error.response?.status === 401 && sameSession && !error.config?.url?.endsWith('/authentication/google')) {
       document.cookie = 'authToken=; path=/; max-age=0';
       document.cookie = 'userId=; path=/; max-age=0';
       document.cookie = 'name=; path=/; max-age=0';
-      window.location.href = '/login';
+      window.dispatchEvent(new Event('prep:auth-expired'));
     }
     return Promise.reject(error);
   }

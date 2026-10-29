@@ -49,9 +49,11 @@ export function buildCurriculum(items) {
  */
 export default function useCurriculum() {
     const [state, setState] = useState({ status: 'loading', modules: [] });
+    const [attempt, setAttempt] = useState(0);
 
     useEffect(() => {
         let cancelled = false;
+        setState({ status: 'loading', modules: [] });
 
         loadIndex()
             .then((index) => {
@@ -63,7 +65,7 @@ export default function useCurriculum() {
             });
 
         return () => { cancelled = true; };
-    }, []);
+    }, [attempt]);
 
-    return state;
+    return { ...state, retry: () => setAttempt((value) => value + 1) };
 }

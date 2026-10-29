@@ -1,0 +1,5 @@
+*.test.mjs
+deploy.sh
+node_modules/
+README.md
+maintenance.mjs

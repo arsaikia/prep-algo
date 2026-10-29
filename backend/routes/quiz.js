@@ -1,5 +1,5 @@
 import express from 'express';
-import { gradeQuiz } from '../utils/contentStore.js';
+import { gradeQuiz, getItemBySlug, assertContentRevision } from '../utils/contentStore.js';
 
 const router = express.Router();
 
@@ -11,9 +11,14 @@ const router = express.Router();
  * unreadable to a guest. Nothing is written here — recording that a user
  * answered correctly is a separate, authenticated progress call.
  */
-router.post('/:slug/grade', (req, res) => {
+router.post('/:slug/grade', (req, res, next) => {
     const { slug } = req.params;
     const { selectedOptionId } = req.body || {};
+    try {
+        assertContentRevision(getItemBySlug(slug), req.body?.contentRevision);
+    } catch (error) {
+        return next(error);
+    }
 
     if (typeof selectedOptionId !== 'string' || !selectedOptionId) {
         return res.status(400).json({

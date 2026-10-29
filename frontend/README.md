@@ -1,139 +1,46 @@
 # PrepAlgo Frontend
 
-Your personalized coding practice recommendations platform.
+React 18 + Vite single-page app, deployed to Firebase Hosting.
 
-## Development Features
-
-### God Mode 🔑
-
-God Mode enables test features and developer tools for testing and debugging purposes.
-
-#### How to Enable God Mode
-
-**Method 1: Navbar Button**
-- Look for the "Dev Mode" button in the navbar
-- Click it to enable God Mode (will reload the page)
-
-**Method 2: Browser Console**
-```javascript
-// Enable God Mode
-document.cookie = "isGodMode=1; path=/";
-window.location.reload();
-
-// Disable God Mode  
-document.cookie = "isGodMode=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-window.location.reload();
-```
-
-**Method 3: Environment Variable**
-```bash
-REACT_APP_ENABLE_TEST_FEATURES=true npm start
-```
-
-#### God Mode Features
-
-When God Mode is enabled, you get access to:
-
-- **Test User Selector**: Switch between different test users to see various completion scenarios
-- **Debug Logging**: Enhanced console logging for development
-- **Performance Metrics**: Additional performance monitoring (when configured)
-- **Experimental Features**: Access to beta features
-
-#### Test Users Available
-
-- `test-alice-beginner-001` - Low completion, mostly easy questions
-- `test-bob-intermediate-002` - Medium completion, mixed difficulties  
-- `test-carol-advanced-003` - High completion, comprehensive coverage
-- `test-david-specialized-004` - Uneven completion across topics
-- `test-emma-struggling-005` - High retry counts, struggling patterns
-- `test-user-123` - Original test user with comprehensive history
-
-## Getting Started
+## Development
 
 ```bash
-npm install
-npm start
+npm ci
+cp .env.example .env
+npm run dev          # http://localhost:5173
 ```
 
-The app will be available at `http://localhost:3000`.
+Vite proxies `/api/v1` to `http://localhost:5000`, so run the backend with
+`PORT=5000`. Questions and articles are compiled from the repository's
+`content/` directory; run `npm run build:content` at the repository root first.
 
-## Environment Variables
+| Script | Purpose |
+| --- | --- |
+| `dev` / `start` | Vite dev server |
+| `build` | Production build to `build/` |
+| `preview` | Serve the production build locally |
+| `lint`, `lint:fix` | ESLint over `src/` |
+| `test:regression` | Node regression tests in `tests/` |
+| `clean` | Remove `build/` |
 
-Create a `.env` file in the frontend root:
+## Environment
 
-```env
-REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id
-REACT_APP_API_BASE_URI=http://localhost:5005/api/v1
-REACT_APP_ENABLE_TEST_FEATURES=false
+| Variable | Purpose |
+| --- | --- |
+| `VITE_API_BASE_URI` | API base, e.g. `http://localhost:5000/api/v1` |
+| `VITE_GOOGLE_CLIENT_ID` | Google OAuth client; the page origin must be an authorized JavaScript origin |
+| `VITE_CONTENT_SOURCE` | `cdn` (default, static compiled content) or `api` (legacy fallback) |
+
+Release builds get `frontend/.env.production` from `deploy-to-firebase.sh`; see
+[DEPLOYMENT_README.md](../DEPLOYMENT_README.md).
+
+## Dev mode
+
+A `devMode=1` cookie (`src/utils/featureFlags.js`) enables the test-user
+selector, debug logging, performance metrics and experimental features. It is a
+client-side UI switch, not an authorization mechanism; the API enforces access.
+
+```js
+document.cookie = 'devMode=1; path=/'; location.reload();                                   // on
+document.cookie = 'devMode=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'; location.reload(); // off
 ```
-
-# Getting Started with Create React App
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

@@ -95,7 +95,7 @@ const Footer = () => {
             <FooterContent>
                 <Copyright>
                     <span>© {currentYear}</span>
-                    <span className="brand">RemindMe</span>
+                    <span className="brand">PrepAlgo</span>
                     <span>• All rights reserved</span>
                 </Copyright>
 

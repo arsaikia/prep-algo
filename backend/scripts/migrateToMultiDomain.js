@@ -1,3 +1,4 @@
+import './retiredMongoScript.js';
 import mongoose from 'mongoose';
 import { readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';

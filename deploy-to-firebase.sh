@@ -4,6 +4,7 @@
 # This script builds and deploys the React frontend to Firebase Hosting
 
 set -e  # Exit on any error
+cd "$(dirname "$0")"
 
 # Colors for output
 RED='\033[0;31m'
@@ -93,21 +94,15 @@ EOF
 
 # Function to clean previous build
 clean_build() {
-    print_status "Cleaning previous build..."
-    
-    if [ -d "$BUILD_DIR" ]; then
-        rm -rf "$BUILD_DIR"
-        print_success "Cleaned previous build directory"
-    else
-        print_status "No previous build directory found"
-    fi
+    print_status "Restoring previously published hashed artifacts for open tabs..."
+    node scripts/hosting/prepare.mjs --restore "https://$PROJECT_NAME.web.app"
 }
 
 # Function to install dependencies
 install_dependencies() {
     # The content build runs from the root package, which provides zod.
-    print_status "Installing root dependencies..."
-    npm install
+    print_status "Checking root dependencies..."
+    if [ ! -d node_modules ]; then npm install; fi
 
     print_status "Installing frontend dependencies..."
     
@@ -118,9 +113,7 @@ install_dependencies() {
         npm install
         print_success "Dependencies installed"
     else
-        print_status "Checking for dependency updates..."
-        npm install
-        print_success "Dependencies up to date"
+        print_success "Using installed dependencies"
     fi
     
     cd ..
@@ -157,6 +150,7 @@ build_application() {
     print_status "Build size: $BUILD_SIZE"
     
     cd ..
+    node scripts/hosting/prepare.mjs
 }
 
 # Function to test the build
@@ -181,7 +175,15 @@ deploy_to_firebase() {
     print_status "Deploying to Firebase Hosting..."
     
     # Deploy to Firebase
-    firebase deploy --only hosting --project "$PROJECT_NAME"
+    local backend_health="${API_URI%/api/v1}/health"
+    curl --fail --silent --show-error --max-time 60 "$backend_health" \
+      | node --input-type=module -e '
+        import {readFileSync} from "node:fs";
+        const expected=JSON.parse(readFileSync("frontend/build/content/manifest.json")).revision;
+        let body="";for await(const chunk of process.stdin)body+=chunk;
+        if(JSON.parse(body).release?.content!==expected)throw new Error("Backend content differs: promote the tested matching backend before frontend publication");
+      '
+    firebase deploy --only hosting --project "$PROJECT_NAME" --config firebase.generated.json
     
     if [ $? -eq 0 ]; then
         print_success "Deployment successful!"

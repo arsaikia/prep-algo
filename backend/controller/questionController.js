@@ -1,11 +1,13 @@
 import asyncHandler from '../middleware/async.js';
 import ErrorResponse from '../utils/errorResponse.js';
-import SolveHistory from '../models/SolveHistory.js';
+import { randomUUID } from 'node:crypto';
+import { findSubmission, listProgress, recordAttempt, submissionHash } from '../repositories/progress.js';
 import { runPythonCode } from '../utils/codeExecution.js';
 import logger from '../config/logger.js';
-import { invalidateUserCache } from '../middleware/cache.js';
+import { requestExecutionSignal } from '../utils/executionBudget.js';
 import {
     answerFormatFor,
+    assertContentRevision,
     getGradingSpec,
     getHiddenTestCaseCount,
     getItemByLegacyId,
@@ -41,6 +43,7 @@ function toListRow(item) {
         name: item.title,
         link: item.link || item.slug,
         slug: item.slug,
+        revision: item.revision,
         type: item.type,
         group: item.group,
         difficulty: item.difficulty ?? null,
@@ -96,6 +99,7 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
     const response = {
         id: item.legacyId ?? null,
         slug: item.slug,
+        revision: item.revision,
         type: item.type,
         title: item.title,
         description: item.description || item.summary || 'No description available',
@@ -129,66 +133,32 @@ const getQuestionById = asyncHandler(async (req, res, next) => {
     return res.status(200).json(response);
 });
 
-/**
- * Records a passing submission against the user's solve history.
- *
- * Until now nothing in the product ever wrote a solve: the frontend had a
- * `MARK_QUESTION_AS_DONE` action and a saga behind it, but no component ever
- * dispatched either, so a correct solution produced a score and then vanished.
- * Recording it here rather than in the client keeps the write next to the
- * grading that justifies it, so progress cannot disagree with the result the
- * user was just shown.
- *
- * Bookkeeping must never fail the submission. The user's code ran and passed;
- * reporting that is the endpoint's actual contract, so a write failure is
- * logged and surfaced as `progressSaved: false` instead of thrown.
- *
- * Returns whether the solve was durably recorded.
- */
-const recordSolvedQuestion = async (user, item) => {
-    const userId = user?._id || user?.id;
-    // Progress is joined on the item's legacy id; the content build requires
-    // one on every problem and quiz, so a miss here is a content bug.
-    if (!userId || !item?.legacyId) return false;
-    const questionId = String(item.legacyId);
-
+async function saveGradedSubmission(req, item, key, hash, success, result) {
+    let saved;
     try {
-        const now = new Date();
-        await SolveHistory.findOneAndUpdate(
-            { userId: String(userId), questionId },
-            {
-                // `solveCount` is required, so the insert has to establish it.
-                // $inc does both jobs: 1 on insert, +1 on every re-solve.
-                $inc: { solveCount: 1 },
-                $set: {
-                    lastUpdatedAt: now,
-                    domain: item.domain || 'algorithms',
-                    questionGroup: item.group,
-                    questionDifficulty: item.difficulty,
-                },
-                $push: { solveHistory: { solvedAt: now, success: true } },
-                $setOnInsert: { firstSolvedAt: now },
-            },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
-
-        // /progress is cached per user; without this the badge the user just
-        // earned would not appear until the cache expired.
-        await invalidateUserCache(String(userId));
-        return true;
+        saved = await recordAttempt({
+            userId: String(req.user._id),
+            contentId: String(item.legacyId || item.slug),
+            submissionKey: key,
+            requestHash: hash,
+            success,
+            result,
+            timeSpent: req.body.timeTaken ?? null,
+        });
     } catch (error) {
-        logger.error({ err: error, questionId }, 'failed to record solve');
-        return false;
+        if (error.statusCode === 409) throw error;
+        logger.error({ code: error.code, questionId: item.slug }, 'failed to persist graded submission');
+        return { ...result, attemptSaved: false, progressSaved: false };
     }
-};
+    return saved;
+}
 
 /*
  * @desc     Submit code for a question and validate against test cases
  * @route    POST /api/v1/questions/:questionId/submit
  * @access   Private (mounted behind `protect`)
  */
-const submitCode = async (req, res) => {
-    try {
+const submitCode = asyncHandler(async (req, res) => {
         const { questionId } = req.params;
         const { code } = req.body;
 
@@ -200,6 +170,13 @@ const submitCode = async (req, res) => {
         if (!item || item.type !== 'problem') {
             return res.status(404).json({ error: 'Question not found' });
         }
+        const key = req.body.submissionId || randomUUID();
+        const hash = submissionHash(item.legacyId || item.slug, {
+            code, timeTaken: req.body.timeTaken ?? null, contentRevision: req.body.contentRevision ?? null,
+        });
+        const previous = await findSubmission(String(req.user._id), key, String(item.legacyId || item.slug), hash);
+        if (previous) return res.json(previous);
+        assertContentRevision(item, req.body.contentRevision);
 
         // Grade against the built content bundle, never against anything the
         // client sent. `content/` is the source of truth; the database only
@@ -211,32 +188,25 @@ const submitCode = async (req, res) => {
             return res.status(400).json({ error: 'No test cases available for this question' });
         }
 
-        const results = await runPythonCode(code, spec.testCases, spec.types);
+        const results = await runPythonCode(code, spec.testCases, spec.types, {
+            signal: requestExecutionSignal(req, res),
+        });
 
         const passedTests = results.filter(r => r.passed).length;
         const totalTests = results.length;
         const score = totalTests > 0 ? (passedTests / totalTests) * 100 : 0;
 
         const solved = totalTests > 0 && passedTests === totalTests;
-        const progressSaved = solved ? await recordSolvedQuestion(req.user, item) : false;
-
-        res.json({
+        const result = {
             results: redactHiddenResults(results, spec.testCases),
             score,
             passedTests,
             totalTests,
             solved,
-            progressSaved,
             questionId: String(item.legacyId)
-        });
-    } catch (error) {
-        logger.error({ err: error }, 'error in submitCode');
-        res.status(500).json({
-            error: 'Failed to execute code',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-};
+        };
+        res.json(await saveGradedSubmission(req, item, key, hash, solved, result));
+});
 
 /*
  * @desc     Grade a multiple-choice answer and record a correct one
@@ -255,23 +225,28 @@ const submitMcqAnswer = asyncHandler(async (req, res, next) => {
     const item = getItemBySlug(questionId) || getItemByLegacyId(questionId);
     if (!item) return next(new ErrorResponse('Question not found', 404));
     if (item.type !== 'quiz') return next(new ErrorResponse('Not an MCQ question', 400));
+    const key = req.body.submissionId || randomUUID();
+    const hash = submissionHash(item.legacyId || item.slug, {
+        selectedOptionId, timeTaken: req.body.timeTaken ?? null, contentRevision: req.body.contentRevision ?? null,
+    });
+    const previous = await findSubmission(String(req.user._id), key, String(item.legacyId || item.slug), hash);
+    if (previous) return res.status(200).json({ success: true, data: previous });
+    assertContentRevision(item, req.body.contentRevision);
 
     const graded = gradeQuiz(item.slug, selectedOptionId);
     if (!graded) return next(new ErrorResponse('Question not found', 404));
     if (!graded.selectedOptionId) return next(new ErrorResponse('Invalid option', 400));
 
-    const progressSaved = graded.passed ? await recordSolvedQuestion(req.user, item) : false;
     const correct = graded.explanations.find(e => e.isCorrect);
-
+    const result = await saveGradedSubmission(req, item, key, hash, graded.passed, {
+        ...graded,
+        correct: graded.passed,
+        explanation: correct?.explanation || '',
+        questionId: String(item.legacyId || item.slug),
+    });
     res.status(200).json({
         success: true,
-        data: {
-            ...graded,
-            correct: graded.passed,
-            explanation: correct?.explanation || '',
-            progressSaved,
-            questionId: String(item.legacyId)
-        }
+        data: result,
     });
 });
 
@@ -286,8 +261,7 @@ const getAllQuestionsWithUserProgress = asyncHandler(async (req, res, next) => {
     try {
         const items = listableItems(req.query.domain);
 
-        const solveHistory = await SolveHistory.find({ userId })
-            .select('questionId solveCount lastUpdatedAt firstSolvedAt');
+        const solveHistory = await listProgress(userId);
 
         const solvedQuestionsMap = {};
         solveHistory.forEach(history => {

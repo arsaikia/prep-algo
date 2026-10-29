@@ -1,287 +1,214 @@
-import mongoose from 'mongoose';
 import { v4 as UUID_V4 } from 'uuid';
+import { findProfile, saveProfile } from '../repositories/profileRepository.js';
+import { withTransaction } from '../config/postgres.js';
 
-const userProfileSchema = new mongoose.Schema({
-    _id: { type: String, default: UUID_V4 },
-    userId: {
-        type: String,
-        ref: 'User',
-        required: true,
-        unique: true,
-        index: true
-    },
-
-    // Learning Velocity Tracking (Phase 1 - Basic)
-    learningVelocity: {
-        questionsPerWeek: { type: Number, default: 0 },
-        lastWeekCount: { type: Number, default: 0 },
-        improvementTrend: { type: String, enum: ['improving', 'stable', 'declining'], default: 'stable' },
-        weeklyHistory: [{
-            weekStartDate: Date,
-            questionsCompleted: Number,
-            averageSuccessRate: Number
-        }]
-    },
-
-    // Time-based Learning Preferences (Phase 1)
-    timePreferences: {
-        morningPerformance: {
-            averageSuccessRate: { type: Number, default: 0.5 },
-            averageTimePerQuestion: { type: Number, default: 15 },
-            sessionCount: { type: Number, default: 0 }
-        },
-        afternoonPerformance: {
-            averageSuccessRate: { type: Number, default: 0.5 },
-            averageTimePerQuestion: { type: Number, default: 15 },
-            sessionCount: { type: Number, default: 0 }
-        },
-        eveningPerformance: {
-            averageSuccessRate: { type: Number, default: 0.5 },
-            averageTimePerQuestion: { type: Number, default: 15 },
-            sessionCount: { type: Number, default: 0 }
-        },
-        optimalTimeOfDay: { type: String, enum: ['morning', 'afternoon', 'evening'], default: 'morning' }
-    },
-
-    // Adaptive Strategy Weights (Phase 1 - Core Feature)
-    adaptiveWeights: {
-        weak_area_reinforcement: { type: Number, default: 0.4, min: 0.1, max: 0.7 },
-        progressive_difficulty: { type: Number, default: 0.3, min: 0.1, max: 0.6 },
-        spaced_repetition: { type: Number, default: 0.2, min: 0.1, max: 0.5 },
-        topic_exploration: { type: Number, default: 0.07, min: 0.05, max: 0.2 },
-        general_practice: { type: Number, default: 0.03, min: 0.02, max: 0.1 },
-
-        // Track weight adjustment history
-        adjustmentHistory: [{
-            date: { type: Date, default: Date.now },
-            previousWeights: {
-                weak_area_reinforcement: Number,
-                progressive_difficulty: Number,
-                spaced_repetition: Number,
-                topic_exploration: Number,
-                general_practice: Number
-            },
-            reason: { type: String, enum: ['poor_performance', 'good_performance', 'user_preference', 'plateau_detected'] },
-            performanceScore: Number // 0-1 scale of how well previous weights worked
-        }]
-    },
-
-    // Recent Performance Tracking (Phase 1)
-    recentPerformance: {
-        last10Questions: [{
-            questionId: String,
-            success: Boolean,
-            timeSpent: Number,
-            difficulty: String,
-            domain: { type: String, default: 'algorithms' },
-            solvedAt: Date,
-            strategy: String
-        }],
-        currentStreak: {
-            type: { type: String, enum: ['success', 'failure'], default: 'success' },
-            count: { type: Number, default: 0 },
-            startDate: Date
-        },
-        recentSuccessRate: { type: Number, default: 0.5 }, // Last 10 questions
-        performanceTrend: { type: String, enum: ['improving', 'stable', 'declining'], default: 'stable' }
-    },
-
-    // Session Context Tracking (Phase 1)
-    sessionPatterns: {
-        averageSessionLength: { type: Number, default: 30 }, // minutes
-        questionsPerSession: { type: Number, default: 3 },
-        optimalBatchSize: { type: Number, default: 3 }, // questions before taking a break
-        lastSessionDate: Date,
-        sessionFrequency: { type: Number, default: 3 } // sessions per week
-    },
-
-    // Domain Preferences (Phase 3)
-    domainPreferences: {
-        algorithms: {
-            weight: { type: Number, default: 0.6 },
-            questionsCompleted: { type: Number, default: 0 },
-            lastPracticed: Date
-        },
-        system_design: {
-            weight: { type: Number, default: 0.2 },
-            questionsCompleted: { type: Number, default: 0 },
-            lastPracticed: Date
-        },
-        frontend: {
-            weight: { type: Number, default: 0.2 },
-            questionsCompleted: { type: Number, default: 0 },
-            lastPracticed: Date
-        }
-    },
-
-    // Adaptation Metadata
-    adaptationMetadata: {
-        lastAnalyzed: { type: Date, default: Date.now },
-        lastWeightAdjustment: Date,
-        adaptationEnabled: { type: Boolean, default: true },
-        dataQuality: {
-            hasSufficientData: { type: Boolean, default: false }, // At least 20 questions solved
-            lastQualityCheck: Date
-        },
-        version: { type: String, default: '1.0' }
-    },
-
-    // Quick access computed fields (updated by background job)
-    computedMetrics: {
-        overallSuccessRate: { type: Number, default: 0.5 },
-        averageTimePerQuestion: { type: Number, default: 15 },
-        strongestTimeOfDay: String,
-        weakestTopics: [String],
-        readyForAdvancement: { type: Boolean, default: false }
-    }
-}, {
-    timestamps: true
-});
-
-// Compound indexes for performance
-userProfileSchema.index({ userId: 1 });
-userProfileSchema.index({ 'adaptationMetadata.lastAnalyzed': -1 });
-userProfileSchema.index({ 'learningVelocity.questionsPerWeek': -1 });
-userProfileSchema.index({ 'adaptationMetadata.dataQuality.hasSufficientData': 1 });
-
-// Instance methods
-userProfileSchema.methods.updateRecentPerformance = function (questionResult) {
-    // Add to last10Questions array
-    this.recentPerformance.last10Questions.push({
-        questionId: questionResult.questionId,
-        success: questionResult.success,
-        timeSpent: questionResult.timeSpent,
-        difficulty: questionResult.difficulty,
-        solvedAt: new Date(),
-        strategy: questionResult.strategy
-    });
-
-    // Keep only last 10
-    if (this.recentPerformance.last10Questions.length > 10) {
-        this.recentPerformance.last10Questions.shift();
-    }
-
-    // Update success rate
-    const successCount = this.recentPerformance.last10Questions.filter(q => q.success).length;
-    this.recentPerformance.recentSuccessRate = successCount / this.recentPerformance.last10Questions.length;
-
-    // Update streak
-    if (questionResult.success) {
-        if (this.recentPerformance.currentStreak.type === 'success') {
-            this.recentPerformance.currentStreak.count++;
-        } else {
-            this.recentPerformance.currentStreak = {
-                type: 'success',
-                count: 1,
-                startDate: new Date()
-            };
-        }
-    } else {
-        if (this.recentPerformance.currentStreak.type === 'failure') {
-            this.recentPerformance.currentStreak.count++;
-        } else {
-            this.recentPerformance.currentStreak = {
-                type: 'failure',
-                count: 1,
-                startDate: new Date()
-            };
-        }
-    }
+const DEFAULT_WEIGHTS = {
+    weak_area_reinforcement: 0.4,
+    progressive_difficulty: 0.3,
+    spaced_repetition: 0.2,
+    topic_exploration: 0.07,
+    general_practice: 0.03
 };
 
-userProfileSchema.methods.getAdaptiveWeights = function () {
-    // If not enough data, use defaults
-    if (!this.adaptationMetadata.dataQuality.hasSufficientData) {
-        return {
-            weak_area_reinforcement: 0.4,
-            progressive_difficulty: 0.3,
-            spaced_repetition: 0.2,
-            topic_exploration: 0.07,
-            general_practice: 0.03
-        };
-    }
+const dateFields = new Set([
+    'createdAt', 'updatedAt', 'weekStartDate', 'date', 'solvedAt', 'startDate',
+    'lastSessionDate', 'lastPracticed', 'lastAnalyzed', 'lastWeightAdjustment',
+    'lastQualityCheck'
+]);
 
+function hydrateDates(value) {
+    if (Array.isArray(value)) return value.map(hydrateDates);
+    if (!value || typeof value !== 'object' || value instanceof Date) return value;
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [
+        key, dateFields.has(key) && child ? new Date(child) : hydrateDates(child)
+    ]));
+}
+
+function mergeDefaults(defaults, value = {}) {
+    const result = { ...defaults, ...value };
+    for (const [key, child] of Object.entries(defaults)) {
+        if (child && typeof child === 'object' && !Array.isArray(child) && !(child instanceof Date)) {
+            result[key] = mergeDefaults(child, value?.[key] || {});
+        }
+    }
+    return result;
+}
+
+function defaults() {
+    const performance = () => ({ averageSuccessRate: 0.5, averageTimePerQuestion: 15, sessionCount: 0 });
     return {
-        weak_area_reinforcement: this.adaptiveWeights.weak_area_reinforcement,
-        progressive_difficulty: this.adaptiveWeights.progressive_difficulty,
-        spaced_repetition: this.adaptiveWeights.spaced_repetition,
-        topic_exploration: this.adaptiveWeights.topic_exploration,
-        general_practice: this.adaptiveWeights.general_practice
-    };
-};
-
-userProfileSchema.methods.shouldAdjustWeights = function () {
-    // Don't adjust if not enough data
-    if (!this.adaptationMetadata.dataQuality.hasSufficientData) {
-        return false;
-    }
-
-    // Don't adjust too frequently (at least 1 week between adjustments)
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    if (this.adaptationMetadata.lastWeightAdjustment &&
-        this.adaptationMetadata.lastWeightAdjustment > oneWeekAgo) {
-        return false;
-    }
-
-    // Adjust if performance is poor (< 40% success rate) or very good (> 80%)
-    const successRate = this.recentPerformance.recentSuccessRate;
-    return successRate < 0.4 || successRate > 0.8;
-};
-
-// Static methods
-userProfileSchema.statics.findByUserId = function (userId) {
-    return this.findOne({ userId });
-};
-
-userProfileSchema.statics.createFromSolveHistory = async function (userId, solveHistory) {
-    // Calculate initial metrics from existing solve history
-    const totalQuestions = solveHistory.length;
-    const recentQuestions = solveHistory
-        .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt))
-        .slice(0, 10);
-
-    const successRate = recentQuestions.length > 0 ?
-        recentQuestions.filter(q => q.solveCount === 1).length / recentQuestions.length : 0.5;
-
-    const avgTime = recentQuestions.length > 0 ?
-        recentQuestions.reduce((sum, q) => sum + (q.averageTimeToSolve || 15), 0) / recentQuestions.length : 15;
-
-    // Calculate weekly velocity
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const recentWeekQuestions = solveHistory.filter(q =>
-        new Date(q.lastUpdatedAt) > oneWeekAgo
-    ).length;
-
-    const profile = new this({
-        userId,
-        learningVelocity: {
-            questionsPerWeek: recentWeekQuestions,
-            lastWeekCount: recentWeekQuestions
+        _id: UUID_V4(),
+        learningVelocity: { questionsPerWeek: 0, lastWeekCount: 0, improvementTrend: 'stable', weeklyHistory: [] },
+        timePreferences: {
+            morningPerformance: performance(), afternoonPerformance: performance(),
+            eveningPerformance: performance(), optimalTimeOfDay: 'morning'
         },
+        adaptiveWeights: { ...DEFAULT_WEIGHTS, adjustmentHistory: [] },
         recentPerformance: {
-            recentSuccessRate: successRate,
-            last10Questions: recentQuestions.map(q => ({
-                questionId: q.questionId,
-                success: q.solveCount === 1,
-                timeSpent: q.averageTimeToSolve || 15,
-                difficulty: q.questionDifficulty || q.questionId?.difficulty || 'Medium',
-                solvedAt: q.lastUpdatedAt,
-                strategy: 'general_practice'
-            }))
+            last10Questions: [], currentStreak: { type: 'success', count: 0 },
+            recentSuccessRate: 0.5, performanceTrend: 'stable'
         },
-        computedMetrics: {
-            overallSuccessRate: successRate,
-            averageTimePerQuestion: avgTime
+        sessionPatterns: {
+            averageSessionLength: 30, questionsPerSession: 3, optimalBatchSize: 3, sessionFrequency: 3
+        },
+        domainPreferences: {
+            algorithms: { weight: 0.6, questionsCompleted: 0 },
+            system_design: { weight: 0.2, questionsCompleted: 0 },
+            frontend: { weight: 0.2, questionsCompleted: 0 }
         },
         adaptationMetadata: {
-            dataQuality: {
-                hasSufficientData: totalQuestions >= 20
-            }
-        }
-    });
+            lastAnalyzed: new Date(), adaptationEnabled: true,
+            dataQuality: { hasSufficientData: false }, version: '1.0'
+        },
+        computedMetrics: {
+            overallSuccessRate: 0.5, averageTimePerQuestion: 15, weakestTopics: [], readyForAdvancement: false
+        },
+        createdAt: new Date(),
+        updatedAt: new Date()
+    };
+}
 
+/** Adaptive learning state with explicit, optimistic PostgreSQL persistence. */
+export default class UserProfile {
+    constructor(data = {}, version) {
+        Object.assign(this, hydrateDates(mergeDefaults(defaults(), data)));
+        Object.defineProperty(this, '_version', { value: version, writable: true });
+        this.boundHistory();
+    }
+
+    boundHistory() {
+        this.recentPerformance.last10Questions = this.recentPerformance.last10Questions.slice(-10);
+        this.learningVelocity.weeklyHistory = this.learningVelocity.weeklyHistory.slice(-52);
+        this.adaptiveWeights.adjustmentHistory = this.adaptiveWeights.adjustmentHistory
+            .slice(-52).map(entry => ({ ...entry, date: entry.date ? new Date(entry.date) : new Date() }));
+    }
+
+    async save(client) {
+        this.updatedAt = new Date();
+        this.boundHistory();
+        this._version = await saveProfile(this.userId, { ...this }, this._version, client);
+        return this;
+    }
+
+    updateRecentPerformance(questionResult) {
+        const solvedAt = questionResult.solvedAt ? new Date(questionResult.solvedAt) : new Date();
+        this.recentPerformance.last10Questions.push({
+            questionId: questionResult.questionId,
+            success: questionResult.success,
+            timeSpent: questionResult.timeSpent,
+            difficulty: questionResult.difficulty,
+            domain: questionResult.domain || 'algorithms',
+            solvedAt,
+            strategy: questionResult.strategy
+        });
+        this.boundHistory();
+        const recent = this.recentPerformance.last10Questions;
+        this.recentPerformance.recentSuccessRate = recent.filter(q => q.success).length / recent.length;
+        const type = questionResult.success ? 'success' : 'failure';
+        const streak = this.recentPerformance.currentStreak;
+        this.recentPerformance.currentStreak = streak.type === type
+            ? { ...streak, count: streak.count + 1, startDate: streak.startDate || solvedAt }
+            : { type, count: 1, startDate: solvedAt };
+    }
+
+    getAdaptiveWeights() {
+        if (!this.adaptationMetadata.dataQuality.hasSufficientData) return { ...DEFAULT_WEIGHTS };
+        return Object.fromEntries(Object.keys(DEFAULT_WEIGHTS).map(key => [key, this.adaptiveWeights[key]]));
+    }
+
+    shouldAdjustWeights() {
+        if (!this.adaptationMetadata.dataQuality.hasSufficientData) return false;
+        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        if (this.adaptationMetadata.lastWeightAdjustment > oneWeekAgo) return false;
+        const successRate = this.recentPerformance.recentSuccessRate;
+        return successRate < 0.4 || successRate > 0.8;
+    }
+
+    static async findByUserId(userId, client) {
+        const row = await findProfile(userId, client);
+        return row ? new this({ ...row.data, userId: row.user_id }, row.version) : null;
+    }
+
+    static async ensureFromHistory(userId, history) {
+        return withTransaction(async client => {
+            await client.query('SELECT id FROM users WHERE id = $1 FOR UPDATE', [userId]);
+            const existing = await this.findByUserId(userId, client);
+            if (existing) return existing;
+            const profile = await this.createFromSolveHistory(userId, history);
+            await profile.save(client);
+            return profile;
+        });
+    }
+
+    static async createFromSolveHistory(userId, solveHistory) {
+        const solved = solveHistory.filter(row => row.solveCount > 0);
+        const recent = [...solved].sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt)).slice(0, 10);
+        const attempts = recent.reduce((sum, row) => sum + Math.max(row.attemptCount || row.solveCount, row.solveCount), 0);
+        const successRate = attempts ? recent.reduce((sum, row) => sum + row.solveCount, 0) / attempts : 0.5;
+        const averageTime = recent.length
+            ? recent.reduce((sum, q) => sum + (q.averageTimeToSolve ?? 15), 0) / recent.length : 15;
+        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const recentWeek = solved.filter(q => new Date(q.lastUpdatedAt) > oneWeekAgo).length;
+        return new this({
+            userId,
+            learningVelocity: { questionsPerWeek: recentWeek, lastWeekCount: recentWeek },
+            recentPerformance: {
+                recentSuccessRate: successRate,
+                last10Questions: recent.map(q => ({
+                    questionId: q.questionId, success: true,
+                    timeSpent: q.averageTimeToSolve ?? 15,
+                    difficulty: q.questionDifficulty || 'Medium', domain: q.domain || 'algorithms',
+                    solvedAt: q.lastUpdatedAt, strategy: 'general_practice'
+                }))
+            },
+            computedMetrics: { overallSuccessRate: successRate, averageTimePerQuestion: averageTime },
+            adaptationMetadata: { dataQuality: { hasSufficientData: solved.length >= 20 } }
+        });
+    }
+}
+
+/**
+ * Called only from the authoritative attempt transaction. The caller locks the
+ * user row first, serializing first-profile creation as well as future attempts.
+ */
+export async function updateProfileForAttempt(client, userId, result) {
+    let profile = await UserProfile.findByUserId(userId, client);
+    if (!profile) profile = new UserProfile({ userId });
+    profile.updateRecentPerformance(result);
+    const at = result.solvedAt ? new Date(result.solvedAt) : new Date();
+    const hour = at.getUTCHours();
+    const period = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+    const performance = profile.timePreferences[`${period}Performance`];
+    const count = performance.sessionCount;
+    performance.averageSuccessRate = (performance.averageSuccessRate * count + Number(result.success)) / (count + 1);
+    if (Number.isFinite(result.timeSpent) && result.timeSpent >= 0) {
+        performance.averageTimePerQuestion = (performance.averageTimePerQuestion * count + result.timeSpent) / (count + 1);
+    }
+    performance.sessionCount++;
+    profile.timePreferences.optimalTimeOfDay = ['morning', 'afternoon', 'evening']
+        .reduce((best, candidate) => profile.timePreferences[`${candidate}Performance`].averageSuccessRate >
+            profile.timePreferences[`${best}Performance`].averageSuccessRate ? candidate : best);
+    const { rows: [metrics] } = await client.query(
+        `SELECT count(*) FILTER (WHERE solve_count > 0)::int AS solved,
+                count(*) FILTER (WHERE solve_count > 0 AND last_solved_at > now() - interval '7 days')::int AS weekly
+         FROM content_progress WHERE user_id = $1`, [userId]
+    );
+    profile.learningVelocity.questionsPerWeek = metrics.weekly;
+    profile.adaptationMetadata.dataQuality = {
+        hasSufficientData: metrics.solved >= 20, lastQualityCheck: at
+    };
+    profile.adaptationMetadata.lastAnalyzed = at;
+    profile.sessionPatterns.lastSessionDate = at;
+    const domain = profile.domainPreferences[result.domain || 'algorithms'];
+    if (domain) {
+        if (result.success) domain.questionsCompleted++;
+        domain.lastPracticed = at;
+    }
+    profile.computedMetrics.overallSuccessRate = profile.recentPerformance.recentSuccessRate;
+    const timed = profile.recentPerformance.last10Questions.filter(q => Number.isFinite(q.timeSpent));
+    if (timed.length) {
+        profile.computedMetrics.averageTimePerQuestion = timed.reduce((sum, q) => sum + q.timeSpent, 0) / timed.length;
+    }
+    await profile.save(client);
     return profile;
-};
-
-const UserProfile = mongoose.model('UserProfile', userProfileSchema);
-export default UserProfile; 
+}

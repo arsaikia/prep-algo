@@ -12,7 +12,50 @@ See [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) for Mermaid diagrams sh
 
 ---
 
-## Current Architecture (Post Phase 3)
+## Current architecture
+
+As of 2026-10-29 (PostgreSQL candidate accepted; production promotion pending):
+
+| Concern | Implementation |
+| --- | --- |
+| Frontend | React/Vite SPA on Firebase Hosting (`prepalgo.web.app`); compiled `content/` served as hashed CDN artifacts (ADR-009) |
+| API | Express on Cloud Run `prep-algo-backend` (us-central1, scale to zero, identity `prepalgo-api`) |
+| User data | Neon PostgreSQL: users, attempts, progress, profiles, recommendation batches ([POSTGRES_MIGRATION.md](POSTGRES_MIGRATION.md)) |
+| Shared state | Upstash Redis for distributed rate limits only; per-instance fallback (ADR-002/003) |
+| Caching | Bounded process-local cache for public catalog reads; private routes `no-store` (ADR-004, superseded) |
+| Code execution | Private Docker executor VM, no public IP, reached over Direct VPC with Google OIDC + pinned TLS (ADR-008) |
+| Resilience | PostgreSQL circuit breaker, readiness/liveness split, execution budgets (ADR-006/007) |
+| Cost protection | ₹1,000 budget emails + budget-guard shutoff at ₹2,000 ([scripts/budget-guard](../scripts/budget-guard/README.md)) |
+
+Retired: MongoDB runtime, BullMQ execution queue (ADR-005), Redis response cache,
+database-hosted content. Operational procedures live only in
+[DEPLOYMENT_README.md](../DEPLOYMENT_README.md); sections below are design history.
+
+---
+
+## PostgreSQL cutover (2026-10-28)
+
+Step 6 is unparked by user decision. Replace the MongoDB runtime directly with Neon
+PostgreSQL, while importing existing testing users, progress, events, profiles and
+recommendation data. No dual writes or permanent Mongo analytics tier.
+
+The current implementation and deployment instructions are in
+[POSTGRES_MIGRATION.md](POSTGRES_MIGRATION.md). It supersedes the older Step 6
+assumptions below: stable catalog IDs are retained instead of rekeying everything to
+slugs, recommendation assignments remain durable in PostgreSQL rather than moving
+entirely to Redis, and historical attempts become individual rows.
+
+## Historical Architecture (Post Phase 3)
+
+**Superseded operational guidance below:** the current implementation uses Node 22,
+PostgreSQL transactions, Redis for shared rate limits only, bounded local public
+caching, and a separate authenticated Docker executor in production. The old
+colocated BullMQ path is retired and rejected at startup. Production execution stays
+unavailable until the isolated executor is provisioned. Candidate promotion now
+requires `./deploy-to-cloudrun.sh --promote EXACT_REVISION`; frontend publication
+requires matching content versions and retained historical artifacts. Use the
+[release runbook](../DEPLOYMENT_README.md) and
+[executor ADR](adr/008-code-execution-sandbox.md), not the historical commands below.
 
 | Layer | Tech | Hosting | Status |
 |-------|------|---------|--------|
@@ -439,15 +482,17 @@ database-agnostic, so the Decision 3 commitment carries no sunk cost until Step 
 | 3 | **Content pipeline** — `content/` + Zod + `build:content` → hashed artifacts on CDN | ✅ **DONE** — 221 items, index **7.8 KB gz** (was 133 KB from the API), byte-reproducible, zero answer keys published (see ADR-009) |
 | **4** | **Frontend reads content from CDN**; `/api/v1/questions` behind a flag for rollback | ✅ **DONE** — guest list view makes **2 CDN requests and 0 backend requests**, measured on all three domains; index **14.1 KB gz** (was 133 KB from the API) |
 | **5** | **`Topic` + System Design reader** | ✅ **DONE** — `/system-design` is its own index and `/system-design/:slug` its own reader; no difficulty pill and no solved ring anywhere in the subtree, and topics no longer appear in the question list at all. **3 CDN requests, 0 backend requests** |
-| 6 | **Postgres schema + one-shot migration** (decision point) | ⏸ **PARKED** — deliberately deferred, not cancelled. Nothing downstream is blocked on it; see "Parking Step 6" below |
-| **7** | **Home dashboard + guided study** | ← **next**; runs on Mongo as-is |
+| **6** | **Postgres schema + one-shot migration** | ✅ **DONE** (candidate) — direct PostgreSQL replacement preserving testing data; hosted acceptance 2026-10-28. Promotion pending release gates |
+| **7** | **Home dashboard + guided study** | ← **next** after promotion; can use PostgreSQL CTEs/window functions |
 
 Steps 1 and 2 from the interim analysis (optimize the Mongo engine in place; cap the
 unbounded arrays) were **dropped** on the grounds that both optimize code Step 6 deletes,
-and retained *only* if Step 6 were deferred indefinitely. **Step 6 is now parked, so that
-condition holds** — see below.
+and retained *only* if Step 6 were deferred indefinitely. Step 6 has since landed, so
+they stay dropped.
 
 ### Parking Step 6
+
+Historical rationale below. The 2026-10-28 decision above lifts this park.
 
 Step 6 is deferred by choice. It is the only irreversible step in the plan and the only
 one that is not additive, and nothing built so far depends on it: Steps 0–5 are
@@ -526,121 +571,18 @@ only.
   `deploy-frontend-quick.sh` now run `npm run build:content` first. A backend started
   without the bundles logs an error and 404s every question.
 
-Still open: a correct MCQ answer records progress but does not tick off the daily
-recommendation batch. Only the code sandbox's session tracker does that.
+Resolved in the PostgreSQL implementation: any successful code or MCQ attempt marks
+its recommendation item complete in the same transaction.
 
-### Production deploy runbook
+### Superseded operational notes (2026-09)
 
-As of 2026-09-30 production still runs the July 2025 build: the Hosting bundle is the
-CRA build and the backend ignores `?domain=`. The next deploy ships Phases 1–3 and V2
-Steps 0–5 at once. It needs no Mongo migration and no Postgres:
-
-- **Production's database is the `prep-algo-dev` cluster.** The Cloud Run `MONGO_URI`
-  secret has had one version since April 2025, and both the live and candidate revisions
-  log a connection to `prep-algo-dev…/prepalgo`. That is the database a local backend
-  opens through `MONGO_URI_DEV`, so local testing writes live user data. The
-  `prep-algo-prod` cluster named by `MONGO_URI` in `backend/.env` is not used by any
-  deployment.
-- **Question ids already line up.** All 221 `_id`s served by the production API equal
-  the `legacyId`s in `content/`, so existing solve records join to the catalog unchanged.
-  The production `questions` collection simply goes unread.
-- **One backfill.** Records written before Phase 3 lack `domain`, and the
-  spaced-repetition query filters on it. `backend/scripts/backfillSolveHistoryFields.js`
-  fills `domain`, `questionGroup` and `questionDifficulty` from the catalog. It is a dry
-  run unless passed `--apply`. It connects only to `BACKFILL_MONGO_URI`, so a `.env`
-  cannot pick the cluster.
-
-Order:
-
-1. `./deploy-to-cloudrun.sh`. Builds content, then deploys a `candidate` revision at 0%
-   traffic and smoke-tests its tag URL. It sets no env vars or secrets: each revision
-   inherits the service's configuration from the Cloud Run console. Without `REDIS_URL`
-   the backend runs its in-memory fallback.
-2. `./deploy-to-cloudrun.sh --promote`. Moves 100% of traffic and prints the rollback
-   command for the replaced revision.
-3. `./deploy-to-firebase.sh` immediately after, since the old frontend predates JWT auth.
-   Roll back with `firebase hosting:releases:rollback`.
-4. From `backend/`, run `node scripts/backfillSolveHistoryFields.js` with
-   `BACKFILL_MONGO_URI` set to the prep-algo-dev URI, then again with `--apply`. It runs after the promote so the old backend cannot write more
-   records without `domain`. It is idempotent.
-
-Code execution on Cloud Run uses the subprocess runner. Cloud Run has no Docker daemon, so
-the sandbox logs that it is falling back.
-
-### Redis (Upstash free tier)
-
-Redis is optional: without `REDIS_URL` the cache and rate limiter run in memory per
-instance. With it, both are shared across instances. The backend never waits on Redis.
-It listens even if Redis is down at startup, reconnects in the background, and `/health`
-reports `redis: down` with `status: degraded` until the connection returns. Cache keys
-carry the revision name (`K_REVISION`), so every deploy starts on an empty cache and never
-serves an entry built from a previous image's catalog. BullMQ stays off in production
-(`CODE_EXECUTION_QUEUE` unset). Its blocking polls would spend the free tier's commands
-while idle.
-
-1. Create a database at upstash.com: Redis, GCP `us-central1`, TLS on. Copy the
-   `rediss://default:…@….upstash.io:6379` URL.
-2. Store it as a secret that the runtime service account can read:
-   ```bash
-   printf %s "$REDIS_URL" | gcloud secrets create REDIS_URL --data-file=- --project=prepalgo
-   gcloud secrets add-iam-policy-binding REDIS_URL --project=prepalgo \
-     --member=serviceAccount:419917211939-compute@developer.gserviceaccount.com \
-     --role=roles/secretmanager.secretAccessor
-   ```
-3. Attach it to a candidate revision. Use `--update-secrets`: `--set-secrets` would drop
-   the existing ones.
-   ```bash
-   gcloud run services update prep-algo-backend --region=us-central1 \
-     --update-secrets=REDIS_URL=REDIS_URL:latest --no-traffic --tag=candidate
-   ```
-4. Confirm the candidate's `/health` shows `redis: ok`, then shift traffic with
-   `./deploy-to-cloudrun.sh --promote`.
-5. Check that rate limiting sees real clients. The app's `ip` must equal Cloud Run's
-   `remoteIp` for the same request. Before `trust proxy`, every request showed
-   `169.254.169.126`, so all anonymous users shared one bucket.
-   ```bash
-   gcloud logging read 'resource.labels.service_name=prep-algo-backend AND jsonPayload.msg="request completed"' \
-     --limit=5 --format='table(timestamp,jsonPayload.ip,jsonPayload.url)'
-   gcloud logging read 'resource.labels.service_name=prep-algo-backend AND httpRequest.remoteIp:*' \
-     --limit=5 --format='table(timestamp,httpRequest.remoteIp,httpRequest.requestUrl)'
-   ```
-
-### Cold starts
-
-Measured over 14 days in September 2026:
-
-- **The service scales to zero.** A new instance takes about 3.5s to start. That is 2.9s
-  to start Node and 0.5s to reach Mongo; Mongo and Redis now connect in parallel.
-- **The first request after an idle spell takes 3–6s.** Every request of 2s or more in
-  that window coincided with an instance start.
-- **The frontend is not affected.** It is served from the CDN, and guest `/algorithms`
-  makes no backend calls.
-- **Concurrency 1 made cold starts worse.** Parallel requests from one page load each
-  started their own instance (five within 0.6s).
-
-It was 1 because two 256MB sandboxed programs plus Node could exceed the 512Mi
-container. The sandbox now runs one program at a time per process
-(`CODE_SANDBOX_MAX_CONCURRENT`), so an instance can take many requests. Concurrency lives
-on the revision, and traffic is pinned to a revision rather than to the latest one. Change
-it through a candidate like any other deploy, then run `./deploy-to-cloudrun.sh --promote`:
-
-```bash
-gcloud run services update prep-algo-backend --region=us-central1 \
-  --concurrency=10 --no-traffic --tag=candidate
-```
-
-This can be folded into Redis step 3 as a single revision.
-
-To remove cold starts entirely, keep one instance warm. `--min` is service-wide and
-creates no new revision. An idle instance at 1 vCPU / 512Mi costs about $8–10 a month
-after the free tier.
-
-```bash
-gcloud run services update prep-algo-backend --region=us-central1 --min=1
-```
-
-The free alternative is a Cloud Scheduler job that requests `/health` every 10 minutes.
-It narrows the window but does not guarantee a warm instance.
+The September 2026 production runbook, Upstash setup and cold-start tuning that
+lived here described the Mongo runtime, the subprocess runner and the default
+compute service account. They are replaced by
+[DEPLOYMENT_README.md](../DEPLOYMENT_README.md). Measurements that still inform
+decisions: a cold instance took ~3.5s (most of it Node startup); the frontend is
+unaffected because browsing is CDN-only; a warm minimum instance costs roughly
+$8–10/month, so minimum instances stay 0.
 
 ---
 
@@ -695,42 +637,11 @@ Key files, dependencies, deployment changes.
 
 ---
 
-## Deployment Architecture (Target State)
+## Deployment Architecture
 
-```
-                    ┌─────────────┐
-                    │  Cloudflare  │
-                    │  / Firebase  │
-                    │     CDN      │
-                    └──────┬──────┘
-                           │
-              ┌────────────┴────────────┐
-              │                         │
-     ┌────────▼────────┐      ┌────────▼────────┐
-     │  Firebase        │      │  API Gateway     │
-     │  Hosting         │      │  (Cloud Run)     │
-     │  (Static SPA)    │      │  Auth + Rate     │
-     └─────────────────┘      │  Limit + Route   │
-                               └────────┬────────┘
-                                        │
-                    ┌───────────────────┬┴──────────────────┐
-                    │                   │                    │
-           ┌───────▼───────┐  ┌───────▼───────┐  ┌───────▼───────┐
-           │  Main API      │  │  Code Exec     │  │  Future:       │
-           │  Service        │  │  Service        │  │  Recommendation│
-           │  (Cloud Run)   │  │  (Cloud Run)   │  │  Service        │
-           └───────┬───────┘  └───────┬───────┘  └───────────────┘
-                   │                   │
-          ┌────────┴────────┐         │
-          │                 │         │
-   ┌──────▼──────┐  ┌──────▼──────┐  │
-   │  MongoDB     │  │  Redis       │  │
-   │  Atlas       │  │  (Upstash/   │◄─┘
-   │              │  │   Cloud)     │
-   └─────────────┘  └─────────────┘
-                    (cache, rate limit,
-                     queue, circuit state)
-```
+The earlier target (API gateway, separate Cloud Run execution service, MongoDB
+Atlas) was replaced by the design in [Current architecture](#current-architecture);
+see [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) for the diagram.
 
 ---
 
@@ -759,8 +670,8 @@ Key files, dependencies, deployment changes.
 | **3** | Content pipeline (Zod + hashed artifacts) | 2 days | Build-time validation, content-as-code |
 | **4** | Frontend reads content from CDN | 1.5 days | Edge caching, backend scales to zero on browse |
 | **5** | `Topic` model + System Design reader | 3 days | Correcting a domain-modelling error |
-| **6** | Postgres schema + migration | 3 days | ⏸ **PARKED** — storage engine selection, transactional correctness |
-| **7** | Home dashboard + guided study | 3 days | Study-path modelling. *Signal was recursive CTEs + window functions; with Step 6 parked this ships on Mongo aggregation instead — see below* |
+| **6** | Postgres schema + migration | 3 days | ✅ Done — storage engine selection, transactional correctness |
+| **7** | Home dashboard + guided study | 3 days | Study-path modelling with recursive CTEs + window functions |
 
 **Total V2: ~14 days.** Steps 0–5 (~8 days) are database-agnostic and can begin immediately.
 
@@ -797,11 +708,14 @@ Key files, dependencies, deployment changes.
   Vite dev server, and still owes a real Firebase Hosting run before production
   reliance.
 - **V2.5**: `/system-design` renders no difficulty pills and no solved ring.
-- **V2.6**: Per-user progress counts identical pre/post migration. Pool holds under a
-  simulated Cloud Run scale-out.
+- **V2.6**: ✅ Import verified (row counts and digests), restore drill passed, hosted
+  candidate and real browser acceptance passed (see POSTGRES_MIGRATION.md). Pool
+  behaviour under real scale-out remains an operational acceptance item.
 
 **Backward compatibility**: Every Phase 2 sub-phase deployable independently. V2 Steps 0–5
 are additive and independently deployable; **Step 6 is an intentional breaking change**
 delivered as a full dev→prod cutover, with rollback via Cloud Run revisions and Neon
-database branches rather than a parallel `/v2` API. Step 6 is currently parked, so V2.6
-is not a gate on anything shipping today.
+database branches rather than a parallel `/v2` API. Mongo is not
+dual-written, so once real users write to PostgreSQL a revision rollback alone is not
+a data rollback. Rollback rules (expand/contract migrations, guarded
+`--rollback`, maintenance mode) are in [DEPLOYMENT_README.md](../DEPLOYMENT_README.md#rollback).

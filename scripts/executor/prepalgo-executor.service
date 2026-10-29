@@ -1,0 +1,31 @@
+[Unit]
+Description=PrepAlgo isolated Docker executor
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=prepalgo-executor
+Group=prepalgo-executor
+SupplementaryGroups=docker
+WorkingDirectory=/opt/prepalgo-executor
+Environment=NODE_ENV=production
+Environment=PORT=8081
+EnvironmentFile=/etc/prepalgo-executor.env
+ExecStart=/usr/bin/node executor/server.js
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+UMask=0077
+MemoryMax=192M
+TasksMax=64
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

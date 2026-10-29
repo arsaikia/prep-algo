@@ -1,6 +1,12 @@
 # ADR-004: Distributed Caching Strategy
 
-## Status: Accepted
+## Status: Superseded
+
+Superseded after content moved to git (ADR-009) and user data to PostgreSQL.
+`backend/middleware/cache.js` is now only a bounded, process-local cache for
+unauthenticated public catalog GETs; private routes are `no-store`, and there is
+no Redis response cache, stampede lock or per-user invalidation. Redis is used
+for rate limits only. The original decision is kept below for history.
 
 ## Context
 In-memory node-cache resets on every Cloud Run cold start and is not shared across instances. Each instance rebuilds its cache independently, causing redundant database queries and inconsistent response times.

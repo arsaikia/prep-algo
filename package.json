@@ -15,7 +15,7 @@
     "start-server": "cd backend && node server.js",
     "install-client": "cd frontend && npm install",
     "build-client": "npm run build:content && cd frontend && npm run build",
-    "start-client": "cd frontend && npm start"
+    "start-client": "cd frontend && npm run dev"
   },
   "repository": {
     "type": "git",

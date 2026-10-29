@@ -1,9 +1,9 @@
 import DailyRecommendationBatch from '../models/DailyRecommendationBatch.js';
-import SolveHistory from '../models/SolveHistory.js';
+import { getSolvedHistory, getDailyActivity } from '../repositories/recommendationHistory.js';
+import { calculateCurrentStreak } from '../utils/learningDays.js';
 import UserProfile from '../models/UserProfile.js';
 import asyncHandler from '../middleware/async.js';
 import ErrorResponse from '../utils/errorResponse.js';
-import { invalidateUserCache } from '../middleware/cache.js';
 import logger from '../config/logger.js';
 import { getItemByLegacyId, listItems, toQuestionSummary } from '../utils/contentStore.js';
 
@@ -54,6 +54,11 @@ const selectCandidates = (pool, { exclude = [], domain, groups, difficulty, limi
     return out;
 };
 
+const requestedCount = value => {
+    const count = Number.parseInt(value, 10);
+    return Number.isFinite(count) ? Math.min(50, Math.max(1, count)) : 5;
+};
+
 /*
  * @desc     Get smart daily recommendations with hybrid caching
  * @route    GET /api/v1/recommendations/:userId/daily
@@ -61,7 +66,10 @@ const selectCandidates = (pool, { exclude = [], domain, groups, difficulty, limi
  */
 const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
-    const { count = 5, forceRefresh = false } = req.query;
+    const { count = 5, forceRefresh } = req.query;
+    if (forceRefresh === 'true') {
+        return next(new ErrorResponse('Use POST /refresh to refresh recommendations', 400));
+    }
 
     logger.debug({ userId }, 'getting smart recommendations');
 
@@ -69,20 +77,19 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
         // Check for existing batch today
         let batch = await DailyRecommendationBatch.findTodaysBatch(userId);
 
+        const existing = Boolean(batch);
         if (!batch) {
             // No batch exists - create fresh daily batch
             logger.debug('no batch found — creating fresh daily batch');
-            batch = await createFreshDailyBatch(userId, parseInt(count));
-        } else {
-            // Batch exists - check if refresh is needed/allowed
-            const refreshCheck = batch.shouldRefresh(userId);
+            batch = await createFreshDailyBatch(userId, requestedCount(count));
+        }
 
-            if (forceRefresh === 'true' || refreshCheck.allowed) {
-                logger.debug({ reasons: refreshCheck.reasons }, 'refreshing batch');
-                batch = await performSmartRefresh(batch, userId, parseInt(count));
-            } else {
-                logger.debug({ nextRefresh: refreshCheck.nextRefreshAvailable }, 'serving cached batch');
-            }
+        // Assignment is stable; analytics reflect authoritative attempts, not a stale batch snapshot.
+        if (existing) {
+            const [history, profile] = await Promise.all([
+                getSolvedHistory(userId), UserProfile.findByUserId(userId),
+            ]);
+            if (profile) batch.analysis = await analyzeUserPatternsAdaptive(userId, history, profile);
         }
 
         // Get progress information
@@ -133,7 +140,7 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
 
     } catch (error) {
         logger.error({ err: error }, 'error in smart recommendations');
-        return next(new ErrorResponse('Failed to generate smart recommendations', 500));
+        return next(new ErrorResponse(error.statusCode === 409 ? error.message : 'Failed to generate smart recommendations', error.statusCode || 500));
     }
 });
 
@@ -144,7 +151,11 @@ const getSmartDailyRecommendations = asyncHandler(async (req, res, next) => {
  */
 const markQuestionCompleted = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
-    const { questionId, timeSpent, success = true } = req.body;
+    const { questionId } = req.body;
+
+    if (typeof questionId !== 'string' || !questionId) {
+        return next(new ErrorResponse('questionId required', 400));
+    }
 
     logger.debug({ questionId, userId }, 'marking question completed');
 
@@ -157,8 +168,7 @@ const markQuestionCompleted = asyncHandler(async (req, res, next) => {
         }
 
         // Mark question as completed
-        await batch.markQuestionCompleted(questionId, { timeSpent, success });
-        invalidateUserCache(userId);
+        await batch.markQuestionCompleted(questionId);
 
         // Get updated progress
         const progress = batch.getProgress();
@@ -176,7 +186,7 @@ const markQuestionCompleted = asyncHandler(async (req, res, next) => {
 
     } catch (error) {
         logger.error({ err: error }, 'error marking question completed');
-        return next(new ErrorResponse('Failed to update completion status', 500));
+        return next(new ErrorResponse(error.statusCode ? error.message : 'Failed to update completion status', error.statusCode || 500));
     }
 });
 
@@ -246,7 +256,7 @@ const replaceCompletedQuestions = asyncHandler(async (req, res, next) => {
 
     } catch (error) {
         logger.error({ err: error }, 'error replacing completed questions');
-        return next(new ErrorResponse('Failed to replace completed questions', 500));
+        return next(new ErrorResponse(error.statusCode === 409 ? error.message : 'Failed to replace completed questions', error.statusCode || 500));
     }
 });
 
@@ -305,7 +315,7 @@ const forceRefreshRecommendations = asyncHandler(async (req, res, next) => {
 
     } catch (error) {
         logger.error({ err: error }, 'error in force refresh');
-        return next(new ErrorResponse('Failed to refresh recommendations', 500));
+        return next(new ErrorResponse(error.statusCode === 409 ? error.message : 'Failed to refresh recommendations', error.statusCode || 500));
     }
 });
 
@@ -315,15 +325,8 @@ const createFreshDailyBatch = async (userId, count) => {
     logger.debug({ userId }, 'creating fresh daily batch');
 
     // Get or create user profile
-    let userProfile = await UserProfile.findByUserId(userId);
-    if (!userProfile) {
-        const existingHistory = await SolveHistory.find({ userId });
-        userProfile = await UserProfile.createFromSolveHistory(userId, existingHistory);
-        await userProfile.save();
-    }
-
-    // Get user's solve history (no populate needed — uses denormalized fields)
-    const userHistory = await SolveHistory.find({ userId });
+    const userHistory = await getSolvedHistory(userId);
+    const userProfile = await UserProfile.ensureFromHistory(userId, userHistory);
 
     // Analyze patterns with adaptive enhancements
     const analysis = await analyzeUserPatternsAdaptive(userId, userHistory, userProfile);
@@ -333,13 +336,13 @@ const createFreshDailyBatch = async (userId, count) => {
         userId,
         analysis,
         userProfile,
-        count
+        count, [], userHistory
     );
 
     // Wire up weight adjustment
     if (userProfile.shouldAdjustWeights()) {
         const successRate = userProfile.recentPerformance.recentSuccessRate;
-        const prev = { ...userProfile.adaptiveWeights.toObject() };
+        const prev = { ...userProfile.adaptiveWeights };
         delete prev.adjustmentHistory;
 
         let reason;
@@ -366,12 +369,18 @@ const createFreshDailyBatch = async (userId, count) => {
         }
 
         userProfile.adaptiveWeights.adjustmentHistory.push({
+            date: new Date(),
             previousWeights: prev,
             reason,
             performanceScore: successRate
         });
         userProfile.adaptationMetadata.lastWeightAdjustment = new Date();
-        await userProfile.save();
+        try {
+            await userProfile.save();
+        } catch (error) {
+            if (error.statusCode !== 409) throw error;
+            logger.info({ userId }, 'profile changed during optional weight adjustment; preserving newer state');
+        }
         logger.info({ userId, reason, successRate }, 'adjusted adaptive weights');
     }
 
@@ -401,8 +410,8 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
     logger.debug({ remaining: remainingRecommendations.length, completed: completedQuestionIds.length }, 'smart refresh stats');
 
     // Get fresh analysis (no populate needed — uses denormalized fields)
-    const userHistory = await SolveHistory.find({ userId });
-    let userProfile = await UserProfile.findByUserId(userId);
+    const userHistory = await getSolvedHistory(userId);
+    const userProfile = await UserProfile.ensureFromHistory(userId, userHistory);
     const freshAnalysis = await analyzeUserPatternsAdaptive(userId, userHistory, userProfile);
 
     // Smart filtering: keep relevant remaining questions
@@ -418,7 +427,7 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
         adaptiveContext: {
             ...rec.adaptiveContext,
             isCarriedOver: true,
-            originalBatchTime: rec.adaptiveContext.originalBatchTime || currentBatch.generatedAt
+            originalBatchTime: rec.adaptiveContext?.originalBatchTime || currentBatch.generatedAt
         }
     }));
 
@@ -440,7 +449,7 @@ const performSmartRefresh = async (currentBatch, userId, count) => {
             freshAnalysis,
             userProfile,
             newQuestionsNeeded,
-            existingQuestionIds // Exclude these questions
+            existingQuestionIds, userHistory
         );
     }
 
@@ -470,14 +479,8 @@ const performSelectiveRefresh = async (currentBatch, userId) => {
     logger.debug({ userId }, 'performing selective refresh');
 
     // Get user profile and fresh analysis
-    let userProfile = await UserProfile.findByUserId(userId);
-    if (!userProfile) {
-        const existingHistory = await SolveHistory.find({ userId });
-        userProfile = await UserProfile.createFromSolveHistory(userId, existingHistory);
-        await userProfile.save();
-    }
-
-    const userHistory = await SolveHistory.find({ userId });
+    const userHistory = await getSolvedHistory(userId);
+    const userProfile = await UserProfile.ensureFromHistory(userId, userHistory);
     const freshAnalysis = await analyzeUserPatternsAdaptive(userId, userHistory, userProfile);
 
     // Get completed question IDs
@@ -497,7 +500,7 @@ const performSelectiveRefresh = async (currentBatch, userId) => {
     if (completedCount > 0) {
         // Get all question IDs to exclude (solved + current batch)
         const allExcludedIds = [
-            ...await SolveHistory.find({ userId }).distinct('questionId'),
+            ...userHistory.map(row => row.questionId),
             ...currentBatch.recommendations.map(recQuestionId)
         ];
 
@@ -506,7 +509,7 @@ const performSelectiveRefresh = async (currentBatch, userId) => {
             freshAnalysis,
             userProfile,
             completedCount,
-            allExcludedIds
+            allExcludedIds, userHistory
         );
     }
 
@@ -583,7 +586,7 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
     const strugglingQuestions = [];
 
     // NEW: Streak and mastery analysis
-    const dailyActivity = {};
+    const dailyActivity = await getDailyActivity(userId);
     const topicMastery = {};
 
     const domainStats = {
@@ -609,7 +612,7 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
                 domainStats[domain].groupStats[group] = { count: 0, avgSolveCount: 0 };
             }
             domainStats[domain].groupStats[group].count++;
-            domainStats[domain].groupStats[group].avgSolveCount += history.solveCount;
+            domainStats[domain].groupStats[group].avgSolveCount += history.attemptCount;
         }
 
         // Standard group and difficulty analysis
@@ -617,7 +620,7 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
             groupStats[group] = { count: 0, avgSolveCount: 0 };
         }
         groupStats[group].count++;
-        groupStats[group].avgSolveCount += history.solveCount;
+        groupStats[group].avgSolveCount += history.attemptCount;
         difficultyStats[difficulty]++;
 
         // Recent activity
@@ -626,31 +629,16 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
         }
 
         // Struggling questions
-        if (history.solveCount > 2 && history.lastUpdatedAt >= oneMonthAgo) {
+        if (history.attemptCount > 2 && history.lastUpdatedAt >= oneMonthAgo) {
             strugglingQuestions.push({
                 questionId: history.questionId,
                 group,
                 difficulty,
                 solveCount: history.solveCount,
+                attemptCount: history.attemptCount,
                 lastSolved: history.lastUpdatedAt
             });
         }
-
-        // NEW: Daily activity tracking for streaks
-        const dateKey = history.lastUpdatedAt.toISOString().split('T')[0];
-        if (!dailyActivity[dateKey]) {
-            dailyActivity[dateKey] = {
-                date: dateKey,
-                questionsCompleted: 0,
-                topics: [],
-                difficulties: { Easy: 0, Medium: 0, Hard: 0 }
-            };
-        }
-        dailyActivity[dateKey].questionsCompleted++;
-        if (!dailyActivity[dateKey].topics.includes(group)) {
-            dailyActivity[dateKey].topics.push(group);
-        }
-        dailyActivity[dateKey].difficulties[difficulty]++;
 
         // NEW: Topic mastery tracking
         if (!topicMastery[group]) {
@@ -669,7 +657,7 @@ const analyzeUserPatternsAdaptive = async (userId, userHistory, userProfile) => 
         topicData.totalQuestions++;
         topicData.solvedQuestions++;
         topicData.difficulties[difficulty]++;
-        topicData.averageAttempts = (topicData.averageAttempts * (topicData.totalQuestions - 1) + history.solveCount) / topicData.totalQuestions;
+        topicData.averageAttempts = (topicData.averageAttempts * (topicData.totalQuestions - 1) + history.attemptCount) / topicData.totalQuestions;
         topicData.lastStudied = history.lastUpdatedAt;
     });
 
@@ -819,9 +807,10 @@ const getNextDifficultyAdaptive = (userLevel, difficultyStats) => {
     return getDifficultyForLevel(userLevel);
 };
 
-const generateAdaptiveRecommendations = async (userId, analysis, userProfile, count, excludeQuestionIds = []) => {
+const generateAdaptiveRecommendations = async (userId, analysis, userProfile, count, excludeQuestionIds = [], history) => {
     const recommendations = [];
-    const solvedQuestionIds = await SolveHistory.find({ userId }).distinct('questionId');
+    const userHistory = history || await getSolvedHistory(userId);
+    const solvedQuestionIds = userHistory.map(row => row.questionId);
     const allExcludedIds = [...solvedQuestionIds, ...excludeQuestionIds];
     const usedIds = new Set();
 
@@ -896,15 +885,11 @@ const generateAdaptiveRecommendations = async (userId, analysis, userProfile, co
         // Strategy 3: spaced_repetition (review solved questions)
         const spacedCount = Math.max(1, Math.ceil(slotCount * weights.spaced_repetition));
         if (filled < slotCount) {
-            const solvedInDomain = await SolveHistory.find({
-                userId,
-                domain,
-                solveCount: { $gte: 2 },
-                lastUpdatedAt: { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-            })
-                .sort({ solveCount: -1, lastUpdatedAt: 1 })
-                .limit(spacedCount)
-                .select('questionId questionGroup solveCount lastUpdatedAt');
+            const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            const solvedInDomain = userHistory
+                .filter(row => row.domain === domain && row.solveCount >= 2 && row.lastUpdatedAt < oneWeekAgo)
+                .sort((a, b) => b.solveCount - a.solveCount || a.lastUpdatedAt - b.lastUpdatedAt)
+                .slice(0, spacedCount);
 
             for (const item of solvedInDomain) {
                 if (filled >= slotCount || usedIds.has(item.questionId)) continue;
@@ -960,62 +945,6 @@ const generateAdaptiveRecommendations = async (userId, analysis, userProfile, co
     return recommendations
         .sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority])
         .slice(0, count);
-};
-
-// NEW: Calculate current learning streak
-const calculateCurrentStreak = (dailyActivity) => {
-    const today = new Date();
-    const sortedDays = Object.keys(dailyActivity).sort((a, b) => new Date(b) - new Date(a));
-
-    let currentStreak = 0;
-    let longestStreak = 0;
-    let tempStreak = 0;
-    let lastActivityDate = null;
-
-    // Calculate current streak (consecutive days from today backwards)
-    for (let i = 0; i < 365; i++) { // Check last year maximum
-        const checkDate = new Date(today);
-        checkDate.setDate(checkDate.getDate() - i);
-        const dateKey = checkDate.toISOString().split('T')[0];
-
-        if (dailyActivity[dateKey] && dailyActivity[dateKey].questionsCompleted > 0) {
-            if (i === 0 || currentStreak > 0) { // Today or continuing streak
-                currentStreak++;
-                if (!lastActivityDate) lastActivityDate = dateKey;
-            }
-        } else {
-            if (i === 0) {
-                // No activity today, check if yesterday had activity
-                continue;
-            } else {
-                break; // Streak broken
-            }
-        }
-    }
-
-    // Calculate longest streak ever
-    let currentTempStreak = 0;
-    const allDates = sortedDays.sort((a, b) => new Date(a) - new Date(b));
-
-    for (let i = 0; i < allDates.length; i++) {
-        const currentDate = new Date(allDates[i]);
-        const nextDate = i < allDates.length - 1 ? new Date(allDates[i + 1]) : null;
-
-        currentTempStreak++;
-
-        if (!nextDate || (nextDate - currentDate) > 24 * 60 * 60 * 1000) {
-            // End of streak or last day
-            longestStreak = Math.max(longestStreak, currentTempStreak);
-            currentTempStreak = 0;
-        }
-    }
-
-    return {
-        currentStreak,
-        longestStreak,
-        lastActivityDate,
-        totalActiveDays: sortedDays.length
-    };
 };
 
 /**
@@ -1105,6 +1034,11 @@ const trackRecommendationAction = asyncHandler(async (req, res, next) => {
 
     if (!questionId || !action) {
         return next(new ErrorResponse('questionId and action required', 400));
+    }
+
+    if (!['attempted', 'skipped', 'ignored'].includes(action) ||
+        (clickedAt && Number.isNaN(new Date(clickedAt).getTime()))) {
+        return next(new ErrorResponse('Invalid recommendation action', 400));
     }
 
     const batch = await DailyRecommendationBatch.findTodaysBatch(userId);

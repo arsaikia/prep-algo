@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
 import apiClient from '../../api/client.js';
 import readApiError from '../../utils/apiError.js';
+import { requestSignIn } from '../../utils/navigation.js';
+import { TimeTracker } from '../../utils/timerState.js';
+import { useSelector } from 'react-redux';
 
 const Container = styled.div`
   max-width: 800px;
@@ -153,11 +155,11 @@ const ErrorBox = styled.div`
  * call it, so they use the public grading route and see the same result
  * without anything being saved.
  */
-const gradeAnswer = async (question, selectedOptionId, isGuest) => {
+const gradeAnswer = async (question, selectedOptionId, isGuest, submissionId, timeTaken) => {
   const url = isGuest
-    ? `/quiz/${question.slug}/grade`
-    : `/questions/${question.slug}/submit-mcq`;
-  const response = await apiClient.post(url, { selectedOptionId });
+    ? `/quiz/${encodeURIComponent(question.slug)}/grade`
+    : `/questions/${encodeURIComponent(question.slug)}/submit-mcq`;
+  const response = await apiClient.post(url, { selectedOptionId, submissionId, timeTaken, contentRevision: question.revision });
   return response.data.data;
 };
 
@@ -166,22 +168,59 @@ const McqSolver = ({ question, isGuest = false }) => {
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [storageWarning, setStorageWarning] = useState(false);
+  const pendingSubmission = useRef(null);
+  const userId = useSelector((state) => state.auth.userId);
+  const identity = `${question.slug}:${question.revision}:${userId}:${isGuest}`;
+  const contentIdentity = `${question.slug}:${question.revision}`;
+  const previousContent = useRef(contentIdentity);
+  const identityRef = useRef(identity);
+  identityRef.current = identity;
+  const mounted = useRef(false);
+  const tracker = useRef(null);
+  if (!tracker.current) tracker.current = new TimeTracker({
+    storageKey: `quiz-session:${question.slug}`,
+    onStorageError: () => setStorageWarning(true),
+  });
+  useEffect(() => {
+    mounted.current = true;
+    tracker.current.startTracking(question.slug, userId);
+    if (previousContent.current !== contentIdentity) setSelectedOption(null);
+    previousContent.current = contentIdentity;
+    setResult(null);
+    setError('');
+    setSubmitting(false);
+    pendingSubmission.current = null;
+    return () => { mounted.current = false; };
+  }, [identity]);
 
   const handleSubmit = async () => {
     if (!selectedOption || submitting) return;
+    const requestIdentity = identity;
+    const stale = () => !mounted.current || identityRef.current !== requestIdentity;
     setSubmitting(true);
     setError('');
     try {
-      setResult(await gradeAnswer(question, selectedOption, isGuest));
+      const signature = JSON.stringify([identity, selectedOption]);
+      if (pendingSubmission.current?.signature !== signature) {
+        pendingSubmission.current = { signature, id: crypto.randomUUID(), timeTaken: tracker.current.getElapsedSeconds() };
+      }
+      const graded = await gradeAnswer(question, selectedOption, isGuest, pendingSubmission.current.id, pendingSubmission.current.timeTaken);
+      if (stale()) return;
+      if (!graded || typeof (graded.passed ?? graded.correct) !== 'boolean') throw new Error('Invalid grading response.');
+      setResult({ ...graded, identity });
+      if (isGuest || graded.attemptSaved) pendingSubmission.current = null;
+      if (isGuest || graded.attemptSaved) tracker.current.stopTracking(Boolean(graded.passed ?? graded.correct));
     } catch (err) {
+      if (stale()) return;
       // The selection is kept so the answer can be resubmitted as-is.
       setError(`Could not check your answer. ${readApiError(err)}`);
     } finally {
-      setSubmitting(false);
+      if (!stale()) setSubmitting(false);
     }
   };
 
-  const submitted = !!result;
+  const submitted = result?.identity === identity;
   const passed = Boolean(result?.passed ?? result?.correct);
   const explanationFor = new Map((result?.explanations || []).map(e => [e.id, e.explanation]));
 
@@ -192,6 +231,7 @@ const McqSolver = ({ question, isGuest = false }) => {
         <DifficultyBadge $difficulty={question.difficulty}>{question.difficulty}</DifficultyBadge>
       )}
       <Description>{question.description}</Description>
+      {storageWarning && <ProgressNote role="status">Local storage is unavailable. Your practice timer cannot survive a refresh.</ProgressNote>}
 
       <OptionsContainer role="radiogroup" aria-label="Answer options">
         {question.mcqOptions?.map(opt => {
@@ -243,7 +283,7 @@ const McqSolver = ({ question, isGuest = false }) => {
             )}
             {isGuest ? (
               <ProgressNote>
-                <Link to="/login">Sign in</Link> to save your progress.
+                <button onClick={requestSignIn}>Sign in</button> to save your progress.
               </ProgressNote>
             ) : passed && (
               <ProgressNote>
@@ -252,6 +292,21 @@ const McqSolver = ({ question, isGuest = false }) => {
                   : 'Your answer is correct, but it could not be saved to your progress.'}
               </ProgressNote>
             )}
+            {!isGuest && result.attemptSaved === false && (
+              <SubmitButton onClick={handleSubmit} disabled={submitting}>
+                {submitting ? 'Saving…' : 'Retry saving answer'}
+              </SubmitButton>
+            )}
+            <SubmitButton disabled={submitting} onClick={() => {
+              pendingSubmission.current = null;
+              setResult(null);
+              setSelectedOption(null);
+              setError('');
+              tracker.current.stopTracking(false);
+              tracker.current.startTracking(question.slug, userId);
+            }}>
+              Try a new attempt
+            </SubmitButton>
           </ResultBox>
         )}
       </div>

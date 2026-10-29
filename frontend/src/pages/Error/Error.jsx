@@ -17,14 +17,15 @@ function Error() {
       height="90vh"
     >
       <img alt="Error Icon" src={Error404Icon} />
-      <h3>Oops! Looks like you&aposve hit a dead end!</h3>
+      <h1>Page not found</h1>
+      <p>That page does not exist. Browse from the home page to continue.</p>
       <Container width="30%">
         <button
           type="button"
           className="button-6"
           onClick={() => navigate('/')}
         >
-          Go home ?
+          Go home
         </button>
       </Container>
     </CenteredFlex>

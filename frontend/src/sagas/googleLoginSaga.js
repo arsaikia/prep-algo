@@ -8,12 +8,10 @@ import {
     GOOGLE_LOGIN,
     GOOGLE_LOGIN_SUCCESS,
     GOOGLE_LOGIN_FAILURE,
+    RESET_AUTH_SUCCESS,
 } from '../actions/types';
 import { googleLogin } from '../api/login';
-import {
-    googleLoginSuccess,
-    googleLoginFailure,
-} from '../actions/actions';
+import readApiError from '../utils/apiError';
 // Cookie utility functions
 const setCookie = (name, value, options = {}) => {
     const defaultOptions = { path: '/', maxAge: 86400 * 7 }; // 7 days
@@ -25,41 +23,14 @@ const setCookie = (name, value, options = {}) => {
     if (cookieOptions.maxAge) cookieString += `; max-age=${cookieOptions.maxAge}`;
     if (cookieOptions.domain) cookieString += `; domain=${cookieOptions.domain}`;
     if (cookieOptions.secure) cookieString += `; secure`;
-    if (cookieOptions.httpOnly) cookieString += `; httpOnly`;
+    cookieString += '; SameSite=Strict';
 
     document.cookie = cookieString;
 };
 
-// Cache for profile pictures
-const profilePictureCache = new Map();
-
-// Function to get a default avatar URL based on user's name
-const getDefaultAvatarUrl = (firstName) => {
-    const initial = firstName ? firstName.charAt(0).toUpperCase() : 'U';
-    return `https://ui-avatars.com/api/?name=${initial}&background=random`;
-};
-
-// Function to handle profile picture with fallback
-const handleProfilePicture = (user) => {
-    // If we have a cached version, use it
-    if (profilePictureCache.has(user.id)) {
-        return profilePictureCache.get(user.id);
-    }
-
-    // If no picture URL or it's the Google default URL that's failing
-    if (!user.picture || user.picture.includes('googleusercontent.com')) {
-        const defaultAvatar = getDefaultAvatarUrl(user.firstName);
-        profilePictureCache.set(user.id, defaultAvatar);
-        return defaultAvatar;
-    }
-
-    // Cache and return the original picture URL
-    profilePictureCache.set(user.id, user.picture);
-    return user.picture;
-};
-
 // worker Saga
 function* googleLoginHandler(action) {
+    if (action.type !== GOOGLE_LOGIN) return;
     try {
         const token = action.payload;
 
@@ -72,14 +43,15 @@ function* googleLoginHandler(action) {
 
         if (response.data && response.data.success) {
             const userData = response.data.data;
+            if (userData.token) setCookie('authToken', userData.token, { secure: window.location.protocol === 'https:' });
 
             // Dispatch success action with user data
             yield put({
                 type: GOOGLE_LOGIN_SUCCESS,
                 payload: {
                     isAuthenticated: true,
-                    userId: userData.userId || userData._id,
-                    id: userData._id || userData.userId, // Include both for compatibility
+                    userId: userData.id || userData.userId || userData._id,
+                    id: userData.id || userData._id || userData.userId,
                     firstName: userData.firstName,
                     lastName: userData.lastName,
                     email: userData.email,
@@ -95,13 +67,13 @@ function* googleLoginHandler(action) {
         // Dispatch failure action
         yield put({
             type: GOOGLE_LOGIN_FAILURE,
-            payload: error.message || 'Google login failed'
+            payload: readApiError(error, 'Google sign-in failed. Please try again.')
         });
     }
 }
 
 function* googleLoginWatcher() {
-    yield takeLatest(GOOGLE_LOGIN, googleLoginHandler);
+    yield takeLatest([GOOGLE_LOGIN, RESET_AUTH_SUCCESS, 'AUTH_EXPIRED'], googleLoginHandler);
 }
 
 export default googleLoginWatcher; 

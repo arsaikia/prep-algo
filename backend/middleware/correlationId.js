@@ -1,12 +1,16 @@
 import { randomUUID } from 'crypto';
 import logger from '../config/logger.js';
+import { getContentRevision } from '../utils/contentStore.js';
 
 const correlationId = (req, res, next) => {
-  const id = req.headers['x-correlation-id'] || randomUUID();
+  const supplied = req.headers['x-correlation-id'];
+  const id = typeof supplied === 'string' && /^[a-zA-Z0-9_-]{1,128}$/.test(supplied) ? supplied : randomUUID();
   req.correlationId = id;
   res.set('X-Correlation-ID', id);
 
-  req.log = logger.child({ correlationId: id });
+  req.log = logger.child({
+    correlationId: id, revision: process.env.K_REVISION || 'local', content: getContentRevision(),
+  });
 
   const start = process.hrtime.bigint();
 
@@ -24,6 +28,7 @@ const correlationId = (req, res, next) => {
       userAgent: req.headers['user-agent'],
       ip: req.ip,
       userId: req.user?._id?.toString() || null,
+      rateLimits: req.rateLimits || [],
     };
 
     if (res.statusCode >= 500) {
