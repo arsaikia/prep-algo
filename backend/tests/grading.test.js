@@ -308,6 +308,38 @@ class Solution:
         assert.ok(results.every((r) => Number.isInteger(r.runtimeMs) && r.runtimeMs < 1000));
     });
 
+    it('splits tests with large inputs across sandboxes that each fit the size limit', async () => {
+        const big = (i) => ({ inputs: [`"${'x'.repeat(300_000)}${i}"`], expectedOutput: String(300_001) });
+        const results = await runPythonCode(`seen = []
+class Solution:
+    def f(self, s):
+        seen.append(s)
+        return len(s)
+`, [0, 1, 2, 3, 4].map(big), { inputs: ['STRING'], output: 'NUMBER', method: 'f' });
+        assert.deepEqual(results.map((r) => r.status), Array(5).fill('passed'));
+    });
+
+    it('does not start later sandboxes after a test exceeds the time limit', async () => {
+        const big = (i) => ({ inputs: [`"${'x'.repeat(300_000)}${i}"`], expectedOutput: String(300_001) });
+        const results = await runPythonCode(`class Solution:
+    def f(self, s):
+        while s.endswith('0'):
+            pass
+        return len(s)
+`, [0, 1, 2, 3].map(big), { inputs: ['STRING'], output: 'NUMBER', method: 'f' });
+        assert.deepEqual(results.map((r) => r.status), ['tle', 'skipped', 'skipped', 'skipped']);
+        assert.match(results[3].error, /earlier test exceeded the time limit/);
+    });
+
+    it('rejects a single program over the sandbox size limit in every mode', async () => {
+        await assert.rejects(
+            runPythonCode('class Solution:\n    def f(self, s):\n        return len(s)\n',
+                [{ inputs: [`"${'x'.repeat(1_200_000)}"`], expectedOutput: '1200000' }],
+                { inputs: ['STRING'], output: 'NUMBER', method: 'f' }),
+            (error) => error.statusCode === 413,
+        );
+    });
+
     it('ends a slow test at its own limit and reports later tests as not run', async () => {
         const slow = `class Solution:
     def f(self, n):

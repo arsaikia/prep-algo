@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { executeProgram, POLICY } from './sandbox/index.js';
+import { executeProgram, fitsSandbox, POLICY } from './sandbox/index.js';
 import { parseJson, judge } from './grading.js';
 import { buildJavaScriptProgram } from './javascriptHarness.js';
 import { getExecutionBudget, runSubmission } from './executionBudget.js';
@@ -486,16 +486,64 @@ ${argLines}
         }
     }
 
-    let source = null;
-    if (cases.length && language === 'javascript') {
-        source = buildJavaScriptProgram({ code, cases, entry: questionTypes.method, marker, limitMs: EXECUTION_TIMEOUT });
-    } else if (cases.length) {
-        source = buildPythonProgram({
-            code, cases, marker, nodeAlias: shared.nodeAlias,
+    const build = (group) => (language === 'javascript'
+        ? buildJavaScriptProgram({ code, cases: group, entry: questionTypes.method, marker, limitMs: EXECUTION_TIMEOUT })
+        : buildPythonProgram({
+            code, cases: group, marker, nodeAlias: shared.nodeAlias,
             compareMode: questionTypes?.checker ? 'checker' : (questionTypes?.compare ?? 'exact'),
-        });
+        }));
+    const groups = splitForSandbox(cases, build, language);
+    if (groups.length <= 1) {
+        return executeBatch({ testCases, failed, source: groups.length ? build(groups[0]) : null, marker, questionTypes, language });
     }
-    return executeBatch({ testCases, failed, source, marker, questionTypes, language });
+
+    // Large inputs: run consecutive slices in separate sandboxes, stopping
+    // where a single run would have stopped.
+    const results = testCases.map((testCase, index) => failed.get(index) ?? null);
+    for (const [position, group] of groups.entries()) {
+        const mine = new Set(group.map(({ index }) => index));
+        const others = new Map(failed);
+        results.forEach((result, index) => { if (!mine.has(index) && !others.has(index)) others.set(index, OTHER_RUN); });
+        const groupResults = await executeBatch({ testCases, failed: others, source: build(group), marker, questionTypes, language });
+        for (const index of mine) results[index] = groupResults[index];
+
+        const stopped = group.map(({ index }) => results[index])
+            .filter((result) => ['tle', 'mle', 'skipped'].includes(result.status));
+        if (stopped.length && position < groups.length - 1) {
+            const last = stopped.at(-1);
+            const reason = last.status === 'skipped' ? last.error
+                : last.status === 'tle' ? 'Not run: an earlier test exceeded the time limit'
+                    : 'Not run: the program stopped during an earlier test';
+            for (const later of groups.slice(position + 1).flat()) {
+                results[later.index] = outcome(testCases[later.index], { status: 'skipped', error: reason });
+            }
+            break;
+        }
+    }
+    return results;
+};
+
+const OTHER_RUN = Object.freeze({ status: 'other-run' });
+
+/**
+ * Splits prepared cases into consecutive groups whose program fits the
+ * sandbox's size limit; usually a single group. A case too large on its own
+ * keeps its own group and is rejected by the sandbox.
+ */
+const splitForSandbox = (cases, build, language) => {
+    if (!cases.length) return [];
+    if (fitsSandbox(build(cases), language)) return [cases];
+    const groups = [];
+    let current = [];
+    for (const item of cases) {
+        if (current.length && !fitsSandbox(build([...current, item]), language)) {
+            groups.push(current);
+            current = [];
+        }
+        current.push(item);
+    }
+    groups.push(current);
+    return groups;
 };
 
 /** One Python program: shared helpers and the submission once, then one function per test. */

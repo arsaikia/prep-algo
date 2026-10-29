@@ -52,6 +52,12 @@ export const POLICY = {
 };
 
 /**
+ * Largest program, guard included, that any runner accepts. Fixed rather than
+ * configurable: the API and the remote executor must agree on it.
+ */
+export const MAX_SOURCE_CHARS = 1_000_000;
+
+/**
  * Modules no interview solution has a legitimate reason to touch, each of which
  * offers a route to the filesystem, the network, or the host.
  *

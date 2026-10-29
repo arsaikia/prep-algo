@@ -3,7 +3,7 @@ import { spawnSync } from 'child_process';
 import logger from '../../config/logger.js';
 import { limitConcurrency } from '../limitConcurrency.js';
 
-import { LANGUAGES, POLICY } from './policy.js';
+import { LANGUAGES, MAX_SOURCE_CHARS, POLICY } from './policy.js';
 import { buildGuardPrologue } from './pythonGuard.js';
 import { dockerRunner, subprocessRunner } from './runners.js';
 import { getExecutionBudget } from '../executionBudget.js';
@@ -63,13 +63,25 @@ const selectRunner = () => {
  * @returns {Promise<{stdout: string, stderr: string, exitCode: number|null,
  *   timedOut: boolean, oom: boolean, truncated: boolean, runner: string}>}
  */
+// The import firewall is Python-specific; Node relies on --permission.
+const sandboxProgram = (source, language, timeoutMs) => (language === 'python'
+    ? buildGuardPrologue({ cpuSeconds: Math.max(1, Math.ceil(timeoutMs / 1000)) }) + source
+    : source);
+
+/** Whether a program is small enough for every runner (sizes the guard for timeouts up to 99s). */
+export const fitsSandbox = (source, language = 'python') =>
+    sandboxProgram(source, language, 99_000).length <= MAX_SOURCE_CHARS;
+
 export const executeProgram = async ({
     source, timeoutMs = POLICY.timeoutMs, signal = getExecutionBudget()?.signal, language = 'python',
 }) => {
     if (!LANGUAGES.includes(language)) throw new Error(`Unsupported sandbox language: ${language}`);
+    const program = sandboxProgram(source, language, timeoutMs);
+    // Every mode enforces the remote executor's limit, so local runs catch it too.
+    if (program.length > MAX_SOURCE_CHARS) {
+        throw Object.assign(new Error('Program is too large to run'), { statusCode: 413 });
+    }
     const runner = selectRunner();
-    // The import firewall is Python-specific; Node relies on --permission.
-    const program = language === 'python' ? buildGuardPrologue({ cpuSeconds: Math.max(1, Math.ceil(timeoutMs / 1000)) }) + source : source;
     const queuedAt = Date.now();
     let started = queuedAt;
 

@@ -304,6 +304,10 @@ is only for fairness and messages; the parent deadline (pending cases x 5s + 3s
 startup, capped by the 15s submission budget) and `RLIMIT_CPU` stay the hard
 limits. After a timeout the remaining cases are reported as skipped; Python
 module-level state persists between cases (like LeetCode), JavaScript does not.
+Programs are capped at `MAX_SOURCE_CHARS` (1,000,000, guard included; `policy.js`)
+in every mode, so local verification enforces the executor's limit. A submission
+whose tests would exceed it runs in consecutive sandboxes and stops at the first
+time limit or crash.
 
 Source is piped to `python3 -I -S -` (isolated mode, no site-packages, no temp
 file). Mode is selected by `CODE_SANDBOX_MODE` = `docker` | `subprocess` |
