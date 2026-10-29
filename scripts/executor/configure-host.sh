@@ -29,13 +29,19 @@ if [[ ! "$image" =~ ^python@sha256:[a-f0-9]{64}$ ]]; then
     exit 1
 fi
 docker image inspect "$image" >/dev/null
+docker pull node:22-alpine
+node_image=$(docker image inspect node:22-alpine --format '{{index .RepoDigests 0}}')
+if [[ ! "$node_image" =~ ^node@sha256:[a-f0-9]{64}$ ]]; then
+    echo "Could not resolve the pulled official Node image digest" >&2
+    exit 1
+fi
 cp -a "$package/." /opt/prepalgo-executor/
 chown -R root:root /opt/prepalgo-executor
 chmod -R a+rX,go-w /opt/prepalgo-executor
 
 umask 077
-printf 'EXECUTOR_AUDIENCE=https://%s\nEXECUTOR_CALLERS=%s\nCODE_SANDBOX_IMAGE=%s\n' \
-    "$domain" "$caller" "$image" > /etc/prepalgo-executor.env
+printf 'EXECUTOR_AUDIENCE=https://%s\nEXECUTOR_CALLERS=%s\nCODE_SANDBOX_IMAGE=%s\nCODE_SANDBOX_NODE_IMAGE=%s\n' \
+    "$domain" "$caller" "$image" "$node_image" > /etc/prepalgo-executor.env
 install -m 0644 "$script_dir/prepalgo-executor.service" /etc/systemd/system/prepalgo-executor.service
 install -m 0644 "$script_dir/Caddyfile" /etc/caddy/Caddyfile
 mkdir -p /etc/systemd/system/caddy.service.d

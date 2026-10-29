@@ -37,10 +37,10 @@
     },
     {
       "inputs": [
-        "[[1,0],[0,1],[-1,0],[0,-1]]",
+        "[[1,0],[0,2],[-3,0],[0,-4]]",
         "3"
       ],
-      "expectedOutput": "[[-1,0],[0,-1],[0,1]]",
+      "expectedOutput": "[[1,0],[0,2],[-3,0]]",
       "explanation": "All four tie; the three lexicographically smallest points win."
     }
   ],
@@ -65,10 +65,10 @@
     },
     {
       "inputs": [
-        "[[1,0],[0,1],[-1,0],[0,-1]]",
+        "[[1,0],[0,2],[-3,0],[0,-4]]",
         "3"
       ],
-      "expectedOutput": "[[-1,0],[0,-1],[0,1]]",
+      "expectedOutput": "[[1,0],[0,2],[-3,0]]",
       "explanation": "",
       "isHidden": false
     },
@@ -110,10 +110,10 @@
     },
     {
       "inputs": [
-        "[[1000,1000],[-1000,-1000]]",
+        "[[1,0],[0,2]]",
         "1"
       ],
-      "expectedOutput": "[[-1000,-1000]]",
+      "expectedOutput": "[[1,0]]",
       "explanation": "",
       "isHidden": true
     },
@@ -134,6 +134,15 @@
       "expectedOutput": "[]",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[[i,0] for i in range(30000)]",
+        "15000"
+      ],
+      "expectedOutput": "sha256:c9860c357d19028377cefa56b1955dfa671aeb2f85fe2bbc6fb241a0f99891e2",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {
@@ -141,6 +150,7 @@
       "ARRAY",
       "NUMBER"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "compare": "unordered"
   }
 }

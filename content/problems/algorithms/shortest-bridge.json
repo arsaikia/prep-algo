@@ -14,7 +14,7 @@
   "difficulty": "Medium",
   "description": "<div>\n  <p>A zero is water and a one is land. Exactly two separate side-connected islands exist. Change as few water cells as possible to land to connect the two islands, and return the number changed.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> grid = [[0,1],[1,0]]\n<strong>Output:</strong> 1</pre>\n  <p>Flipping either intervening water cell joins the diagonally placed islands.</p>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> grid = [[0,1,0],[0,0,0],[0,0,1]]\n<strong>Output:</strong> 2</pre>\n  <p>The nearest connection takes two water cells.</p>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> grid = [[1,1,1],[0,0,0],[0,0,0],[0,0,1]]\n<strong>Output:</strong> 2</pre>\n  <p>Two water cells bridge the top strip and bottom-right island.</p>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>2 &lt;= rows, columns &lt;= 100</code>; every row has the same length.</li>\n    <li>The grid contains only <code>0</code> and <code>1</code>, and exactly two islands.</li>\n    <li>Diagonal contact does not connect islands.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "class Solution:\n    def shortestBridge(self, grid: List[List[int]]):\n        \"\"\"NUMBER\"\"\"\n        pass\n",
+    "python": "class Solution:\n    def shortestBridge(self, grid: List[List[int]]) -> int:\n        \"\"\"Return the minimum number of water cells needed to connect the two islands.\"\"\"\n        pass\n",
     "javascript": "class Solution {\n  /** Return the required number result. */\n  shortestBridge(grid) {\n    // your code here\n  }\n}\n"
   },
   "exampleTestCases": [

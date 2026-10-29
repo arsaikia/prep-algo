@@ -89,6 +89,14 @@
       "expectedOutput": "[0,0]",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[1 for _ in range(100000)]"
+      ],
+      "expectedOutput": "sha256:afe612a63206785abef318ae6d6881661257a48b5fbe007eecae85eddb7f9a86",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

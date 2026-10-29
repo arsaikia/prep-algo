@@ -134,6 +134,15 @@
       "expectedOutput": "16",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:'A'*100000",
+        "0"
+      ],
+      "expectedOutput": "100000",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

@@ -133,6 +133,15 @@
       "expectedOutput": "2",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:Rng(7).word(80, 'abc')",
+        "gen:[[i,i+1] for i in range(79)] + [[i,i+2] for i in range(78)]"
+      ],
+      "expectedOutput": "33",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

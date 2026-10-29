@@ -87,6 +87,8 @@ export function redactHiddenResults(results, testCases) {
         if (testCases[i]?.isHidden === false) return r;
         return {
             passed: r.passed,
+            status: r.status,
+            runtimeMs: r.runtimeMs,
             hidden: true,
             testCase: `Hidden test ${i + 1}`,
             error: r.error,

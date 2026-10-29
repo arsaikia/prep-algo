@@ -34,6 +34,9 @@ systemctl is-active --quiet docker caddy prepalgo-executor
 image=\$(sed -n 's/^CODE_SANDBOX_IMAGE=//p' /etc/prepalgo-executor.env)
 [[ "\$image" =~ ^python@sha256:[a-f0-9]{64}\$ ]]
 docker image inspect "\$image" >/dev/null
+node_image=\$(sed -n 's/^CODE_SANDBOX_NODE_IMAGE=//p' /etc/prepalgo-executor.env)
+[[ "\$node_image" =~ ^node@sha256:[a-f0-9]{64}\$ ]]
+docker image inspect "\$node_image" >/dev/null
 curl --fail --silent --show-error --max-time 10 \
     --cacert /etc/caddy/executor-tls/server.crt "https://$PRIVATE_IP/health/ready" >/dev/null
 echo "kernel \$(uname -r), node \$(node --version), docker \$(docker version --format '{{.Server.Version}}')"

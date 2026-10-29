@@ -103,6 +103,7 @@
     "inputs": [
       "ARRAY"
     ],
-    "output": "TREE"
+    "output": "TREE",
+    "checker": "balancedBstFromSorted"
   }
 }

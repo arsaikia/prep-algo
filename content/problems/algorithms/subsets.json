@@ -15,7 +15,7 @@
   "difficulty": "Medium",
   "description": "<div>\n<p>Build the power set of <code>nums</code>: every input item may be kept or omitted, and all input values are distinct. A subset does not depend on the order in which its values were chosen.</p>\n<p>Sort values inside each subset in ascending numeric order; sort the outer list lexicographically by numeric values (shorter matching prefixes first). Include <code>[]</code>, even if the input is empty.</p>\n<p><strong>Example 1:</strong></p>\n<pre><strong>Input:</strong> nums = [1,2]\n<strong>Output:</strong> [[],[1],[1,2],[2]]\n<strong>Explanation:</strong> Each of the two numbers can be independently included or excluded.</pre>\n<p><strong>Example 2:</strong></p>\n<pre><strong>Input:</strong> nums = [3]\n<strong>Output:</strong> [[],[3]]\n<strong>Explanation:</strong> A single item has two possible subsets.</pre>\n<p><strong>Example 3:</strong></p>\n<pre><strong>Input:</strong> nums = []\n<strong>Output:</strong> [[]]\n<strong>Explanation:</strong> The empty set is a subset of every set.</pre>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li><code>0 &lt;= nums.length &lt;= 10</code></li>\n<li><code>-10 &lt;= nums[i] &lt;= 10</code></li>\n<li>All elements are distinct</li>\n</ul>\n</div>",
   "templates": {
-    "python": "class Solution:\n    def subsets(self, nums: List[int]) -> List[List[int]]:\n        \"\"\"Return the canonical collection of integer sequences.\"\"\"\n        pass",
+    "python": "class Solution:\n    def subsets(self, nums: List[int]) -> List[List[int]]:\n        \"\"\"Return all subsets as integer sequences.\"\"\"\n        pass",
     "javascript": "/**\n * @param {number[]} nums\n * @return {number[][]}\n */\nvar subsets = function(nums) {\n    // your code here\n};"
   },
   "exampleTestCases": [
@@ -127,6 +127,7 @@
     "inputs": [
       "ARRAY"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "compare": "unordered-nested"
   }
 }

@@ -121,6 +121,14 @@
       "expectedOutput": "14",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:Rng(1).ints(20000,0,100000)"
+      ],
+      "expectedOutput": "991968947",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

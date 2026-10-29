@@ -134,6 +134,15 @@
       "expectedOutput": "[null,null,null,\"one\",\"\"]",
       "explanation": "Between writes use the first value; before both use the empty string.",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[\"TimeMap\"] + [\"set\"] * 25000 + [\"get\"] * 25000",
+        "gen:[[]] + [[\"k\",\"v\",i] for i in range(1,25001)] + [[\"k\",25001] for _ in range(25000)]"
+      ],
+      "expectedOutput": "sha256:55eba30b2268ca4e9dec5118c34356d6b82ee5ee2a58cfd9d82f77695d83dd13",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

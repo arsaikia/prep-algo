@@ -121,6 +121,30 @@
       "expectedOutput": "true",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[10000]*10000"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[2]*9998+[0,0]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[2]*9997+[0,0,0]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

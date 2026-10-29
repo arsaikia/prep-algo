@@ -140,6 +140,7 @@
       "NUMBER",
       "ARRAY"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "compare": "unordered-nested"
   }
 }

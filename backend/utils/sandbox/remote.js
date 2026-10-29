@@ -3,7 +3,7 @@ import { GoogleAuth } from 'google-auth-library';
 const auth = new GoogleAuth();
 let client;
 
-export async function remoteRunner(source, timeoutMs, { signal } = {}) {
+export async function remoteRunner(source, timeoutMs, { signal, language = 'python' } = {}) {
     const url = new URL(process.env.CODE_EXECUTOR_URL);
     if (url.protocol !== 'https:' || url.username || url.password) {
         throw Object.assign(new Error('Executor URL must use HTTPS'), { statusCode: 503 });
@@ -29,7 +29,8 @@ export async function remoteRunner(source, timeoutMs, { signal } = {}) {
         const response = await fetch(new URL('/execute', url), {
             method: 'POST',
             headers: { Authorization: authorization, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ source, timeoutMs }),
+            // Older executors only know Python; omit the field for it during rollout.
+            body: JSON.stringify(language === 'python' ? { source, timeoutMs } : { source, timeoutMs, language }),
             signal: combined,
         });
         if (!response.ok) {

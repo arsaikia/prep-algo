@@ -3,7 +3,7 @@ import { spawnSync } from 'child_process';
 import logger from '../../config/logger.js';
 import { limitConcurrency } from '../limitConcurrency.js';
 
-import { POLICY } from './policy.js';
+import { LANGUAGES, POLICY } from './policy.js';
 import { buildGuardPrologue } from './pythonGuard.js';
 import { dockerRunner, subprocessRunner } from './runners.js';
 import { getExecutionBudget } from '../executionBudget.js';
@@ -54,16 +54,22 @@ const selectRunner = () => {
 };
 
 /**
- * Execute untrusted Python under the strongest isolation this host supports.
+ * Execute an untrusted program under the strongest isolation this host supports.
  *
  * @param {object} options
  * @param {string} options.source    Program text. Sent on stdin; never written to disk.
  * @param {number} [options.timeoutMs]
+ * @param {'python'|'javascript'} [options.language]
  * @returns {Promise<{stdout: string, stderr: string, exitCode: number|null,
  *   timedOut: boolean, oom: boolean, truncated: boolean, runner: string}>}
  */
-export const executePython = async ({ source, timeoutMs = POLICY.timeoutMs, signal = getExecutionBudget()?.signal }) => {
+export const executeProgram = async ({
+    source, timeoutMs = POLICY.timeoutMs, signal = getExecutionBudget()?.signal, language = 'python',
+}) => {
+    if (!LANGUAGES.includes(language)) throw new Error(`Unsupported sandbox language: ${language}`);
     const runner = selectRunner();
+    // The import firewall is Python-specific; Node relies on --permission.
+    const program = language === 'python' ? buildGuardPrologue() + source : source;
     const queuedAt = Date.now();
     let started = queuedAt;
 
@@ -71,7 +77,7 @@ export const executePython = async ({ source, timeoutMs = POLICY.timeoutMs, sign
     // count against the program's timeout.
     const result = await withSlot(() => {
         started = Date.now();
-        return runner(buildGuardPrologue() + source, timeoutMs, { signal });
+        return runner(program, timeoutMs, { signal, language });
     }, { signal });
 
     if (result.error) {
@@ -85,6 +91,7 @@ export const executePython = async ({ source, timeoutMs = POLICY.timeoutMs, sign
     logger.info(
         {
             runner: result.runner,
+            language,
             queuedMs: started - queuedAt,
             durationMs: Date.now() - started,
             exitCode: result.exitCode,
@@ -96,5 +103,7 @@ export const executePython = async ({ source, timeoutMs = POLICY.timeoutMs, sign
 
     return result;
 };
+
+export const executePython = (options) => executeProgram({ ...options, language: 'python' });
 
 export { POLICY };

@@ -11,35 +11,103 @@
   "legacyId": "6bc54ed2-846b-4187-b79e-cb423c1d6897",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "Implement a throttle function that ensures the provided function is called at most once per `wait` milliseconds.",
+  "description": "Implement `throttle(func, wait)`.\n\nIt returns a new function that calls `func` **at most once every `wait` milliseconds**. The first call runs `func` immediately. Calls made during the following `wait` milliseconds are ignored, not queued. Once `wait` milliseconds have passed since `func` last ran, the next call runs it immediately again.\n\nWhen `func` runs, it receives the arguments and the `this` value of the call that triggered it. The throttled function itself returns `undefined`.\n\n**Example:** with `wait = 100`, calls at 0, 40 and 99 ms run `func` once (at 0 ms); a call at 100 ms runs it again.\n\n**Constraints:** `1 <= wait <= 10000`. Each throttled function keeps its own state.\n\n### How the tests work\n\nEach test is a short script that calls your function and returns what it observed. Time is virtual: `setTimeout`, `setInterval`, `clearTimeout`, `Date.now()` and `performance.now()` all read a test clock, and time only passes when a test calls `await clock.tick(ms)`. A test may use `spy()`, which returns a function that records every call as `{ args, at }` in `spy.calls`.",
   "templates": {
-    "python": "def throttle(func, wait):\n    # Implement throttle\n    pass",
-    "javascript": "function throttle(func, wait) {\n  // Implement throttle\n}"
+    "python": "",
+    "javascript": "function throttle(func, wait) {\n  // Return a function that calls func at most once every wait ms.\n}\n"
   },
   "types": {
+    "language": "javascript",
     "inputs": [
-      "STRING",
-      "NUMBER"
-    ],
-    "output": "STRING"
+      "SCENARIO"
+    ]
   },
   "exampleTestCases": [
     {
       "inputs": [
-        "() => 'called'",
-        "300"
+        "const fn = spy();\nconst throttled = throttle(fn, 100);\nthrottled('a');\nawait clock.tick(40);\nthrottled('b');\nawait clock.tick(59);\nthrottled('c');\nawait clock.tick(1);\nthrottled('d');\nreturn fn.calls;"
       ],
-      "expectedOutput": "function",
-      "explanation": ""
+      "expectedOutput": "[{\"args\":[\"a\"],\"at\":0},{\"args\":[\"d\"],\"at\":100}]",
+      "explanation": "Calls at 40 and 99 ms fall inside the window opened at 0 ms and are dropped; the call at 100 ms runs."
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst throttled = throttle(fn, 100);\nthrottled(1);\nconst immediately = fn.count;\nawait clock.tick(1000);\nreturn { immediately, total: fn.count };"
+      ],
+      "expectedOutput": "{\"immediately\":1,\"total\":1}",
+      "explanation": "func runs on the first call, and dropped calls are never replayed later."
     }
   ],
   "testCases": [
     {
       "inputs": [
-        "() => 'called'",
-        "300"
+        "const fn = spy();\nconst throttled = throttle(fn, 100);\nthrottled('a');\nawait clock.tick(40);\nthrottled('b');\nawait clock.tick(59);\nthrottled('c');\nawait clock.tick(1);\nthrottled('d');\nreturn fn.calls;"
       ],
-      "expectedOutput": "function",
+      "expectedOutput": "[{\"args\":[\"a\"],\"at\":0},{\"args\":[\"d\"],\"at\":100}]",
+      "explanation": "Calls at 40 and 99 ms fall inside the window opened at 0 ms and are dropped; the call at 100 ms runs.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst throttled = throttle(fn, 100);\nthrottled(1);\nconst immediately = fn.count;\nawait clock.tick(1000);\nreturn { immediately, total: fn.count };"
+      ],
+      "expectedOutput": "{\"immediately\":1,\"total\":1}",
+      "explanation": "func runs on the first call, and dropped calls are never replayed later.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst throttled = throttle(fn, 100);\nfor (let t = 0; t < 1000; t += 10) {\n  throttled(t);\n  await clock.tick(10);\n}\nreturn fn.calls.map((call) => call.at);"
+      ],
+      "expectedOutput": "[0,100,200,300,400,500,600,700,800,900]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst throttled = throttle(fn, 100);\nthrottled('a');\nawait clock.tick(50);\nthrottled('b');\nawait clock.tick(500);\nreturn fn.calls;"
+      ],
+      "expectedOutput": "[{\"args\":[\"a\"],\"at\":0}]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const seen = [];\nconst widget = {\n  id: 'w1',\n  onScroll: throttle(function (y) { seen.push([this && this.id, y]); }, 50),\n};\nwidget.onScroll(10);\nwidget.onScroll(20);\nawait clock.tick(50);\nwidget.onScroll(30);\nreturn seen;"
+      ],
+      "expectedOutput": "[[\"w1\",10],[\"w1\",30]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst throttled = throttle(fn, 100);\nthrottled(1, [2], { three: 3 });\nreturn fn.calls;"
+      ],
+      "expectedOutput": "[{\"args\":[1,[2],{\"three\":3}],\"at\":0}]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst throttled = throttle(fn, 100);\nthrottled(1);\nawait clock.tick(250);\nthrottled(2);\nawait clock.tick(99);\nthrottled(3);\nawait clock.tick(1);\nthrottled(4);\nreturn fn.calls;"
+      ],
+      "expectedOutput": "[{\"args\":[1],\"at\":0},{\"args\":[2],\"at\":250},{\"args\":[4],\"at\":350}]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const a = spy();\nconst b = spy();\nconst ta = throttle(a, 100);\nconst tb = throttle(b, 100);\nta('a1');\nawait clock.tick(30);\ntb('b1');\nta('a2');\nawait clock.tick(70);\nta('a3');\ntb('b2');\nreturn { a: a.calls, b: b.calls };"
+      ],
+      "expectedOutput": "{\"a\":[{\"args\":[\"a1\"],\"at\":0},{\"args\":[\"a3\"],\"at\":100}],\"b\":[{\"args\":[\"b1\"],\"at\":30}]}",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst throttled = throttle(fn, 1);\nfor (let i = 0; i < 5; i++) {\n  throttled(i);\n  throttled(i + 100);\n  await clock.tick(1);\n}\nreturn fn.calls.map((call) => call.args[0]);"
+      ],
+      "expectedOutput": "[0,1,2,3,4]",
       "explanation": "",
       "isHidden": true
     }

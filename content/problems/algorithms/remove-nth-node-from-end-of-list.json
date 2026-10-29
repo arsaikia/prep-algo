@@ -32,7 +32,7 @@
         "[1]",
         "1"
       ],
-      "expectedOutput": "null",
+      "expectedOutput": "[]",
       "explanation": "Example 2 illustrates removing the only node."
     },
     {
@@ -59,7 +59,7 @@
         "[1]",
         "1"
       ],
-      "expectedOutput": "null",
+      "expectedOutput": "[]",
       "explanation": "",
       "isHidden": false
     },

@@ -11,32 +11,127 @@
   "legacyId": "172f3fdb-bbd7-4251-b727-782a989b5355",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "Implement a function that behaves like Promise.all — resolves when all promises resolve, rejects on first rejection.",
+  "description": "Implement `promiseAll(iterable)`, which behaves like `Promise.all`, **without using** `Promise.all`, `Promise.allSettled`, `Promise.any` or `Promise.race`.\n\n`promiseAll` returns a promise that:\n\n- **fulfills** with an array of the results, in the same order as the input, once every item has fulfilled. Results keep input order even when later items finish first.\n- **rejects** with the reason of the first item to reject, as soon as it rejects, without waiting for the others.\n- fulfills with `[]` straight away for an empty input.\n\nItems may be promises, other thenables, or plain values (treat a plain value as already fulfilled). The input may be any iterable, such as an array or a `Set`.\n\n**Constraints:** at most `10^4` items.\n\n### How the tests work\n\nEach test is a short script that calls your function and returns what it observed. Time is virtual: `setTimeout`, `setInterval`, `clearTimeout`, `Date.now()` and `performance.now()` all read a test clock, and time only passes when a test calls `await clock.tick(ms)`. A test may use `spy()`, which returns a function that records every call as `{ args, at }` in `spy.calls`.",
   "templates": {
     "python": "",
-    "javascript": "function promiseAll(promises) {\n  // Implement Promise.all\n}"
+    "javascript": "function promiseAll(iterable) {\n  // Return a promise that behaves like Promise.all(iterable).\n}\n"
   },
   "types": {
+    "language": "javascript",
     "inputs": [
-      "ARRAY"
-    ],
-    "output": "ARRAY"
+      "SCENARIO"
+    ]
   },
   "exampleTestCases": [
     {
       "inputs": [
-        "[Promise.resolve(1), Promise.resolve(2)]"
+        "const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\n\n    const result = promiseAll([delay(300, 'a'), delay(100, 'b'), 'c']);\n    await clock.tick(300);\n    return await result;"
       ],
-      "expectedOutput": "[1, 2]",
-      "explanation": ""
+      "expectedOutput": "[\"a\",\"b\",\"c\"]",
+      "explanation": "Results follow input order, not the order in which they finish; 'c' is a plain value."
+    },
+    {
+      "inputs": [
+        "const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\nconst fail = (ms, message) => new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms));\n\n    const result = promiseAll([delay(100, 1), fail(50, 'boom')]);\n    await clock.tick(50);\n    const state = await clock.state(result);\n    const reason = await result.then(() => null, (error) => error.message);\n    return { state, reason };"
+      ],
+      "expectedOutput": "{\"state\":\"rejected\",\"reason\":\"boom\"}",
+      "explanation": "The promise rejects at 50 ms, without waiting for the item that would fulfill at 100 ms."
     }
   ],
   "testCases": [
     {
       "inputs": [
-        "[Promise.resolve(1), Promise.resolve(2)]"
+        "const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\n\n    const result = promiseAll([delay(300, 'a'), delay(100, 'b'), 'c']);\n    await clock.tick(300);\n    return await result;"
       ],
-      "expectedOutput": "[1, 2]",
+      "expectedOutput": "[\"a\",\"b\",\"c\"]",
+      "explanation": "Results follow input order, not the order in which they finish; 'c' is a plain value.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\nconst fail = (ms, message) => new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms));\n\n    const result = promiseAll([delay(100, 1), fail(50, 'boom')]);\n    await clock.tick(50);\n    const state = await clock.state(result);\n    const reason = await result.then(() => null, (error) => error.message);\n    return { state, reason };"
+      ],
+      "expectedOutput": "{\"state\":\"rejected\",\"reason\":\"boom\"}",
+      "explanation": "The promise rejects at 50 ms, without waiting for the item that would fulfill at 100 ms.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "Promise.all = undefined;\nconst result = promiseAll([]);\nreturn [await clock.state(result), await result];"
+      ],
+      "expectedOutput": "[\"fulfilled\",[]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\n\n    Promise.all = Promise.allSettled = Promise.race = Promise.any = undefined;\n    const result = promiseAll([delay(100, 'x'), delay(200, 'y')]);\n    await clock.tick(100);\n    const afterFirst = await clock.state(result);\n    await clock.tick(100);\n    return { afterFirst, value: await result };"
+      ],
+      "expectedOutput": "{\"afterFirst\":\"pending\",\"value\":[\"x\",\"y\"]}",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const result = promiseAll([1, 'two', null, undefined, false]);\nreturn { thenable: typeof result.then === 'function', value: await result };"
+      ],
+      "expectedOutput": "{\"thenable\":true,\"value\":[1,\"two\",null,null,false]}",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const thenable = { then(resolve) { resolve(42); } };\nreturn await promiseAll([thenable, Promise.resolve(7)]);"
+      ],
+      "expectedOutput": "[42,7]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\n\n    const result = promiseAll(new Set([delay(20, 'a'), 'b']));\n    await clock.tick(20);\n    return await result;"
+      ],
+      "expectedOutput": "[\"a\",\"b\"]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\nconst fail = (ms, message) => new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms));\n\n    const result = promiseAll([fail(50, 'late'), fail(20, 'early'), delay(10, 'ok')]);\n    await clock.tick(100);\n    return await result.then(() => 'fulfilled', (error) => error.message);"
+      ],
+      "expectedOutput": "\"early\"",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\n\n    const shared = delay(10, 's');\n    const result = promiseAll([shared, shared, 1]);\n    await clock.tick(10);\n    return await result;"
+      ],
+      "expectedOutput": "[\"s\",\"s\",1]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\n\n    const items = [];\n    for (let i = 0; i < 10000; i++) items.push(i % 3 === 0 ? delay(10000 - i, i) : i);\n    const result = promiseAll(items);\n    await clock.tick(10000);\n    const value = await result;\n    return { length: value.length, inOrder: value.every((v, i) => v === i) };"
+      ],
+      "expectedOutput": "{\"length\":10000,\"inOrder\":true}",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\n\n    const result = promiseAll([delay(30, 'last'), delay(10, 'first')]);\n    await clock.tick(10);\n    const middle = await clock.state(result);\n    await clock.tick(20);\n    return [middle, await result];"
+      ],
+      "expectedOutput": "[\"pending\",[\"last\",\"first\"]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const result = promiseAll([Promise.reject(new Error('now')), Promise.resolve(1)]);\nreturn await result.then(() => 'fulfilled', (error) => error.message);"
+      ],
+      "expectedOutput": "\"now\"",
       "explanation": "",
       "isHidden": true
     }

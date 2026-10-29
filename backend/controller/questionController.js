@@ -2,7 +2,7 @@ import asyncHandler from '../middleware/async.js';
 import ErrorResponse from '../utils/errorResponse.js';
 import { randomUUID } from 'node:crypto';
 import { findSubmission, listProgress, recordAttempt, submissionHash } from '../repositories/progress.js';
-import { runPythonCode } from '../utils/codeExecution.js';
+import { runCode } from '../utils/codeExecution.js';
 import logger from '../config/logger.js';
 import { requestExecutionSignal } from '../utils/executionBudget.js';
 import {
@@ -188,7 +188,7 @@ const submitCode = asyncHandler(async (req, res) => {
             return res.status(400).json({ error: 'No test cases available for this question' });
         }
 
-        const results = await runPythonCode(code, spec.testCases, spec.types, {
+        const results = await runCode(code, spec.testCases, spec.types, {
             signal: requestExecutionSignal(req, res),
         });
 

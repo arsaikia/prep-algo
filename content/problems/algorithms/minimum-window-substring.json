@@ -134,6 +134,15 @@
       "expectedOutput": "\"ABC\"",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:\"a\" * 20000",
+        "\"b\""
+      ],
+      "expectedOutput": "\"\"",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

@@ -101,6 +101,7 @@ describe('runPythonCode: hostile submissions', () => {
             TWO_SUM_TYPES,
         );
         assert.equal(result.passed, false);
-        assert.match(result.error || '', /timed out/i);
+        assert.equal(result.status, 'tle');
+        assert.match(result.error || '', /time limit exceeded/i);
     });
 });

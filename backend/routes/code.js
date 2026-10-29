@@ -1,5 +1,6 @@
 import express from 'express';
-import { runPythonCode } from '../utils/codeExecution.js';
+import { runCode } from '../utils/codeExecution.js';
+import { gradingTypes } from '../utils/grading.js';
 import { getGradingSpec, getItemBySlug, assertContentRevision } from '../utils/contentStore.js';
 import { requestExecutionSignal } from '../utils/executionBudget.js';
 import { validate } from '../middleware/validate.js';
@@ -22,7 +23,9 @@ router.post('/execute/example', validate(executeCodeSchema), async (req, res, ne
             return res.status(400).json({ error: 'No example test cases available for this question' });
         }
 
-        const results = await runPythonCode(code, item.exampleTestCases, item.types ?? null, {
+        // Examples need the resolved entry method too, or Run and Submit could
+        // call different methods.
+        const results = await runCode(code, item.exampleTestCases, gradingTypes(item), {
             signal: requestExecutionSignal(req, res),
         });
 
@@ -53,7 +56,7 @@ router.post('/execute/submit', validate(executeCodeSchema), async (req, res, nex
             return res.status(400).json({ error: 'No test cases available for this question' });
         }
 
-        const results = await runPythonCode(code, spec.testCases, spec.types, {
+        const results = await runCode(code, spec.testCases, spec.types, {
             signal: requestExecutionSignal(req, res),
         });
         const passed = results.every(r => r.passed);

@@ -15,7 +15,7 @@
   "difficulty": "Medium",
   "description": "<div>\n<p>Find all different subsets of the items in <code>nums</code>. Equal-valued items may be chosen separately, so a subset may contain repeated numbers, but identical value sequences represent the same subset and must appear only once.</p>\n<p>Put values within each subset in ascending numeric order, then sort the list of subsets lexicographically by numeric elements (a shorter matching prefix comes first). Always include the empty subset.</p>\n<p><strong>Example 1:</strong></p>\n<pre><strong>Input:</strong> nums = [1,2,2]\n<strong>Output:</strong> [[],[1],[1,2],[1,2,2],[2],[2,2]]\n<strong>Explanation:</strong> Only one copy of each value sequence appears, despite the two 2s.</pre>\n<p><strong>Example 2:</strong></p>\n<pre><strong>Input:</strong> nums = [0,0]\n<strong>Output:</strong> [[],[0],[0,0]]\n<strong>Explanation:</strong> Choosing zero, one, or both copies yields three subsets.</pre>\n<p><strong>Example 3:</strong></p>\n<pre><strong>Input:</strong> nums = []\n<strong>Output:</strong> [[]]\n<strong>Explanation:</strong> The empty input still has the empty subset.</pre>\n<p><strong>Constraints:</strong></p>\n<ul>\n<li><code>0 &lt;= nums.length &lt;= 10</code></li>\n<li><code>-10 &lt;= nums[i] &lt;= 10</code></li>\n</ul>\n</div>",
   "templates": {
-    "python": "class Solution:\n    def subsetsWithDup(self, nums: List[int]) -> List[List[int]]:\n        \"\"\"Return the canonical collection of integer sequences.\"\"\"\n        pass",
+    "python": "class Solution:\n    def subsetsWithDup(self, nums: List[int]) -> List[List[int]]:\n        \"\"\"Return all subsets as integer sequences.\"\"\"\n        pass",
     "javascript": "/**\n * @param {number[]} nums\n * @return {number[][]}\n */\nvar subsetsWithDup = function(nums) {\n    // your code here\n};"
   },
   "exampleTestCases": [
@@ -127,6 +127,7 @@
     "inputs": [
       "ARRAY"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "compare": "unordered-nested"
   }
 }

@@ -30,7 +30,7 @@
       "inputs": [
         "[]"
       ],
-      "expectedOutput": "null",
+      "expectedOutput": "[]",
       "explanation": "Example 2 illustrates the empty chain."
     },
     {
@@ -54,7 +54,7 @@
       "inputs": [
         "[]"
       ],
-      "expectedOutput": "null",
+      "expectedOutput": "[]",
       "explanation": "",
       "isHidden": false
     },

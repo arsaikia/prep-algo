@@ -86,7 +86,7 @@
         "[]",
         "2"
       ],
-      "expectedOutput": "null",
+      "expectedOutput": "[]",
       "explanation": "",
       "isHidden": true
     },

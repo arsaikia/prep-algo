@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { GROUP_ORDER, groupRank } from '../../content/groupOrder.js';
 import { contentItemSchema, toIndexEntry } from '../../content/schema.js';
+import { CHECKERS, gradingTypes } from '../../backend/utils/grading.js';
 
 /**
  * Compiles `content/` into content-hashed artifacts.
@@ -178,6 +179,27 @@ async function main() {
         if (item.type === 'topic' && !moduleSlugs.has(item.module)) {
             errors.push(`${rel}: module "${item.module}" does not exist`);
         }
+        if (item.types?.checker && !Object.hasOwn(CHECKERS, item.types.checker)) {
+            errors.push(`${rel}: checker "${item.types.checker}" is not defined in backend/utils/grading.js`);
+        }
+        // Checkers parse inputs as JSON on the server, where `gen:` cannot be expanded.
+        if (item.types?.checker && (item.testCases ?? []).some((c) => c.inputs.some((i) => i.startsWith('gen:')))) {
+            errors.push(`${rel}: checker problems cannot use gen: inputs`);
+        }
+        const javascript = item.types?.language === 'javascript';
+        const usesScenario = item.types?.inputs?.includes('SCENARIO');
+        if (javascript || usesScenario) {
+            const cases = [...(item.exampleTestCases ?? []), ...(item.testCases ?? [])];
+            if (!javascript || item.types.inputs.length !== 1 || !usesScenario) {
+                errors.push(`${rel}: JavaScript problems take exactly one SCENARIO input, and SCENARIO needs language "javascript"`);
+            } else if (!gradingTypes(item)?.method) {
+                errors.push(`${rel}: templates.javascript must declare the function the scenarios call`);
+            } else if (item.templates?.python) {
+                errors.push(`${rel}: a JavaScript-graded problem must not offer a Python template`);
+            } else if (cases.some((c) => c.inputs.length !== 1 || c.inputs[0].startsWith('gen:'))) {
+                errors.push(`${rel}: every JavaScript test case has one scenario input (no gen:)`);
+            }
+        }
         if (item.type === 'quiz' && item.topic && !topicSlugs.has(item.topic)) {
             errors.push(`${rel}: topic "${item.topic}" does not exist`);
         }
@@ -231,7 +253,7 @@ async function main() {
         catalog.push({ ...pub, availableForSolve: entry.availableForSolve });
 
         if (item.type === 'problem' && item.testCases.length > 0) {
-            hiddenTests[item.slug] = { types: item.types ?? null, testCases: item.testCases };
+            hiddenTests[item.slug] = { types: gradingTypes(item), testCases: item.testCases };
         }
         if (item.type === 'quiz') {
             quizAnswers[item.slug] = item.options.map((o) => ({

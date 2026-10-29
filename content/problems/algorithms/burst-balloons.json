@@ -121,6 +121,14 @@
       "expectedOutput": "50",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:Rng(4).ints(300,1,1)"
+      ],
+      "expectedOutput": "300",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

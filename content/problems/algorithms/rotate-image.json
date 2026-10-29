@@ -127,6 +127,7 @@
     "inputs": [
       "ARRAY"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "inPlace": true
   }
 }

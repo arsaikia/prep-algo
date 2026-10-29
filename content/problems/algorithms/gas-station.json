@@ -134,6 +134,15 @@
       "expectedOutput": "9999",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[1]*99999+[0]",
+        "gen:[0]*99999+[100000]"
+      ],
+      "expectedOutput": "-1",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

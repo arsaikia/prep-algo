@@ -4,16 +4,21 @@ import logger from '../config/logger.js';
 
 const context = new AsyncLocalStorage();
 let admission;
+export const SUBMISSION_DEADLINE_MS = 15000;
+// Cases are scheduled against the soft deadline, so a slow submission ends in
+// Time Limit Exceeded verdicts. The hard abort is only a safety net for a
+// runner that fails to stop on time.
+const HARD_DEADLINE_GRACE_MS = 5000;
 export const getExecutionBudget = () => context.getStore();
 export const getExecutionLoad = () => admission?.stats() || { active: 0, waiting: 0 };
 
 export async function runSubmission(fn, { signal } = {}) {
     admission ||= limitConcurrency(1, { maxQueue: 8, queueTimeoutMs: 2000 });
     const started = Date.now();
-    const deadline = AbortSignal.timeout(15000);
+    const deadline = AbortSignal.timeout(SUBMISSION_DEADLINE_MS + HARD_DEADLINE_GRACE_MS);
     const combined = signal ? AbortSignal.any([signal, deadline]) : deadline;
     try {
-        return await admission(() => context.run({ signal: combined }, fn), { signal: combined });
+        return await admission(() => context.run({ signal: combined, deadline: started + SUBMISSION_DEADLINE_MS }, fn), { signal: combined });
     } catch (error) {
         if (deadline.aborted) {
             throw Object.assign(new Error('Submission deadline exceeded'), { statusCode: 504 });

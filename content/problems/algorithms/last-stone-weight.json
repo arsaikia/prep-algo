@@ -121,6 +121,14 @@
       "expectedOutput": "1",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[1 for _ in range(30)]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

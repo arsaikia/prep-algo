@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { formatLiteral, formatValue, labelInputs, statusLabel } from '../utils/testResultFormat.js';
 
 const TabsContainer = styled.div`
   margin-top: 1rem;
@@ -47,7 +48,9 @@ const TestCaseTitle = styled.h4`
 `;
 
 const TestCaseStatus = styled.span`
-  color: ${props => props.passed ? props.theme.colors.statusSuccess : props.theme.colors.statusError};
+  color: ${props => props.passed
+    ? props.theme.colors.statusSuccess
+    : props.skipped ? props.theme.colors.textSecondary : props.theme.colors.statusError};
   font-weight: 500;
 `;
 
@@ -56,6 +59,20 @@ const TestCaseDetails = styled.div`
   font-size: 0.875rem;
   line-height: 1.5;
   color: ${props => props.theme.colors.text};
+`;
+
+const Value = styled.pre`
+  margin: 0.25rem 0 0.75rem;
+  padding: 0.5rem;
+  background-color: ${props => props.theme.colors.background};
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: inherit;
+`;
+
+const Label = styled.div`
+  font-weight: 600;
 `;
 
 const DebugOutput = styled.pre`
@@ -67,7 +84,7 @@ const DebugOutput = styled.pre`
   font-size: 0.875rem;
 `;
 
-const TestResults = ({ results, type }) => {
+const TestResults = ({ results, type, parameterNames = [] }) => {
   const [activeTab, setActiveTab] = useState(0);
 
   if (!results || !results.results || results.results.length === 0) {
@@ -83,13 +100,14 @@ const TestResults = ({ results, type }) => {
       </p>
 
       <TabList>
-        {results.results.map((_, index) => (
+        {results.results.map((result, index) => (
           <Tab
             key={index}
             active={activeTab === index}
             onClick={() => setActiveTab(index)}
+            title={statusLabel(result)}
           >
-            Test {index + 1}
+            {result.passed ? '✓' : result.status === 'skipped' ? '–' : '✗'} Test {index + 1}
           </Tab>
         ))}
       </TabList>
@@ -97,25 +115,46 @@ const TestResults = ({ results, type }) => {
       {results.results.map((result, index) => (
         <TestCaseContent key={index} style={{ display: activeTab === index ? 'block' : 'none' }}>
           <TestCaseHeader>
-            <TestCaseTitle>Test Case {index + 1}</TestCaseTitle>
-            <TestCaseStatus passed={result.passed}>
-              {result.passed ? 'Passed' : 'Failed'}
+            <TestCaseTitle>{result.hidden ? `Hidden test ${index + 1}` : `Test Case ${index + 1}`}</TestCaseTitle>
+            <TestCaseStatus passed={result.passed} skipped={result.status === 'skipped'}>
+              {statusLabel(result)}
+              {typeof result.runtimeMs === 'number' && result.status !== 'skipped' ? ` · ${result.runtimeMs} ms` : ''}
             </TestCaseStatus>
           </TestCaseHeader>
 
-          <TestCaseDetails>
-            <p><strong>Input:</strong> {JSON.stringify(result.testCase)}</p>
-            <p><strong>Expected:</strong> {JSON.stringify(result.expectedOutput)}</p>
-            <p><strong>Output:</strong> {JSON.stringify(result.output)}</p>
-          </TestCaseDetails>
+          {result.hidden ? (
+            <TestCaseDetails>
+              {result.status === 'skipped'
+                ? 'Not run because an earlier test exceeded the time limit.'
+                : 'Inputs and expected output for hidden tests are not shown.'}
+            </TestCaseDetails>
+          ) : (
+            <TestCaseDetails>
+              {labelInputs(result.testCase ?? [], parameterNames).map(({ name, value }) => (
+                <div key={name}>
+                  <Label>{name} =</Label>
+                  <Value>{value}</Value>
+                </div>
+              ))}
+              {result.status !== 'skipped' && (
+                <>
+                  <Label>Output</Label>
+                  <Value>{result.status === 'passed' || result.status === 'wrong' ? formatValue(result.output) : '—'}</Value>
+                </>
+              )}
+              <Label>Expected</Label>
+              <Value>{formatLiteral(result.expectedOutput)}</Value>
+            </TestCaseDetails>
+          )}
 
           {result.error && (
-            <p style={{ color: 'red' }}>Error: {result.error}</p>
+            <p style={{ color: 'red', whiteSpace: 'pre-wrap' }}>{result.error}</p>
           )}
 
           {result.debugOutput && (
             <DebugOutput>
-              <strong>Debug Output:</strong>
+              <strong>Stdout:</strong>
+              {'\n'}
               {result.debugOutput}
             </DebugOutput>
           )}

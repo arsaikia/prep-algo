@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq';
-import { runPythonCode } from '../utils/codeExecution.js';
+import { runCode } from '../utils/codeExecution.js';
 import { getBullMQConnection } from '../config/redisConnections.js';
 import logger from '../config/logger.js';
 
@@ -17,7 +17,7 @@ export function startCodeExecutionWorker() {
     async (job) => {
       const { code, testCases, questionTypes } = job.data;
       logger.info({ jobId: job.id }, 'processing code execution job');
-      const results = await runPythonCode(code, testCases, questionTypes);
+      const results = await runCode(code, testCases, questionTypes);
       return results;
     },
     { connection, concurrency: 2 }

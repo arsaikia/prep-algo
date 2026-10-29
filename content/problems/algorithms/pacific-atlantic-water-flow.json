@@ -121,12 +121,21 @@
       "expectedOutput": "[[0,1],[1,0],[1,1]]",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[[0 for _ in range(100)] for _ in range(100)]"
+      ],
+      "expectedOutput": "sha256:cbd6a70aeb7d037e5b1b0bfdc9b9b1b09df69b55c6f8c3fca577c58a9dfba609",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {
     "inputs": [
       "ARRAY"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "compare": "unordered"
   }
 }

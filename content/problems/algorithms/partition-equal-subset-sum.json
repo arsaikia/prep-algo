@@ -137,6 +137,14 @@
       "expectedOutput": "true",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[100 for _ in range(200)]"
+      ],
+      "expectedOutput": "true",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

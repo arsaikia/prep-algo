@@ -147,6 +147,16 @@
       "expectedOutput": "true",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:\"a\"*100",
+        "gen:\"a\"*100",
+        "gen:\"a\"*199+\"b\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

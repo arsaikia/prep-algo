@@ -137,6 +137,14 @@
       "expectedOutput": "1836311903",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "45"
+      ],
+      "expectedOutput": "1836311903",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

@@ -15,7 +15,7 @@
   "difficulty": "Medium",
   "description": "<div>\n  <p>A board contains <code>\"X\"</code> and <code>\"O\"</code>. Flip an <code>\"O\"</code> region to <code>\"X\"</code> only if none of its side-connected cells touches the outer border. Return the resulting board rather than returning nothing.</p>\n  <p>The output is the entire transformed array, not a count of flipped cells.</p>\n  <p><strong>Example 1:</strong></p>\n  <pre><strong>Input:</strong> board = [[&quot;X&quot;,&quot;X&quot;,&quot;X&quot;,&quot;X&quot;],[&quot;X&quot;,&quot;O&quot;,&quot;O&quot;,&quot;X&quot;],[&quot;X&quot;,&quot;X&quot;,&quot;O&quot;,&quot;X&quot;],[&quot;X&quot;,&quot;O&quot;,&quot;X&quot;,&quot;X&quot;]]\n<strong>Output:</strong> [[&quot;X&quot;,&quot;X&quot;,&quot;X&quot;,&quot;X&quot;],[&quot;X&quot;,&quot;X&quot;,&quot;X&quot;,&quot;X&quot;],[&quot;X&quot;,&quot;X&quot;,&quot;X&quot;,&quot;X&quot;],[&quot;X&quot;,&quot;O&quot;,&quot;X&quot;,&quot;X&quot;]]</pre>\n  <p>The middle region is enclosed; the border cell stays O.</p>\n  <p><strong>Example 2:</strong></p>\n  <pre><strong>Input:</strong> board = [[&quot;O&quot;]]\n<strong>Output:</strong> [[&quot;O&quot;]]</pre>\n  <p>A one-cell board consists entirely of border.</p>\n  <p><strong>Example 3:</strong></p>\n  <pre><strong>Input:</strong> board = [[&quot;X&quot;,&quot;X&quot;],[&quot;X&quot;,&quot;X&quot;]]\n<strong>Output:</strong> [[&quot;X&quot;,&quot;X&quot;],[&quot;X&quot;,&quot;X&quot;]]</pre>\n  <p>No O needs changing.</p>\n  <p><strong>Constraints:</strong></p>\n  <ul>\n    <li><code>0 &lt;= rows, columns &lt;= 100</code>; an empty grid has no islands.</li>\n    <li>All rows have equal length; cells have the values stated above.</li>\n    <li>Only side-sharing cells are adjacent; diagonal contact does not connect them.</li>\n    <li>Board entries are exactly <code>\"X\"</code> or <code>\"O\"</code>.</li>\n  </ul>\n</div>",
   "templates": {
-    "python": "class Solution:\n    def solve(self, board: List[List[str]]):\n        \"\"\"ARRAY\"\"\"\n        pass\n",
+    "python": "class Solution:\n    def solve(self, board: List[List[str]]) -> None:\n        \"\"\"Modify the board in place, preserving only regions connected to its border.\"\"\"\n        pass\n",
     "javascript": "class Solution {\n  /** Return the required array result. */\n  solve(board) {\n    // your code here\n  }\n}\n"
   },
   "exampleTestCases": [
@@ -127,6 +127,7 @@
     "inputs": [
       "ARRAY"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "inPlace": true
   }
 }

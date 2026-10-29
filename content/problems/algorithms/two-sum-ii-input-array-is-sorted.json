@@ -125,6 +125,15 @@
       "expectedOutput": "[1,4]",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:sorted(list(range(-1000, 1000)) * 14 + list(range(-1000, 998)) + [1000,1000])",
+        "2000"
+      ],
+      "expectedOutput": "[29999,30000]",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

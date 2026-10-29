@@ -121,6 +121,22 @@
       "expectedOutput": "40",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[[r*40+c for c in range(40)] for r in range(40)]"
+      ],
+      "expectedOutput": "79",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[[i for i in range(1200)]]"
+      ],
+      "expectedOutput": "1200",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

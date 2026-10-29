@@ -112,6 +112,22 @@
       "expectedOutput": "2",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[7] * 50000"
+      ],
+      "expectedOutput": "7",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[i for i in range(1, 25000)] + [0] * 25001"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

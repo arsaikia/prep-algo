@@ -121,6 +121,14 @@
       "expectedOutput": "10000",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[1 if i % 2 == 0 else -1 for i in range(100000)]"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

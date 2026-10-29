@@ -121,6 +121,14 @@
       "expectedOutput": "9999",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[10000]*10000"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

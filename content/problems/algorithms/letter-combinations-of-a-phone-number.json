@@ -127,6 +127,7 @@
     "inputs": [
       "STRING"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "compare": "unordered"
   }
 }

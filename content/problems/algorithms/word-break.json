@@ -143,6 +143,15 @@
       "expectedOutput": "true",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:\"a\" * 300 + \"b\"",
+        "gen:[\"a\" * i for i in range(1, 6)]"
+      ],
+      "expectedOutput": "false",
+      "explanation": "The repeated a-prefix has many possible segmentations, but the final b cannot be matched.",
+      "isHidden": true
     }
   ],
   "types": {

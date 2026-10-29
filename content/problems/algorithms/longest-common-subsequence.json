@@ -134,6 +134,15 @@
       "expectedOutput": "100",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:'a'*35",
+        "gen:'b'*35"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

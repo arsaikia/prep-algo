@@ -113,6 +113,14 @@
       "expectedOutput": "[0]",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[10000-(i//1000) for i in range(100000)]"
+      ],
+      "expectedOutput": "sha256:af223ca49bd199ac08a094020440480511d32a352b2fcf8497475603211ca454",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

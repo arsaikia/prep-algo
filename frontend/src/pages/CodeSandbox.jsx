@@ -7,6 +7,7 @@ import { Timer, Pause, Play as PlayLucide, Square, Zap, Monitor, FileDown, FileT
 import { useSelector } from 'react-redux';
 import apiClient from '../api/client.js';
 import TestResults from '../components/TestResults.jsx';
+import { parameterNames } from '../utils/testResultFormat.js';
 import McqSolver from '../components/McqSolver/McqSolver.jsx';
 import { loadIndex, loadItem } from '../content/loader.js';
 import { isCdnContentEnabled } from '../content/source.js';
@@ -904,6 +905,11 @@ const CodeSandbox = () => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [isRunningExampleTests, setIsRunningExampleTests] = useState(false);
   const [exampleTestResults, setExampleTestResults] = useState(null);
+  // The language the server grades this question in; the other is editor-only.
+  const gradedLanguage = currentQuestion?.types?.language ?? 'python';
+  const gradedLanguageLabel = gradedLanguage === 'javascript' ? 'JavaScript' : 'Python';
+  // A JavaScript test is one scenario script, not a list of arguments.
+  const resultParameterNames = gradedLanguage === 'javascript' ? ['test'] : parameterNames(currentQuestion?.templates?.python);
   const [debugOutput, setDebugOutput] = useState('');
 
   // Editor UX state. `fontSize` is persisted because it is an accessibility setting,
@@ -1170,10 +1176,10 @@ const CodeSandbox = () => {
   const runCode = async () => {
     const seq = loadSeqRef.current;
     const stale = () => seq !== loadSeqRef.current || executionIdentity !== activeExecutionIdentityRef.current;
-    if (language !== 'python') {
+    if (language !== gradedLanguage) {
       setExecutionFeedback({
         status: 'error',
-        message: 'Submissions are executed as Python. Switch the language to Python to submit.'
+        message: `This question is graded in ${gradedLanguageLabel}. Switch the language to ${gradedLanguageLabel} to submit.`
       });
       return;
     }
@@ -1210,9 +1216,12 @@ const CodeSandbox = () => {
           },
           results: response.data.results.map(r => ({
             testCase: r.input,
-            output: r.result,
-            expectedOutput: r.expected,
+            output: r.actualOutput,
+            expectedOutput: r.expectedOutput,
             passed: r.passed,
+            status: r.status,
+            runtimeMs: r.runtimeMs,
+            hidden: r.hidden,
             error: r.error,
             debugOutput: r.debugOutput
           }))
@@ -1316,6 +1325,7 @@ const CodeSandbox = () => {
       }
 
       setCurrentQuestion(questionData);
+      setLanguage(questionData.types?.language ?? 'python');
 
       // Check if description exists
       if (!questionData.description) {
@@ -1355,10 +1365,10 @@ const CodeSandbox = () => {
   const runExampleTests = async () => {
     const seq = loadSeqRef.current;
     const stale = () => seq !== loadSeqRef.current || executionIdentity !== activeExecutionIdentityRef.current;
-    if (language !== 'python') {
+    if (language !== gradedLanguage) {
       setExecutionFeedback({
         status: 'error',
-        message: 'Example tests are executed as Python. Switch the language to Python to run them.'
+        message: `Example tests run in ${gradedLanguageLabel}. Switch the language to ${gradedLanguageLabel} to run them.`
       });
       return;
     }
@@ -1391,6 +1401,9 @@ const CodeSandbox = () => {
             output: r.actualOutput,
             expectedOutput: r.expectedOutput,
             passed: r.passed,
+            status: r.status,
+            runtimeMs: r.runtimeMs,
+            hidden: r.hidden,
             error: r.error,
             debugOutput: r.debugOutput
           }))
@@ -1579,8 +1592,8 @@ const CodeSandbox = () => {
 
         <TopBarActions>
           <LanguageSelector aria-label="Programming language" value={language} onChange={handleLanguageChange}>
-            <option value="python">Python</option>
-            <option value="javascript">JavaScript (editor only)</option>
+            {gradedLanguage === 'python' && <option value="python">Python</option>}
+            <option value="javascript">{gradedLanguage === 'javascript' ? 'JavaScript' : 'JavaScript (editor only)'}</option>
           </LanguageSelector>
           <SandboxActionButton
             gated={isGuest}
@@ -1867,11 +1880,11 @@ const CodeSandbox = () => {
                 {output && <div>{output}</div>}
 
                 {exampleTestResults && (
-                  <TestResults results={exampleTestResults} type="example" />
+                  <TestResults results={exampleTestResults} type="example" parameterNames={resultParameterNames} />
                 )}
 
                 {testResults && (
-                  <TestResults results={testResults} type="final" />
+                  <TestResults results={testResults} type="final" parameterNames={resultParameterNames} />
                 )}
               </OutputContent>
             </OutputCard>

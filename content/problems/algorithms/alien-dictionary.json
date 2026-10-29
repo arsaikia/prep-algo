@@ -127,6 +127,7 @@
     "inputs": [
       "ARRAY"
     ],
-    "output": "STRING"
+    "output": "STRING",
+    "checker": "alienOrder"
   }
 }

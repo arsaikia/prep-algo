@@ -1,6 +1,8 @@
 import { spawn } from 'child_process';
 
-import { POLICY, dockerArgs } from './policy.js';
+import { POLICY, dockerArgs, nodeArgs } from './policy.js';
+
+const heapExhausted = (stderr) => /JavaScript heap out of memory|Allocation failed/.test(stderr);
 
 /**
  * Shared child-process driver.
@@ -93,9 +95,9 @@ const drive = (command, args, source, { timeoutMs, onKill, signal }) => new Prom
  * The program arrives on stdin, so nothing is ever written to the host
  * filesystem and a stock upstream image needs no customisation.
  */
-export const dockerRunner = async (source, timeoutMs, { signal } = {}) => {
+export const dockerRunner = async (source, timeoutMs, { signal, language = 'python' } = {}) => {
     const name = `prepalgo-exec-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    const args = dockerArgs();
+    const args = dockerArgs(language);
     args.splice(2, 0, '--name', name);
 
     const result = await drive('docker', args, source, {
@@ -106,7 +108,7 @@ export const dockerRunner = async (source, timeoutMs, { signal } = {}) => {
     });
 
     // 137 is SIGKILL, which the OOM killer uses when the cgroup limit is hit.
-    const oom = result.exitCode === 137 && !result.timedOut && !signal?.aborted;
+    const oom = (result.exitCode === 137 || heapExhausted(result.stderr)) && !result.timedOut && !signal?.aborted;
 
     // 125 is the Docker CLI itself failing (dead daemon, bad flag, missing
     // image) rather than the program. Surfacing it as a generic execution
@@ -131,13 +133,15 @@ export const dockerRunner = async (source, timeoutMs, { signal } = {}) => {
  * -S skips site.py. Together they stop the surrounding environment from
  * reintroducing import paths the guard has not vetted.
  */
-export const subprocessRunner = async (source, timeoutMs, { signal } = {}) => {
-    const result = await drive('python3', ['-I', '-S', '-'], source, {
-        timeoutMs,
-        signal,
-        onKill: null,
-    });
+export const subprocessRunner = async (source, timeoutMs, { signal, language = 'python' } = {}) => {
+    const javascript = language === 'javascript';
+    const result = await drive(
+        javascript ? process.execPath : 'python3',
+        javascript ? nodeArgs() : ['-I', '-S', '-'],
+        source,
+        { timeoutMs, signal, onKill: null },
+    );
 
-    const oom = /MemoryError/.test(result.stderr);
+    const oom = javascript ? heapExhausted(result.stderr) : /MemoryError/.test(result.stderr);
     return { ...result, oom, runner: 'subprocess' };
 };

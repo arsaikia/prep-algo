@@ -56,10 +56,19 @@ const IO_TYPE = z.enum([
     'BOOLEAN',
     'LINKEDLIST',
     'LINKEDLIST_CYCLE',
+    /** An array of linked lists, e.g. merge-k-sorted-lists. */
+    'LINKEDLIST_ARRAY',
     'GRAPH',
     'RANDOM_LIST',
     'NODE_INDEX',
+    'TREE_NODE',
+    'TREE_CONTEXT',
     'OPS',
+    /** Interactive APIs: LeetCode's ArrayReader and Robot, built from the input. */
+    'ARRAY_READER',
+    'ROBOT_ROOM',
+    /** JavaScript only: the body of an async function that drives the solution. */
+    'SCENARIO',
 ]);
 
 /**
@@ -80,16 +89,39 @@ export const problemSchema = z.object({
         .default({ python: '', javascript: '' }),
     types: z
         .object({
+            /** Language submissions are graded in; Python unless stated. */
+            language: z.enum(['python', 'javascript']).optional(),
             inputs: z.array(IO_TYPE).default([]),
             output: IO_TYPE.optional(),
+            /** Mutates its first argument; a None return grades that argument. */
+            inPlace: z.boolean().optional(),
+            /**
+             * How a returned value is matched against the recorded answer when
+             * the problem accepts more than one: `unordered` ignores the order
+             * of the top-level list, `unordered-nested` the order at every level.
+             */
+            compare: z.enum(['exact', 'unordered', 'unordered-nested']).optional(),
+            /**
+             * `[encode, decode]` method names on a `Codec` class. The answer is
+             * `Codec().decode(Codec().encode(*inputs))`, and encode must return a string.
+             */
+            codec: z.tuple([z.string().min(1), z.string().min(1)]).optional(),
+            /** Named server-side validator for answers no single value captures. */
+            checker: z.string().min(1).optional(),
         })
         .optional(),
-    exampleTestCases: z.array(testCase).default([]),
+    exampleTestCases: z.array(testCase.refine(
+        (c) => !c.inputs.some((i) => i.startsWith('gen:')) && !c.expectedOutput.startsWith('sha256:'),
+        'generated (gen:) inputs and digest (sha256:) answers are only allowed in hidden test cases',
+    )).default([]),
     /**
      * Never shipped to the browser. The build strips these into a
      * server-only artifact; leaking them would hand users the answer key.
      */
-    testCases: z.array(testCase.extend({ isHidden: z.boolean().default(true) })).default([]),
+    testCases: z.array(testCase.extend({ isHidden: z.boolean().default(true) }).refine(
+        (c) => c.isHidden || (!c.inputs.some((i) => i.startsWith('gen:')) && !c.expectedOutput.startsWith('sha256:')),
+        'generated (gen:) inputs and digest (sha256:) answers are only allowed in hidden test cases',
+    )).default([]),
 });
 
 /**

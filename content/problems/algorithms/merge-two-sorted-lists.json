@@ -32,7 +32,7 @@
         "[]",
         "[]"
       ],
-      "expectedOutput": "null",
+      "expectedOutput": "[]",
       "explanation": "Example 2 illustrates two empty inputs."
     },
     {
@@ -59,7 +59,7 @@
         "[]",
         "[]"
       ],
-      "expectedOutput": "null",
+      "expectedOutput": "[]",
       "explanation": "",
       "isHidden": false
     },

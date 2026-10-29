@@ -78,6 +78,7 @@
       "TREE",
       "NUMBER"
     ],
-    "output": "TREE"
+    "output": "TREE",
+    "checker": "bstAfterDelete"
   }
 }

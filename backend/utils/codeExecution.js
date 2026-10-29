@@ -1,4 +1,7 @@
-import { executePython, POLICY } from './sandbox/index.js';
+import { randomBytes } from 'node:crypto';
+import { executeProgram, POLICY } from './sandbox/index.js';
+import { parseJson, judge } from './grading.js';
+import { buildJavaScriptProgram } from './javascriptHarness.js';
 import { getExecutionBudget, runSubmission } from './executionBudget.js';
 
 // Constants
@@ -129,47 +132,161 @@ const detectInputType = (input, code) => {
  * @param {string} type - The detected type
  * @returns {string} - Python code to parse the input
  */
+/**
+ * Python expression for an input's raw value. Authored inputs are JSON; large
+ * hidden inputs may instead be `gen:<python expression>`, built in the sandbox
+ * from a seeded generator so a 10^5-element case costs a few bytes of source.
+ */
+const rawValue = (input) => (input.startsWith('gen:')
+    ? `_generate(${JSON.stringify(input.slice(4).trim())})`
+    : `json.loads(${JSON.stringify(input)})`);
+
 const generateInputParser = (input, type) => {
     switch (type) {
         case 'ARRAY':
-            return `json.loads(${JSON.stringify(input)})`;
-        case 'TREE':
-            return `buildTree(json.loads(${JSON.stringify(input)}))`;
-        case 'LINKEDLIST':
-            return `buildLinkedList(json.loads(${JSON.stringify(input)}))`;
-        case 'LINKEDLIST_CYCLE':
-            return `buildCycleList(json.loads(${JSON.stringify(input)}))`;
-        case 'GRAPH':
-            return `buildGraph(json.loads(${JSON.stringify(input)}))`;
-        case 'RANDOM_LIST':
-            return `buildRandomList(json.loads(${JSON.stringify(input)}))`;
         case 'STRING':
-            return `json.loads(${JSON.stringify(input)})`; // Remove quotes
         case 'BOOLEAN':
-            return `json.loads(${JSON.stringify(input)})`;
         case 'NUMBER':
-            return `json.loads(${JSON.stringify(input)})`;
+            return rawValue(input);
+        case 'TREE':
+            return `buildTree(${rawValue(input)})`;
+        case 'LINKEDLIST':
+            return `buildLinkedList(${rawValue(input)})`;
+        case 'LINKEDLIST_CYCLE':
+            return `buildCycleList(${rawValue(input)})`;
+        case 'GRAPH':
+            return `buildGraph(${rawValue(input)})`;
+        case 'RANDOM_LIST':
+            return `buildRandomList(${rawValue(input)})`;
+        case 'LINKEDLIST_ARRAY':
+            return `[buildLinkedList(_values) for _values in ${rawValue(input)}]`;
+        case 'ARRAY_READER':
+            return `ArrayReader(${rawValue(input)})`;
+        case 'ROBOT_ROOM':
+            return `_robot_from(${rawValue(input)})`;
         default:
-            return `eval(${JSON.stringify(input)})`;
+            return input.startsWith('gen:') ? rawValue(input) : `eval(${JSON.stringify(input)})`;
     }
 };
 
 /**
- * Run Python code against test cases
- * @param {string} code - The Python code to execute
+ * Grade a submission against test cases: Python by default, JavaScript when
+ * `questionTypes.language` is `javascript`.
+ * @param {string} code - The submitted source
  * @param {Array<{inputs: Array<string>, expectedOutput: string}>} testCases - Array of test cases
  * @param {Object} questionTypes - Optional question types object with inputs and output arrays
- * @returns {Promise<Array<{input: string, expectedOutput: string, actualOutput: string, isCorrect: boolean, error: string|null, debugOutput: string}>>}
+ * @returns {Promise<Array<{input: string[], expectedOutput: string, actualOutput: unknown, passed: boolean,
+ *   status: string, error: string|null, debugOutput: string, runtimeMs: number|null}>>}
  */
-export const runPythonCode = (code, testCases, questionTypes = null, options = {}) =>
+export const runCode = (code, testCases, questionTypes = null, options = {}) =>
     runSubmission(() => runTestCases(code, testCases, questionTypes), options);
+
+/** Python is the default; `questionTypes.language` selects JavaScript. */
+export const runPythonCode = runCode;
+
+// Room left for the round trip and verdict once a case's own limit expires.
+const DEADLINE_RESERVE_MS = 1500;
+const MIN_CASE_TIMEOUT_MS = 1000;
+// Larger results are reported as a digest so they fit the sandbox output cap.
+const INLINE_RESULT_LIMIT = 200_000;
+
+/**
+ * One graded case. `status` is passed | wrong | error | tle | mle | skipped;
+ * `passed` is kept for existing consumers.
+ */
+const outcome = (testCase, { status, actualOutput = null, error = null, debugOutput = '', runtimeMs = null, digest }) => ({
+    input: testCase.inputs,
+    expectedOutput: testCase.expectedOutput,
+    actualOutput,
+    passed: status === 'passed',
+    status,
+    error,
+    debugOutput: debugOutput || '',
+    runtimeMs,
+    ...(digest ? { digest } : {}),
+});
+
+/**
+ * Runs one prepared program and grades its marked result line on the server.
+ * Shared by every grading language so limits and verdicts stay identical.
+ */
+const executeCase = async ({ testCase, source, marker, questionTypes, language }) => {
+    const budget = getExecutionBudget();
+    const remainingMs = budget?.deadline ? budget.deadline - Date.now() - DEADLINE_RESERVE_MS : EXECUTION_TIMEOUT;
+    const timeoutMs = Math.min(EXECUTION_TIMEOUT, Math.floor(remainingMs));
+    if (timeoutMs < MIN_CASE_TIMEOUT_MS) {
+        return {
+            stopReason: 'Not run: the submission used up its total time budget',
+            result: outcome(testCase, { status: 'tle', error: 'Time Limit Exceeded: the submission used up its total time budget' }),
+        };
+    }
+
+    const started = Date.now();
+    const execution = await executeProgram({ source, timeoutMs, language });
+    const runtimeMs = Date.now() - started;
+    getExecutionBudget()?.signal.throwIfAborted();
+
+    if (execution.timedOut) {
+        return {
+            stopReason: 'Not run: an earlier test exceeded the time limit',
+            result: outcome(testCase, {
+                status: 'tle',
+                runtimeMs,
+                error: `Time Limit Exceeded: took longer than ${(timeoutMs / 1000).toFixed(timeoutMs % 1000 ? 1 : 0)} seconds`,
+            }),
+        };
+    }
+    if (execution.oom) {
+        return { result: outcome(testCase, { status: 'mle', runtimeMs, error: `Memory Limit Exceeded: used more than ${POLICY.memoryMb}MB` }) };
+    }
+
+    // The harness prints one marked line carrying the returned value;
+    // anything else on stdout is the submission's own output.
+    const line = execution.stdout.split('\n').reverse().find((l) => l.startsWith(marker));
+    if (!line) {
+        const detail = execution.stderr.trim() || (execution.exitCode === 0
+            ? 'Program exited before returning a result'
+            : 'Execution failed');
+        return { result: outcome(testCase, { status: 'error', runtimeMs, error: detail }) };
+    }
+    const payload = JSON.parse(line.slice(marker.length));
+    if (payload.error) {
+        return { result: outcome(testCase, { status: 'error', runtimeMs, error: payload.error, debugOutput: payload.debugOutput }) };
+    }
+
+    // Judge the exact value; the display copy may round integers beyond 2^53.
+    const exact = payload.digest ? null : parseJson(line.slice(marker.length)).result;
+    const passed = judge(exact, testCase.expectedOutput, questionTypes, testCase.inputs, payload.digest ?? null);
+    return { result: outcome(testCase, {
+        status: passed ? 'passed' : 'wrong',
+        runtimeMs,
+        actualOutput: payload.digest ? `${payload.preview}… (${payload.size} characters)` : payload.result,
+        digest: payload.digest,
+        debugOutput: payload.debugOutput,
+    }) };
+};
 
 const runTestCases = async (code, testCases, questionTypes) => {
     const results = [];
 
+    let stopReason = null;
+
     for (const testCase of testCases) {
         getExecutionBudget()?.signal.throwIfAborted();
+        if (stopReason) {
+            results.push(outcome(testCase, { status: 'skipped', error: stopReason }));
+            continue;
+        }
         try {
+            if (questionTypes?.language === 'javascript') {
+                const marker = `__PREPALGO_RESULT_${randomBytes(8).toString('hex')}__`;
+                const source = buildJavaScriptProgram({ code, scenario: testCase.inputs[0], entry: questionTypes.method, marker });
+                const graded = await executeCase({ testCase, source, marker, questionTypes, language: 'javascript' });
+                if (graded.stopReason) stopReason = graded.stopReason;
+                results.push(graded.result);
+                continue;
+            }
+
             // Determine input and output types
             let inputTypes, expectedOutputType;
 
@@ -193,12 +310,16 @@ const runTestCases = async (code, testCases, questionTypes) => {
             // one long-lived object rather than by calling a pure function once.
             // The whole sequence is data, so a new design problem is content only.
             const opsMode = inputTypes[0] === 'OPS';
+            // Encoder/decoder problems are graded on decode(encode(input)).
+            const codecMethods = !opsMode && Array.isArray(questionTypes?.codec) ? questionTypes.codec : null;
 
             // Learners write `Node` for both clone-graph and copy-list, but the
             // two carry different fields. Only one shape is ever in play for a
             // given problem, so bind the name to the one this problem declared.
             const nodeAlias = inputTypes.includes('GRAPH')
                 ? 'Node = GraphNode'
+                : inputTypes.includes('TREE_CONTEXT')
+                    ? 'Node = TreeNode'
                 : inputTypes.includes('RANDOM_LIST')
                     ? 'Node = RandomListNode'
                     : '';
@@ -210,14 +331,25 @@ const runTestCases = async (code, testCases, questionTypes) => {
             }
 
             // Generate input parsing code
-            const inputArgs = testCase.inputs.map((input, index) =>
-                generateInputParser(input, inputTypes[index])
-            );
+            // TREE_NODE inputs are nodes of the most recent tree (LeetCode's
+            // `p`, `q`); a TREE_CONTEXT tree is built for them but not passed.
+            const argLines = testCase.inputs.map((input, index) => {
+                const type = inputTypes[index];
+                if (type === 'TREE_NODE') return `        args.append(_find_node(_tree, ${rawValue(input)}))`;
+                if (type === 'TREE_CONTEXT') return `        _tree = ${generateInputParser(input, 'TREE')}`;
+                if (type === 'ROBOT_ROOM') {
+                    return `        args.append(${generateInputParser(input, type)})
+        _robot_cells = args[-1]._Robot__cleaned
+        _robot_shape = [len(_row) for _row in ${rawValue(input)}["room"]]`;
+                }
+                const line = `        args.append(${generateInputParser(input, type)})`;
+                return type === 'TREE' ? `${line}\n        _tree = args[-1]` : line;
+            }).join('\n');
 
             const driverBlock = opsMode
                 ? `        # Replay a recorded call sequence against one instance.
-        calls = json.loads(${JSON.stringify(testCase.inputs[0] ?? '[]')})
-        call_args = json.loads(${JSON.stringify(testCase.inputs[1] ?? '[]')})
+        calls = ${rawValue(testCase.inputs[0] ?? '[]')}
+        call_args = ${rawValue(testCase.inputs[1] ?? '[]')}
 
         if not calls:
             raise Exception("Ops test case has no calls")
@@ -238,17 +370,48 @@ const runTestCases = async (code, testCases, questionTypes) => {
             if method is None or not callable(method):
                 raise Exception("'%s' has no method '%s'" % (class_name, method_name))
             result.append(method(*call_args[call_index]))`
+                : codecMethods
+                    ? `        # Round-trip through two separate Codec instances, as LeetCode does.
+        args = []
+        _tree = None
+${argLines}
+        if 'Codec' not in globals():
+            raise Exception("Class 'Codec' is not defined. Keep the class name from the starter code.")
+        encoded = getattr(Codec(), ${JSON.stringify(codecMethods[0])})(*args)
+        if not isinstance(encoded, str):
+            raise Exception("${codecMethods[0]} must return a string, got %s" % type(encoded).__name__)
+        result = getattr(Codec(), ${JSON.stringify(codecMethods[1])})(encoded)`
                 : `        # Parse inputs based on detected types
-        args = [${inputArgs.join(', ')}]
+        args = []
+        _tree = None
+${argLines}
         solution = Solution()
 
-        method_name = next((attr_name for attr_name in dir(solution)
-            if not attr_name.startswith('_') and callable(getattr(solution, attr_name))), None)
+        method_name = ${questionTypes?.method ? JSON.stringify(questionTypes.method) : 'None'}
+        if method_name is not None:
+            if not callable(getattr(solution, method_name, None)):
+                raise Exception("Solution has no method '%s'. Keep the method name from the starter code." % method_name)
+        else:
+            method_name = next((attr_name for attr_name in dir(solution)
+                if not attr_name.startswith('_') and callable(getattr(solution, attr_name))), None)
 
         if not method_name:
             raise Exception("No solution method found in the Solution class")
 
         result = getattr(solution, method_name)(*args)`;
+
+            // LeetCode grades in-place problems on the mutated input, whatever the method returns.
+            const inPlaceBlock = questionTypes?.inPlace && !opsMode ? `
+
+        if args:
+            result = args[0]` : '';
+            // An interactive robot is judged on what it cleaned, not on a return value.
+            // The map of cleaned cells is read from references taken before the
+            // solution ran and judged on the server against the hidden room.
+            const robotBlock = !opsMode && inputTypes.includes('ROBOT_ROOM') ? `
+
+        result = ["".join("1" if (r, c) in _robot_cells else "0" for c in range(width)) for r, width in enumerate(_robot_shape)]` : '';
+            const marker = `__PREPALGO_RESULT_${randomBytes(8).toString('hex')}__`;
 
             // Get existing imports and required typing imports
             const existingImports = extractImports(code);
@@ -260,9 +423,69 @@ import json
 import sys
 import io
 import contextlib
+# LeetCode allows deep recursion (e.g. DFS over a 100 x 200 grid).
+sys.setrecursionlimit(100000)
 
 ${existingImports}
 ${requiredTypingImports}
+
+# Interactive APIs. Their state is name-mangled so solutions use the API.
+class ArrayReader:
+    """LeetCode 702: get(i) returns 2**31 - 1 past the end; limited queries."""
+    _LIMIT = 100
+
+    def __init__(self, values):
+        self.__values = list(values)
+        self.__calls = 0
+
+    def get(self, index):
+        self.__calls += 1
+        if self.__calls > ArrayReader._LIMIT:
+            raise Exception("ArrayReader.get was called more than %d times. Search in O(log n) queries." % ArrayReader._LIMIT)
+        if not isinstance(index, int) or index < 0 or index >= len(self.__values):
+            return 2147483647
+        return self.__values[index]
+
+class Robot:
+    """LeetCode 489: starts facing up at an open cell of a hidden grid."""
+    _DIRS = ((-1, 0), (0, 1), (1, 0), (0, -1))
+
+    def __init__(self, room, row, col):
+        self.__room = [list(r) for r in room]
+        self.__pos = (row, col)
+        self.__facing = 0
+        self.__cleaned = set()
+        self.__steps = 0
+
+    def __tick(self):
+        self.__steps += 1
+        if self.__steps > 2000000:
+            raise Exception("The robot made more than 2000000 moves. Avoid revisiting cells.")
+
+    def move(self):
+        self.__tick()
+        dr, dc = Robot._DIRS[self.__facing]
+        r, c = self.__pos[0] + dr, self.__pos[1] + dc
+        if 0 <= r < len(self.__room) and 0 <= c < len(self.__room[r]) and self.__room[r][c] == 1:
+            self.__pos = (r, c)
+            return True
+        return False
+
+    def turnLeft(self):
+        self.__tick()
+        self.__facing = (self.__facing + 3) % 4
+
+    def turnRight(self):
+        self.__tick()
+        self.__facing = (self.__facing + 1) % 4
+
+    def clean(self):
+        self.__tick()
+        self.__cleaned.add(self.__pos)
+
+
+def _robot_from(spec):
+    return Robot(spec["room"], spec["row"], spec["col"])
 
 # Data structure classes for trees and linked lists
 class TreeNode:
@@ -270,6 +493,20 @@ class TreeNode:
         self.val = val
         self.left = left
         self.right = right
+        self.parent = None
+
+def _find_node(root, val):
+    """The node holding val, or a detached node when the tree lacks it."""
+    stack = [root] if root else []
+    while stack:
+        node = stack.pop()
+        if node.val == val:
+            return node
+        if node.left:
+            stack.append(node.left)
+        if node.right:
+            stack.append(node.right)
+    return TreeNode(val)
 
 class ListNode:
     def __init__(self, val=0, next=None):
@@ -284,20 +521,24 @@ def buildTree(values):
     
     root = TreeNode(values[0])
     queue = [root]
+    head = 0
     i = 1
     
-    while queue and i < len(values):
-        node = queue.pop(0)
+    while head < len(queue) and i < len(values):
+        node = queue[head]
+        head += 1
         
         # Left child
         if i < len(values) and values[i] is not None:
             node.left = TreeNode(values[i])
+            node.left.parent = node
             queue.append(node.left)
         i += 1
         
         # Right child
         if i < len(values) and values[i] is not None:
             node.right = TreeNode(values[i])
+            node.right.parent = node
             queue.append(node.right)
         i += 1
     
@@ -460,8 +701,10 @@ def treeToList(root):
         return []
     result = []
     queue = [root]
-    while queue:
-        node = queue.pop(0)
+    head = 0
+    while head < len(queue):
+        node = queue[head]
+        head += 1
         if node:
             result.append(node.val)
             # Append children (can be None)
@@ -487,12 +730,98 @@ def linkedListToList(head):
 class PrintCapture:
     def __init__(self):
         self.output = []
-    
+        self.size = 0
+
     def write(self, text):
-        self.output.append(text)
-    
+        if self.size < 20000:
+            self.output.append(text)
+            self.size += len(text)
+
     def flush(self):
         pass
+
+class _Rng:
+    """Deterministic xorshift generator for authored large test inputs."""
+    def __init__(self, seed=1):
+        self.state = ((seed * 2654435761) & 0xFFFFFFFFFFFFFFFF) or 1
+
+    def next(self):
+        x = self.state
+        x ^= (x << 13) & 0xFFFFFFFFFFFFFFFF
+        x ^= x >> 7
+        x ^= (x << 17) & 0xFFFFFFFFFFFFFFFF
+        self.state = x
+        return x
+
+    def randint(self, lo, hi):
+        return lo + self.next() % (hi - lo + 1)
+
+    def choice(self, seq):
+        return seq[self.next() % len(seq)]
+
+    def shuffle(self, seq):
+        for i in range(len(seq) - 1, 0, -1):
+            j = self.next() % (i + 1)
+            seq[i], seq[j] = seq[j], seq[i]
+        return seq
+
+    def ints(self, n, lo, hi):
+        return [self.randint(lo, hi) for _ in range(n)]
+
+    def word(self, n, alphabet='abcdefghijklmnopqrstuvwxyz'):
+        return ''.join(self.choice(alphabet) for _ in range(n))
+
+def _canon(value):
+    return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True)
+
+def _normalize(value, mode):
+    if mode == 'unordered' and isinstance(value, list):
+        return sorted(value, key=_canon)
+    if mode == 'unordered-nested' and isinstance(value, list):
+        return sorted((_normalize(v, mode) for v in value), key=_canon)
+    return value
+
+def _has_float(value):
+    if isinstance(value, float):
+        return True
+    if isinstance(value, list):
+        return any(_has_float(v) for v in value)
+    if isinstance(value, dict):
+        return any(_has_float(v) for v in value.values())
+    return False
+
+def _report(value, mode):
+    """Small values travel as JSON; large ones as a digest of their canonical form."""
+    text = json.dumps(value)
+    if len(text) <= ${INLINE_RESULT_LIMIT} or _has_float(value):
+        return {'result': value}
+    import hashlib
+    digest = hashlib.sha256(_canon(_normalize(value, mode)).encode()).hexdigest()
+    return {'digest': 'sha256:' + digest, 'size': len(text), 'preview': text[:200]}
+
+def _generate(expression):
+    return eval(expression, {'Rng': _Rng})
+
+def _to_jsonable(value, depth=0):
+    if depth > 200:
+        raise Exception("Returned value is nested too deeply to grade")
+    if value is None or isinstance(value, (bool, int, str)):
+        return value
+    if isinstance(value, float):
+        if value != value or value in (float('inf'), float('-inf')):
+            return str(value)
+        return value
+    if isinstance(value, dict):
+        return {str(k): _to_jsonable(v, depth + 1) for k, v in value.items()}
+    if isinstance(value, (set, frozenset)):
+        items = [_to_jsonable(v, depth + 1) for v in value]
+        try:
+            return sorted(items)
+        except TypeError:
+            return items
+    if isinstance(value, (list, tuple, range)) or hasattr(value, '__iter__'):
+        return [_to_jsonable(v, depth + 1) for v in value]
+    raise Exception("Return value of type '%s' cannot be graded" % type(value).__name__)
 
 # Timeouts are enforced by the parent process and by RLIMIT_CPU inside the
 # sandbox guard. A self-imposed SIGALRM was removed deliberately: submitted
@@ -503,174 +832,54 @@ ${nodeAlias}
 ${codeWithoutImports}
 
 if __name__ == "__main__":
+    # Only the returned value leaves the sandbox. The expected answer is never
+    # part of this program and the verdict is decided by the server.
+    print_capture = PrintCapture()
+    original_stdout = sys.stdout
     try:
-        # Set up print capture
-        print_capture = PrintCapture()
-        original_stdout = sys.stdout
         sys.stdout = print_capture
-        
-${driverBlock}
-        
-        # Handle expected output - parse it based on detected type
-        expected_str = ${JSON.stringify(testCase.expectedOutput)}
-        expected_type = ${JSON.stringify(String(expectedOutputType).toLowerCase())}
-        
-        # Normalize output based on actual result type
-        #
+
+${driverBlock}${inPlaceBlock}${robotBlock}
+
+        output_type = ${JSON.stringify(String(expectedOutputType).toLowerCase())}
+
         # The structured types are checked first and by name. The generic
         # duck-typed checks below cannot tell a RandomListNode from a ListNode
         # (both have .val and .next), so letting them run first would quietly
         # serialize away the random pointer the problem is actually about.
-        if expected_type == 'node_index':
+        if output_type == 'node_index':
             result = nodeToIndex(result)
-        elif expected_type == 'graph':
+        elif output_type == 'tree_node':
+            result = None if result is None else result.val
+        elif output_type == 'graph':
             result = graphToList(result)
-        elif expected_type == 'random_list':
+        elif output_type == 'random_list':
             result = randomListToList(result)
         elif result is None:
-            # Handle None result - check if expected is empty list
-            if expected_type == 'tree' or expected_type == 'array':
+            # An empty tree or list is None in Python and [] when serialized.
+            if output_type in ('tree', 'array', 'linkedlist'):
                 result = []
         elif hasattr(result, 'val') and hasattr(result, 'left') and hasattr(result, 'right'):
-            # TreeNode result - convert to list
             result = treeToList(result)
         elif hasattr(result, 'val') and hasattr(result, 'next'):
-            # ListNode result - convert to list
             result = linkedListToList(result)
-        
-        try:
-            if expected_type == 'array':
-                expected = json.loads(expected_str)
-            elif expected_type == 'tree':
-                expected = json.loads(expected_str)
-            elif expected_type == 'linkedlist':
-                expected = json.loads(expected_str)
-            elif expected_type == 'graph':
-                expected = json.loads(expected_str)
-            elif expected_type == 'random_list':
-                expected = json.loads(expected_str)
-            elif expected_type == 'node_index':
-                expected = json.loads(expected_str)
-            elif expected_type == 'string':
-                expected = json.loads(expected_str)
-            elif expected_type == 'boolean':
-                expected = json.loads(expected_str)
-            elif expected_type == 'number':
-                expected = json.loads(expected_str)
-            else:
-                expected = eval(expected_str)
-        except:
-            expected = expected_str
-        
-        # Restore stdout
-        sys.stdout = original_stdout
-        
-        # Compare results - handle different types intelligently
-        def compare_results(actual, expected):
-            # Handle boolean vs string conversion (common issue)
-            if isinstance(actual, bool) and isinstance(expected, str):
-                if expected.lower() in ['true', 'false']:
-                    return str(actual).lower() == expected.lower()
-            elif isinstance(actual, str) and isinstance(expected, bool):
-                if actual.lower() in ['true', 'false']:
-                    return actual.lower() == str(expected).lower()
-            
-            # Both are lists/arrays - compare directly (don't sort if contains None)
-            if isinstance(actual, (list, tuple)) and isinstance(expected, (list, tuple)):
-                return actual == expected
-            # One is list, other is string - try to convert string to list
-            elif isinstance(actual, (list, tuple)) and isinstance(expected, str):
-                try:
-                    expected_parsed = eval(expected)
-                    if isinstance(expected_parsed, (list, tuple)):
-                        return actual == expected_parsed
-                except:
-                    pass
-                return str(actual) == expected
-            elif isinstance(actual, str) and isinstance(expected, (list, tuple)):
-                try:
-                    actual_parsed = eval(actual)
-                    if isinstance(actual_parsed, (list, tuple)):
-                        return actual_parsed == expected
-                except:
-                    pass
-                return actual == str(expected)
-            # Direct comparison for same types
-            else:
-                return actual == expected
-        
-        passed = compare_results(result, expected)
-        
-        # Convert boolean results to string format for consistency with expected output
-        formatted_result = result
-        if isinstance(result, bool) and isinstance(expected, str):
-            if expected.lower() in ['true', 'false']:
-                formatted_result = str(result).lower()
-            
-        print(json.dumps({
-            'passed': passed,
-            'result': formatted_result,
-            'expected': expected,
-            'debugOutput': ''.join(print_capture.output)
-        }))
-    except Exception as e:
-        # Restore stdout before reporting, otherwise the verdict below is
-        # swallowed by the capture buffer and the caller sees an empty stdout.
-        if 'original_stdout' in locals():
-            sys.stdout = original_stdout
-        
-        print(json.dumps({
-            'passed': False,
-            'error': f'{type(e).__name__}: {e}',
-            'debugOutput': ''.join(print_capture.output) if 'print_capture' in locals() else ''
-        }))
+
+        payload = _report(_to_jsonable(result), ${JSON.stringify(questionTypes?.checker ? 'checker' : (questionTypes?.compare ?? 'exact'))})
+    except BaseException as e:
+        payload = {'error': '%s: %s' % (type(e).__name__, e)}
+    sys.stdout = original_stdout
+    payload['debugOutput'] = ''.join(print_capture.output)[:20000]
+    original_stdout.write(${JSON.stringify(marker)} + json.dumps(payload) + "\\n")
+    original_stdout.flush()
 `;
 
-            const execution = await executePython({
-                source: testCode,
-                timeoutMs: EXECUTION_TIMEOUT,
-            });
-            getExecutionBudget()?.signal.throwIfAborted();
-
-            if (execution.timedOut) {
-                throw new Error(`Execution timed out (exceeded ${EXECUTION_TIMEOUT / 1000} seconds)`);
-            }
-            if (execution.oom) {
-                throw new Error(`Execution exceeded the ${POLICY.memoryMb}MB memory limit`);
-            }
-            if (execution.exitCode !== 0) {
-                throw new Error(execution.stderr.trim() || 'Execution failed');
-            }
-
-            // The harness prints a JSON verdict as its final line; anything
-            // before it is the submission's own stdout.
-            let result;
-            try {
-                const lines = execution.stdout.trim().split('\n');
-                result = JSON.parse(lines[lines.length - 1]);
-            } catch {
-                throw new Error('Invalid output format');
-            }
-
-            results.push({
-                input: testCase.inputs,
-                expectedOutput: testCase.expectedOutput,
-                actualOutput: result.result,
-                passed: result.passed,
-                error: result.error || null,
-                debugOutput: result.debugOutput || ''
-            });
+            const graded = await executeCase({ testCase, source: testCode, marker, questionTypes, language: 'python' });
+            if (graded.stopReason) stopReason = graded.stopReason;
+            results.push(graded.result);
         } catch (error) {
             getExecutionBudget()?.signal.throwIfAborted();
             if (error.statusCode) throw error;
-            results.push({
-                input: testCase.inputs,
-                expectedOutput: testCase.expectedOutput,
-                actualOutput: null,
-                passed: false,
-                error: error.message,
-                debugOutput: ''
-            });
+            results.push(outcome(testCase, { status: 'error', error: error.message }));
         }
     }
 

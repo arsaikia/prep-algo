@@ -129,6 +129,14 @@
       "expectedOutput": "400",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[1]*100"
+      ],
+      "expectedOutput": "50",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

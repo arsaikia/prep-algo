@@ -160,3 +160,17 @@ test('progress unavailable is not zero, public content survives auth reset, stal
   assert.equal(state.allQuestionsWithoutHistory, publicData);
   assert.deepEqual(state.allQuestions.questions, {});
 });
+
+test('test results show literals and parameter names, not JSON-encoded strings', async () => {
+  const { parameterNames, labelInputs, formatLiteral, formatValue, statusLabel } = await import('../src/utils/testResultFormat.js');
+  const template = 'class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        pass';
+  assert.deepEqual(parameterNames(template), ['nums', 'target']);
+  assert.deepEqual(parameterNames('def f(self, grid: Dict[str, List[int]], k=3):'), ['grid', 'k']);
+  assert.deepEqual(labelInputs(['[0,1,0,3,12]'], ['nums']), [{ name: 'nums', value: '[0,1,0,3,12]' }]);
+  assert.equal(formatLiteral('[1, 3, 12, 0, 0]'), '[1,3,12,0,0]');
+  assert.equal(formatLiteral('"abc"'), '"abc"');
+  assert.equal(formatLiteral('sha256:ab'), '(large answer)');
+  assert.equal(formatValue([1, 3]), '[1,3]');
+  assert.equal(formatValue('abc'), '"abc"');
+  assert.equal(statusLabel({ status: 'tle', passed: false }), 'Time Limit Exceeded');
+});

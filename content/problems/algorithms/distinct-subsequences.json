@@ -143,6 +143,15 @@
       "expectedOutput": "1",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:\"a\"*30",
+        "gen:\"a\"*15"
+      ],
+      "expectedOutput": "155117520",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

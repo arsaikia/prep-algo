@@ -141,6 +141,7 @@
       "NUMBER",
       "ARRAY"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "checker": "topologicalOrder"
   }
 }

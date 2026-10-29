@@ -121,12 +121,29 @@
       "expectedOutput": "[3,3,-3,0,0,0,0]",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[0 if i % 3 == 0 else i for i in range(100000)]"
+      ],
+      "expectedOutput": "sha256:88552bbaed4e04b1453cd70e7f8f63197f02b65610e2568f129a6b797a29234f",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:Rng(11).ints(100000, -2, 2)"
+      ],
+      "expectedOutput": "sha256:761ec555f549487b946a851b2c1ce27181185cb87842c72ab6c5011fc7288a86",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {
     "inputs": [
       "ARRAY"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "inPlace": true
   }
 }

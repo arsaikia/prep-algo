@@ -38,7 +38,7 @@
         "4"
       ],
       "expectedOutput": "[[\"..Q.\",\"Q...\",\"...Q\",\".Q..\"],[\".Q..\",\"...Q\",\"Q...\",\"..Q.\"]]",
-      "explanation": "These are the two valid four-queen boards, ordered by their first rows."
+      "explanation": "These are the two distinct valid arrangements for four queens."
     }
   ],
   "testCases": [
@@ -127,6 +127,7 @@
     "inputs": [
       "NUMBER"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "compare": "unordered"
   }
 }

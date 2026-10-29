@@ -143,6 +143,15 @@
       "expectedOutput": "true",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaac\"",
+        "\"a*a*a*a*a*a*a*a*a*a*a*a*a*a*b\""
+      ],
+      "expectedOutput": "false",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

@@ -22,6 +22,9 @@ export const POLICY = {
     /** Stock image. The program arrives on stdin, so no custom build is needed. */
     get image() { return process.env.CODE_SANDBOX_IMAGE || 'python:3.11-alpine'; },
 
+    /** Stock Node image for JavaScript problems; same flags, same limits. */
+    get nodeImage() { return process.env.CODE_SANDBOX_NODE_IMAGE || 'node:22-alpine'; },
+
     /** Wall-clock ceiling, enforced by the parent and independent of the child. */
     get timeoutMs() { return int(process.env.CODE_SANDBOX_TIMEOUT_MS, 5000); },
 
@@ -84,8 +87,18 @@ export const BLOCKED_MODULES = [
  * -I (isolated) ignores PYTHON* env vars and the user site directory;
  * -S skips site.py. Together they stop the environment from reintroducing
  * import paths the guard has not vetted.
+ *
+ * Node runs with --permission, which denies filesystem, child process,
+ * worker and native addon access inside the container as well.
  */
-export const dockerArgs = () => [
+export const LANGUAGES = ['python', 'javascript'];
+
+/** Heap ceiling below the cgroup limit, so exhaustion is a clean V8 error. */
+export const nodeHeapMb = () => Math.max(32, Math.floor(POLICY.memoryMb * 0.75));
+
+export const nodeArgs = () => ['--permission', `--max-old-space-size=${nodeHeapMb()}`, '-'];
+
+export const dockerArgs = (language = 'python') => [
     'run', '--rm', '--interactive',
     '--pull=never',
     '--network=none',
@@ -100,6 +113,7 @@ export const dockerArgs = () => [
     '--user', '65534:65534',
     '--env', 'PYTHONDONTWRITEBYTECODE=1',
     '--env', 'HOME=/tmp',
-    POLICY.image,
-    'python3', '-I', '-S', '-',
+    ...(language === 'javascript'
+        ? [POLICY.nodeImage, 'node', ...nodeArgs()]
+        : [POLICY.image, 'python3', '-I', '-S', '-']),
 ];

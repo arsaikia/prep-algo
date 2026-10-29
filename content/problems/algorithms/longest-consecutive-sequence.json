@@ -105,6 +105,14 @@
       "expectedOutput": "1",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:list(range(100000))"
+      ],
+      "expectedOutput": "100000",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

@@ -129,6 +129,14 @@
       "expectedOutput": "720",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:sum(([2] * 999 + [0] for _ in range(20)), [])"
+      ],
+      "expectedOutput": "5.357543035931337e+300",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

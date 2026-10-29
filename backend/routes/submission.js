@@ -25,19 +25,20 @@ router.post('/submit', validate(submitCodeSchema), async (req, res) => {
     try {
         const { code, questionId, language } = req.body;
 
-        if (language !== 'python') {
-            return res.status(400).json({ error: `Language ${language} is not supported yet` });
-        }
-
         const spec = getGradingSpec(questionId);
 
         if (!spec) {
             return res.status(404).json({ error: 'No graded test cases are available for this question' });
         }
 
-        const { runPythonCode } = await import('../utils/codeExecution.js');
+        const gradedLanguage = spec.types?.language ?? 'python';
+        if (language !== gradedLanguage) {
+            return res.status(400).json({ error: `This question is graded in ${gradedLanguage}, not ${language}` });
+        }
 
-        const results = await runPythonCode(code, spec.testCases, spec.types);
+        const { runCode } = await import('../utils/codeExecution.js');
+
+        const results = await runCode(code, spec.testCases, spec.types);
         const passedTests = results.filter(r => r.passed).length;
         const totalTests = results.length;
 

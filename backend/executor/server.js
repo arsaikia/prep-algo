@@ -4,6 +4,7 @@ import { execFile, spawnSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { dockerRunner } from '../utils/sandbox/runners.js';
+import { LANGUAGES } from '../utils/sandbox/policy.js';
 import { limitConcurrency } from '../utils/limitConcurrency.js';
 import { requestExecutionSignal } from '../utils/executionBudget.js';
 import logger from '../config/logger.js';
@@ -20,7 +21,7 @@ export async function verifyCaller(token) {
     if (claims.email_verified !== true || !callers.includes(claims.email)) throw new Error('Caller not permitted');
 }
 
-export function createExecutorApp({ verify = verifyCaller, run = dockerRunner, ready = () => true } = {}) {
+export function createExecutorApp({ verify = verifyCaller, run = dockerRunner, ready = () => true, languages = LANGUAGES } = {}) {
     const app = express();
     app.disable('x-powered-by');
     const admission = limitConcurrency(1, { maxQueue: 8, queueTimeoutMs: 2000 });
@@ -43,15 +44,18 @@ export function createExecutorApp({ verify = verifyCaller, run = dockerRunner, r
             res.status(403).json({ error: 'Executor caller not permitted' });
         }
     }, express.json({ limit: '256kb' }), async (req, res, next) => {
-        const { source, timeoutMs } = req.body || {};
+        const { source, timeoutMs, language = 'python' } = req.body || {};
         if (typeof source !== 'string' || !source.length || source.length > 100000 ||
-            !Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 5000) {
+            !Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 5000 || !LANGUAGES.includes(language)) {
             return res.status(400).json({ error: 'Invalid execution request' });
+        }
+        if (!languages.includes(language)) {
+            return res.status(503).json({ error: `Execution runtime for ${language} is not installed` });
         }
         const signal = requestExecutionSignal(req, res);
         const started = Date.now();
         try {
-            const result = await admission(() => run(source, timeoutMs, { signal }), { signal });
+            const result = await admission(() => run(source, timeoutMs, { signal, language }), { signal });
             if (result.error) throw Object.assign(new Error('Docker execution failed'), { statusCode: 503 });
             if (!signal.aborted) res.json(result);
         } catch (error) {
@@ -81,6 +85,16 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (probe.status !== 0) throw new Error('Executor requires a working Docker runtime; subprocess fallback is forbidden');
     const image = spawnSync('docker', ['image', 'inspect', process.env.CODE_SANDBOX_IMAGE], { stdio: 'ignore', timeout: 3000 });
     if (image.status !== 0) throw new Error('Executor requires its pinned sandbox image to be pre-pulled');
+    // JavaScript is optional so an executor provisioned before it existed keeps serving Python.
+    const languages = ['python'];
+    if (process.env.CODE_SANDBOX_NODE_IMAGE) {
+        if (!/@sha256:[a-f0-9]{64}$/.test(process.env.CODE_SANDBOX_NODE_IMAGE)) {
+            throw new Error('Executor requires CODE_SANDBOX_NODE_IMAGE pinned to a verified image digest');
+        }
+        const nodeImage = spawnSync('docker', ['image', 'inspect', process.env.CODE_SANDBOX_NODE_IMAGE], { stdio: 'ignore', timeout: 3000 });
+        if (nodeImage.status !== 0) throw new Error('Executor requires its pinned Node sandbox image to be pre-pulled');
+        languages.push('javascript');
+    }
     let checkedAt = 0;
     let readiness;
     const ready = () => {
@@ -94,7 +108,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         }
         return readiness;
     };
-    const server = createExecutorApp({ ready }).listen(
+    const server = createExecutorApp({ ready, languages }).listen(
         process.env.PORT || 8081, process.env.EXECUTOR_BIND_ADDRESS || '127.0.0.1',
     );
     process.once('SIGTERM', () => {

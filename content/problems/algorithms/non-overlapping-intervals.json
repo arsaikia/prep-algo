@@ -121,6 +121,14 @@
       "expectedOutput": "40",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:[[i - 50000, i - 49999] for i in range(100000)]"
+      ],
+      "expectedOutput": "0",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

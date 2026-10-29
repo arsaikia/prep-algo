@@ -134,6 +134,15 @@
       "expectedOutput": "100",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "gen:\"a\"*100",
+        "gen:\"b\"*100"
+      ],
+      "expectedOutput": "100",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

@@ -11,32 +11,135 @@
   "legacyId": "2df0ac1f-4cc8-450d-8941-80098896bcd2",
   "type": "problem",
   "difficulty": "Medium",
-  "description": "Implement a deep clone function that creates a complete copy of a nested object/array structure.",
+  "description": "Implement `deepClone(value)`, which returns a deep copy of `value`.\n\n- Primitives (numbers, strings, booleans, `null`, `undefined`, symbols, bigints) and functions are returned as they are.\n- Arrays and plain objects are copied recursively; changing the copy must never change the original. Copies of plain objects keep `Object.prototype` as their prototype, and properties whose value is `undefined` are kept.\n- `Date` becomes a new `Date` with the same time. `Map` and `Set` become a new `Map` or `Set` whose keys and values are deep-cloned.\n- **Shared and circular references are preserved:** if the same object appears twice in the input, the two places in the copy refer to one cloned object, and an object that contains itself is copied without infinite recursion.\n\nOnly own enumerable string keys need copying. You may not use `structuredClone`.\n\n**Constraints:** at most `10^5` values in total; nesting depth at most `1000`.\n\n### How the tests work\n\nEach test is a short script that calls your function and returns what it observed.",
   "templates": {
-    "python": "def deep_clone(obj):\n    # Implement deep clone\n    pass",
-    "javascript": "function deepClone(obj) {\n  // Implement deep clone\n}"
+    "python": "",
+    "javascript": "function deepClone(value) {\n  // Return a deep copy of value.\n}\n"
   },
   "types": {
+    "language": "javascript",
     "inputs": [
-      "STRING"
-    ],
-    "output": "STRING"
+      "SCENARIO"
+    ]
   },
   "exampleTestCases": [
     {
       "inputs": [
-        "{\"a\": 1, \"b\": {\"c\": 2}}"
+        "const original = { name: 'box', size: { w: 2, h: 3 }, tags: ['a', ['b']] };\nconst copy = deepClone(original);\ncopy.size.w = 99;\ncopy.tags[1].push('c');\nreturn {\n  copy,\n  original,\n  separate: copy !== original && copy.size !== original.size && copy.tags[1] !== original.tags[1],\n};"
       ],
-      "expectedOutput": "{\"a\": 1, \"b\": {\"c\": 2}}",
-      "explanation": ""
+      "expectedOutput": "{\"copy\":{\"name\":\"box\",\"size\":{\"w\":99,\"h\":3},\"tags\":[\"a\",[\"b\",\"c\"]]},\"original\":{\"name\":\"box\",\"size\":{\"w\":2,\"h\":3},\"tags\":[\"a\",[\"b\"]]},\"separate\":true}",
+      "explanation": "Changing the copy leaves the original untouched."
+    },
+    {
+      "inputs": [
+        "const node = { id: 1 };\nnode.self = node;\nconst copy = deepClone(node);\nreturn { selfIsCopy: copy.self === copy, notOriginal: copy !== node, id: copy.id };"
+      ],
+      "expectedOutput": "{\"selfIsCopy\":true,\"notOriginal\":true,\"id\":1}",
+      "explanation": "A circular reference in the copy points at the copy itself."
     }
   ],
   "testCases": [
     {
       "inputs": [
-        "{\"a\": 1, \"b\": {\"c\": 2}}"
+        "const original = { name: 'box', size: { w: 2, h: 3 }, tags: ['a', ['b']] };\nconst copy = deepClone(original);\ncopy.size.w = 99;\ncopy.tags[1].push('c');\nreturn {\n  copy,\n  original,\n  separate: copy !== original && copy.size !== original.size && copy.tags[1] !== original.tags[1],\n};"
       ],
-      "expectedOutput": "{\"a\": 1, \"b\": {\"c\": 2}}",
+      "expectedOutput": "{\"copy\":{\"name\":\"box\",\"size\":{\"w\":99,\"h\":3},\"tags\":[\"a\",[\"b\",\"c\"]]},\"original\":{\"name\":\"box\",\"size\":{\"w\":2,\"h\":3},\"tags\":[\"a\",[\"b\"]]},\"separate\":true}",
+      "explanation": "Changing the copy leaves the original untouched.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "const node = { id: 1 };\nnode.self = node;\nconst copy = deepClone(node);\nreturn { selfIsCopy: copy.self === copy, notOriginal: copy !== node, id: copy.id };"
+      ],
+      "expectedOutput": "{\"selfIsCopy\":true,\"notOriginal\":true,\"id\":1}",
+      "explanation": "A circular reference in the copy points at the copy itself.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "return [deepClone(5), deepClone('text'), deepClone(null), deepClone(true), deepClone(undefined) === undefined];"
+      ],
+      "expectedOutput": "[5,\"text\",null,true,true]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const when = new Date(1700000000000);\nconst copy = deepClone({ when });\nreturn [copy.when instanceof Date, copy.when.getTime(), copy.when !== when];"
+      ],
+      "expectedOutput": "[true,1700000000000,true]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const inner = { v: 1 };\nconst map = new Map([['k', inner]]);\nconst set = new Set([1, 'two']);\nconst copy = deepClone({ map, set });\nreturn [\n  copy.map instanceof Map, copy.map !== map, copy.map.get('k').v, copy.map.get('k') !== inner,\n  copy.set instanceof Set, copy.set !== set, [...copy.set],\n];"
+      ],
+      "expectedOutput": "[true,true,1,true,true,true,[1,\"two\"]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const shared = { x: 1 };\nconst copy = deepClone({ left: shared, right: shared, list: [shared] });\nreturn [copy.left === copy.right, copy.list[0] === copy.left, copy.left !== shared];"
+      ],
+      "expectedOutput": "[true,true,true]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const list = [1];\nlist.push(list);\nconst copy = deepClone(list);\nreturn [Array.isArray(copy), copy[1] === copy, copy !== list, copy[0]];"
+      ],
+      "expectedOutput": "[true,true,true,1]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const copy = deepClone({ a: undefined, b: null, c: 0 });\nreturn ['a' in copy, copy.a === undefined, copy.b, copy.c, Object.getPrototypeOf(copy) === Object.prototype];"
+      ],
+      "expectedOutput": "[true,true,null,0,true]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const handler = () => 1;\nconst copy = deepClone({ handler, nested: { handler } });\nreturn [copy.handler === handler, copy.nested.handler === handler];"
+      ],
+      "expectedOutput": "[true,true]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const parent = { name: 'parent', children: [] };\nconst child = { name: 'child', parent };\nparent.children.push(child);\nconst map = new Map();\nmap.set(parent, child);\nparent.index = map;\nconst copy = deepClone(parent);\nconst [[key, value]] = [...copy.index];\nreturn [key === copy, value === copy.children[0], value.parent === copy, copy.children[0] !== child];"
+      ],
+      "expectedOutput": "[true,true,true,true]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "let root = { depth: 0 };\nlet node = root;\nfor (let i = 1; i < 1000; i++) {\n  node.next = { depth: i };\n  node = node.next;\n}\nlet copy = deepClone(root);\nlet count = 0;\nwhile (copy) { count++; copy = copy.next; }\nreturn count;"
+      ],
+      "expectedOutput": "1000",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const big = { items: [] };\nfor (let i = 0; i < 100000; i++) big.items.push(i % 2 ? { i } : i);\nconst copy = deepClone(big);\nreturn [copy.items.length, copy.items[99999].i, copy.items[1] !== big.items[1]];"
+      ],
+      "expectedOutput": "[100000,99999,true]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const set = new Set();\nconst item = { set };\nset.add(item);\nconst copy = deepClone(set);\nconst [only] = [...copy];\nreturn [copy instanceof Set, only.set === copy, only !== item];"
+      ],
+      "expectedOutput": "[true,true,true]",
       "explanation": "",
       "isHidden": true
     }

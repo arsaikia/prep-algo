@@ -173,6 +173,18 @@
       "expectedOutput": "-1",
       "explanation": "",
       "isHidden": true
+    },
+    {
+      "inputs": [
+        "100",
+        "gen:[[0,1,1],[0,2,1]] + [[i,j,1] for level in range(48) for i in (2*level+1,2*level+2) for j in (2*level+3,2*level+4)] + [[97,99,1],[98,99,1]]",
+        "0",
+        "99",
+        "98"
+      ],
+      "expectedOutput": "50",
+      "explanation": "",
+      "isHidden": true
     }
   ],
   "types": {

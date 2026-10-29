@@ -74,11 +74,11 @@
     },
     {
       "inputs": [
-        "[1,2,3,4,5]",
-        "3"
+        "[4,4,4,4,1,1,1,2,2,3]",
+        "2"
       ],
-      "expectedOutput": "[1,2,3]",
-      "explanation": "",
+      "expectedOutput": "[4,1]",
+      "explanation": "The two most frequent values are 4 and 1, with no tie at the cutoff.",
       "isHidden": true
     },
     {
@@ -105,6 +105,7 @@
       "ARRAY",
       "NUMBER"
     ],
-    "output": "ARRAY"
+    "output": "ARRAY",
+    "compare": "unordered"
   }
 }

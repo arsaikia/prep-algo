@@ -11,35 +11,111 @@
   "legacyId": "703906ea-3772-48de-98e6-5a75fb2e62b7",
   "type": "problem",
   "difficulty": "Easy",
-  "description": "Implement a debounce function that delays invoking the provided function until after `wait` milliseconds have elapsed since the last invocation.",
+  "description": "Implement `debounce(func, wait)`.\n\nIt returns a new function that postpones calling `func` until `wait` milliseconds have passed since the **last** time the new function was called. Every call restarts the wait. When `func` finally runs, it receives the arguments and the `this` value of the most recent call.\n\nCalls made after `func` has run start a fresh wait. The debounced function itself returns `undefined`.\n\n**Example:** with `wait = 100`, calls at 0 ms and 50 ms run `func` once, at 150 ms, with the arguments of the call made at 50 ms.\n\n**Constraints:** `0 <= wait <= 10000`. Each debounced function keeps its own timer.\n\n### How the tests work\n\nEach test is a short script that calls your function and returns what it observed. Time is virtual: `setTimeout`, `setInterval`, `clearTimeout`, `Date.now()` and `performance.now()` all read a test clock, and time only passes when a test calls `await clock.tick(ms)`. A test may use `spy()`, which returns a function that records every call as `{ args, at }` in `spy.calls`.",
   "templates": {
-    "python": "def debounce(func, wait):\n    # Implement debounce\n    pass",
-    "javascript": "function debounce(func, wait) {\n  // Implement debounce\n}"
+    "python": "",
+    "javascript": "function debounce(func, wait) {\n  // Return a function that delays calling func until wait ms after the last call.\n}\n"
   },
   "types": {
+    "language": "javascript",
     "inputs": [
-      "STRING",
-      "NUMBER"
-    ],
-    "output": "STRING"
+      "SCENARIO"
+    ]
   },
   "exampleTestCases": [
     {
       "inputs": [
-        "() => 'called'",
-        "300"
+        "const fn = spy();\nconst debounced = debounce(fn, 100);\ndebounced('a');\nawait clock.tick(50);\ndebounced('b');\nawait clock.tick(99);\nconst callsBeforeWaitEnds = fn.count;\nawait clock.tick(1);\nreturn { callsBeforeWaitEnds, calls: fn.calls };"
       ],
-      "expectedOutput": "function",
-      "explanation": ""
+      "expectedOutput": "{\"callsBeforeWaitEnds\":0,\"calls\":[{\"args\":[\"b\"],\"at\":150}]}",
+      "explanation": "The call at 50 ms restarts the wait, so func runs once, at 150 ms, with the latest argument."
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst debounced = debounce(fn, 100);\ndebounced(1);\nawait clock.tick(200);\ndebounced(2);\nawait clock.tick(100);\nreturn fn.calls;"
+      ],
+      "expectedOutput": "[{\"args\":[1],\"at\":100},{\"args\":[2],\"at\":300}]",
+      "explanation": "Two calls separated by a quiet period run func twice."
     }
   ],
   "testCases": [
     {
       "inputs": [
-        "() => 'called'",
-        "300"
+        "const fn = spy();\nconst debounced = debounce(fn, 100);\ndebounced('a');\nawait clock.tick(50);\ndebounced('b');\nawait clock.tick(99);\nconst callsBeforeWaitEnds = fn.count;\nawait clock.tick(1);\nreturn { callsBeforeWaitEnds, calls: fn.calls };"
       ],
-      "expectedOutput": "function",
+      "expectedOutput": "{\"callsBeforeWaitEnds\":0,\"calls\":[{\"args\":[\"b\"],\"at\":150}]}",
+      "explanation": "The call at 50 ms restarts the wait, so func runs once, at 150 ms, with the latest argument.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst debounced = debounce(fn, 100);\ndebounced(1);\nawait clock.tick(200);\ndebounced(2);\nawait clock.tick(100);\nreturn fn.calls;"
+      ],
+      "expectedOutput": "[{\"args\":[1],\"at\":100},{\"args\":[2],\"at\":300}]",
+      "explanation": "Two calls separated by a quiet period run func twice.",
+      "isHidden": false
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst debounced = debounce(fn, 100);\nfor (let i = 0; i < 10; i++) {\n  debounced(i);\n  await clock.tick(30);\n}\nawait clock.tick(1000);\nreturn fn.calls;"
+      ],
+      "expectedOutput": "[{\"args\":[9],\"at\":370}]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst debounced = debounce(fn, 50);\ndebounced(1, 'two', [3]);\nawait clock.tick(50);\nreturn fn.calls;"
+      ],
+      "expectedOutput": "[{\"args\":[1,\"two\",[3]],\"at\":50}]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const seen = [];\nconst counter = {\n  name: 'counter',\n  run: debounce(function (value) { seen.push([this && this.name, value]); }, 40),\n};\ncounter.run(1);\ncounter.run(2);\nawait clock.tick(40);\nreturn seen;"
+      ],
+      "expectedOutput": "[[\"counter\",2]]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst debounced = debounce(fn, 0);\ndebounced('x');\nconst synchronous = fn.count;\nawait clock.tick(0);\nreturn [synchronous, fn.count];"
+      ],
+      "expectedOutput": "[0,1]",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst debounced = debounce(fn, 100);\ndebounced(1);\nawait clock.tick(100);\ndebounced(2);\nawait clock.tick(99);\nconst pending = fn.count;\nawait clock.tick(1);\nreturn { pending, calls: fn.calls };"
+      ],
+      "expectedOutput": "{\"pending\":1,\"calls\":[{\"args\":[1],\"at\":100},{\"args\":[2],\"at\":200}]}",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const a = spy();\nconst b = spy();\nconst da = debounce(a, 100);\nconst db = debounce(b, 100);\nda('a');\nawait clock.tick(60);\ndb('b');\nawait clock.tick(40);\nconst aFirst = a.calls;\nawait clock.tick(60);\nreturn { aFirst, a: a.count, b: b.calls };"
+      ],
+      "expectedOutput": "{\"aFirst\":[{\"args\":[\"a\"],\"at\":100}],\"a\":1,\"b\":[{\"args\":[\"b\"],\"at\":160}]}",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst debounced = debounce(fn, 100);\ndebounced();\nawait clock.tick(500);\nreturn fn.count;"
+      ],
+      "expectedOutput": "1",
+      "explanation": "",
+      "isHidden": true
+    },
+    {
+      "inputs": [
+        "const fn = spy();\nconst debounced = debounce(fn, 1000);\nfor (let t = 0; t < 5000; t += 100) {\n  debounced(t);\n  await clock.tick(100);\n}\nconst whileBusy = fn.count;\nawait clock.tick(1000);\nreturn { whileBusy, calls: fn.calls };"
+      ],
+      "expectedOutput": "{\"whileBusy\":0,\"calls\":[{\"args\":[4900],\"at\":5900}]}",
       "explanation": "",
       "isHidden": true
     }
