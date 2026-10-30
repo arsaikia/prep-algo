@@ -42,7 +42,7 @@ one active submission, at most eight waiting, a two-second queue wait and a
 still has a five-second ceiling. Disconnect/deadline cancellation reaches child
 termination; remote transport cancellation closes the executor request. Overload
 returns 503 with Retry-After, not a fabricated wrong-answer verdict. Colocated
-BullMQ execution is retired and its old setting fails startup.
+BullMQ execution was retired and removed (ADR-005).
 
 Local acceptance now includes real Docker network denial, non-root/capability
 checks, read-only filesystem, CPU/PID/memory cgroups, OOM and timeout termination,
@@ -189,7 +189,7 @@ npm ci --omit=dev
 ```
 
 Do not upload `backend/.env`, your full checkout, local `node_modules`, personal
-credentials or the Mongo import. The package script copies only the entrypoint,
+credentials or database credentials. The package script copies only the entrypoint,
 its runtime modules and locked dependency manifests.
 
 Create a system account `prepalgo-executor` without a login shell and add it to

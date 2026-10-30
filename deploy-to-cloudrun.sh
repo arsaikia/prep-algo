@@ -191,7 +191,7 @@ printf '%s' "$HEALTH" | CANDIDATE_REVISION="$CANDIDATE_REVISION" node --input-ty
     if(health.release?.revision!==process.env.CANDIDATE_REVISION || health.release?.content!==expected)
       throw new Error("Candidate revision/content does not match the built release");
 '
-for component in postgres redis queue; do
+for component in postgres redis; do
     status=$(printf '%s' "$HEALTH" | sed -n "s/.*\"$component\":{\"status\":\"\([a-z]*\)\".*/\1/p")
     echo -e "   $component: ${YELLOW}${status:-unknown}${NC}"
 done

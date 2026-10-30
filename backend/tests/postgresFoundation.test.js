@@ -8,7 +8,6 @@ import {
     sanitizePostgresError, syncContentCatalog, withTransaction,
 } from '../config/postgres.js';
 import { getMigrationStatus, loadMigrations, runMigrations } from '../scripts/migratePostgres.js';
-import { importMongoToPostgres, mapProgress, toPlain } from '../scripts/importMongoToPostgres.js';
 import { createTestDatabase, postgresTestSkipReason, toDirectConnectionUrl } from './helpers/postgres.js';
 
 const CATALOG = [
@@ -56,22 +55,6 @@ describe('pure helpers', () => {
             new URL(toDirectConnectionUrl('postgresql://u:p@ep-cool-1-pooler.us-east-2.aws.neon.tech/db?sslmode=require')).hostname,
             'ep-cool-1.us-east-2.aws.neon.tech',
         );
-    });
-
-    test('legacy events without _id get deterministic index ids; counters preserved', () => {
-        const doc = {
-            _id: 'p1', userId: 'u1', questionId: 'q', solveCount: 3,
-            lastUpdatedAt: new Date('2024-02-01T00:00:00Z'), firstSolvedAt: new Date('2024-01-01T00:00:00Z'),
-            solveHistory: [{ solvedAt: new Date('2024-01-01T00:00:00Z'), success: true }, { _id: 'e2', success: false }],
-        };
-        const a = mapProgress(doc, 'q');
-        const b = mapProgress(doc, 'q');
-        assert.deepEqual(a.attempts.map((x) => x.id), ['legacy:p1:0', 'legacy:e2']);
-        assert.deepEqual(a.attempts.map((x) => x.id), b.attempts.map((x) => x.id));
-        assert.equal(a.row.solve_count, 3);
-        assert.equal(a.row.attempt_count, 3);
-        assert.equal(a.missingTimestamp, 1);
-        assert.equal(toPlain({ d: new Date('2024-01-01T00:00:00Z') }).d, '2024-01-01T00:00:00.000Z');
     });
 
     test('migration files load with checksums', async () => {
@@ -158,118 +141,5 @@ describe('postgres integration (isolated schema)', { skip: postgresTestSkipReaso
         ]);
         await syncContentCatalog(db.pool, { items: CATALOG });
         await db.query("DELETE FROM users WHERE id = 'sync-user'");
-    });
-
-    test('mongo import: dry run, apply, orphans archived, idempotent, newer PG work kept', async () => {
-        const at = (s) => new Date(s);
-        const snapshot = {
-            users: [
-                { _id: 'test-alice-beginner-001', firstName: 'Alice', lastName: 'T', email: 'Test-Alice@Test.com', googleId: 'g-alice', role: 'user', createdAt: at('2024-01-01T00:00:00Z') },
-                { _id: 'test-bob-intermediate-002', firstName: 'Bob', lastName: 'T', email: 'bob@test.com', googleId: 'g-bob' },
-                { _id: 'no-google', firstName: 'N', lastName: 'G', email: 'ng@test.com' },
-            ],
-            profiles: [
-                { _id: 'prof-a', userId: 'test-alice-beginner-001', adaptiveWeights: { spaced_repetition: 0.2 }, lastUpdated: at('2024-03-01T00:00:00Z') },
-                { _id: 'prof-ghost', userId: 'deleted-user', adaptiveWeights: {} },
-            ],
-            solveHistories: [
-                {
-                    _id: 'sh-1', userId: 'test-alice-beginner-001', questionId: 'q-two-sum', solveCount: 2,
-                    firstSolvedAt: at('2024-01-02T00:00:00Z'), lastUpdatedAt: at('2024-01-05T00:00:00Z'), tags: ['review'],
-                    solveHistory: [
-                        { _id: 'ev-1', solvedAt: at('2024-01-02T00:00:00Z'), success: true, timeSpent: 12, sessionContext: { timeOfDay: 'morning' } },
-                        { solvedAt: at('2024-01-05T00:00:00Z'), success: true },
-                    ],
-                },
-                { _id: 'sh-2', userId: 'test-alice-beginner-001', questionId: 'caching-fundamentals/', solveCount: 1, solveHistory: [{ _id: 'ev-3', solvedAt: at('2024-01-06T00:00:00Z') }] },
-                { _id: 'sh-unknown-content', userId: 'test-alice-beginner-001', questionId: 'gone-question', solveCount: 1, solveHistory: [{ _id: 'ev-4' }] },
-                { _id: 'sh-unknown-user', userId: 'deleted-user', questionId: 'q-two-sum', solveCount: 1, solveHistory: [] },
-                { _id: 'sh-bob', userId: 'test-bob-intermediate-002', questionId: 'q-anagram', solveCount: 1, solveHistory: [{ _id: 'ev-5', solvedAt: at('2024-01-07T00:00:00Z') }] },
-            ],
-            batches: [{
-                _id: 'batch-1', userId: 'test-alice-beginner-001', date: '2024-01-05',
-                expiresAt: at('2024-01-06T06:00:00Z'), analysis: { userLevel: 'beginner' },
-                recommendations: [
-                    { question: 'q-two-sum', reason: 'r', priority: 'high', strategy: 'spaced_repetition' },
-                    { question: 'gone-question', reason: 'r', priority: 'low', strategy: 'topic_exploration' },
-                    { question: 'q-anagram', reason: 'r', priority: 'medium', strategy: 'general_practice' },
-                ],
-                questionsCompleted: [{ questionId: 'q-two-sum', completedAt: at('2024-01-05T01:00:00Z'), timeSpent: 9, success: true }],
-            }],
-        };
-        const counts = async () => Object.fromEntries(await Promise.all(
-            ['users', 'user_profiles', 'content_progress', 'attempts', 'recommendation_batches', 'recommendation_items', 'legacy_import_orphans']
-                .map(async (t) => [t, Number((await db.query(`SELECT count(*) FROM ${t}`)).rows[0].count)]),
-        ));
-        const before = await counts();
-
-        const dry = await importMongoToPostgres({ pool: db.pool, snapshot, catalogItems: CATALOG });
-        assert.equal(dry.dryRun, true);
-        assert.equal(dry.users.inserted, 2);
-        assert.deepEqual(await counts(), before, 'dry run must not write');
-
-        // The app already has Bob's anagram progress (different id): keep it.
-        await db.query("INSERT INTO users (id, google_id, email) VALUES ('test-bob-intermediate-002', 'g-bob', 'bob@test.com')");
-        await db.query("INSERT INTO content_progress (id, user_id, content_id, solve_count, attempt_count) VALUES ('pg-bob', 'test-bob-intermediate-002', 'q-anagram', 7, 7)");
-
-        const report = await importMongoToPostgres({ pool: db.pool, snapshot, dryRun: false, catalogItems: CATALOG });
-        assert.equal(report.users.inserted, 1);
-        assert.equal(report.users.existing, 1);
-        assert.equal(report.users.archived, 1);
-        assert.equal(report.profiles.inserted, 1);
-        assert.equal(report.profiles.archived, 1);
-        assert.equal(report.progress.inserted, 2);
-        assert.equal(report.progress.archived, 3);
-        assert.equal(report.attempts.inserted, 3);
-        assert.equal(report.attempts.source, 5);
-        assert.equal(report.attempts.inserted + report.attempts.archived, 5);
-        assert.equal(report.items.inserted, 2);
-        assert.equal(report.items.archived, 1);
-        const reasons = report.orphans.map((o) => `${o.collection}:${o.id}:${o.reason}`).sort();
-        assert.deepEqual(reasons, [
-            'dailyrecommendationbatches:batch-1:unknown_content',
-            'solvehistories:sh-bob:progress_already_exists_in_postgres',
-            'solvehistories:sh-unknown-content:unknown_content',
-            'solvehistories:sh-unknown-user:unknown_user',
-            'userprofiles:prof-ghost:unknown_user',
-            'users:no-google:missing_google_id',
-        ]);
-        assert.ok(!JSON.stringify(report).includes('@'), 'report must not contain emails');
-
-        const { rows: [alice] } = await db.query("SELECT email FROM users WHERE id = 'test-alice-beginner-001'");
-        assert.equal(alice.email, 'test-alice@test.com');
-        const { rows: [p] } = await db.query("SELECT * FROM content_progress WHERE id = 'sh-1'");
-        assert.equal(p.solve_count, 2);
-        assert.equal(p.attempt_count, 2);
-        assert.deepEqual(p.tags, ['review']);
-        const { rows: ids } = await db.query("SELECT id, source, context FROM attempts WHERE user_id = 'test-alice-beginner-001' ORDER BY id");
-        assert.deepEqual(ids.map((r) => r.id), ['legacy:ev-1', 'legacy:ev-3', 'legacy:sh-1:1']);
-        assert.equal(ids[0].source, 'mongo_import');
-        assert.deepEqual(ids[0].context, { timeOfDay: 'morning' });
-        const { rows: [bob] } = await db.query("SELECT solve_count FROM content_progress WHERE user_id = 'test-bob-intermediate-002'");
-        assert.equal(bob.solve_count, 7);
-        const { rows: [batch] } = await db.query("SELECT batch_date::text, data FROM recommendation_batches WHERE id = 'batch-1'");
-        assert.equal(batch.batch_date, '2024-01-05');
-        assert.equal(batch.data.expiresAt, '2024-01-06T06:00:00.000Z');
-        assert.equal(batch.data.recommendations, undefined);
-        const { rows: items } = await db.query("SELECT content_id, position, data, completed_at, success FROM recommendation_items ORDER BY position");
-        assert.deepEqual(items.map((i) => [i.content_id, i.position]), [['q-two-sum', 0], ['q-anagram', 2]]);
-        assert.equal(items[0].data.question, 'q-two-sum');
-        assert.equal(items[0].success, true);
-        assert.equal(items[1].completed_at, null);
-        const { rows: [prof] } = await db.query("SELECT data FROM user_profiles WHERE user_id = 'test-alice-beginner-001'");
-        assert.equal(prof.data.lastUpdated, '2024-03-01T00:00:00.000Z');
-        assert.equal(prof.data.userId, undefined);
-        const { rows: [orphan] } = await db.query("SELECT raw FROM legacy_import_orphans WHERE id = 'solvehistories:sh-unknown-content'");
-        assert.equal(orphan.raw.questionId, 'gone-question');
-
-        // Newer PG work after the import must survive a re-run, and nothing duplicates.
-        await db.query("UPDATE content_progress SET solve_count = 9 WHERE id = 'sh-1'");
-        const afterFirst = await counts();
-        const rerun = await importMongoToPostgres({ pool: db.pool, snapshot, dryRun: false, catalogItems: CATALOG });
-        assert.equal(rerun.users.inserted + rerun.progress.inserted + rerun.attempts.inserted + rerun.items.inserted + rerun.batches.inserted + rerun.profiles.inserted, 0);
-        assert.deepEqual(await counts(), afterFirst);
-        assert.equal((await db.query("SELECT solve_count FROM content_progress WHERE id = 'sh-1'")).rows[0].solve_count, 9);
-        assert.equal(Number((await db.query('SELECT count(*) FROM legacy_import_runs WHERE finished_at IS NOT NULL')).rows[0].count), 2);
     });
 });

@@ -1,35 +1,14 @@
-# PrepAlgo — Staff-Level Distributed Systems + Fullstack Prep Platform
+# PrepAlgo — Architecture Plan and Decision History (archived)
+
+> **Historical record.** This is the phase-by-phase design history (MongoDB,
+> BullMQ, gateway plans, Architecture V2). It is not maintained. The current
+> system is described in [docs/ARCHITECTURE.md](../ARCHITECTURE.md) and
+> operated via [DEPLOYMENT_README.md](../../DEPLOYMENT_README.md). Open roadmap
+> items (Phase 4/5) are listed in ARCHITECTURE.md.
 
 ## Vision
 
 Transform PrepAlgo from a working monolith into a properly architected distributed system that **is itself** a staff-level system design showcase. Each infrastructure component is either battle-tested (use existing) or custom-built (demonstrate deep knowledge), with Architecture Decision Records explaining tradeoffs.
-
----
-
-## Architecture Diagrams
-
-See [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) for Mermaid diagrams showing architecture evolution across all phases, request flows, and circuit breaker state machine.
-
----
-
-## Current architecture
-
-As of 2026-10-29 (PostgreSQL candidate accepted; production promotion pending):
-
-| Concern | Implementation |
-| --- | --- |
-| Frontend | React/Vite SPA on Firebase Hosting (`prepalgo.web.app`); compiled `content/` served as hashed CDN artifacts (ADR-009) |
-| API | Express on Cloud Run `prep-algo-backend` (us-central1, scale to zero, identity `prepalgo-api`) |
-| User data | Neon PostgreSQL: users, attempts, progress, profiles, recommendation batches ([POSTGRES_MIGRATION.md](POSTGRES_MIGRATION.md)) |
-| Shared state | Upstash Redis for distributed rate limits only; per-instance fallback (ADR-002/003) |
-| Caching | Bounded process-local cache for public catalog reads; private routes `no-store` (ADR-004, superseded) |
-| Code execution | Private Docker executor VM, no public IP, reached over Direct VPC with Google OIDC + pinned TLS (ADR-008) |
-| Resilience | PostgreSQL circuit breaker, readiness/liveness split, execution budgets (ADR-006/007) |
-| Cost protection | ₹1,000 budget emails + budget-guard shutoff at ₹2,000 ([scripts/budget-guard](../scripts/budget-guard/README.md)) |
-
-Retired: MongoDB runtime, BullMQ execution queue (ADR-005), Redis response cache,
-database-hosted content. Operational procedures live only in
-[DEPLOYMENT_README.md](../DEPLOYMENT_README.md); sections below are design history.
 
 ---
 
@@ -54,8 +33,8 @@ colocated BullMQ path is retired and rejected at startup. Production execution s
 unavailable until the isolated executor is provisioned. Candidate promotion now
 requires `./deploy-to-cloudrun.sh --promote EXACT_REVISION`; frontend publication
 requires matching content versions and retained historical artifacts. Use the
-[release runbook](../DEPLOYMENT_README.md) and
-[executor ADR](adr/008-code-execution-sandbox.md), not the historical commands below.
+[release runbook](../../DEPLOYMENT_README.md) and
+[executor ADR](../adr/008-code-execution-sandbox.md), not the historical commands below.
 
 | Layer | Tech | Hosting | Status |
 |-------|------|---------|--------|
@@ -579,7 +558,7 @@ its recommendation item complete in the same transaction.
 The September 2026 production runbook, Upstash setup and cold-start tuning that
 lived here described the Mongo runtime, the subprocess runner and the default
 compute service account. They are replaced by
-[DEPLOYMENT_README.md](../DEPLOYMENT_README.md). Measurements that still inform
+[DEPLOYMENT_README.md](../../DEPLOYMENT_README.md). Measurements that still inform
 decisions: a cold instance took ~3.5s (most of it Node startup); the frontend is
 unaffected because browsing is CDN-only; a warm minimum instance costs roughly
 $8–10/month, so minimum instances stay 0.
@@ -640,8 +619,7 @@ Key files, dependencies, deployment changes.
 ## Deployment Architecture
 
 The earlier target (API gateway, separate Cloud Run execution service, MongoDB
-Atlas) was replaced by the design in [Current architecture](#current-architecture);
-see [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) for the diagram.
+Atlas) was replaced by the design in [docs/ARCHITECTURE.md](../ARCHITECTURE.md).
 
 ---
 
@@ -718,4 +696,4 @@ delivered as a full dev→prod cutover, with rollback via Cloud Run revisions an
 database branches rather than a parallel `/v2` API. Mongo is not
 dual-written, so once real users write to PostgreSQL a revision rollback alone is not
 a data rollback. Rollback rules (expand/contract migrations, guarded
-`--rollback`, maintenance mode) are in [DEPLOYMENT_README.md](../DEPLOYMENT_README.md#rollback).
+`--rollback`, maintenance mode) are in [DEPLOYMENT_README.md](../../DEPLOYMENT_README.md#rollback).

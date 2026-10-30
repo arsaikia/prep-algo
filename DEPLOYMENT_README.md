@@ -2,7 +2,7 @@
 
 Authoritative operations guide: backend (Google Cloud Run), frontend (Firebase
 Hosting), private executor, cost guard and rollback. Architecture context is in
-[docs/ARCHITECTURE_PLAN.md](docs/ARCHITECTURE_PLAN.md#current-architecture).
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Prerequisites
 
@@ -20,10 +20,13 @@ Hosting), private executor, cost guard and rollback. Architecture context is in
 
 ### Backend: `deploy-to-cloudrun.sh`
 
-Deploys backend to Cloud Run with secret management, health checks, and error handling.
+Builds content, lints migrations, builds the image in Cloud Build and deploys a
+**zero-traffic** candidate, then smoke-tests it.
 
 ```bash
-./deploy-to-cloudrun.sh
+./deploy-to-cloudrun.sh                      # deploy candidate (0% traffic)
+./deploy-to-cloudrun.sh --promote REVISION   # move 100% to the exact tested candidate
+./deploy-to-cloudrun.sh --rollback REVISION  # guarded traffic-only rollback
 ```
 
 ### Frontend: `deploy-to-firebase.sh`
@@ -34,14 +37,6 @@ Full deployment with build validation, environment setup, and verification.
 ./deploy-to-firebase.sh
 ```
 
-### Frontend Quick: `deploy-frontend-quick.sh`
-
-Alias for the full script; it does not skip release gates.
-
-```bash
-./deploy-frontend-quick.sh
-```
-
 ## Environment Configuration
 
 ### Backend Secrets (Google Secret Manager)
@@ -50,11 +45,33 @@ Alias for the full script; it does not skip release gates.
 - `JWT_SECRET`
 - `GOOGLE_CLIENT_ID`
 
-PostgreSQL schema migrations must be applied explicitly before deploying a new
-backend revision. They are not run by every Cloud Run instance. See
-[the PostgreSQL runbook](docs/POSTGRES_MIGRATION.md) for initialization, importing
-existing test users, verification, and cutover precautions. The backend no longer
-uses `MONGO_URI` or `MONGO_URI_DEV`; keep Mongo credentials only for the offline import.
+The candidate build removes any legacy `MONGO_URI`/`MONGO_URI_DEV` secret
+mounts (`backend/cloudbuild.yaml`); the backend has no MongoDB code.
+
+### Database migrations and backups
+
+PostgreSQL schema migrations are applied explicitly, never by Cloud Run
+instances. Startup refuses pending migrations. With `DATABASE_URL` pointing at
+the intended database (a direct, migration-capable connection is fine):
+
+```bash
+npm --prefix backend run db:check            # connectivity, TLS, schema state (no writes)
+npm --prefix backend run db:migrate:status   # applied / pending
+npm --prefix backend run db:migrate          # apply pending + sync content identities
+```
+
+Before any migration or risky release, take a logical backup and verify it:
+custom-format `pg_dump` of the `public` schema from a repeatable-read snapshot
+with PostgreSQL tools matching the Neon major version (pinned
+`postgres:18-alpine`), restore it with
+`pg_restore --exit-on-error --clean --if-exists --no-owner --no-acl` into an
+ephemeral, network-disabled local container, and compare table row counts and
+ordered row digests. Keep the archive (mode 0600) outside the repository on
+trusted storage. This is a manual point-in-time backup only; recurring,
+off-device backups are an open item (see
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#open-items)). The 2026-10-28/29
+migration backups and acceptance are recorded in
+[docs/archive/POSTGRES_MIGRATION.md](docs/archive/POSTGRES_MIGRATION.md).
 
 ### Frontend Environment
 Scripts auto-create `frontend/.env.production`:
@@ -105,8 +122,8 @@ firebase hosting:releases:rollback --project prepalgo
    tag, recent smoke receipt, current content and live candidate identity must
    still match. Promotion targets the immutable revision, not a mutable tag.
 5. Publish frontend: `./deploy-to-firebase.sh`. It checks that production backend
-   content matches the frontend manifest and uses `firebase.generated.json`.
-   The quick script delegates to this same path; it cannot bypass these checks.
+   content matches the frontend manifest and deploys the generated
+   `firebase.generated.json` (written by `scripts/hosting/prepare.mjs`, gitignored).
 6. Verify real navigation and missing-asset headers, old-tab behavior and
    authenticated workflows. Keep the printed rollback revision and hosting archive.
 
@@ -116,8 +133,8 @@ The current Neon database is a shared **testing** database while there are no re
 users. Do not copy its credentials into executor packages. Separate development
 and production before onboarding users; a Neon branch is an option if the current
 plan permits it. Before any destructive migration, take a provider backup or
-snapshot and verify its restore procedure. A verified logical backup procedure
-(pinned `postgres:18-alpine` tooling) is recorded in `docs/POSTGRES_MIGRATION.md`.
+snapshot and verify its restore procedure (see
+[Database migrations and backups](#database-migrations-and-backups)).
 
 The next Cloud Build candidate explicitly requests 0 minimum / 2 maximum
 instances **per revision**, concurrency 8, 1 CPU, 512 MiB, a 30-second HTTP timeout
@@ -226,15 +243,12 @@ internal-only and the "temporarily paused" page is served on every path. Use
 re-releases the newest non-maintenance Hosting version, failing if retention
 pruned it (then redeploy the frontend). The database is preserved throughout.
 
-**Returning to MongoDB** is not a rollback. PostgreSQL writes are not
-dual-written, so it means accepting the loss of every write since cutover. While
-all data is testing-only, that is a deliberate, explicitly approved
-`gcloud run services update-traffic` plus a matching Hosting rollback. Never
-restore a database snapshot over new attempts without explicitly accepting their
-loss.
+**Returning to MongoDB** is not supported: MongoDB was never dual-written and
+the pre-cutover revisions are refused by the rollback guard. Never restore a
+database snapshot over new attempts without explicitly accepting their loss.
 
 **Data recovery.** Before any migration or risky release, take the verified
-logical backup ([PostgreSQL runbook](docs/POSTGRES_MIGRATION.md)). Restore into
+logical backup ([above](#database-migrations-and-backups)). Restore into
 a new Neon branch or a local container, compare, and repair forward. Never
 restore over the live branch while it holds newer writes.
 

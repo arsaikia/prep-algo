@@ -12,7 +12,6 @@ import { getSmartDailyRecommendations, markQuestionCompleted, forceRefreshRecomm
 import { calculateCurrentStreak } from '../utils/learningDays.js';
 import { recordAttempt } from '../repositories/progress.js';
 import { listItems } from '../utils/contentStore.js';
-import errorHandler from '../middleware/error.js';
 
 const recommendation = question => ({
     question, reason: 'Quality practice question', priority: 'medium',
@@ -342,7 +341,10 @@ describe('PostgreSQL recommendation and profile persistence', {
         app.post('/:userId/complete', markQuestionCompleted);
         app.get('/:userId/daily', getSmartDailyRecommendations);
         app.post('/:userId/refresh', forceRefreshRecommendations);
-        app.use(errorHandler);
+        // Mirrors the status/message mapping of the global handler in server.js.
+        app.use((err, req, res, next) => {
+            res.status(err.statusCode || err.status || 500).json({ success: false, error: err.message });
+        });
         const server = app.listen(0, '127.0.0.1');
         await once(server, 'listening');
         const base = `http://127.0.0.1:${server.address().port}/${id}`;

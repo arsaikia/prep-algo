@@ -1,4 +1,4 @@
-// Must stay first: imported modules (rate limiter, queue, Google client)
+// Must stay first: imported modules (rate limiter, Google client)
 // read process.env while loading.
 import 'dotenv/config';
 import { realpathSync } from 'node:fs';
@@ -19,8 +19,6 @@ import {
 } from './config/postgres.js';
 import { connectRedis, disconnectRedis, isRedisAvailable, isRedisConfigured } from './config/redis.js';
 import { getAllCircuitBreakerStats } from './config/circuitBreakers.js';
-import { getCodeExecutionQueue, getQueueEvents, getQueueStats, closeQueue, isQueueEnabled } from './config/queue.js';
-import { startCodeExecutionWorker, stopCodeExecutionWorker } from './workers/codeExecution.js';
 import correlationId from './middleware/correlationId.js';
 import { protect } from './middleware/auth.js';
 import { generalLimiter, codeExecutionLimiter, recommendationLimiter } from './middleware/rateLimiter/index.js';
@@ -30,7 +28,6 @@ import questions from './routes/questions.js';
 import authentication from './routes/authentication.js';
 import submission from './routes/submission.js';
 import codeExecution from './routes/code.js';
-import testRoute from './routes/test.js';
 import quiz from './routes/quiz.js';
 import { solveHistory } from './routes/solveHistory.js';
 import smartRecommendations from './routes/smartRecommendations.js';
@@ -187,14 +184,10 @@ export function createReadinessHandler({
 // Readiness explicitly wakes/checks the database with a bounded SELECT 1.
 app.get('/health/ready', createReadinessHandler());
 
-app.get('/health', async (req, res) => {
+app.get('/health', (req, res) => {
     const postgres = postgresComponent();
     const redisStatus = !isRedisConfigured() ? 'disabled' : isRedisAvailable() ? 'ok' : 'down';
     const breakers = getAllCircuitBreakerStats();
-    const queueStats = isQueueEnabled() ? await getQueueStats() : null;
-    const queue = !isQueueEnabled()
-        ? { status: 'disabled' }
-        : queueStats ? { status: 'ok', ...queueStats } : { status: 'down' };
 
     let status = 'ok';
     if (lifecycle.shuttingDown || postgres.status !== 'ok' || postgres.circuitBreaker === 'OPEN') status = 'unhealthy';
@@ -209,7 +202,6 @@ app.get('/health', async (req, res) => {
         components: {
             postgres,
             redis: { status: redisStatus },
-            queue,
             execution: {
                 status: process.env.CODE_EXECUTOR_URL ? 'remote_configured'
                     : process.env.NODE_ENV === 'production' ? 'disabled' : 'local_development',
@@ -226,7 +218,6 @@ app.use('/api/', generalLimiter);
 // --- Public routes (no auth required) ---
 app.use('/api/v1/authentication', authentication);
 app.use('/api/v1/questions', questions);
-app.use('/api/v1/test', testRoute);
 app.use('/api/v1/quiz', quiz);
 
 // --- Protected routes (auth required) ---
@@ -302,15 +293,8 @@ let httpServer = null;
 
 export async function startServer() {
     try {
-        if (isQueueEnabled()) throw new Error('Colocated BullMQ execution is retired; configure CODE_EXECUTOR_URL instead');
         // Independent connections; connecting them together shortens a cold start.
         await Promise.all([preparePostgres(), connectRedis()]);
-
-        if (isQueueEnabled() && isRedisAvailable()) {
-            getCodeExecutionQueue();
-            getQueueEvents();
-            startCodeExecutionWorker();
-        }
 
         const PORT = process.env.PORT || 8080;
         await new Promise((resolve, reject) => {
@@ -342,8 +326,6 @@ async function closeHttpServer() {
 
 async function releaseResources() {
     const steps = [
-        ['worker', stopCodeExecutionWorker],
-        ['queue', closeQueue],
         ['redis', disconnectRedis],
         ['postgres', disconnectPostgres],
     ];

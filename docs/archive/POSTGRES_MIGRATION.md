@@ -1,4 +1,12 @@
-# PostgreSQL setup and MongoDB cutover
+# PostgreSQL setup and MongoDB cutover (archived)
+
+> **Completed record.** The MongoDB → PostgreSQL migration finished with the
+> production cutover on 2026-10-29. The one-off importer (`db:import-mongo`),
+> the Mongo maintenance scripts and the `mongoose` dependency have since been
+> removed from the repository (see git history). Current data semantics are in
+> [docs/ARCHITECTURE.md](../ARCHITECTURE.md#data-model-and-semantics);
+> operations (migrations, backups, rollback) are in
+> [DEPLOYMENT_README.md](../../DEPLOYMENT_README.md).
 
 The runtime uses Neon PostgreSQL for users, attempts, progress, profiles, and
 recommendation assignments. Redis remains optional cache/rate-limit infrastructure.
@@ -146,7 +154,7 @@ recent-history indexes, and the catalog release marker. Apply it with
 `npm --prefix backend run db:migrate` before restarting the app. Startup checks
 pending migrations and refuses an outdated schema. It tolerates applied migrations
 newer than the release so rollback works; new migrations must follow the
-expand/contract rule in [DEPLOYMENT_README.md](../DEPLOYMENT_README.md#rollback).
+expand/contract rule in [DEPLOYMENT_README.md](../../DEPLOYMENT_README.md#rollback).
 
 `timeTaken` on authenticated code/MCQ submissions is optional, untrusted elapsed
 **seconds**, bounded to 0–86,400. It is included in the idempotency hash, so clients

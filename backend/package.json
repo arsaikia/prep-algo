@@ -11,14 +11,9 @@
         "test": "node --test \"tests/**/*.test.js\"",
         "db:check": "node scripts/checkPostgres.js",
         "db:migrate": "node scripts/migratePostgres.js",
-        "db:migrate:status": "node scripts/migratePostgres.js --status",
-        "db:import-mongo": "node scripts/importMongoToPostgres.js",
-        "validate-recommendations": "node scripts/validateRecommendationEngine.js",
-        "validate-recommendations:verbose": "node scripts/validateRecommendationEngine.js --verbose"
+        "db:migrate:status": "node scripts/migratePostgres.js --status"
     },
     "dependencies": {
-        "axios": "^1.10.0",
-        "bullmq": "^6.3.9",
         "compression": "^1.8.0",
         "cors": "^2.8.5",
         "dotenv": "^8.2.0",
@@ -35,9 +30,6 @@
         "zod": "^4.6.5"
     },
     "devDependencies": {
-        "mongoose": "^7.6.3",
-        "eslint": "^8.43.0",
-        "eslint-config-airbnb": "^19.0.4",
         "nodemon": "^2.0.6",
         "pino-pretty": "^13.1.3"
     },

@@ -60,6 +60,8 @@ logs
 .npm
 .eslintcache
 frontend/.env.production
+__pycache__/
+*.pyc
 
 # Firebase
 .firebase/

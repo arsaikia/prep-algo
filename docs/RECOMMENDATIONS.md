@@ -82,10 +82,8 @@ domains (coding, system design) by the learner's domain preferences.
 submissions. Struggle/mastery heuristics use attempts. Daily activity and
 streaks derive from successful attempt events in UTC; a streak stays current
 through yesterday until today's opportunity has passed. See
-[POSTGRES_MIGRATION.md](POSTGRES_MIGRATION.md#follow-up-correctness-and-scale-changes).
+[ARCHITECTURE.md](ARCHITECTURE.md#data-model-and-semantics).
 
 ## Validation
 
 - `npm --prefix backend test` — unit and isolated PostgreSQL integration tests.
-- `npm --prefix backend run validate-recommendations[:verbose]` — exercises a
-  running API (`API_BASE_URL`, see `backend/scripts/README.md`).

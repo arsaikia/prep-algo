@@ -1,12 +1,10 @@
 # ADR 005: BullMQ Async Code Execution
 
-## Status
-Deprecated — superseded by ADR-008.
+## Status: Superseded
 
-Grading now runs on the private executor VM. A colocated queue added a Redis hop
-and metered Upstash polling without isolation, so startup fails if
-`CODE_EXECUTION_QUEUE=bullmq` is set. `config/queue.js` and
-`workers/codeExecution.js` remain only behind that rejected flag and can be
+Superseded by ADR-008: grading runs on the private executor VM, and a colocated
+queue added a Redis hop and metered Upstash polling without isolation. The
+queue, worker, `bullmq` dependency and `CODE_EXECUTION_QUEUE` setting have been
 removed. The original decision is kept below for history.
 
 ## Context
