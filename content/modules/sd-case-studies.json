@@ -4,8 +4,8 @@
     "domain": "system_design",
     "type": "module",
     "group": "Curriculum",
-    "order": 5,
+    "order": 6,
     "tags": [],
     "lists": [],
-    "summary": "Apply the concepts to design prompts. Start with the full URL Shortener walkthrough; the other reference outlines are starting points for deeper practice."
+    "summary": "Apply the method end to end. Each walkthrough follows requirements, entities, API, high-level design and deep dives, with diagrams and a knowledge check."
 }

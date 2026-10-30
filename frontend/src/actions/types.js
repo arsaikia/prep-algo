@@ -21,11 +21,6 @@ export const GOOGLE_LOGIN = 'GOOGLE_LOGIN';
 export const GOOGLE_LOGIN_SUCCESS = 'GOOGLE_LOGIN_SUCCESS';
 export const GOOGLE_LOGIN_FAILURE = 'GOOGLE_LOGIN_FAILURE';
 
-// Signup user
-export const SIGNUP = 'SIGNUP';
-export const SIGNUP_SUCCESS = 'SIGNUP_SUCCESS';
-export const SIGNUP_FAILURE = 'SIGNUP_FAILURE';
-
 // Reset Auth
 export const RESET_AUTH = 'RESET_AUTH';
 export const RESET_AUTH_SUCCESS = 'RESET_AUTH_SUCCESS';

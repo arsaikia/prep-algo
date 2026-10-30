@@ -1,0 +1,11 @@
+{
+    "slug": "sd-patterns",
+    "title": "Common Design Patterns",
+    "domain": "system_design",
+    "type": "module",
+    "group": "Curriculum",
+    "order": 5,
+    "tags": [],
+    "lists": [],
+    "summary": "Recurring problems and their standard answers: scaling reads and writes, real-time updates, large files, long-running work, contention and multi-step processes."
+}

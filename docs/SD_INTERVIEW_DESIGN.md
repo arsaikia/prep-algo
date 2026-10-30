@@ -21,24 +21,32 @@ Public references, accessed 2026-10-29:
 - [Preparation guide](https://www.hellointerview.com/learn/system-design/in-a-hurry/how-to-prepare)
 - [Delivery framework](https://www.hellointerview.com/learn/system-design/in-a-hurry/delivery)
 
-The authored path is:
+The authored path (modules in order):
 
 1. **Interview Method:** requirements, entities, interfaces, complete baseline,
    focused deep dives and review. Estimate quantities when they affect a decision.
 2. **Foundations:** scaling, load balancing, caching, storage tradeoffs,
-   indexing, consistency, hashing, rate limits and interfaces.
-3. **Data & Storage:** begin with replication and read freshness.
-4. **Scalability & Reliability:** begin with deadlines, retries and backpressure.
-5. **Distributed Systems:** begin with idempotency and delivery guarantees.
-6. **Design Case Studies:** attempt before reading; start with the expanded URL
-   shortener walkthrough.
+   indexing, consistency, hashing, rate limits, interfaces, numbers to know and
+   networking essentials.
+3. **Data & Storage:** replication, data modeling and transactions, sharding,
+   search indexes and geospatial indexing.
+4. **Scalability & Reliability:** deadlines, retries, backpressure, queues and
+   streams.
+5. **Distributed Systems:** idempotency, delivery guarantees, consensus and
+   coordination.
+6. **Patterns:** scaling reads, scaling writes, real-time updates, large blobs,
+   long-running tasks, contention and multi-step processes.
+7. **Design Case Studies:** 17 end-to-end walkthroughs (URL shortener through
+   online judge). Each follows the same sections: requirements, estimates,
+   entities, API, high-level design, deep dives, tradeoffs, failure modes and a
+   knowledge check. Attempt the design before reading.
+8. **Reference:** the System Design Handbook, a cheat-sheet that maps problems
+   (read-heavy, write-heavy, contention, fanout) to the standard moves. It is
+   excluded from progress and previous/next navigation.
 
-This is a first increment, not a complete equivalent course. The middle modules
-each have an introductory lesson; other existing case studies remain shorter
-than the URL shortener walkthrough. Future content should add transactions,
-partitioning, queue/log semantics, object/search storage, real-time delivery,
-fanout and coordination, then deepen the remaining case studies. Prioritize a
-concept because it changes a design decision, not to maximize topic count.
+Lessons and case studies embed Mermaid diagrams that are validated at build time
+(`node scripts/content/check-diagrams.mjs`). Prioritize a concept because it
+changes a design decision, not to maximize topic count.
 
 Keep stable slugs and existing progress identifiers. Modules and topic order
 drive both the outline and previous/next navigation. Prerequisites are explicit

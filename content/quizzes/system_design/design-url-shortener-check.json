@@ -1,0 +1,44 @@
+{
+    "slug": "design-url-shortener-check",
+    "title": "Disabled phishing link still redirects",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-url-shortener",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "url-shortener",
+        "caching",
+        "http"
+    ],
+    "lists": [],
+    "legacyId": "58c28fd3-2fab-4d7c-b9ff-1eb795e05a00",
+    "description": "Your shortener returns 301 Moved Permanently for every redirect and caches alias lookups in Redis with no TTL. Trust and safety disables a phishing link: the API sets disabled_at and deletes the Redis key. Hours later, many victims are still being redirected. What is the most effective fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Delete the Redis key twice, with a short delay between deletes, to avoid racing with a concurrent cache fill.",
+            "isCorrect": false,
+            "explanation": "A delayed double delete narrows one race, but browsers that already received a 301 never ask the server again, so the server-side cache is not the main problem."
+        },
+        {
+            "id": "b",
+            "text": "Move the link table from read replicas to the primary so the disabled_at flag is always fresh.",
+            "isCorrect": false,
+            "explanation": "Replica lag is seconds, not hours, and it does nothing about redirects that browsers have cached permanently."
+        },
+        {
+            "id": "c",
+            "text": "Return 302 with a short Cache-Control max-age matching the disable SLA, give cache entries a TTL, and purge any CDN copy on takedown.",
+            "isCorrect": true,
+            "explanation": "301 responses are cached by browsers, often indefinitely, so the request never reaches you. A 302 with a bounded max-age, a TTL on server-side entries and an explicit CDN purge together bound how long a disabled link can still work."
+        },
+        {
+            "id": "d",
+            "text": "Rotate the alias to a new random value whenever a link is disabled.",
+            "isCorrect": false,
+            "explanation": "Changing the alias does not affect the old alias that victims already hold; their browsers still follow the cached permanent redirect."
+        }
+    ]
+}

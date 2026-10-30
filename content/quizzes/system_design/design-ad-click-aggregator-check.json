@@ -1,0 +1,44 @@
+{
+    "slug": "design-ad-click-aggregator-check",
+    "title": "Billing counts that grow after a crash",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-ad-click-aggregator",
+    "difficulty": "Hard",
+    "order": 1,
+    "tags": [
+        "stream-processing",
+        "exactly-once",
+        "idempotency"
+    ],
+    "lists": [],
+    "legacyId": "1a701f6e-1309-443b-99cb-4788b74afbed",
+    "description": "Your click aggregator consumes Kafka, dedupes by click ID in an in-memory set, and every minute runs UPDATE agg SET clicks = clicks + n for each ad. After a processor node crashed and restarted from the last committed offsets, several advertisers' counts for the previous 10 minutes are about 15% higher than the raw event archive shows. What is the right fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Commit Kafka offsets after every single event instead of every few seconds",
+            "isCorrect": false,
+            "explanation": "Smaller gaps reduce but do not remove the replay window, and per-event commits hurt throughput; the in-memory dedupe set and additive sink remain wrong on replay."
+        },
+        {
+            "id": "b",
+            "text": "Checkpoint dedupe state together with consumer offsets, and write window results as upserts that set the count for (adId, bucket) rather than incrementing it",
+            "isCorrect": true,
+            "explanation": "Restoring state and offsets together means replayed events are recognised, and a set-based upsert makes re-emitting a window idempotent, so a crash cannot inflate counts."
+        },
+        {
+            "id": "c",
+            "text": "Move dedupe to the query service by running COUNT DISTINCT over raw click IDs on every dashboard request",
+            "isCorrect": false,
+            "explanation": "Correct in principle but it scans raw events on the latency-sensitive path, which cannot meet a 1-second p99 over 90 days."
+        },
+        {
+            "id": "d",
+            "text": "Switch the click redirect from 302 to 301 so fewer duplicate clicks reach the service",
+            "isCorrect": false,
+            "explanation": "Browser-cached 301s would bypass the click service entirely and lose clicks, and the inflation here comes from replays, not user double-clicks."
+        }
+    ]
+}

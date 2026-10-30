@@ -1,0 +1,44 @@
+{
+    "slug": "pattern-long-running-tasks-check",
+    "title": "Transcode jobs that run twice",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Patterns",
+    "topic": "pattern-long-running-tasks",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "job-queue",
+        "visibility-timeout",
+        "idempotency"
+    ],
+    "lists": [],
+    "legacyId": "95966c61-05c2-4aa2-9253-8ea5a65b8f20",
+    "description": "Video transcode jobs take 5 to 25 minutes. The queue's visibility timeout is 10 minutes and workers acknowledge only at the end. Long videos are being transcoded two or three times concurrently and some results are overwritten by stale workers. What is the best fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Switch the queue to exactly-once delivery mode so duplicates cannot occur",
+            "isCorrect": false,
+            "explanation": "Queue-level deduplication does not cover a message becoming visible again because processing outlived its timeout, and the worker still needs idempotent writes."
+        },
+        {
+            "id": "b",
+            "text": "Set the visibility timeout to 2 hours",
+            "isCorrect": false,
+            "explanation": "It reduces duplicates but a crashed worker now stalls its job for 2 hours, and nothing prevents a slow zombie worker from overwriting a newer result."
+        },
+        {
+            "id": "c",
+            "text": "Acknowledge the message as soon as a worker receives it",
+            "isCorrect": false,
+            "explanation": "Early acknowledgement turns a worker crash into a lost job, trading duplicates for silent data loss."
+        },
+        {
+            "id": "d",
+            "text": "Use a short lease extended by periodic heartbeats, write outputs to deterministic keys, and make the final status update conditional on the current lease owner and attempt",
+            "isCorrect": true,
+            "explanation": "Heartbeats keep healthy long jobs invisible while letting crashed ones recover quickly, and conditional, idempotent writes stop a late duplicate from clobbering the winner."
+        }
+    ]
+}

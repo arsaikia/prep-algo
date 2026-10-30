@@ -1,0 +1,44 @@
+{
+    "slug": "search-and-inverted-indexes-check",
+    "title": "Out-of-order search updates",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Data & Storage",
+    "topic": "search-and-inverted-indexes",
+    "difficulty": "Hard",
+    "order": 1,
+    "tags": [
+        "search",
+        "cdc",
+        "consistency"
+    ],
+    "lists": [],
+    "description": "Listings live in Postgres and are streamed through CDC into Kafka, then indexed into Elasticsearch by a pool of workers. Occasionally a listing's price in search shows an older value than the database long after edits stop. Investigation shows two rapid edits were indexed by different workers and the older one landed last. What is the most robust fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Key the Kafka topic by listing ID and index with the database row version as an external version so older updates are rejected",
+            "isCorrect": true,
+            "explanation": "Per-key partitioning keeps one listing's changes ordered, and external versioning makes the index refuse any update older than what it already holds, even after retries or replays."
+        },
+        {
+            "id": "b",
+            "text": "Call the refresh API after every indexing request",
+            "isCorrect": false,
+            "explanation": "Refresh controls when indexed data becomes searchable; it does not stop an older document from overwriting a newer one, and it badly hurts indexing throughput."
+        },
+        {
+            "id": "c",
+            "text": "Have the application write to Elasticsearch directly after committing to Postgres",
+            "isCorrect": false,
+            "explanation": "This is a dual write: concurrent requests can still race, and a crash between the two writes leaves them diverged with no record to replay."
+        },
+        {
+            "id": "d",
+            "text": "Add more replica shards so reads see the latest copy",
+            "isCorrect": false,
+            "explanation": "Replicas copy whatever the primary shard holds; if the primary has the stale version, every replica does too."
+        }
+    ],
+    "legacyId": "5727d612-d927-49d8-9736-6066702020b7"
+}

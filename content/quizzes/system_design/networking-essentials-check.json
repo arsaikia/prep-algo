@@ -1,0 +1,44 @@
+{
+    "slug": "networking-essentials-check",
+    "title": "Speed Up a Distant Mobile Client",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Foundations",
+    "topic": "networking-essentials",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "networking",
+        "latency",
+        "http"
+    ],
+    "lists": [],
+    "legacyId": "54bf1a79-a1c8-454b-b4dc-656ff383016f",
+    "description": "A mobile app in Europe calls an API hosted only in the US (round trip about 120 ms). Each screen makes six sequential requests, and the client opens a new HTTPS connection for every request. Server processing takes about 10 ms per request. Which change removes the most latency?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Switch the payloads from JSON to Protocol Buffers.",
+            "isCorrect": false,
+            "explanation": "Payloads are small, so serialization and transfer time are a tiny fraction of the delay; round trips dominate."
+        },
+        {
+            "id": "b",
+            "text": "Move the API servers to larger instances with more CPU.",
+            "isCorrect": false,
+            "explanation": "Server time is about 10 ms per request. Faster CPUs cannot remove network round trips."
+        },
+        {
+            "id": "c",
+            "text": "Replace TCP with UDP for the API calls.",
+            "isCorrect": false,
+            "explanation": "UDP drops reliability and ordering, so the API would need its own transport. It is not a drop-in fix; HTTP/3 over QUIC is the standard way to get UDP-based benefits."
+        },
+        {
+            "id": "d",
+            "text": "Reuse one persistent HTTPS connection (or HTTP/2) and terminate TLS at a nearby edge, then batch the six calls where possible.",
+            "isCorrect": true,
+            "explanation": "Each new connection costs a TCP and a TLS round trip before the request, roughly 360 ms per call at 120 ms RTT. Connection reuse and edge termination remove most of that, and batching removes sequential round trips."
+        }
+    ]
+}

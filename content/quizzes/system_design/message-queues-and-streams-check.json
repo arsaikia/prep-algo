@@ -1,0 +1,44 @@
+{
+    "slug": "message-queues-and-streams-check",
+    "title": "Ordering events per order",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Scalability & Reliability",
+    "topic": "message-queues-and-streams",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "kafka",
+        "partitions",
+        "ordering"
+    ],
+    "lists": [],
+    "description": "An order service publishes created, paid and shipped events to a Kafka topic with 8 partitions. The fulfillment consumer group runs 8 consumers and must apply each order's events in order, but occasionally sees 'shipped' before 'paid'. Producers currently send records with no key. Throughput is fine. What is the right fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Reduce the topic to a single partition so all events are totally ordered",
+            "isCorrect": false,
+            "explanation": "This gives ordering but caps the group at one consumer and throws away the throughput headroom; only per-order ordering is needed."
+        },
+        {
+            "id": "b",
+            "text": "Add more consumers to the group so events are processed faster and arrive in order",
+            "isCorrect": false,
+            "explanation": "Consumers beyond the partition count sit idle, and speed does not create ordering across partitions."
+        },
+        {
+            "id": "c",
+            "text": "Produce each event with order_id as the record key so all events for an order go to the same partition",
+            "isCorrect": true,
+            "explanation": "Kafka orders records within a partition; keying by order_id keeps each order's events together while different orders still spread across 8 partitions."
+        },
+        {
+            "id": "d",
+            "text": "Have consumers sort events by producer wall-clock timestamp before applying them",
+            "isCorrect": false,
+            "explanation": "Events for one order are spread across consumers, so no single consumer can sort them, and wall clocks on different producers can disagree."
+        }
+    ],
+    "legacyId": "3f1d5e64-0af0-41bd-9456-6a63d7109439"
+}

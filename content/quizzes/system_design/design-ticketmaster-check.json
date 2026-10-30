@@ -1,0 +1,44 @@
+{
+    "slug": "design-ticketmaster-check",
+    "title": "On-sale stampede",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-ticketmaster",
+    "difficulty": "Hard",
+    "order": 1,
+    "tags": [
+        "ticketing",
+        "waiting-room",
+        "contention"
+    ],
+    "lists": [],
+    "legacyId": "02c6f1ec-ad1b-4fd0-8e4d-0612a4a0feb0",
+    "description": "A stadium tour goes on sale at 10:00 with 50,000 seats. Eight million fans are expected within minutes. Holds already use conditional updates, so double sales are impossible, but at the last on-sale the database hit 100% CPU, holds took 20 s, and fans with refresh scripts got most seats. What should you add?",
+    "options": [
+        {
+            "id": "a",
+            "text": "A virtual waiting room that queues arrivals and admits them with signed, short-lived tokens at a rate matched to measured booking capacity",
+            "isCorrect": true,
+            "explanation": "The booking path sees a steady load it can serve, admission order is controlled rather than won by retry speed, and the token is verified cheaply without a central call."
+        },
+        {
+            "id": "b",
+            "text": "Add read replicas and route hold requests to them",
+            "isCorrect": false,
+            "explanation": "Holds are writes that must be decided by the primary; replicas cannot accept them and would risk stale availability decisions."
+        },
+        {
+            "id": "c",
+            "text": "Stricter per-IP rate limits at the API gateway",
+            "isCorrect": false,
+            "explanation": "Protects the database somewhat, but random 429s trigger more refreshes, botnets spread across IPs, and there is no fair ordering."
+        },
+        {
+            "id": "d",
+            "text": "Move seat holds into Redis with SETNX and write sales to Postgres afterwards",
+            "isCorrect": false,
+            "explanation": "It makes holds faster but creates two sources of truth that can disagree, and it does nothing about unfair access or the flood of requests."
+        }
+    ]
+}

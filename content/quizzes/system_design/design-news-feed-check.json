@@ -1,0 +1,44 @@
+{
+    "slug": "design-news-feed-check",
+    "title": "Celebrity post backs up the feed",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-news-feed",
+    "difficulty": "Hard",
+    "order": 1,
+    "tags": [
+        "news-feed",
+        "fan-out",
+        "caching"
+    ],
+    "lists": [],
+    "legacyId": "4b1b612e-0e26-4bd1-8485-9f354b932b72",
+    "description": "Your feed uses pure fan-out on write: each new post id is pushed into every follower's cached feed list. When a singer with 120 million followers posts during an awards show, fan-out lag climbs to 20 minutes and ordinary users' posts take that long to reach their friends. What is the most effective design change?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Add a read replica to the follow store so workers can read follower lists faster.",
+            "isCorrect": false,
+            "explanation": "Reading followers is not the bottleneck; the 120 million feed writes are, and they would still be queued ahead of everyone else's posts."
+        },
+        {
+            "id": "b",
+            "text": "Switch everyone to fan-out on read so no writes are needed.",
+            "isCorrect": false,
+            "explanation": "That removes the write spike but makes every feed load touch hundreds of authors, which breaks the read latency target for the far more common case."
+        },
+        {
+            "id": "c",
+            "text": "Store the full post object in each feed list so readers skip hydration.",
+            "isCorrect": false,
+            "explanation": "This increases the size of each of the 120 million writes and does nothing about the write amplification causing the lag."
+        },
+        {
+            "id": "d",
+            "text": "Skip fan-out for authors above a follower threshold and merge their recent posts into followers' feeds at read time.",
+            "isCorrect": true,
+            "explanation": "Correct. The hybrid keeps fast precomputed feeds for normal authors and serves high-fan-out authors from a small replicated cache merged on read, removing the 120-million-write spike."
+        }
+    ]
+}

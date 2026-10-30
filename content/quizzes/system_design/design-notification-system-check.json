@@ -1,0 +1,44 @@
+{
+    "slug": "design-notification-system-check",
+    "title": "OTPs stuck behind a marketing blast",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-notification-system",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "notifications",
+        "priority",
+        "rate-limiting"
+    ],
+    "lists": [],
+    "legacyId": "03618d44-458f-48e7-ba3c-939e6d974cc5",
+    "description": "Your notification platform already has separate Kafka topics and worker pools for transactional and bulk traffic. During a 40-million-user marketing push, login one-time passcodes still take 6–8 minutes to arrive by SMS. Transactional consumer lag is near zero, but the SMS workers report that most provider calls wait on the shared SMS rate limiter. What change fixes the OTP latency?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Add more partitions and consumers to the transactional topic.",
+            "isCorrect": false,
+            "explanation": "Consumer lag is already near zero; the wait happens later, at the shared provider rate limiter, so more consumers would just queue at the same bottleneck."
+        },
+        {
+            "id": "b",
+            "text": "Raise the transactional priority field on each message so the SMS provider delivers them first.",
+            "isCorrect": false,
+            "explanation": "Providers do not reorder your traffic by an internal priority field, and the messages are delayed before they even reach the provider."
+        },
+        {
+            "id": "c",
+            "text": "Reserve a share of each provider's token bucket for transactional traffic and pace bulk sends below the remaining capacity.",
+            "isCorrect": true,
+            "explanation": "Correct. Priority isolation must extend to the narrowest shared resource; here that is the provider quota. Reserving capacity (with unused share borrowable) and pacing campaigns keeps OTPs fast."
+        },
+        {
+            "id": "d",
+            "text": "Retry OTP sends more aggressively with shorter backoff when they are slow.",
+            "isCorrect": false,
+            "explanation": "More retries add load to the same saturated quota and can produce duplicate codes; they make the contention worse, not better."
+        }
+    ]
+}

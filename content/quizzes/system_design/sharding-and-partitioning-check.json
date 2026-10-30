@@ -1,0 +1,43 @@
+{
+    "slug": "sharding-and-partitioning-check",
+    "title": "Fix a Scatter-Gather Chat Read",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Data & Storage",
+    "topic": "sharding-and-partitioning",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "sharding",
+        "partition-key"
+    ],
+    "lists": [],
+    "legacyId": "925d2862-ded5-46fd-9d5e-ba31fd001f9e",
+    "description": "A chat service shards its messages table by hash(message_id) across 16 shards. The most frequent query, \"latest 50 messages in a conversation,\" must query all 16 shards, and its p99 latency tracks the slowest shard. What change best fixes this?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Add more shards so each one holds fewer messages.",
+            "isCorrect": false,
+            "explanation": "The query still fans out to every shard, and with more shards the chance that one is slow rises, so tail latency gets worse."
+        },
+        {
+            "id": "b",
+            "text": "Repartition by conversation_id with message time as the sort key, adding a time bucket for very large conversations.",
+            "isCorrect": true,
+            "explanation": "The dominant query then names its partition key and reads one shard in order. The time bucket keeps any single conversation from growing an unbounded partition."
+        },
+        {
+            "id": "c",
+            "text": "Range-partition by created_at so recent messages sit together.",
+            "isCorrect": false,
+            "explanation": "Every new message would land on the newest range, creating a write hot spot, and one conversation still spans many writers."
+        },
+        {
+            "id": "d",
+            "text": "Keep message_id partitioning and add a global secondary index on conversation_id.",
+            "isCorrect": false,
+            "explanation": "This can work, but it doubles writes, global indexes typically lag, and the main access pattern still depends on a secondary structure. The primary key should serve the hottest query."
+        }
+    ]
+}

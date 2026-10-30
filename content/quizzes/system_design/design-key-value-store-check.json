@@ -1,0 +1,44 @@
+{
+    "slug": "design-key-value-store-check",
+    "title": "Deleted cart items come back",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-key-value-store",
+    "difficulty": "Hard",
+    "order": 1,
+    "tags": [
+        "key-value-store",
+        "replication",
+        "tombstones"
+    ],
+    "lists": [],
+    "legacyId": "234f2bbc-43a5-4918-ae25-312dc27d3093",
+    "description": "A Dynamo-style store (N=3, W=2, R=2) physically removes a key from replicas that receive a delete. Replica C was partitioned for an hour and missed the delete of cart:42. After C rejoins, nightly Merkle-tree anti-entropy runs and the next day users see the deleted cart again. What is the root cause and fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Anti-entropy treats C's surviving copy as missing data on A and B and re-copies it; write a tombstone on delete and purge it only after a grace period longer than any replica outage.",
+            "isCorrect": true,
+            "explanation": "Without a tombstone, 'absent' on A and B is indistinguishable from 'never received', so repair copies C's old value back. A versioned tombstone wins the comparison, and keeping it longer than the maximum outage window ensures every replica learns of the delete."
+        },
+        {
+            "id": "b",
+            "text": "R + W must exceed N + 1; raise W to 3 so deletes reach every replica.",
+            "isCorrect": false,
+            "explanation": "W=3 would make deletes fail whenever any replica is down, violating availability, and still would not help a replica that rejoins with old data after an outage."
+        },
+        {
+            "id": "c",
+            "text": "Merkle trees are unreliable for small keys; replace anti-entropy with read repair only.",
+            "isCorrect": false,
+            "explanation": "Read repair would also see C's version as the only existing value and propagate it; and without anti-entropy, cold keys never converge."
+        },
+        {
+            "id": "d",
+            "text": "Clock skew on C made its version look newer; switch to vector clocks.",
+            "isCorrect": false,
+            "explanation": "There is no competing newer write to compare against: the delete left nothing behind on A and B, so the version scheme cannot help."
+        }
+    ]
+}

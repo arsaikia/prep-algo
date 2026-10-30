@@ -186,3 +186,35 @@ test('test results show literals and parameter names, not JSON-encoded strings',
   assert.equal(formatValue('abc'), '"abc"');
   assert.equal(statusLabel({ status: 'tle', passed: false }), 'Time Limit Exceeded');
 });
+
+test('route titles are specific, never stale, and lesson titles refine the System Design default', async () => {
+  const { routeTitle, formatTitle, systemDesignSlug } = await import('../src/utils/documentTitle.js');
+  assert.equal(routeTitle('/'), 'PrepAlgo');
+  assert.equal(routeTitle('/codesandbox'), 'Code Sandbox · PrepAlgo');
+  assert.equal(routeTitle('/frontend/'), 'Frontend · PrepAlgo');
+  assert.equal(routeTitle('/system-design'), 'System Design · PrepAlgo');
+  assert.equal(routeTitle('/404'), 'Page not found · PrepAlgo');
+  assert.equal(routeTitle('/unknown'), 'Page not found · PrepAlgo');
+  assert.equal(routeTitle('/system-design/cap-theorem'), 'System Design · PrepAlgo');
+  assert.equal(routeTitle('/system-design/cap-theorem', { lessonTitle: 'CAP Theorem' }), 'CAP Theorem · System Design · PrepAlgo');
+  assert.equal(systemDesignSlug('/system-design/a%20b/'), 'a b');
+  assert.equal(systemDesignSlug('/system-design'), null);
+  assert.equal(systemDesignSlug('/system-design/a/b'), null);
+  assert.equal(formatTitle('Two Sum'), 'Two Sum · PrepAlgo');
+  assert.equal(formatTitle(undefined, ' '), 'PrepAlgo');
+});
+
+test('frontend lists separate exercises from quizzes', async () => {
+  const { splitFrontendSections, filterGroupsByKind, FRONTEND_KINDS } = await import('../src/utils/tracks.js');
+  const grouped = {
+    'DOM & Browser': [{ name: 'debounce', type: 'problem' }, { name: 'cors', type: 'quiz' }],
+    CSS: [{ name: 'box', type: 'quiz' }],
+  };
+  const [exercises, quizzes] = splitFrontendSections(grouped);
+  assert.equal(exercises.id, 'exercises');
+  assert.deepEqual(exercises.groups, { 'DOM & Browser': [{ name: 'debounce', type: 'problem' }] });
+  assert.equal(exercises.count, 1);
+  assert.deepEqual(Object.keys(quizzes.groups), ['DOM & Browser', 'CSS']);
+  assert.equal(quizzes.count, 2);
+  assert.deepEqual(filterGroupsByKind(grouped, FRONTEND_KINDS[1]).CSS, [{ name: 'box', type: 'quiz' }]);
+});

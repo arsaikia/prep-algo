@@ -3,11 +3,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import {
-    BookOpen, ChevronDown, ChevronRight, Layers, Menu, X,
+    BookOpen, Bookmark as HandbookIcon, CheckCircle, ChevronDown, ChevronRight, Layers, Menu, X,
 } from 'react-feather';
 
 import useCurriculum from '../../content/useCurriculum';
 import { contentUrl } from '../../utils/navigation';
+import { HANDBOOK_SLUG, findTopic, isReference, progressOf } from '../../components/systemDesign/curriculum';
+import useCompletedLessons from '../../hooks/useCompletedLessons';
 
 const Shell = styled.div`
   display: flex;
@@ -125,8 +127,31 @@ const TopicList = styled.div`
   padding-bottom: 0.4rem;
 `;
 
+const HandbookLink = styled(NavLink)`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0.85rem 0.9rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid ${({ theme }) => theme.colors.primary};
+  border-radius: 10px;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.3;
+
+  svg { color: ${({ theme }) => theme.colors.primary}; flex-shrink: 0; }
+  small { display: block; font-weight: 400; font-size: 0.75rem; color: ${({ theme }) => theme.colors.textSecondary}; }
+  &:hover, &.active { background: ${({ theme }) => theme.colors.backgroundTertiary}; }
+  &:focus-visible { outline: 2px solid ${({ theme }) => theme.colors.primary}; outline-offset: 2px; }
+`;
+
 const TopicLink = styled(NavLink)`
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
   padding: 0.45rem 1.1rem 0.45rem 2.15rem;
   font-size: 0.88rem;
   line-height: 1.35;
@@ -144,6 +169,18 @@ const TopicLink = styled(NavLink)`
     border-left-color: ${({ theme }) => theme.colors.primary};
     background: ${({ theme }) => theme.colors.backgroundTertiary};
     font-weight: 600;
+  }
+
+  > span { flex: 1; min-width: 0; }
+  > svg { flex-shrink: 0; margin-top: 2px; color: ${({ theme }) => theme.colors.accent}; }
+  small {
+    display: inline-block;
+    margin-left: 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: ${({ theme }) => theme.colors.textSecondary};
   }
 `;
 
@@ -210,6 +247,8 @@ const SidebarMessage = styled.p`
 function SystemDesignLayout() {
     const { pathname } = useLocation();
     const { status, modules, quizByTopic, error, retry } = useCurriculum();
+    const { completed } = useCompletedLessons();
+    const handbook = findTopic(modules, HANDBOOK_SLUG);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 900px)').matches);
     const drawerRef = useRef(null);
@@ -293,14 +332,24 @@ function SystemDesignLayout() {
                     <SidebarMessage>Could not load the curriculum: {error} <button onClick={retry}>Retry curriculum</button></SidebarMessage>
                 )}
 
+                {status === 'ready' && handbook && (
+                    <HandbookLink to={contentUrl(handbook)} onClick={() => setDrawerOpen(false)}>
+                        <HandbookIcon size={18} />
+                        <span>Handbook<small>Cheat sheet for interviews</small></span>
+                    </HandbookLink>
+                )}
+
                 {status === 'ready' && modules.map((module) => {
                     const open = isOpen(module);
+                    const { done, total } = progressOf(module.topics, completed);
                     return (
                         <ModuleBlock key={module.slug}>
                             <ModuleButton onClick={() => toggle(module)} aria-expanded={open}>
                                 {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                                 {module.title}
-                                <ModuleCount>{module.topics.length || '—'}</ModuleCount>
+                                <ModuleCount aria-label={total ? `${done} of ${total} lessons complete` : undefined}>
+                                    {total ? `${done}/${total}` : (module.topics.length || '—')}
+                                </ModuleCount>
                             </ModuleButton>
 
                             {open && (
@@ -311,7 +360,11 @@ function SystemDesignLayout() {
                                             to={contentUrl(topic)}
                                             onClick={() => setDrawerOpen(false)}
                                         >
-                                            {topic.title}
+                                            <span>
+                                                {topic.title}
+                                                {isReference(topic) && <small>Reference</small>}
+                                            </span>
+                                            {completed.has(topic.slug) && <CheckCircle size={14} aria-label="Completed" role="img" />}
                                         </TopicLink>
                                     ))}
                                     {module.topics.length === 0 && (

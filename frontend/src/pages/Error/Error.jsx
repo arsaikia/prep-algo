@@ -16,10 +16,10 @@ function Error() {
       width="100%"
       height="90vh"
     >
-      <img alt="Error Icon" src={Error404Icon} />
+      <img alt="" src={Error404Icon} style={{ maxWidth: '100%' }} />
       <h1>Page not found</h1>
       <p>That page does not exist. Browse from the home page to continue.</p>
-      <Container width="30%">
+      <Container width="min(100%, 240px)">
         <button
           type="button"
           className="button-6"

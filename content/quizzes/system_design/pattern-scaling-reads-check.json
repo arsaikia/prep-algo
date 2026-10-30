@@ -1,0 +1,43 @@
+{
+    "slug": "pattern-scaling-reads-check",
+    "title": "Celebrity profile melts one cache node",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Patterns",
+    "topic": "pattern-scaling-reads",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "caching",
+        "hot-key"
+    ],
+    "lists": [],
+    "legacyId": "c2c3f451-c3f8-4f57-b044-ff8b81895959",
+    "description": "A social app caches user profiles in a 20-node Redis cluster with cache-aside and a 10-minute TTL. When a celebrity goes viral, one Redis node hits 100% CPU serving a single key while the other 19 nodes are mostly idle, and database load stays normal. What is the most effective fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Add 20 more Redis nodes so the cluster has more total capacity.",
+            "isCorrect": false,
+            "explanation": "The key still hashes to one node; more nodes do not spread a single key's traffic."
+        },
+        {
+            "id": "b",
+            "text": "Add read replicas to the primary database.",
+            "isCorrect": false,
+            "explanation": "The database is not the bottleneck; the hot cache node is. Replicas do not touch the cache path."
+        },
+        {
+            "id": "c",
+            "text": "Replicate the hot key under several suffixed keys (or keep it in a short-TTL in-process cache on each API server) so its reads spread across nodes.",
+            "isCorrect": true,
+            "explanation": "A hot key is a per-key problem. Spreading copies across shards or serving it from local memory removes the single-node bottleneck, at the cost of a few seconds of extra staleness."
+        },
+        {
+            "id": "d",
+            "text": "Lower the TTL to 10 seconds so the key refreshes more often.",
+            "isCorrect": false,
+            "explanation": "A shorter TTL increases misses and stampede risk without reducing the reads landing on that node."
+        }
+    ]
+}

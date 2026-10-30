@@ -1,0 +1,44 @@
+{
+    "slug": "consensus-and-coordination-check",
+    "title": "Paused lock holder",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Distributed Systems",
+    "topic": "consensus-and-coordination",
+    "difficulty": "Hard",
+    "order": 1,
+    "tags": [
+        "locks",
+        "fencing",
+        "leases"
+    ],
+    "lists": [],
+    "description": "A nightly ledger job takes a lease-based lock with a 30-second TTL from a coordination service before writing balance adjustments to the ledger database. One night the worker holding the lock hits a 45-second garbage-collection pause; another worker acquires the lock and starts the job. When the first worker resumes it continues writing, and some adjustments are applied twice. What change prevents this?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Increase the lease TTL to 5 minutes so pauses never outlast it",
+            "isCorrect": false,
+            "explanation": "Any TTL can be exceeded by a long enough pause, and a longer TTL also delays recovery when the holder genuinely dies."
+        },
+        {
+            "id": "b",
+            "text": "Issue a monotonically increasing fencing token with each lease and have the ledger database reject writes carrying a token lower than the highest it has accepted",
+            "isCorrect": true,
+            "explanation": "The resource itself enforces ordering of lock holders, so the resumed worker's stale token is rejected regardless of how long it was paused."
+        },
+        {
+            "id": "c",
+            "text": "Have the worker check the system clock before each write and stop if more than 30 seconds have passed since acquiring the lock",
+            "isCorrect": false,
+            "explanation": "The pause can happen between the check and the write, and wall clocks can jump, so the check gives no guarantee."
+        },
+        {
+            "id": "d",
+            "text": "Run the coordination service on 4 nodes instead of 3 for higher availability",
+            "isCorrect": false,
+            "explanation": "A 4-node cluster still tolerates only one failure and does nothing about a client that does not know its lease expired."
+        }
+    ],
+    "legacyId": "f5a141cd-9a5a-4b8f-97bf-6b1051233821"
+}

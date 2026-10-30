@@ -252,6 +252,11 @@ const NavLinkItem = styled(NavLink)`
     color: ${({ theme }) => theme.colors.primary};
     font-weight: 600;
   }
+
+  @media (max-width: 900px) {
+    padding: 10px 8px;
+    margin: 0 2px;
+  }
 `;
 
 const UserSection = styled.div`
@@ -651,6 +656,8 @@ const DevModeIndicator = styled.div`
   }
 `;
 
+const HANDBOOK_PATH = '/system-design/system-design-handbook';
+
 function Navbar() {
   // State management
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -662,6 +669,9 @@ function Navbar() {
   // Hooks
   const { width } = useWindowSize();
   const location = useLocation();
+  // The handbook lives under /system-design, so without this both links would
+  // be highlighted while reading it.
+  const onHandbook = location.pathname.replace(/\/+$/, '') === HANDBOOK_PATH;
   const navigate = useNavigate();
   const [cookies, setCookie, removeCookie] = useCookies(['userId', 'name', 'authToken']);
   const dropdownRef = useRef(null);
@@ -852,8 +862,11 @@ function Navbar() {
             <NavLinkItem to="/algorithms">
               Algorithms
             </NavLinkItem>
-            <NavLinkItem to="/system-design">
+            <NavLinkItem to="/system-design" end={onHandbook}>
               System Design
+            </NavLinkItem>
+            <NavLinkItem to={HANDBOOK_PATH}>
+              Handbook
             </NavLinkItem>
             <NavLinkItem to="/frontend">
               Frontend
@@ -948,7 +961,8 @@ function Navbar() {
 
       <MobileMenuContainer id="mobile-navigation" isOpen={isMobileMenuOpen}>
         <MobileNavLink to="/algorithms">Algorithms</MobileNavLink>
-        <MobileNavLink to="/system-design">System Design</MobileNavLink>
+        <MobileNavLink to="/system-design" end={onHandbook}>System Design</MobileNavLink>
+        <MobileNavLink to={HANDBOOK_PATH}>System Design Handbook</MobileNavLink>
         <MobileNavLink to="/frontend">Frontend</MobileNavLink>
         {isUserAuthenticated ? (
           <>

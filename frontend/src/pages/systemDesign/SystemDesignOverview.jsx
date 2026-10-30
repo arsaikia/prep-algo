@@ -3,7 +3,11 @@ import { contentUrl } from '../../utils/navigation';
 
 import { Link, useOutletContext } from 'react-router-dom';
 import styled from 'styled-components';
-import { ArrowRight, BookOpen, HelpCircle, Edit3 } from 'react-feather';
+import { ArrowRight, BookOpen, Bookmark, CheckCircle, HelpCircle, Edit3 } from 'react-feather';
+import {
+    HANDBOOK_SLUG, curriculumStats, findTopic, isLesson, kindLabel, lessonPath, progressOf,
+} from '../../components/systemDesign/curriculum';
+import useCompletedLessons from '../../hooks/useCompletedLessons';
 
 const Container = styled.div`
   max-width: 900px;
@@ -82,6 +86,53 @@ const TopicRow = styled(Link)`
     margin-left: auto;
     opacity: 0.45;
   }
+`;
+
+const DoneMark = styled(CheckCircle)`
+  flex-shrink: 0;
+  color: ${({ theme }) => theme.colors.accent};
+`;
+
+const Progress = styled.div`
+  margin: 0 0 1.25rem;
+  font-size: 0.85rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  progress {
+    display: block;
+    width: 100%;
+    height: 0.55rem;
+    margin-top: 0.4rem;
+    appearance: none;
+    border: none;
+    border-radius: 999px;
+    overflow: hidden;
+    background: ${({ theme }) => theme.colors.backgroundTertiary};
+    accent-color: ${({ theme }) => theme.colors.accent};
+  }
+  progress::-webkit-progress-bar { background: ${({ theme }) => theme.colors.backgroundTertiary}; }
+  progress::-webkit-progress-value { background: ${({ theme }) => theme.colors.accent}; border-radius: 999px; }
+  progress::-moz-progress-bar { background: ${({ theme }) => theme.colors.accent}; border-radius: 999px; }
+`;
+
+const HandbookCard = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.35rem;
+  margin-bottom: 2rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+
+  > svg:first-child { color: ${({ theme }) => theme.colors.primary}; flex-shrink: 0; }
+  strong { display: block; font-size: 1.02rem; }
+  p { margin: 0.25rem 0 0; color: ${({ theme }) => theme.colors.textSecondary}; font-size: 0.88rem; line-height: 1.5; }
+  > svg:last-child { margin-left: auto; flex-shrink: 0; opacity: 0.6; }
+  &:hover { border-color: ${({ theme }) => theme.colors.primary}; }
+  &:focus-visible { outline: 2px solid ${({ theme }) => theme.colors.primary}; outline-offset: 3px; }
 `;
 
 const TopicText = styled.div`
@@ -177,16 +228,18 @@ const Message = styled.p`
  */
 function SystemDesignOverview() {
     const { modules, quizByTopic, status } = useOutletContext();
+    const { completed } = useCompletedLessons();
 
     if (status === 'loading') return <Container><Message>Loading curriculum…</Message></Container>;
     if (status === 'error') return <Container><Message>Could not load the curriculum.</Message></Container>;
 
-    const topics = modules.flatMap((module) => module.topics);
-    const concepts = topics.filter((topic) => topic.kind === 'concept');
-    const cases = topics.filter((topic) => topic.kind === 'case_study');
-    const checks = topics.filter((topic) => quizByTopic.has(topic.slug)).length;
-    const firstTopic = topics[0];
-    const firstCase = cases[0];
+    const lessons = lessonPath(modules);
+    const stats = curriculumStats(modules, quizByTopic);
+    const overall = progressOf(lessons, completed);
+    const firstTopic = lessons.find((topic) => !completed.has(topic.slug)) ?? lessons[0];
+    const firstCase = lessons.find((topic) => topic.kind === 'case_study');
+    const handbook = findTopic(modules, HANDBOOK_SLUG);
+    const percent = overall.total ? Math.round((overall.done / overall.total) * 100) : 0;
 
     return (
         <Container>
@@ -205,35 +258,66 @@ function SystemDesignOverview() {
                     the walkthrough. Use estimates where they change a decision, not as a ritual.
                 </p>
                 <Stats>
-                    <div><dt>Concept lessons</dt><dd>{concepts.length}</dd></div>
-                    <div><dt>Design case studies</dt><dd>{cases.length}</dd></div>
-                    <div><dt>Knowledge checks</dt><dd>{checks}</dd></div>
+                    <div><dt>Concept lessons</dt><dd>{stats.concepts}</dd></div>
+                    {stats.patterns > 0 && <div><dt>Design patterns</dt><dd>{stats.patterns}</dd></div>}
+                    <div><dt>Design case studies</dt><dd>{stats.caseStudies}</dd></div>
+                    <div><dt>Knowledge checks</dt><dd>{stats.checks}</dd></div>
                 </Stats>
+                {overall.total > 0 && (
+                    <Progress>
+                        <label htmlFor="sd-progress">
+                            Your progress: {overall.done} of {overall.total} lessons complete ({percent}%)
+                        </label>
+                        <progress id="sd-progress" max={overall.total} value={overall.done}>{percent}%</progress>
+                    </Progress>
+                )}
                 <StartLinks>
-                    {firstTopic && <StartLink to={contentUrl(firstTopic)}>Start the learning path <ArrowRight size={16} /></StartLink>}
+                    {firstTopic && (
+                        <StartLink to={contentUrl(firstTopic)}>
+                            {overall.done > 0 && overall.done < overall.total ? 'Continue the learning path' : 'Start the learning path'} <ArrowRight size={16} />
+                        </StartLink>
+                    )}
                     {firstCase && <StartLink to={contentUrl(firstCase)}><Edit3 size={16} /> Try a design problem</StartLink>}
                 </StartLinks>
                 <p>Practice is self-guided today. Knowledge checks test concepts; they are not AI interview scores.</p>
             </PathIntro>
 
-            {modules.map((module, index) => (
+            {handbook && (
+                <HandbookCard to={contentUrl(handbook)}>
+                    <Bookmark size={22} />
+                    <div>
+                        <strong>System Design Handbook</strong>
+                        <p>{handbook.summary || 'A one-page reference of the numbers, building blocks and tradeoffs worth knowing before an interview.'}</p>
+                    </div>
+                    <ArrowRight size={16} />
+                </HandbookCard>
+            )}
+
+            {modules.map((module, index) => {
+                const progress = progressOf(module.topics, completed);
+                const lessonCount = module.topics.filter(isLesson).length;
+                const count = lessonCount || module.topics.length;
+                return (
                 <ModuleCard key={module.slug}>
                     <ModuleHead>
                         <BookOpen size={16} />
                         <ModuleTitle>{index + 1}. {module.title}</ModuleTitle>
                         <Badge $muted={module.topics.length === 0}>
-                            {module.topics.length > 0 ? `${module.topics.length} ${module.topics.length === 1 ? 'topic' : 'topics'}` : 'Planned'}
+                            {module.topics.length === 0 && 'Planned'}
+                            {module.topics.length > 0 && progress.total > 0 && `${progress.done}/${progress.total} complete`}
+                            {module.topics.length > 0 && progress.total === 0 && `${count} ${count === 1 ? 'reference' : 'references'}`}
                         </Badge>
                     </ModuleHead>
                     {module.summary && <ModuleSummary>{module.summary}</ModuleSummary>}
 
                     {module.topics.map((topic) => (
                         <TopicRow key={topic.slug} to={contentUrl(topic)}>
+                            {completed.has(topic.slug) && isLesson(topic) && <DoneMark size={18} aria-label="Completed" role="img" />}
                             <TopicText>
                                 <strong>{topic.title}</strong>
                                 {topic.summary && <p>{topic.summary}</p>}
                                 <TopicMeta>
-                                    {topic.kind === 'case_study' ? 'Design practice' : 'Concept lesson'}
+                                    {kindLabel(topic)}
                                     {quizByTopic.has(topic.slug) && <><QuizMark size={13} /> Knowledge check</>}
                                 </TopicMeta>
                             </TopicText>
@@ -245,7 +329,8 @@ function SystemDesignOverview() {
                         <Pending>Not written yet — this chapter is on the roadmap.</Pending>
                     )}
                 </ModuleCard>
-            ))}
+                );
+            })}
         </Container>
     );
 }

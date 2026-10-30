@@ -1,0 +1,44 @@
+{
+    "slug": "design-api-rate-limiting-service-check",
+    "title": "Limiter outage takes down the API",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-api-rate-limiting-service",
+    "difficulty": "Hard",
+    "order": 1,
+    "tags": [
+        "rate-limiting",
+        "availability",
+        "redis"
+    ],
+    "lists": [],
+    "legacyId": "0f9bff3b-da65-4216-a616-e2c22e87f1e4",
+    "description": "Every API pod calls a regional Redis cluster to enforce token-bucket limits. During a Redis failover lasting 20 seconds, each check waits for a 500 ms client timeout and then returns 503, so the whole public API is unavailable, including search, which only has a soft fairness limit. The login endpoint's limit exists to stop credential stuffing. What is the best redesign?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Fail open for every rule so the limiter can never cause an outage.",
+            "isCorrect": false,
+            "explanation": "This keeps search up but removes the credential-stuffing protection on login exactly when the limiter is degraded, which attackers can provoke."
+        },
+        {
+            "id": "b",
+            "text": "Raise the client timeout to 5 seconds so checks survive the failover.",
+            "isCorrect": false,
+            "explanation": "Longer timeouts make every request wait, multiplying latency and tying up threads across the fleet; the API still effectively fails."
+        },
+        {
+            "id": "c",
+            "text": "Run a second Redis cluster in another region and send checks there when the local one fails.",
+            "isCorrect": false,
+            "explanation": "A cross-region call adds tens of milliseconds to every request and its failover still pays the timeout first; it does not decide which endpoints may degrade."
+        },
+        {
+            "id": "d",
+            "text": "Use a ~1 ms timeout with a circuit breaker, and give each rule a failure mode: search falls back to a local per-pod bucket, login fails closed.",
+            "isCorrect": true,
+            "explanation": "A short timeout plus breaker stops the limiter from adding latency during the outage, the local bucket keeps approximate fairness for soft limits, and security-sensitive rules still deny when they cannot be enforced."
+        }
+    ]
+}

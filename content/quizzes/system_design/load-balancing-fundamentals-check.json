@@ -1,0 +1,44 @@
+{
+    "slug": "load-balancing-fundamentals-check",
+    "title": "Rebalance gRPC After Scaling Out",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Foundations",
+    "topic": "load-balancing-fundamentals",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "load-balancing",
+        "grpc",
+        "http2"
+    ],
+    "lists": [],
+    "legacyId": "eb1e2214-cda5-4291-beec-98db51804699",
+    "description": "A gRPC service sits behind an L4 network load balancer. During a traffic spike the team scales from 4 to 8 instances, but the new instances stay nearly idle while the original four remain overloaded. Clients hold a few long-lived HTTP/2 connections each. What is the best fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Change the L4 policy from round robin to least connections.",
+            "isCorrect": false,
+            "explanation": "The balancer still places connections, not requests. Existing long-lived connections stay where they are, so the new instances still see little load."
+        },
+        {
+            "id": "b",
+            "text": "Enable sticky sessions so each client consistently reaches one backend.",
+            "isCorrect": false,
+            "explanation": "Stickiness pins load even more firmly to the original backends and does nothing to spread requests."
+        },
+        {
+            "id": "c",
+            "text": "Balance per request with an HTTP/2-aware L7 proxy or client-side load balancing, and set a maximum connection age so clients reconnect.",
+            "isCorrect": true,
+            "explanation": "gRPC multiplexes many requests on one connection, so balancing must happen per request. A maximum connection age makes old connections cycle onto new instances."
+        },
+        {
+            "id": "d",
+            "text": "Probe health more frequently so the new instances are marked ready sooner.",
+            "isCorrect": false,
+            "explanation": "The new instances are already healthy; they simply receive no new connections. Faster probes do not move existing traffic."
+        }
+    ]
+}

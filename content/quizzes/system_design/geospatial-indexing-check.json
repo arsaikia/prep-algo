@@ -1,0 +1,44 @@
+{
+    "slug": "geospatial-indexing-check",
+    "title": "Nearby drivers at scale",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Data & Storage",
+    "topic": "geospatial-indexing",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "geospatial",
+        "location",
+        "indexing"
+    ],
+    "lists": [],
+    "description": "A ride-hailing service has 500,000 online drivers who each send a location every 5 seconds. Riders need the nearest available drivers within about 3 km in under 100 ms. The team proposes storing locations in the main Postgres database with a PostGIS GiST index and updating the row on every ping. What is the best alternative?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Keep PostGIS but add read replicas so nearby queries do not hit the primary",
+            "isCorrect": false,
+            "explanation": "Replicas spread reads, but the bottleneck is 100,000 durable index updates per second on one primary, and replicas would lag behind fast-moving drivers."
+        },
+        {
+            "id": "b",
+            "text": "Store a geohash per driver and query only the rider's own geohash cell",
+            "isCorrect": false,
+            "explanation": "Querying one cell misses drivers just across a cell boundary; geohash search must include neighbouring cells and filter by distance."
+        },
+        {
+            "id": "c",
+            "text": "Use a composite B-tree index on (lat, lng) instead of GiST to make updates cheaper",
+            "isCorrect": false,
+            "explanation": "A composite B-tree narrows only latitude, so a proximity query scans a band around the globe, and the write load problem remains."
+        },
+        {
+            "id": "d",
+            "text": "Stream pings into an in-memory geo index sharded by region, keyed by cell with TTL expiry, and search the cell plus expanding rings",
+            "isCorrect": true,
+            "explanation": "About 100,000 updates per second of short-lived data fits in memory per region; TTLs drop offline drivers and ring expansion with exact distance filtering finds the nearest candidates quickly."
+        }
+    ],
+    "legacyId": "ff06ad35-514a-4b48-b0cd-f2a788d1b193"
+}

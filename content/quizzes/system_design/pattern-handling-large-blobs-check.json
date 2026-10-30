@@ -1,0 +1,44 @@
+{
+    "slug": "pattern-handling-large-blobs-check",
+    "title": "Uploads stuck as phantom files",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Patterns",
+    "topic": "pattern-handling-large-blobs",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "blob-storage",
+        "presigned-urls",
+        "consistency"
+    ],
+    "lists": [],
+    "legacyId": "fa211d25-edb8-41ea-ac8d-bd9988eddcd4",
+    "description": "A photo app returns a presigned PUT URL, and the client calls POST /photos/{id}/complete after the upload to mark the photo visible. Users report gallery entries that show a broken image, and storage bills include objects that no photo row references. Which change best fixes both problems?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Route uploads through the API servers so the server writes the object and the row in one request",
+            "isCorrect": false,
+            "explanation": "This removes the presigned benefit, sizes the API fleet for bandwidth, and still is not atomic across the database and the blob store; a crash between the two writes leaves the same inconsistency."
+        },
+        {
+            "id": "b",
+            "text": "Extend the presigned URL lifetime to 24 hours so slow clients can finish",
+            "isCorrect": false,
+            "explanation": "Longer URLs widen the abuse window and do nothing about trusting the client's completion call or cleaning up orphaned objects."
+        },
+        {
+            "id": "c",
+            "text": "Keep rows pending until a storage object-created event (or server-side HEAD with checksum) confirms the object, expire stale pending rows, and sweep objects with no row",
+            "isCorrect": true,
+            "explanation": "Storage is the source of truth for whether bytes landed, an idempotent event handler flips pending to complete, and TTL expiry plus an orphan sweeper cover both directions of partial failure."
+        },
+        {
+            "id": "d",
+            "text": "Wrap the database insert and the S3 PUT in a single database transaction",
+            "isCorrect": false,
+            "explanation": "The object store does not participate in your database transaction, so there is no atomic commit across the two systems."
+        }
+    ]
+}

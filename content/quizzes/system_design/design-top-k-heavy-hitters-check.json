@@ -1,0 +1,44 @@
+{
+    "slug": "design-top-k-heavy-hitters-check",
+    "title": "Missing trend after the merge",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-top-k-heavy-hitters",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "top-k",
+        "sharding",
+        "merge"
+    ],
+    "lists": [],
+    "legacyId": "c6c5b4b8-55fa-47cf-8856-6a8b8b7f3a83",
+    "description": "To spread load evenly, your trending pipeline sends hashtag events to 20 counter shards round-robin. Each shard keeps exact counts and reports its local top 100; an aggregator merges the 2,000 candidates and keeps the top 100. A tag used 400,000 times this hour, spread evenly across all shards, never appears in the trending list. Why, and what fixes it?",
+    "options": [
+        {
+            "id": "a",
+            "text": "The aggregator should keep the top 200 instead of the top 100",
+            "isCorrect": false,
+            "explanation": "A larger cut-off helps only by luck; with round-robin sharding a tag can rank low on every shard and still be missing, however many candidates each shard reports."
+        },
+        {
+            "id": "b",
+            "text": "Switch each shard to a count-min sketch so counts are smaller",
+            "isCorrect": false,
+            "explanation": "Sketches change memory use, not the merge logic; local top-K lists from non-key-partitioned shards are still the wrong inputs."
+        },
+        {
+            "id": "c",
+            "text": "Increase the refresh interval so shards accumulate more data before reporting",
+            "isCorrect": false,
+            "explanation": "More time does not change the fact that the tag's count is split twenty ways and is never in any local top 100."
+        },
+        {
+            "id": "d",
+            "text": "Partition events by hash of the tag so each tag's full count lives on one shard, then merge local top-K lists; add per-tag pre-aggregation to protect against hot tags",
+            "isCorrect": true,
+            "explanation": "With key partitioning, every global top-K tag must appear in its own shard's local top-K, so the union of local lists is guaranteed to contain the answer; combiners keep hot tags from overloading a shard."
+        }
+    ]
+}

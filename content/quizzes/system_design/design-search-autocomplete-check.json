@@ -1,0 +1,44 @@
+{
+    "slug": "design-search-autocomplete-check",
+    "title": "Autocomplete misses its keystroke budget",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-search-autocomplete",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "autocomplete",
+        "latency",
+        "trie"
+    ],
+    "lists": [],
+    "legacyId": "eedfbdd0-9b54-4862-b240-e38615bc1111",
+    "description": "Your typeahead service stores a trie in memory and, for each request, walks the subtree under the typed prefix to collect the 10 most popular completions. p50 latency is 4 ms, but p99 is 180 ms and nearly all slow requests are for one- and two-character prefixes. What change best meets a p99 under 100 ms end to end?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Shard the trie by first letter so each server holds a smaller tree.",
+            "isCorrect": false,
+            "explanation": "Short prefixes still walk large subtrees, and first-letter sharding creates hot shards for common letters."
+        },
+        {
+            "id": "b",
+            "text": "Precompute and store the top-10 completions at every prefix node (or in a prefix-to-list map) at build time, so each request is a single lookup.",
+            "isCorrect": true,
+            "explanation": "Correct. Moving the ranking work to build time makes request cost independent of how many completions a prefix has, which removes the short-prefix tail."
+        },
+        {
+            "id": "c",
+            "text": "Move the trie into a relational database with an index on the query column.",
+            "isCorrect": false,
+            "explanation": "A LIKE prefix scan plus sort on short prefixes touches millions of rows; it would be slower than the in-memory walk."
+        },
+        {
+            "id": "d",
+            "text": "Increase the client debounce to 500 ms so fewer requests are sent.",
+            "isCorrect": false,
+            "explanation": "Fewer requests reduce load but make suggestions feel laggy and do nothing about slow server-side lookups for short prefixes."
+        }
+    ]
+}

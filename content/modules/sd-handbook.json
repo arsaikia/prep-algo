@@ -1,0 +1,11 @@
+{
+    "slug": "sd-handbook",
+    "title": "Handbook",
+    "domain": "system_design",
+    "type": "module",
+    "group": "Curriculum",
+    "order": 7,
+    "tags": [],
+    "lists": [],
+    "summary": "A condensed reference: which pattern fixes which bottleneck, numbers to know and a technology picker. Use it to review, not to learn from scratch."
+}

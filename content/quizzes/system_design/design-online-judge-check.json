@@ -1,0 +1,44 @@
+{
+    "slug": "design-online-judge-check",
+    "title": "Contest verdicts that depend on load",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-online-judge",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "online-judge",
+        "sandboxing",
+        "time-limits"
+    ],
+    "lists": [],
+    "legacyId": "6bc14e12-865a-46b9-aa08-349cedb105d8",
+    "description": "Your judge starts a new Docker container for each test case and enforces a 2-second wall-clock limit per test. During a contest burst, workers run 3 containers per core. Users report that identical correct solutions get Accepted in practice but Time Limit Exceeded in the contest, and verdicts take 30+ seconds. What change best addresses both problems?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Double every time limit during contests",
+            "isCorrect": false,
+            "explanation": "It hides some false TLEs but keeps verdicts load-dependent and unfair, lets genuinely slow solutions pass, and does nothing about container startup latency."
+        },
+        {
+            "id": "b",
+            "text": "Run tests directly on the worker host without containers to remove startup overhead",
+            "isCorrect": false,
+            "explanation": "It fixes latency by abandoning isolation, which is unacceptable for untrusted code."
+        },
+        {
+            "id": "c",
+            "text": "Run all tests of a submission in one sandbox via an in-sandbox harness, measure each test by CPU time with a wall-clock guard, and stop oversubscribing cores (pre-scale for the contest instead)",
+            "isCorrect": true,
+            "explanation": "One sandbox removes per-test startup cost, CPU-time limits make verdicts independent of host load, the wall-clock guard still catches sleeping programs, and dedicated capacity keeps runtimes reproducible."
+        },
+        {
+            "id": "d",
+            "text": "Return Accepted immediately and judge in the background, revising the verdict later",
+            "isCorrect": false,
+            "explanation": "Provisional verdicts break contest scoring and user trust, and the underlying unfairness remains."
+        }
+    ]
+}

@@ -1,0 +1,44 @@
+{
+    "slug": "design-youtube-check",
+    "title": "Transcoding a three-hour upload",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-youtube",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "video-streaming",
+        "transcoding",
+        "pipelines"
+    ],
+    "lists": [],
+    "legacyId": "c9d38878-9c98-427e-840a-44615659c817",
+    "description": "Creators complain that a 3-hour lecture takes more than a day to become watchable, and a worker crash near the end restarts the job. Today one worker encodes the whole original into every rendition in sequence. What change best fixes processing latency and crash recovery?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Give the transcoding worker a larger machine with more CPU cores",
+            "isCorrect": false,
+            "explanation": "Helps somewhat, but latency still scales with video length and a crash still loses all progress."
+        },
+        {
+            "id": "b",
+            "text": "Run one job per rendition in parallel",
+            "isCorrect": false,
+            "explanation": "Removes the sequential rendition loop, but each job is still as long as the video and a crash restarts hours of work."
+        },
+        {
+            "id": "c",
+            "text": "Encode only the highest-quality rendition and let the CDN downscale on the fly",
+            "isCorrect": false,
+            "explanation": "CDNs cache and serve bytes; they do not transcode per request, and viewers on slow networks would stall."
+        },
+        {
+            "id": "d",
+            "text": "Split the original at keyframes into short chunks and run idempotent (chunk, rendition) encode tasks in parallel, with manifest assembly as a fan-in step",
+            "isCorrect": true,
+            "explanation": "Per-video latency becomes roughly one chunk's encode time plus orchestration, and a failed task retries only its chunk because outputs have deterministic keys."
+        }
+    ]
+}

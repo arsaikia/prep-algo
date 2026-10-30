@@ -1,0 +1,44 @@
+{
+    "slug": "pattern-managing-contention-check",
+    "title": "Seat holds during checkout",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Patterns",
+    "topic": "pattern-managing-contention",
+    "difficulty": "Hard",
+    "order": 1,
+    "tags": [
+        "contention",
+        "reservations",
+        "locking"
+    ],
+    "lists": [],
+    "legacyId": "673c9e7d-1b51-4f65-bce0-feb1d7d8ae24",
+    "description": "A ticketing service must let a user select a seat, spend up to 10 minutes entering payment details, then buy it, with no seat ever sold twice. Payment authorization takes 1 to 8 seconds. Which design is most appropriate?",
+    "options": [
+        {
+            "id": "a",
+            "text": "SELECT the seat FOR UPDATE when the user selects it and keep the transaction open until payment completes",
+            "isCorrect": false,
+            "explanation": "Holding a row lock across minutes of user think time and a remote payment call exhausts connections, blocks other readers of the row and leaves locks dangling when clients disappear."
+        },
+        {
+            "id": "b",
+            "text": "Atomically move the seat from available to held with a holder and expiry via a conditional update, then convert held to sold only if the hold is still yours and unexpired",
+            "isCorrect": true,
+            "explanation": "Each transition is a single conditional write in the authoritative database, so concurrent buyers cannot both win, and abandoned holds become available again when the TTL passes."
+        },
+        {
+            "id": "c",
+            "text": "Check availability in a Redis cache and write the sale to the database when payment succeeds",
+            "isCorrect": false,
+            "explanation": "The cache check and database write are separate steps, so two buyers can both see the seat as free and both complete payment."
+        },
+        {
+            "id": "d",
+            "text": "Use optimistic concurrency with a version column, checked only at purchase time",
+            "isCorrect": false,
+            "explanation": "Correct at commit, but on a popular seat many users spend 10 minutes filling in payment only to lose at the end; there is no hold to tell others the seat is taken."
+        }
+    ]
+}

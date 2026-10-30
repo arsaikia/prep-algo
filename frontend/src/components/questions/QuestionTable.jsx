@@ -274,16 +274,18 @@ const QuestionTable = ({
               <QuestionActions>
                 <QuestionLink
                   to={contentUrl(question)}
+                  aria-label={`${question.type === 'quiz' ? 'View quiz' : 'View problem'}: ${question.name}`}
                 >
-                  View Problem
+                  {question.type === 'quiz' ? 'View Quiz' : 'View Problem'}
                 </QuestionLink>
                 {available && (
                   <SolveButton
                     to={contentUrl(question)}
-                    title="Solve this question"
+                    title={question.type === 'quiz' ? 'Take this quiz' : 'Solve this question'}
+                    aria-label={`${question.type === 'quiz' ? 'Take quiz' : 'Solve'}: ${question.name}`}
                   >
-                    <Play size={14} />
-                    Solve
+                    <Play size={14} aria-hidden="true" />
+                    {question.type === 'quiz' ? 'Take Quiz' : 'Solve'}
                   </SolveButton>
                 )}
                 {isSmartMode && onQuestionCompleted && (

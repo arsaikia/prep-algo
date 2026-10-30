@@ -1,0 +1,43 @@
+{
+    "slug": "numbers-to-know-and-estimation-check",
+    "title": "Size a Cached Read Path",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Interview Method",
+    "topic": "numbers-to-know-and-estimation",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "estimation",
+        "caching"
+    ],
+    "lists": [],
+    "legacyId": "263b1b90-26f9-4dba-8978-577d7ae6c292",
+    "description": "A profile endpoint serves 50 million daily active users, each making about 20 reads per day. Assume a peak factor of 3, responses of 5 KB served from an in-memory cache, and roughly 100,000 simple operations per second per cache node. Which conclusion is best supported?",
+    "options": [
+        {
+            "id": "a",
+            "text": "One billion reads per day is too much for any cache node, so start with at least ten cache shards.",
+            "isCorrect": false,
+            "explanation": "One billion per day is only about 12,000 per second on average and about 35,000 at peak, well within one node's throughput. Sharding for throughput is not justified by these numbers."
+        },
+        {
+            "id": "b",
+            "text": "Average load is about 12,000 reads per second, so size the cache tier for 12,000.",
+            "isCorrect": false,
+            "explanation": "Traffic is not flat. Sizing for the average ignores the stated peak factor and would saturate during busy hours."
+        },
+        {
+            "id": "c",
+            "text": "Peak is about 35,000 reads per second, which one node can serve; add a replica for availability and plan for roughly 175 MB/s (about 1.4 Gbit/s) of egress.",
+            "isCorrect": true,
+            "explanation": "This applies the peak factor, compares it with per-node capacity, and notices that bandwidth (peak QPS x 5 KB) is the figure worth checking against network limits."
+        },
+        {
+            "id": "d",
+            "text": "Egress is about 175 Mbit/s, so bandwidth is negligible and needs no further thought.",
+            "isCorrect": false,
+            "explanation": "This is a unit slip: 35,000 x 5 KB is about 175 megabytes per second, which is roughly 1.4 gigabits per second, not 175 megabits."
+        }
+    ]
+}

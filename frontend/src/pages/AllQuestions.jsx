@@ -24,6 +24,7 @@ import {
 import { getQuestions, getAllQuestionsWithoutHistory } from '../actions/actions';
 import { useTestUser } from '../contexts/TestUserContext';
 import { isDevMode } from '../utils/featureFlags';
+import { FRONTEND_KINDS, splitFrontendSections } from '../utils/tracks';
 
 // Styled components
 const Container = styled.div`
@@ -641,6 +642,20 @@ const QuestionsContainer = styled.div`
   }
 `;
 
+const KindSwitcher = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+`;
+
+const SectionHeading = styled.div`
+  margin: 0 0 12px;
+  h2 { margin: 0 0 4px; font-size: 1.2rem; color: ${({ theme }) => theme.colors.text}; }
+  p { margin: 0; color: ${({ theme }) => theme.colors.textSecondary}; font-size: 0.95rem; }
+  &:not(:first-child) { margin-top: 28px; }
+`;
+
 const DOMAIN_TITLES = {
   algorithms: 'Algorithm Questions',
   system_design: 'System Design Questions',
@@ -678,6 +693,11 @@ const AllQuestions = ({ domain: domainProp }) => {
     : domain === 'frontend' ? 'FE ESSENTIALS'
     : 'TOP 150';
   const activeList = searchParams.get('list') || defaultList;
+  // Frontend mixes JavaScript coding exercises with multiple-choice quizzes;
+  // `?kind=` narrows to one of them so each can be linked to directly.
+  const activeKind = domain === 'frontend'
+    ? FRONTEND_KINDS.find((kind) => kind.id === searchParams.get('kind')) || null
+    : null;
   const updateQuery = (key, value) => setSearchParams((previous) => {
     const next = new URLSearchParams(previous);
     if (value) next.set(key, value);
@@ -789,7 +809,7 @@ const AllQuestions = ({ domain: domainProp }) => {
         const matchesDifficulty = selectedDifficulty === 'All' ||
           question.difficulty === selectedDifficulty;
 
-        return matchesSearch && matchesDifficulty;
+        return matchesSearch && matchesDifficulty && (!activeKind || activeKind.matches(question));
       });
 
       if (filtered.length > 0) {
@@ -798,7 +818,7 @@ const AllQuestions = ({ domain: domainProp }) => {
     });
 
     return result;
-  }, [filteredQuestions, searchTerm, selectedDifficulty]);
+  }, [filteredQuestions, searchTerm, selectedDifficulty, activeKind]);
 
   // Calculate stats with real completion data
   const stats = useMemo(() => {
@@ -891,8 +911,25 @@ const AllQuestions = ({ domain: domainProp }) => {
     <Container>
       <Header>
         <Title>{domain ? DOMAIN_TITLES[domain] || 'All Questions' : '📚 All Questions'}</Title>
-        <Subtitle>Browse and filter questions by list</Subtitle>
+        <Subtitle>{domain === 'frontend'
+          ? 'JavaScript coding exercises graded in JavaScript, plus multiple-choice quizzes'
+          : 'Browse and filter questions by list'}</Subtitle>
       </Header>
+      {domain === 'frontend' && (
+        <KindSwitcher role="group" aria-label="Show">
+          {[{ id: null, label: 'Everything' }, ...FRONTEND_KINDS].map((kind) => (
+            <DifficultyFilter
+              key={kind.id || 'all'}
+              type="button"
+              isActive={(activeKind?.id || null) === kind.id}
+              aria-pressed={(activeKind?.id || null) === kind.id}
+              onClick={() => updateQuery('kind', kind.id)}
+            >
+              {kind.label}
+            </DifficultyFilter>
+          ))}
+        </KindSwitcher>
+      )}
       {contentError && <p role="alert">Could not refresh the question library: {contentError} <button onClick={() => dispatch(isGuest ? getAllQuestionsWithoutHistory() : getQuestions(questionUserId, domain))}>Retry library</button></p>}
       {!isGuest && progressError && <p role="alert">{progressError} <button onClick={() => dispatch(getQuestions(questionUserId, domain))}>Retry progress</button></p>}
       <p>{isGuest ? 'Guest preview · Sign in to view saved progress.' : progressAvailable ? 'Progress for the questions matching your current list and filters.' : 'Saved progress is loading or unavailable; counts below are question totals, not solved counts.'}</p>
@@ -1090,7 +1127,27 @@ const AllQuestions = ({ domain: domainProp }) => {
         </EmptyState>
       ) : (
         <QuestionsContainer>
-          {Object.keys(finalFilteredQuestions).map((groupName) => (
+          {domain === 'frontend' ? splitFrontendSections(finalFilteredQuestions)
+            .filter((section) => section.count > 0)
+            .map((section) => (
+              <section key={section.id} aria-labelledby={`section-${section.id}`}>
+                <SectionHeading>
+                  <h2 id={`section-${section.id}`}>{section.label} ({section.count})</h2>
+                  <p>{section.description}</p>
+                </SectionHeading>
+                {Object.keys(section.groups).map((groupName) => (
+                  <QuestionGroup
+                    key={`${section.id}:${groupName}`}
+                    groupName={groupName}
+                    questions={section.groups[groupName]}
+                    isExpanded={shouldShowExpanded(groupName)}
+                    progressAvailable={progressAvailable}
+                    onToggle={() => toggleGroup(groupName)}
+                    showToggle={!searchTerm && selectedDifficulty === 'All'}
+                  />
+                ))}
+              </section>
+            )) : Object.keys(finalFilteredQuestions).map((groupName) => (
             <QuestionGroup
               key={groupName}
               groupName={groupName}

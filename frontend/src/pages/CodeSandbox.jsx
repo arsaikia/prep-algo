@@ -19,6 +19,7 @@ import readApiError from '../utils/apiError.js';
 import { requestSignIn, contentUrl } from '../utils/navigation.js';
 import { timeTracker } from '../utils/timeTracker.js';
 import { readDraft, writeDraft, clearDraft } from '../utils/draftStorage.js';
+import useDocumentTitle from '../hooks/useDocumentTitle.js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
@@ -906,6 +907,7 @@ const CodeSandbox = () => {
   const [error, setError] = useState('');
   const [testResults, setTestResults] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+  useDocumentTitle(missing ? 'Question not found' : currentQuestion?.title);
   const [isRunningExampleTests, setIsRunningExampleTests] = useState(false);
   const [exampleTestResults, setExampleTestResults] = useState(null);
   // The only language offered: the one the server grades this question in.

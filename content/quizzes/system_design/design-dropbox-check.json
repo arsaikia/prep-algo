@@ -1,0 +1,44 @@
+{
+    "slug": "design-dropbox-check",
+    "title": "Resuming a 10 GB upload",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-dropbox",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "file-sync",
+        "chunking",
+        "uploads"
+    ],
+    "lists": [],
+    "legacyId": "6752f902-af5b-4cd3-a488-9c525c0489cf",
+    "description": "A user on hotel Wi-Fi uploads a 10 GB video to your file sync service. The connection drops every few minutes. Later they change 1 MB in the middle of a similar 10 GB file. Which upload design best handles both situations?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Stream the file through the API servers, which buffer it and write it to object storage once complete",
+            "isCorrect": false,
+            "explanation": "Every drop restarts the transfer, app servers pay for all the bandwidth and memory, and the 1 MB edit still re-sends 10 GB."
+        },
+        {
+            "id": "b",
+            "text": "One presigned PUT URL for the whole file, retried from the start on failure",
+            "isCorrect": false,
+            "explanation": "Bytes bypass the servers, but a single 10 GB PUT rarely survives a flaky network and the small edit still re-uploads everything."
+        },
+        {
+            "id": "c",
+            "text": "Split the file into chunks keyed by SHA-256, ask the server which hashes are missing, upload only those via presigned URLs, then commit the revision",
+            "isCorrect": true,
+            "explanation": "Each chunk retries independently, a crashed upload resumes by re-asking which hashes are missing, and the edit uploads only the few changed chunks; the commit makes the revision visible atomically."
+        },
+        {
+            "id": "d",
+            "text": "Upload the file over a WebSocket and have the server ack every 1 MB so the client can resume",
+            "isCorrect": false,
+            "explanation": "It can resume, but bytes still flow through stateful app servers and there is no deduplication, so the 1 MB edit re-sends the whole file."
+        }
+    ]
+}

@@ -191,10 +191,12 @@ export const topicSchema = z.object({
     module: z.string().regex(SLUG),
     /**
      * `concept` explains an idea; `case_study` walks a full "design X"
-     * interview question. They read differently and are listed separately,
-     * so the reader needs to tell them apart without pattern-matching slugs.
+     * interview question; `reference` is a condensed lookup page (the SD
+     * handbook) that sits outside the lesson sequence. They read differently
+     * and are listed separately, so the reader needs to tell them apart
+     * without pattern-matching slugs.
      */
-    kind: z.enum(['concept', 'case_study']).default('case_study'),
+    kind: z.enum(['concept', 'case_study', 'reference']).default('case_study'),
     summary: z.string().default(''),
     /** Markdown. */
     body: z.string().min(1, 'a topic must have a body'),

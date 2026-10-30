@@ -1,0 +1,44 @@
+{
+    "slug": "design-cdn-check",
+    "title": "Live stream melts the origin",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-cdn",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "cdn",
+        "caching",
+        "origin-shield"
+    ],
+    "lists": [],
+    "legacyId": "8282b399-ef07-417c-b0d2-3f08caae557e",
+    "description": "A sports live stream publishes a new 4-second video segment every 4 seconds. The CDN has 200 PoPs with about 10 cache servers each, and every server fetches misses directly from the origin. At kickoff, the origin receives roughly 2,000 requests for each new segment and starts timing out. Which change most directly fixes this?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Raise the segment TTL to one hour so it stays cached longer.",
+            "isCorrect": false,
+            "explanation": "Each segment is new, so every request is a first miss; a longer TTL does nothing for objects that have never been cached."
+        },
+        {
+            "id": "b",
+            "text": "Enable request collapsing on each server, hash keys to one owner server within each PoP, and route all PoP misses through an origin shield that also collapses.",
+            "isCorrect": true,
+            "explanation": "Collapsing turns concurrent misses into one upstream fetch, in-PoP hashing makes each PoP miss once rather than once per server, and the shield makes the 200 PoPs miss once in total, so the origin sees roughly one request per segment."
+        },
+        {
+            "id": "c",
+            "text": "Add the viewer's IP address to the cache key so each viewer gets a consistent copy.",
+            "isCorrect": false,
+            "explanation": "That makes every viewer a cache miss and multiplies origin load."
+        },
+        {
+            "id": "d",
+            "text": "Switch PoP routing from DNS to anycast.",
+            "isCorrect": false,
+            "explanation": "Routing decides which PoP a viewer reaches; it does not change how many PoPs and servers miss to the origin."
+        }
+    ]
+}

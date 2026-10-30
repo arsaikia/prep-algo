@@ -1,0 +1,44 @@
+{
+    "slug": "design-chat-system-check",
+    "title": "Messages lost after a gateway restart",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-chat-system",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "chat",
+        "websockets",
+        "pub-sub"
+    ],
+    "lists": [],
+    "legacyId": "862c068f-41a6-427b-be79-86ed6373652a",
+    "description": "In your chat design, the message service writes each message to the store, acks the sender, then publishes it over Redis pub/sub to the recipient's gateway. During a rolling deploy, recipients whose gateway restarted report that some messages sent in that window never appeared on their phones, even though the senders saw the single tick. What is the best fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Have devices reconnect with the last sequence they processed and fetch the gap from the message store (or inbox index) before resuming live delivery.",
+            "isCorrect": true,
+            "explanation": "Correct. The store is the source of truth and pub/sub is only the fast path. Cursor-based sync on reconnect recovers anything dropped while the gateway was down; clients dedupe by (conversation, seq)."
+        },
+        {
+            "id": "b",
+            "text": "Switch from Redis pub/sub to broadcasting every message to all gateways.",
+            "isCorrect": false,
+            "explanation": "Broadcasting multiplies traffic by the number of gateways and still drops messages for a gateway that is restarting."
+        },
+        {
+            "id": "c",
+            "text": "Delay the sender's ack until the recipient's device confirms delivery.",
+            "isCorrect": false,
+            "explanation": "That ties the sender's tick to the recipient being online, so offline recipients would block senders indefinitely; it does not recover already-dropped messages either."
+        },
+        {
+            "id": "d",
+            "text": "Send a push notification for every message so the phone always receives it.",
+            "isCorrect": false,
+            "explanation": "APNs and FCM may coalesce or drop notifications; push is a wake-up hint, not a reliable delivery channel."
+        }
+    ]
+}

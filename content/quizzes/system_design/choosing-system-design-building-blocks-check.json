@@ -1,0 +1,44 @@
+{
+    "slug": "choosing-system-design-building-blocks-check",
+    "title": "Missing and Duplicate Receipts",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Interview Method",
+    "topic": "choosing-system-design-building-blocks",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "outbox",
+        "queues",
+        "idempotency"
+    ],
+    "lists": [],
+    "legacyId": "a76f95d5-4cc2-49cd-9111-6130553544c6",
+    "description": "A checkout service commits an order to PostgreSQL and then publishes an OrderPlaced event to a message broker; a worker emails receipts. Occasionally an order gets no receipt, and occasionally a customer receives two. Which design addresses both problems?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Publish the event first, then write the order to the database.",
+            "isCorrect": false,
+            "explanation": "This reverses the failure: if the database write fails, a receipt is sent for an order that does not exist. Duplicates are not addressed."
+        },
+        {
+            "id": "b",
+            "text": "Publish the event inside the database transaction so both roll back together.",
+            "isCorrect": false,
+            "explanation": "A broker publish is not part of the database transaction. Rolling back the database does not unsend a message, and a commit failure after publishing still leaves an orphan event."
+        },
+        {
+            "id": "c",
+            "text": "Put a cache in front of the database so the order write completes faster.",
+            "isCorrect": false,
+            "explanation": "Speed does not change the fact that two independent writes can fail separately, and it does nothing for duplicate delivery."
+        },
+        {
+            "id": "d",
+            "text": "Write the order and an outbox row in one transaction, relay outbox rows to the broker, and have the worker skip event IDs it has already processed.",
+            "isCorrect": true,
+            "explanation": "The outbox makes the order and its event atomic, fixing missing receipts. The relay can publish twice, so an idempotent consumer keyed by event ID fixes duplicates."
+        }
+    ]
+}

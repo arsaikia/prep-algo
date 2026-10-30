@@ -232,6 +232,13 @@ async function main() {
         );
     });
 
+    // Validate only: lets several authors check content concurrently
+    // without racing on the shared output directories.
+    if (process.argv.includes('--check')) {
+        console.log(`✓ ${items.length} items valid (check only, nothing written)`);
+        return;
+    }
+
     await mkdir(path.join(PUBLIC_OUT, 'items'), { recursive: true });
     await mkdir(SERVER_OUT, { recursive: true });
 

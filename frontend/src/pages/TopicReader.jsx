@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { Link, useOutletContext, useParams } from 'react-router-dom';
+import { Link, useLocation, useOutletContext, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { ArrowLeft, ArrowRight, Check, Code } from 'react-feather';
+import { ArrowLeft, ArrowRight, Check, CheckCircle, Circle, Code } from 'react-feather';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
@@ -11,6 +11,30 @@ import { contentUrl } from '../utils/navigation';
 import { loadIndex, loadItem } from '../content/loader';
 import FullScreenLoader from '../components/Loader/FullScreenLoader';
 import TopicQuiz from './systemDesign/TopicQuiz';
+import MermaidDiagram from '../components/systemDesign/MermaidDiagram';
+import TableOfContents from '../components/systemDesign/TableOfContents';
+import { extractHeadings, hastText, mermaidCode, rehypeReaderEnhancements } from '../components/systemDesign/markdown';
+import { findTopic, isReference, lessonNeighbours } from '../components/systemDesign/curriculum';
+import useCompletedLessons from '../hooks/useCompletedLessons';
+
+const TOC_MIN_SECTIONS = 4;
+
+// Ids are assigned after sanitizing so they are not `user-content-` prefixed.
+const rehypePlugins = [rehypeSanitize, rehypeReaderEnhancements];
+const remarkPlugins = [remarkGfm];
+
+const markdownComponents = {
+  table: ({ children }) => (
+    <div className="table-scroll" role="region" aria-label="Article table" tabIndex={0}><table>{children}</table></div>
+  ),
+  pre: ({ node, children }) => {
+    const code = mermaidCode(node);
+    if (code) {
+      return <MermaidDiagram source={hastText(code).trimEnd()} label={code.properties.dataDiagramLabel || 'Diagram'} />;
+    }
+    return <pre tabIndex={0}>{children}</pre>;
+  },
+};
 
 /*
  * The reader is a column inside the System Design shell, not a page. The shell
@@ -25,11 +49,23 @@ const Container = styled.div`
 `;
 
 const GroupLabel = styled.p`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-size: 0.78rem;
   color: ${({ theme }) => theme.colors.primary};
   margin: 0 0 0.4rem;
+`;
+
+const KindTag = styled.span`
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.7rem;
+  font-weight: 700;
 `;
 
 const Title = styled.h1`
@@ -54,7 +90,9 @@ const Article = styled.div`
   font-size: 1rem;
   min-width: 0;
   overflow-wrap: anywhere;
-  .table-scroll { overflow-x: auto; margin: 1rem 0; }
+  .table-scroll { overflow-x: auto; margin: 1rem 0; max-width: 100%; }
+  .table-scroll td, .table-scroll th { overflow-wrap: normal; }
+  h1, h2, h3, h4 { scroll-margin-top: 4.5rem; }
   table { width: 100%; border-collapse: collapse; font-size: .92rem; }
   th, td { padding: .6rem .8rem; border: 1px solid ${({ theme }) => theme.colors.border}; text-align: left; min-width: 110px; }
   th { background: ${({ theme }) => theme.colors.backgroundTertiary}; }
@@ -95,6 +133,8 @@ const Article = styled.div`
     padding: 1rem;
     border-radius: 8px;
     overflow-x: auto;
+    max-width: 100%;
+    overflow-wrap: normal;
 
     code { background: none; padding: 0; }
   }
@@ -172,6 +212,34 @@ const Message = styled.p`
   padding: 3rem 1rem;
 `;
 
+const CompleteRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid ${({ theme, $done }) => ($done ? theme.colors.accent : theme.colors.border)};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  p { margin: 0; flex: 1 1 14rem; color: ${({ theme }) => theme.colors.textSecondary}; font-size: 0.9rem; }
+`;
+
+const CompleteButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: 1px solid ${({ theme, $done }) => ($done ? theme.colors.accent : theme.colors.primary)};
+  background: ${({ theme, $done }) => ($done ? 'transparent' : theme.colors.primary)};
+  color: ${({ theme, $done }) => ($done ? theme.colors.accent : '#fff')};
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  &:focus-visible { outline: 2px solid ${({ theme }) => theme.colors.primary}; outline-offset: 3px; }
+`;
+
 const LessonNavigation = styled.nav`
   display: flex;
   justify-content: space-between;
@@ -203,6 +271,8 @@ const LessonNavigation = styled.nav`
 function TopicReader() {
   const { slug } = useParams();
   const { quizByTopic, modules = [] } = useOutletContext() ?? {};
+  const { hash } = useLocation();
+  const { completed, toggle } = useCompletedLessons();
   const [state, setState] = useState({ status: 'loading' });
   const [quiz, setQuiz] = useState(null);
   const [quizError, setQuizError] = useState('');
@@ -259,6 +329,24 @@ function TopicReader() {
     return () => { cancelled = true; };
   }, [slug, quizByTopic, quizRetry]);
 
+  const body = state.status === 'ready' ? state.topic.body : '';
+  const sections = useMemo(() => extractHeadings(body, { minDepth: 2, maxDepth: 2 }), [body]);
+  const ready = state.status === 'ready' && state.topic.slug === slug;
+
+  // Content arrives after navigation, so the browser cannot honour a
+  // `#section` in the URL by itself.
+  useEffect(() => {
+    if (!ready || !hash) return;
+    let id = hash.slice(1);
+    try {
+      id = decodeURIComponent(id);
+    } catch {
+      // Keep the raw fragment when it is not valid percent-encoding.
+    }
+    const target = document.getElementById(id);
+    target?.scrollIntoView({ block: 'start' });
+  }, [ready, hash]);
+
   if (state.status === 'loading' || (state.status === 'ready' && state.topic.slug !== slug)) return <FullScreenLoader show />;
 
   if (state.status === 'missing') {
@@ -279,10 +367,10 @@ function TopicReader() {
   }
 
   const { topic, prerequisites, relatedProblems } = state;
-  const path = modules.flatMap((module) => module.topics);
-  const position = path.findIndex((entry) => entry.slug === slug);
-  const previous = position > 0 ? path[position - 1] : null;
-  const next = position >= 0 ? path[position + 1] : null;
+  const entry = findTopic(modules, slug);
+  const reference = isReference(topic) || isReference(entry);
+  const { previous, next, isLesson } = lessonNeighbours(modules, slug);
+  const done = completed.has(slug);
 
   // Most bodies open with the same sentence as the summary — the summary is
   // written for the index card. Showing both prints it twice.
@@ -292,7 +380,7 @@ function TopicReader() {
 
   return (
     <Container>
-      <GroupLabel>{topic.group}</GroupLabel>
+      <GroupLabel>{topic.group}{reference && <KindTag>Reference</KindTag>}</GroupLabel>
       <Title>{topic.title}</Title>
       {showSummary && <Summary>{topic.summary}</Summary>}
 
@@ -309,13 +397,13 @@ function TopicReader() {
         </Panel>
       )}
 
+      {sections.length >= TOC_MIN_SECTIONS && <TableOfContents key={`toc:${slug}`} headings={sections} />}
+
       <Article>
         <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeSanitize]}
-          components={{ table: ({ children }) => (
-            <div className="table-scroll" role="region" aria-label="Article table" tabIndex={0}><table>{children}</table></div>
-          ) }}
+          remarkPlugins={remarkPlugins}
+          rehypePlugins={rehypePlugins}
+          components={markdownComponents}
         >
           {topic.body}
         </ReactMarkdown>
@@ -357,6 +445,15 @@ function TopicReader() {
         <button onClick={() => setQuizRetry((value) => value + 1)}>Retry quiz</button>
       </Panel>}
       <TopicQuiz key={slug} quiz={quiz?.topic === slug ? quiz : null} />
+      {isLesson && !reference && (
+        <CompleteRow $done={done}>
+          <p>{done ? 'You marked this lesson as complete.' : 'Finished this lesson? Track it on your learning path.'}</p>
+          <CompleteButton type="button" $done={done} aria-pressed={done} onClick={() => toggle(slug)}>
+            {done ? <CheckCircle size={16} /> : <Circle size={16} />}
+            {done ? 'Completed' : 'Mark as complete'}
+          </CompleteButton>
+        </CompleteRow>
+      )}
       <LessonNavigation aria-label="Learning path">
         {previous && <Link to={contentUrl(previous)} rel="prev"><ArrowLeft size={16} /> Previous: {previous.title}</Link>}
         {next ? <Link to={contentUrl(next)} rel="next">Next: {next.title} <ArrowRight size={16} /></Link>

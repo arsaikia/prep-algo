@@ -1,0 +1,44 @@
+{
+    "slug": "pattern-scaling-writes-check",
+    "title": "Queue backlog that never drains",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Patterns",
+    "topic": "pattern-scaling-writes",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "queues",
+        "sharding",
+        "throughput"
+    ],
+    "lists": [],
+    "legacyId": "5bcfb68f-d9ca-4506-a182-174413f24645",
+    "description": "An analytics service writes click events to one PostgreSQL primary, which commits about 8k inserts/s. Traffic grew to a steady 15k events/s, so the team put Kafka in front of the database. Kafka consumer lag now grows every hour and never recovers. Which change actually fixes the problem?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Add Redis in front of PostgreSQL to cache recent events.",
+            "isCorrect": false,
+            "explanation": "Caching helps reads. Every event still has to be persisted, so a cache does not raise write throughput."
+        },
+        {
+            "id": "b",
+            "text": "Add more Kafka partitions and consumers but keep writing one row per event to the same primary.",
+            "isCorrect": false,
+            "explanation": "More consumers only push harder on the same 8k/s ceiling; the database is the bottleneck."
+        },
+        {
+            "id": "c",
+            "text": "Add two read replicas so the primary has more capacity for writes.",
+            "isCorrect": false,
+            "explanation": "Replicas take reads off the primary, but this workload is insert-bound, and replication adds work for every write."
+        },
+        {
+            "id": "d",
+            "text": "Batch inserts in the consumers and partition the table across several database nodes by a high-cardinality key such as event source ID.",
+            "isCorrect": true,
+            "explanation": "The sustained arrival rate exceeds commit capacity. Batching cuts per-row overhead and sharding adds parallel write capacity; the queue keeps absorbing bursts while capacity catches up."
+        }
+    ]
+}

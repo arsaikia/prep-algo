@@ -1,0 +1,44 @@
+{
+    "slug": "design-uber-check",
+    "title": "Two riders, one nearest driver",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-uber",
+    "difficulty": "Hard",
+    "order": 1,
+    "tags": [
+        "ride-hailing",
+        "matching",
+        "consistency"
+    ],
+    "lists": [],
+    "legacyId": "644b00c4-46a9-42f5-8f24-5591a4897297",
+    "description": "Two matching workers handle riders a block apart. Both query the geo index and both pick driver d_7 as closest. Occasionally d_7 ends up assigned to both rides. Which fix gives one-driver-one-ride while keeping matching fast?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Refresh the geo index more often so workers see d_7's status change sooner",
+            "isCorrect": false,
+            "explanation": "Fresher reads narrow the race window but never close it; two workers can still read 'available' at the same instant."
+        },
+        {
+            "id": "b",
+            "text": "Reserve d_7 with a short-lived lease (SET NX with a TTL) before offering, and assign on accept with conditional writes that require the ride to be matching and the driver to be available or offered for this ride",
+            "isCorrect": true,
+            "explanation": "The lease stops duplicate offers cheaply; the conditional writes are the correctness boundary, so even an expired lease or late accept cannot double-assign."
+        },
+        {
+            "id": "c",
+            "text": "Route all matching for the whole country through a single worker",
+            "isCorrect": false,
+            "explanation": "Serialisation removes the race but creates a throughput bottleneck and a single point of failure for every city."
+        },
+        {
+            "id": "d",
+            "text": "Use a distributed lock with a 10-minute TTL and assign the driver when the lock is acquired",
+            "isCorrect": false,
+            "explanation": "A long lock leaves the driver unusable when offers are ignored, and with no conditional write behind it, an expired or lost lock can still lead to double assignment."
+        }
+    ]
+}

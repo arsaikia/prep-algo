@@ -11,7 +11,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 
 import {
   getAllQuestionsWithoutHistory,
@@ -30,6 +30,17 @@ import GoogleLoginModal from './components/Auth/GoogleLoginModal';
 // CodeSection is a modal that stays closed until the user asks to view code.
 // Loading it lazily keeps its syntax-highlighting dependency off the critical path.
 const CodeSection = lazy(() => import('./components/CodeSection'));
+
+// Several legacy button classes in index.css remove the outline outright,
+// which leaves keyboard users with no visible focus. `:root` lifts the
+// specificity above those single-class rules; `:focus-visible` keeps the ring
+// off mouse clicks.
+const FocusStyles = createGlobalStyle`
+  :root :focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+`;
 
 // App wrapper with theme background
 const AppWrapper = styled.div`
@@ -141,6 +152,7 @@ function AppContent() {
 
   return (
     <ThemeProvider theme={currentTheme}>
+      <FocusStyles />
       <AppWrapper $immersive={immersive}>
         <MainContent $immersive={immersive}>
           <Navbar />

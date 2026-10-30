@@ -1,0 +1,44 @@
+{
+    "slug": "data-modeling-and-transactions-check",
+    "title": "Stop Double-Booked Appointments",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Data & Storage",
+    "topic": "data-modeling-and-transactions",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "transactions",
+        "constraints",
+        "isolation"
+    ],
+    "lists": [],
+    "legacyId": "023a7dde-ded9-4477-a04d-70334295a9f2",
+    "description": "A clinic booking service on PostgreSQL (default read committed) checks whether a slot has an appointment and, if not, inserts one. Under load, a few slots end up with two appointments. What is the most reliable fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Add a UNIQUE constraint on appointments(slot_id) and return \"slot taken\" when the insert violates it.",
+            "isCorrect": true,
+            "explanation": "The database checks the constraint at commit for every interleaving, so only one booking per slot can ever succeed, regardless of isolation level."
+        },
+        {
+            "id": "b",
+            "text": "Switch the transactions to repeatable read.",
+            "isCorrect": false,
+            "explanation": "PostgreSQL repeatable read is snapshot isolation. Both transactions see no appointment and insert different new rows, so no write conflict is detected and both can commit."
+        },
+        {
+            "id": "c",
+            "text": "Cache slot availability in Redis with a short TTL and check it before inserting.",
+            "isCorrect": false,
+            "explanation": "A cache read is another check-then-act on possibly stale data; it narrows nothing and adds a second source of truth."
+        },
+        {
+            "id": "d",
+            "text": "Retry failed bookings with exponential backoff.",
+            "isCorrect": false,
+            "explanation": "The double-booked transactions did not fail, so there is nothing to retry. Retries do not create mutual exclusion."
+        }
+    ]
+}

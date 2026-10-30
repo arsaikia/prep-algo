@@ -1,0 +1,44 @@
+{
+    "slug": "design-web-crawler-check",
+    "title": "Crawler throughput collapses on big sites",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-web-crawler",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "web-crawler",
+        "politeness",
+        "sharding"
+    ],
+    "lists": [],
+    "legacyId": "8a23a4aa-b074-474e-a73c-b1ef2d08e459",
+    "description": "Your crawler shards its frontier by hash(full URL) across 40 nodes, each running a FIFO queue. To be polite, each node checks a shared Redis key 'last fetch time per host' and re-queues URLs whose host was fetched in the last second. Throughput is a third of target, Redis is saturated, and some large sites still report bursts of 20 requests per second. What is the best change?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Increase the Redis cluster size and shorten the per-host delay to 200 ms",
+            "isCorrect": false,
+            "explanation": "More Redis capacity treats the symptom; the shared check-then-fetch is still racy across nodes (hence the bursts), and cutting the delay makes the crawler less polite."
+        },
+        {
+            "id": "b",
+            "text": "Replace the FIFO with a Kafka topic partitioned by URL hash so ordering is durable",
+            "isCorrect": false,
+            "explanation": "Durability is not the problem. Partitioning by URL hash still spreads one host across many consumers, and Kafka cannot reorder messages by host eligibility time."
+        },
+        {
+            "id": "c",
+            "text": "Shard the frontier by host, keep per-host back queues on each shard, and pick ready hosts from a min-heap of next-eligible times",
+            "isCorrect": true,
+            "explanation": "All URLs for a host live on one shard, so politeness is enforced locally without a shared store, and the heap means workers only take hosts that are ready, ending the re-queue churn."
+        },
+        {
+            "id": "d",
+            "text": "Add more fetcher nodes so the re-queued URLs are retried sooner",
+            "isCorrect": false,
+            "explanation": "More fetchers increase churn and contention on the shared check; the bottleneck is scheduling, not fetch capacity."
+        }
+    ]
+}

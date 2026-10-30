@@ -1,0 +1,44 @@
+{
+    "slug": "design-load-balancer-check",
+    "title": "Database blip empties the pool",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-load-balancer",
+    "difficulty": "Medium",
+    "order": 1,
+    "tags": [
+        "load-balancing",
+        "health-checks",
+        "availability"
+    ],
+    "lists": [],
+    "legacyId": "60c2e766-5a5b-4eb8-a02e-a84560370d51",
+    "description": "Each checkout server's /healthz endpoint queries the primary database and returns 503 if the query fails. During a 15-second database failover, the load balancer marks every checkout server unhealthy and returns 503 to all users for over a minute, even after the database recovers. Which change best prevents this?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Lower the health check interval to 200 ms so servers are marked healthy again faster.",
+            "isCorrect": false,
+            "explanation": "Faster checks add probe load and still eject the entire pool during the dependency outage; they do not fix what the check measures."
+        },
+        {
+            "id": "b",
+            "text": "Switch the pool from round robin to least connections.",
+            "isCorrect": false,
+            "explanation": "The balancing algorithm only chooses among healthy endpoints; with all of them ejected, it has nothing to choose from."
+        },
+        {
+            "id": "c",
+            "text": "Make /healthz report only whether the process can serve, rely on passive outlier detection for real errors, and set a panic threshold so a mostly-unhealthy pool still receives traffic.",
+            "isCorrect": true,
+            "explanation": "Shallow health checks stop a shared dependency from ejecting every server at once, outlier detection still removes individually broken servers, and the panic threshold treats 'everything is unhealthy' as a bad signal rather than a reason to serve nothing."
+        },
+        {
+            "id": "d",
+            "text": "Add a second health check that pings the database from the load balancer itself.",
+            "isCorrect": false,
+            "explanation": "This couples the load balancer even more tightly to the database and repeats the same failure mode."
+        }
+    ]
+}

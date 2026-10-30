@@ -11,7 +11,6 @@ import {
   LOGIN,
   MARK_QUESTION_AS_DONE,
   RESET_AUTH,
-  SIGNUP,
   TOGGLE_CODE_MODAL,
   UPDATE_THEME,
   INITIALIZE_THEME,
@@ -56,11 +55,6 @@ export const markQuestionAsDone = (value) => ({
 
 export const userLogin = (value) => ({
   type: LOGIN,
-  payload: value,
-});
-
-export const userSignup = (value) => ({
-  type: SIGNUP,
   payload: value,
 });
 

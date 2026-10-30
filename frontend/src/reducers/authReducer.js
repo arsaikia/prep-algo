@@ -4,7 +4,6 @@ import {
   GOOGLE_LOGIN_FAILURE,
   LOGIN_SUCCESS,
   RESET_AUTH_SUCCESS,
-  SIGNUP_SUCCESS,
   UPDATE_LAST_ACTIVITY,
   FETCH_USER_INFO_SUCCESS,
   FETCH_USER_INFO_FAILURE,
@@ -15,7 +14,6 @@ import {
 const initialState = {
   firstName: '',
   isAuthenticated: false,
-  isSignedUp: false,
   lastName: '',
   userId: 'guest',
   picture: '',
@@ -36,17 +34,6 @@ const authReducer = (state = initialState, action) => {
       return { ...state, status: 'restoring', error: null };
     case GOOGLE_LOGIN:
       return { ...state, signingIn: true, error: null };
-    case SIGNUP_SUCCESS:
-      return {
-        ...state,
-        ...action.payload,
-        status: 'authenticated',
-        isAuthenticated: true,
-        error: null,
-        token: action.payload.token || null,
-        lastActivity: Date.now(),
-      };
-
     case LOGIN_SUCCESS:
       return {
         ...state,

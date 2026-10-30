@@ -1,0 +1,44 @@
+{
+    "slug": "pattern-real-time-updates-check",
+    "title": "Messages lost after a network blip",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Patterns",
+    "topic": "pattern-real-time-updates",
+    "difficulty": "Hard",
+    "order": 1,
+    "tags": [
+        "websockets",
+        "pub-sub",
+        "reliability"
+    ],
+    "lists": [],
+    "legacyId": "57ff1549-34c7-4592-a6e3-b7f43d260881",
+    "description": "A chat app runs 80 WebSocket gateways. The message service publishes each new message to a Redis pub/sub channel per conversation, and gateways forward it to connected members. Users on mobile report that messages sent while their phone briefly lost signal never appear, even after reconnecting. What is the best fix?",
+    "options": [
+        {
+            "id": "a",
+            "text": "Persist each message with a per-conversation sequence number before publishing, and have clients send their last seen sequence on reconnect so the gateway replays the gap from the store.",
+            "isCorrect": true,
+            "explanation": "Redis pub/sub is fire-and-forget, so a disconnected subscriber misses messages. A durable store plus sequence-based catch-up closes the gap, and deduplicating by sequence handles overlap with live delivery."
+        },
+        {
+            "id": "b",
+            "text": "Switch from WebSockets to Server-Sent Events, which never drop messages.",
+            "isCorrect": false,
+            "explanation": "SSE reconnects automatically and sends Last-Event-ID, but the server still needs a durable store to replay from; the transport alone does not fix the loss."
+        },
+        {
+            "id": "c",
+            "text": "Publish every message to all 80 gateways instead of per-conversation channels.",
+            "isCorrect": false,
+            "explanation": "Broadcasting increases cost and does nothing for a client that was disconnected when the message was published."
+        },
+        {
+            "id": "d",
+            "text": "Increase the WebSocket ping interval so connections are not considered dead as quickly.",
+            "isCorrect": false,
+            "explanation": "Messages are lost while the device has no network at all; slower liveness detection cannot deliver bytes to an unreachable phone."
+        }
+    ]
+}

@@ -47,7 +47,7 @@ test('interview-first curriculum has linked lessons, checks and a worked practic
     const practice = bySlug.get('design-url-shortener');
     assert.ok(practice.prerequisites.includes(framework.slug));
     assert.match(practice.body, /unique constraint/);
-    assert.match(practice.body, /not the only valid architecture/);
+    assert.match(practice.body, /not the only (one|valid architecture)/);
 });
 
 async function fingerprint(dir) {
