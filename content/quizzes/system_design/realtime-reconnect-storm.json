@@ -1,0 +1,10 @@
+{
+  "slug":"realtime-reconnect-storm","title":"A Gateway Drops Fifty Thousand Connections","domain":"system_design","group":"Design Patterns","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000038","type":"quiz","topic":"pattern-real-time-updates","difficulty":"Hard",
+  "description":"A gateway fails and 50,000 clients immediately reconnect in lockstep, overloading healthy gateways. What recovery behavior reduces the next surge without abandoning delivery?",
+  "options":[
+    {"id":"a","text":"Reconnect continuously with zero delay until a socket opens.","isCorrect":false,"explanation":"Immediate synchronized attempts keep overloading recovery capacity."},
+    {"id":"b","text":"Use capped exponential backoff with jitter and resume from each client's sequence cursor.","isCorrect":true,"explanation":"Jitter spreads reconnects over time; durable sequence-based catch-up recovers missed messages once connected. Planned deploys should also drain gracefully."},
+    {"id":"c","text":"Discard every client's cursor to avoid replay work.","isCorrect":false,"explanation":"That removes the catch-up boundary and can lose messages or force a more expensive full sync."},
+    {"id":"d","text":"Broadcast every live message to every gateway.","isCorrect":false,"explanation":"Broadcasting increases server work and cannot deliver to disconnected clients."}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug":"search-postings-choice","title":"Find Documents by Words","domain":"system_design","group":"Data & Storage","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000049","type":"quiz","topic":"search-and-inverted-indexes","difficulty":"Easy",
+  "description":"A catalog needs documents containing both 'redis' and 'caching', with text relevance rather than a substring scan. Which structure directly supports matching?",
+  "options":[
+    {"id":"a","text":"A B-tree on the entire unprocessed description.","isCorrect":false,"explanation":"A normal B-tree orders full values; it does not map arbitrary words inside them to document IDs."},
+    {"id":"b","text":"An inverted index from analyzed terms to postings lists.","isCorrect":true,"explanation":"Intersecting term postings finds documents containing both terms. Compatible analysis at indexing and query time handles case and stemming; ranking can then order matches."},
+    {"id":"c","text":"A queue containing the latest catalog write.","isCorrect":false,"explanation":"A queue transports work but does not provide term-to-document retrieval."},
+    {"id":"d","text":"A leading-wildcard LIKE query without a suitable text index.","isCorrect":false,"explanation":"That requires scanning values and lacks the requested linguistic analysis and relevance model."}
+  ]
+}

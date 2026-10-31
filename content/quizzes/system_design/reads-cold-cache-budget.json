@@ -1,0 +1,10 @@
+{
+  "slug":"reads-cold-cache-budget","title":"Survive a Cache Flush","domain":"system_design","group":"Design Patterns","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000040","type":"quiz","topic":"pattern-scaling-reads","difficulty":"Hard",
+  "description":"The database handles the normal 5% miss load but cannot handle all traffic. A deploy accidentally flushes the cache. Which protection should the design already have?",
+  "options":[
+    {"id":"a","text":"Let every miss query the database immediately.","isCorrect":false,"explanation":"The cold cache removes the offload precisely when the source has insufficient capacity."},
+    {"id":"b","text":"Promise a shorter TTL will make the cache refill with less work.","isCorrect":false,"explanation":"Short TTLs do not bound concurrent source work and can cause more churn."},
+    {"id":"c","text":"Add more API instances without limiting database connections.","isCorrect":false,"explanation":"More callers can overwhelm the same primary faster."},
+    {"id":"d","text":"Coalesce refills, warm important keys and bound fallback traffic with a degraded mode.","isCorrect":true,"explanation":"A cache can be an availability dependency. Coordinated regeneration and admission limits keep recovery within source capacity; degradation must match the product's freshness rules."}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug":"writes-durable-batching","title":"Batch Without Losing Acknowledged Events","domain":"system_design","group":"Design Patterns","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000041","type":"quiz","topic":"pattern-scaling-writes","difficulty":"Easy",
+  "description":"An ingest API acknowledges events, buffers them in memory and flushes once per second. Crashes lose accepted events. Where should batching happen when that loss is unacceptable?",
+  "options":[
+    {"id":"a","text":"Keep the buffer in memory but increase its size.","isCorrect":false,"explanation":"A larger volatile buffer can lose more data and adds no durability."},
+    {"id":"b","text":"Acknowledge after a durable log append, then batch writes in consumers.","isCorrect":true,"explanation":"The log preserves accepted events for replay while consumers amortize database round trips. Replays require idempotent writes."},
+    {"id":"c","text":"Return success before parsing the event.","isCorrect":false,"explanation":"That weakens acceptance rather than protecting acknowledged work."},
+    {"id":"d","text":"Add a read replica to preserve the API's memory buffer.","isCorrect":false,"explanation":"Database replication cannot copy an event that never reached durable storage."}
+  ]
+}

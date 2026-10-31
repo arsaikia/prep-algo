@@ -1,0 +1,10 @@
+{
+  "slug":"blob-control-data-split","title":"Keep a Two-Gigabyte Upload off the API","domain":"system_design","group":"Design Patterns","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000029","type":"quiz","topic":"pattern-handling-large-blobs","difficulty":"Easy",
+  "description":"A video app's API servers spend most bandwidth proxying uploads. The service still needs to authorize each file and track its owner. Which split fits?",
+  "options":[
+    {"id":"a","text":"Make the bucket publicly writable and let clients choose any key.","isCorrect":false,"explanation":"That removes authorization and allows writes outside the intended file scope."},
+    {"id":"b","text":"Put each video in the metadata database row.","isCorrect":false,"explanation":"Large database blobs inflate backups, replication and buffer-cache pressure without removing the transfer problem."},
+    {"id":"c","text":"Keep uploads in API memory until the user finishes.","isCorrect":false,"explanation":"That keeps bandwidth and long-lived state on the API fleet and loses progress on crashes."},
+    {"id":"d","text":"Authorize metadata in the API and issue a short-lived URL for direct upload to a chosen object key.","isCorrect":true,"explanation":"The API controls ownership and permission while object storage handles bytes. Completion still needs server-side verification and cleanup of partial outcomes."}
+  ]
+}

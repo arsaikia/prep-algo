@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "58c28fd3-2fab-4d7c-b9ff-1eb795e05a00",
-    "description": "Your shortener returns 301 Moved Permanently for every redirect and caches alias lookups in Redis with no TTL. Trust and safety disables a phishing link: the API sets disabled_at and deletes the Redis key. Hours later, many victims are still being redirected. What is the most effective fix?",
+    "description": "Your shortener uses 301 Moved Permanently and caches alias lookups in Redis without a TTL. The trust and safety team disables a phishing link: the API sets disabled_at and deletes the Redis key. Hours later, people following the link still reach the phishing page. Which change best fixes the design for revocable links?",
     "options": [
         {
             "id": "a",
@@ -26,13 +26,13 @@
             "id": "b",
             "text": "Move the link table from read replicas to the primary so the disabled_at flag is always fresh.",
             "isCorrect": false,
-            "explanation": "Replica lag is seconds, not hours, and it does nothing about redirects that browsers have cached permanently."
+            "explanation": "A primary read can avoid replica lag, but it cannot help a request that never reaches the service because the browser already cached a permanent redirect."
         },
         {
             "id": "c",
             "text": "Return 302 with a short Cache-Control max-age matching the disable SLA, give cache entries a TTL, and purge any CDN copy on takedown.",
             "isCorrect": true,
-            "explanation": "301 responses are cached by browsers, often indefinitely, so the request never reaches you. A 302 with a bounded max-age, a TTL on server-side entries and an explicit CDN purge together bound how long a disabled link can still work."
+            "explanation": "A browser can reuse a cached 301 without contacting you. For future redirects, a 302 with bounded max-age, bounded server-side cache freshness and an explicit CDN purge supports revocation. You cannot remotely clear a permanent redirect already stored in someone's browser."
         },
         {
             "id": "d",

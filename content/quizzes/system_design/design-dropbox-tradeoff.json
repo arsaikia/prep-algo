@@ -1,0 +1,20 @@
+{
+    "slug": "design-dropbox-tradeoff",
+    "title": "Two laptops edit the same revision",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-dropbox",
+    "difficulty": "Medium",
+    "order": 3,
+    "tags": ["file-sync", "conflicts", "consistency"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0020",
+    "description": "Two laptops edit plan.pdf offline, both starting from rev_17. Both upload their changed chunks successfully. The first commits rev_18 before the second asks to commit. You must not silently lose either person's work. What should happen next?",
+    "options": [
+        {"id": "a", "text": "Pick the edit with the later laptop timestamp and discard the other revision.", "isCorrect": false, "explanation": "Device clocks can be skewed, and even a correct timestamp does not make one person's independent changes disposable."},
+        {"id": "b", "text": "Reject the stale baseRev with 409 and let the losing client preserve its uploaded bytes as a conflicted copy.", "isCorrect": true, "explanation": "A conditional revision-pointer update detects the conflict atomically. A sibling file keeps both versions without pretending arbitrary file formats can be merged automatically."},
+        {"id": "c", "text": "Change current_rev unconditionally because both chunk uploads were successful.", "isCorrect": false, "explanation": "Durable chunks do not resolve competing metadata commits. An unconditional pointer update silently overwrites the first edit."},
+        {"id": "d", "text": "Lock the file from the moment either laptop starts editing until both reconnect.", "isCorrect": false, "explanation": "That is an unbounded lock across offline user activity. Optimistic commits allow useful offline editing while detecting conflicts when they meet."}
+    ]
+}

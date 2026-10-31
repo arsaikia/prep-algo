@@ -47,7 +47,8 @@ export function curriculumStats(modules = [], quizByTopic = new Map()) {
         concepts: lessons.filter((t) => t.kind === 'concept' && t.module !== PATTERNS_MODULE).length,
         patterns: lessons.filter((t) => t.module === PATTERNS_MODULE).length,
         caseStudies: lessons.filter((t) => t.kind === 'case_study' && t.module !== PATTERNS_MODULE).length,
-        checks: modules.flatMap((m) => m.topics).filter((t) => quizByTopic.has(t.slug)).length,
+        checks: modules.flatMap((m) => m.topics)
+            .reduce((count, topic) => count + (quizByTopic.get(topic.slug)?.length ?? 0), 0),
     };
 }
 

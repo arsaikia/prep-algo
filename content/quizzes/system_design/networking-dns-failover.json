@@ -1,0 +1,10 @@
+{
+  "slug":"networking-dns-failover","title":"A DNS Change Is Not Instant Failover","domain":"system_design","group":"Networking","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000026","type":"quiz","topic":"networking-essentials","difficulty":"Hard",
+  "description":"A region fails. The team changes its DNS answer to a healthy region, but some clients still contact the old address. What should the disaster-recovery plan account for?",
+  "options":[
+    {"id":"a","text":"Resolver and client caching can delay a DNS switch; test that behavior and use a global routing layer when faster failover is required.","isCorrect":true,"explanation":"DNS steers names, but cached answers and existing connections make failover imprecise. Low TTLs help without guaranteeing immediate migration."},
+    {"id":"b","text":"Changing the authoritative record invalidates every cached answer.","isCorrect":false,"explanation":"There is no universal push invalidation of DNS caches."},
+    {"id":"c","text":"The new region must use larger JSON responses to refresh DNS.","isCorrect":false,"explanation":"Payload size has no mechanism to update a client's cached address."},
+    {"id":"d","text":"A TTL of zero guarantees all existing connections move immediately.","isCorrect":false,"explanation":"DNS TTLs do not migrate established connections, and client behavior still needs testing."}
+  ]
+}

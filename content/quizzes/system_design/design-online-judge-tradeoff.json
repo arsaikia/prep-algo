@@ -1,0 +1,20 @@
+{
+    "slug": "design-online-judge-tradeoff",
+    "title": "A late worker returns with a verdict",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-online-judge",
+    "difficulty": "Hard",
+    "order": 3,
+    "tags": ["online-judge", "leases", "idempotency"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0034",
+    "description": "Worker A pauses long enough to lose its submission lease. Worker B takes a new lease and finishes judging. A resumes with an old verdict and tries to write it. How should the system keep this at-least-once execution from changing the final verdict or counting the submission twice?",
+    "options": [
+        {"id": "a", "text": "Let whichever worker writes last replace the verdict and add another leaderboard update.", "isCorrect": false, "explanation": "Wall-clock arrival order does not establish ownership. A stale worker could overwrite valid state or double-apply scoring."},
+        {"id": "b", "text": "Disable lease expiry so the first worker keeps the job even if it never returns.", "isCorrect": false, "explanation": "That strands work on failed hosts and removes the recovery benefit of leased jobs."},
+        {"id": "c", "text": "Treat the queue as exactly once and omit checks at the verdict database.", "isCorrect": false, "explanation": "A lease timeout can create duplicate execution. The database must defend the final write even when queue delivery is retried."},
+        {"id": "d", "text": "Fence verdict writes with the current lease or attempt token, reject A's stale write, and apply scoring idempotently per logical submission.", "isCorrect": true, "explanation": "The current owner alone can finalize the submission. Duplicate execution is acceptable when conditional persistence and idempotent downstream updates prevent duplicate effects."}
+    ]
+}

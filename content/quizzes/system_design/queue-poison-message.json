@@ -1,0 +1,10 @@
+{
+  "slug":"queue-poison-message","title":"One Bad Event Blocks a Partition","domain":"system_design","group":"Messaging","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000024","type":"quiz","topic":"message-queues-and-streams","difficulty":"Hard",
+  "description":"A malformed event fails on every attempt and blocks later records. The product allows isolating invalid events for repair while healthy work continues. Which policy makes that explicit?",
+  "options":[
+    {"id":"a","text":"Retry forever with no alert.","isCorrect":false,"explanation":"A permanent failure will not heal through retries and can stall the partition indefinitely."},
+    {"id":"b","text":"Add consumers beyond the partition count.","isCorrect":false,"explanation":"Extra group members cannot concurrently own the blocked partition and do not fix invalid input."},
+    {"id":"c","text":"Delete the event silently and report normal processing.","isCorrect":false,"explanation":"That hides lost work and removes the information needed for repair."},
+    {"id":"d","text":"Bound retries, preserve the event in an owned DLQ, alert and provide redrive.","isCorrect":true,"explanation":"A dead-letter path separates poison data from healthy progress under the stated contract. Ownership, diagnosis and safe redrive keep it from becoming silent data loss."}
+  ]
+}

@@ -1,0 +1,20 @@
+{
+    "slug": "design-news-feed-tradeoff",
+    "title": "A deleted post remains a candidate",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-news-feed",
+    "difficulty": "Medium",
+    "order": 3,
+    "tags": ["news-feed", "privacy", "consistency"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0016",
+    "description": "A post is deleted, but its ID remains in millions of cached feed lists while fan-out workers are behind. The post record and authoritative visibility state already reflect the deletion. What should the feed service do when assembling a page?",
+    "options": [
+        {"id": "a", "text": "Trust the feed list until its TTL expires because it was valid when written.", "isCorrect": false, "explanation": "A candidate's old visibility is not permission to show it now. Fan-out lag must not override deletion or privacy state."},
+        {"id": "b", "text": "Re-check visibility during hydration, drop the deleted post and let the stale list entry age out.", "isCorrect": true, "explanation": "The list is a derived set of candidates, not the authority on visibility. Read-time filtering keeps stale fan-out safe without rewriting millions of lists immediately."},
+        {"id": "c", "text": "Wait to acknowledge the deletion until every follower's feed list has been rewritten.", "isCorrect": false, "explanation": "That ties a small authoritative change to enormous derived-cache work. Filtering on read removes that dependency."},
+        {"id": "d", "text": "Return the post only to users who cached its ID before deletion.", "isCorrect": false, "explanation": "An earlier cached reference does not grant continuing access. It would make deletion semantics depend on cache history."}
+    ]
+}

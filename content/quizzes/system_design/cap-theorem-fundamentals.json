@@ -12,7 +12,7 @@
   "type": "quiz",
   "topic": "cap-theorem-and-consistency",
   "difficulty": "Easy",
-  "description": "Understand the CAP theorem and its implications for distributed databases.",
+  "description": "A three-replica seat-reservation service splits into a two-node majority and an isolated node. Selling a seat twice is unacceptable. Which statement describes a CP policy during this partition?",
   "options": [
     {
       "id": "a",
@@ -24,13 +24,13 @@
       "id": "b",
       "text": "During a network partition, a CP system sacrifices availability to maintain consistency",
       "isCorrect": true,
-      "explanation": "CP systems (like HBase, MongoDB) refuse to serve requests during partitions rather than risk returning stale data, sacrificing availability for consistency."
+      "explanation": "A quorum-based CP operation can continue on the majority side while rejecting or blocking on the isolated side. It sacrifices availability for requests that cannot reach the authority, not necessarily for every request. Database behavior depends on operation and configuration."
     },
     {
       "id": "c",
       "text": "AP systems never return stale data",
       "isCorrect": false,
-      "explanation": "AP systems (like Cassandra, DynamoDB) prioritize availability during partitions and may return stale data, achieving eventual consistency."
+      "explanation": "An AP operation can keep answering from reachable replicas during a partition, accepting stale reads or conflicting writes that need reconciliation. Do not infer this policy for every operation from a database brand name."
     },
     {
       "id": "d",

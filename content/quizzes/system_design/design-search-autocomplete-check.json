@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "eedfbdd0-9b54-4862-b240-e38615bc1111",
-    "description": "Your typeahead service stores a trie in memory and, for each request, walks the subtree under the typed prefix to collect the 10 most popular completions. p50 latency is 4 ms, but p99 is 180 ms and nearly all slow requests are for one- and two-character prefixes. What change best meets a p99 under 100 ms end to end?",
+    "description": "Your typeahead service holds a trie in memory. Each request walks the typed prefix's subtree to find the ten most popular completions. p50 is 4 ms, but p99 is 180 ms, mostly for one- and two-character prefixes. What would bring the slow tail within a 100 ms end-to-end budget?",
     "options": [
         {
             "id": "a",
@@ -26,7 +26,7 @@
             "id": "b",
             "text": "Precompute and store the top-10 completions at every prefix node (or in a prefix-to-list map) at build time, so each request is a single lookup.",
             "isCorrect": true,
-            "explanation": "Correct. Moving the ranking work to build time makes request cost independent of how many completions a prefix has, which removes the short-prefix tail."
+            "explanation": "Do the ranking when building the index. Serving becomes one lookup regardless of how many completions share the prefix, so short prefixes no longer trigger huge subtree walks."
         },
         {
             "id": "c",

@@ -1,0 +1,10 @@
+{
+  "slug":"saga-compensation-meaning","title":"A Refund Is Not a Rollback","domain":"system_design","group":"Design Patterns","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000035","type":"quiz","topic":"pattern-multi-step-processes","difficulty":"Easy",
+  "description":"An order saga reserves inventory, charges a card and then fails to book delivery. What does compensation mean here?",
+  "options":[
+    {"id":"a","text":"A database rollback removes the charge from the provider.","isCorrect":false,"explanation":"The provider committed a separate action; a local rollback cannot undo it."},
+    {"id":"b","text":"Issue a refund and release inventory through retryable, idempotent actions.","isCorrect":true,"explanation":"Compensation semantically reverses committed effects, normally in reverse order. A refund may remain visible beside the charge and is not equivalent to never charging."},
+    {"id":"c","text":"Leave inventory held because the payment already succeeded.","isCorrect":false,"explanation":"That abandons the failed saga with resources still reserved rather than resolving its state."},
+    {"id":"d","text":"Repeat the charge before attempting delivery again.","isCorrect":false,"explanation":"A new charge is not a compensation and can double-charge the customer."}
+  ]
+}

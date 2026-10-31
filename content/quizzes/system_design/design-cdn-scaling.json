@@ -1,0 +1,20 @@
+{
+    "slug": "design-cdn-scaling",
+    "title": "One image, thousands of cache entries",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-cdn",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["cdn", "cache-keys", "correctness"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0009",
+    "description": "An image origin uses w and h query parameters to resize images. Marketing links also include a unique utm_source value that never changes the image. Your CDN keys on the entire URL, so identical images rarely share a cache entry. What cache-key rule improves reuse without mixing different image sizes?",
+    "options": [
+        {"id": "a", "text": "Keep normalized host, path, w and h in the key; omit the confirmed tracking-only parameter.", "isCorrect": true, "explanation": "The key still distinguishes response-changing variants, while tracking values no longer create duplicate cached bodies. The rule depends on knowing which inputs the origin actually uses."},
+        {"id": "b", "text": "Ignore all query parameters and cache by path alone.", "isCorrect": false, "explanation": "That improves reuse by returning the wrong dimensions to some visitors. Cache correctness comes before hit ratio."},
+        {"id": "c", "text": "Add the full User-Agent header to the existing key.", "isCorrect": false, "explanation": "That introduces more variants without removing tracking-only ones. It further fragments the cache unless the response truly depends on that header."},
+        {"id": "d", "text": "Keep the key unchanged and increase the origin's default TTL.", "isCorrect": false, "explanation": "A longer TTL retains each fragmented copy longer, but new tracking values still produce misses."}
+    ]
+}

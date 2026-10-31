@@ -318,7 +318,7 @@ function SystemDesignOverview() {
                                 {topic.summary && <p>{topic.summary}</p>}
                                 <TopicMeta>
                                     {kindLabel(topic)}
-                                    {quizByTopic.has(topic.slug) && <><QuizMark size={13} /> Knowledge check</>}
+                                    {quizByTopic.has(topic.slug) && <><QuizMark size={13} /> {quizByTopic.get(topic.slug).length} knowledge checks</>}
                                 </TopicMeta>
                             </TopicText>
                             <ArrowRight size={15} />

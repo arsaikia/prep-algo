@@ -1,0 +1,10 @@
+{
+  "slug":"replica-failover-fencing","title":"A Suspected Primary May Still Be Writing","domain":"system_design","group":"Data & Storage","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000046","type":"quiz","topic":"replication-and-read-consistency","difficulty":"Hard",
+  "description":"Monitoring cannot reach the primary, but some clients still can. The team wants to promote a standby. What must the failover protocol establish?",
+  "options":[
+    {"id":"a","text":"A failed health check proves the old primary has stopped.","isCorrect":false,"explanation":"A timeout can reflect a partition, not a dead process. The old primary may remain reachable elsewhere."},
+    {"id":"b","text":"Any replica has every acknowledged write because replication is enabled.","isCorrect":false,"explanation":"An asynchronous or insufficiently durable replica can lack acknowledged changes."},
+    {"id":"c","text":"Fence the old authority, choose an appropriate replica and publish the new primary to clients.","isCorrect":true,"explanation":"Coordination and fencing prevent two authoritative writers. Replica progress determines possible data loss, and clients and pools need a discovery/reconnect path."},
+    {"id":"d","text":"Increase read-replica count instead of coordinating promotion.","isCorrect":false,"explanation":"More copies do not decide ownership or revoke the old primary's write authority."}
+  ]
+}

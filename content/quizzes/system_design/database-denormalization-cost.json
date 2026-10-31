@@ -1,0 +1,10 @@
+{
+  "slug":"database-denormalization-cost","title":"Fast Documents, Expensive Corrections","domain":"system_design","group":"Data & Storage","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000054","type":"quiz","topic":"sql-vs-nosql-databases","difficulty":"Hard",
+  "description":"A service copies a user's current delivery address into three document views so each screen loads by key. The product requires corrections to reach every current-address view. What must the design add?",
+  "options":[
+    {"id":"a","text":"An assumption that flexible schemas update copied values automatically.","isCorrect":false,"explanation":"Schema flexibility changes validation responsibility, not synchronization between copies."},
+    {"id":"b","text":"More document replicas with the same three stale copies.","isCorrect":false,"explanation":"Replication copies each document's state; it does not derive updates across separate documents."},
+    {"id":"c","text":"An explicit propagation and reconciliation policy for the copies.","isCorrect":true,"explanation":"Denormalization moves work from reads to writes and recovery. State the authoritative address, how changes propagate and what readers see while copies lag."},
+    {"id":"d","text":"A rule that NoSQL is always faster, so correction cost can be ignored.","isCorrect":false,"explanation":"Performance depends on the access pattern, and correctness requirements still apply regardless of the database family."}
+  ]
+}

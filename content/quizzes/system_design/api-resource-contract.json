@@ -1,0 +1,10 @@
+{
+  "slug": "api-resource-contract", "title": "Give an Order a Clear Address", "domain": "system_design", "group": "API Design", "order": 0, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000001", "type": "quiz", "topic": "api-design-fundamentals", "difficulty": "Easy",
+  "description": "A shop is designing its order API. A client creates an order and needs its canonical address for later reads. Which contract communicates that clearly?",
+  "options": [
+    {"id":"a","text":"GET /createOrder returns 200 with the new order.","isCorrect":false,"explanation":"GET should not create resources. Creation belongs on a write method, so safe reads and intermediaries do not accidentally place orders."},
+    {"id":"b","text":"POST /orders returns 201 and a Location header.","isCorrect":true,"explanation":"The collection is a resource, POST creates an order, and 201 plus Location tells the client where to read the new resource."},
+    {"id":"c","text":"POST /orders returns 204 with no resource address.","isCorrect":false,"explanation":"204 can indicate success without a body, but it does not communicate creation and the requested canonical address as clearly as 201 with Location."},
+    {"id":"d","text":"GET /orders returns 200 with an error field when creation fails.","isCorrect":false,"explanation":"GET is for reading, and disguising an error as 200 breaks client recovery and monitoring."}
+  ]
+}

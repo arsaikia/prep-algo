@@ -1,0 +1,20 @@
+{
+    "slug": "design-uber-scaling",
+    "title": "Location pings drown the trip database",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-uber",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["ride-hailing", "geospatial", "throughput"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0025",
+    "description": "Five million online drivers ping every four seconds, creating about 1.25 million location writes/s. Each ping replaces the last position, but accepted trips must survive crashes. Which storage split matches those different needs?",
+    "options": [
+        {"id": "a", "text": "Put both current positions and accepted trips in one non-replicated in-memory map.", "isCorrect": false, "explanation": "Positions can recover from the next ping, but losing accepted trip state violates the durability requirement."},
+        {"id": "b", "text": "Write every position synchronously into the main trip transaction before acknowledging the ping.", "isCorrect": false, "explanation": "This spends transactional durability on rapidly obsolete data and makes location volume compete with financially important trip state."},
+        {"id": "c", "text": "Index drivers only by driver ID in a durable log and scan it for every nearby-driver query.", "isCorrect": false, "explanation": "A driver-ID log does not provide efficient proximity lookup. Scanning positions on every request ignores the spatial access pattern."},
+        {"id": "d", "text": "Keep latest positions in a replicated, expiring geo index partitioned by city, and accepted trip state in a durable database.", "isCorrect": true, "explanation": "The geo index serves nearby-driver queries and can refill after loss from fresh pings. Durable trip transitions remain separate; sampled trip locations for disputes can use another durable path."}
+    ]
+}

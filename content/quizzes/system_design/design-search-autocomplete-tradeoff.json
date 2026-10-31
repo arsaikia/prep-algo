@@ -1,0 +1,20 @@
+{
+    "slug": "design-search-autocomplete-tradeoff",
+    "title": "Can the browser filter this list?",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-search-autocomplete",
+    "difficulty": "Medium",
+    "order": 3,
+    "tags": ["autocomplete", "client-caching", "correctness"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0018",
+    "description": "The browser cached the ten suggestions returned for new. The user adds a space and y. A teammate proposes filtering those ten locally and skipping the new request. The earlier response was truncated to ten out of many matches. What is the correctness risk?",
+    "options": [
+        {"id": "a", "text": "Filtering is safe because every completion for a longer prefix must be in the shorter prefix's top ten.", "isCorrect": false, "explanation": "The longer-prefix set is a subset of all shorter-prefix matches, not necessarily of its returned top ten."},
+        {"id": "b", "text": "Only ranking freshness matters; the earlier top ten still contains every possible new y match.", "isCorrect": false, "explanation": "Truncation removes candidates even if scores never change. Missing longer-prefix candidates are the issue here."},
+        {"id": "c", "text": "The browser should filter the earlier list and pad it with personal history to preserve global ranking.", "isCorrect": false, "explanation": "Personal history is a different source and cannot recover the missing popular candidates or prove their rank."},
+        {"id": "d", "text": "Fetch the longer prefix's results; local filtering is safe only when the earlier response contained the complete match set.", "isCorrect": true, "explanation": "A candidate below tenth place for new may rank first for new y. A complete shorter-prefix set can be filtered; a truncated one cannot establish the longer prefix's top ten."}
+    ]
+}

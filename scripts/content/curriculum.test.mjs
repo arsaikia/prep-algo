@@ -29,6 +29,15 @@ test('every case study has diagrams and a knowledge check', () => {
     }
 });
 
+test('every lesson has at least three ordered, distinct knowledge checks', () => {
+    for (const topic of topics.filter((t) => t.kind !== 'reference')) {
+        const checks = quizzes.filter((quiz) => quiz.topic === topic.slug);
+        assert.ok(checks.length >= 3, `${topic.slug} needs at least three checks`);
+        assert.equal(new Set(checks.map((quiz) => quiz.order)).size, checks.length, `${topic.slug} has duplicate quiz order`);
+        assert.equal(new Set(checks.map((quiz) => quiz.description.trim().toLowerCase())).size, checks.length, `${topic.slug} has duplicate questions`);
+    }
+});
+
 test('handbook is a reference topic in the handbook module', () => {
     const h = bySlug.get('system-design-handbook');
     assert.equal(h?.kind, 'reference');

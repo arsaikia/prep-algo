@@ -1,0 +1,20 @@
+{
+    "slug": "design-top-k-heavy-hitters-scaling",
+    "title": "Must this counter be approximate?",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-top-k-heavy-hitters",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["top-k", "capacity", "approximation"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0031",
+    "description": "You estimate 50 million distinct tags in a day. At roughly 64 bytes per tag, one exact count map is about 3.2 GB before adding window buckets. A small shard fleet can hold the measured bucket state with headroom. Product permits approximate counts but does not require them. Which baseline is best justified?",
+    "options": [
+        {"id": "a", "text": "Use a count-min sketch immediately because any billion-event stream is too large for exact counting.", "isCorrect": false, "explanation": "Event volume is not the same as distinct-key state. The measured cardinality and bucket footprint make exact counting affordable here."},
+        {"id": "b", "text": "Keep exact key-sharded counters and budget the window buckets explicitly; introduce sketches if cardinality or list variants make memory expensive.", "isCorrect": true, "explanation": "Choose approximation from state size and required precision, not just stream size. Exact counting is a clear baseline when it fits, while sketches remain an option for growth."},
+        {"id": "c", "text": "Retain only the current global top 100 and discard all other tag counts.", "isCorrect": false, "explanation": "An item outside today's top 100 may become a leader later. Discarding all other counts loses the information needed to recognize that change."},
+        {"id": "d", "text": "Store each incoming event in the API process and sort the full history on every read.", "isCorrect": false, "explanation": "That couples 50,000 reads/s to raw-event processing and grows state with event count rather than the bounded counter representation."}
+    ]
+}

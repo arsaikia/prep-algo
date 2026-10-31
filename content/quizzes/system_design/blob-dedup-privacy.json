@@ -1,0 +1,10 @@
+{
+  "slug":"blob-dedup-privacy","title":"When Deduplication Reveals Too Much","domain":"system_design","group":"Design Patterns","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000030","type":"quiz","topic":"pattern-handling-large-blobs","difficulty":"Hard",
+  "description":"A sync service skips upload whenever a chunk hash exists anywhere in storage. A client can submit a known file's hashes and observe which uploads are skipped. What tradeoff needs attention?",
+  "options":[
+    {"id":"a","text":"Global deduplication can reveal file existence; scope deduplication to a user or tenant when that privacy boundary matters.","isCorrect":true,"explanation":"The skip signal can expose whether another user has particular bytes. Tenant-scoped dedup sacrifices some storage savings to avoid that cross-user signal."},
+    {"id":"b","text":"SHA-256 makes the existence signal private automatically.","isCorrect":false,"explanation":"A client with candidate bytes can compute their hashes; collision resistance does not hide an observable upload decision."},
+    {"id":"c","text":"Longer upload URLs remove the information leak.","isCorrect":false,"explanation":"URL lifetime does not change whether the service reveals that a hash already exists."},
+    {"id":"d","text":"Delete chunks whenever any one user's reference disappears.","isCorrect":false,"explanation":"Other references or in-flight uploads may still need the chunk. Garbage collection must account for them."}
+  ]
+}

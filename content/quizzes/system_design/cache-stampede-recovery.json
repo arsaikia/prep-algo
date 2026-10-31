@@ -1,0 +1,10 @@
+{
+  "slug": "cache-stampede-recovery", "title": "One Expiry, a Thousand Misses", "domain": "system_design", "group": "Caching", "order": 100, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000004", "type": "quiz", "topic": "caching-fundamentals", "difficulty": "Hard",
+  "description": "A hot product key expires and 1,000 requests simultaneously reload it from the database. Users can tolerate the previous value briefly. Which response protects the source?",
+  "options": [
+    {"id":"a","text":"Shorten the TTL so the key stays fresh.","isCorrect":false,"explanation":"More frequent expiry creates more refill opportunities; it does not coordinate concurrent misses."},
+    {"id":"b","text":"Give each request its own independent refill worker.","isCorrect":false,"explanation":"This preserves the thousand database reads and can intensify the overload."},
+    {"id":"c","text":"Coalesce refills per key and serve stale data while one refresh runs.","isCorrect":true,"explanation":"Single-flight limits regeneration to one source read; stale-while-revalidate uses the stated freshness allowance to keep other requests responsive."},
+    {"id":"d","text":"Add cache shards while leaving refill behavior unchanged.","isCorrect":false,"explanation":"More cache capacity does not coordinate simultaneous misses for the same expired key. Those requests still converge on the database."}
+  ]
+}

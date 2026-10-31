@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "c6c5b4b8-55fa-47cf-8856-6a8b8b7f3a83",
-    "description": "To spread load evenly, your trending pipeline sends hashtag events to 20 counter shards round-robin. Each shard keeps exact counts and reports its local top 100; an aggregator merges the 2,000 candidates and keeps the top 100. A tag used 400,000 times this hour, spread evenly across all shards, never appears in the trending list. Why, and what fixes it?",
+    "description": "Your trending pipeline spreads hashtag events round-robin over 20 shards. Each shard counts exactly and reports its top 100; an aggregator merges those 2,000 candidates into the final top 100. A tag with 400,000 uses this hour, split evenly across the shards, never appears. Why can this merge miss a major trend?",
     "options": [
         {
             "id": "a",

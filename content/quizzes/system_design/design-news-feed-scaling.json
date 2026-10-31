@@ -1,0 +1,20 @@
+{
+    "slug": "design-news-feed-scaling",
+    "title": "A feed uses more RAM than expected",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-news-feed",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["news-feed", "hydration", "caching"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0015",
+    "description": "Your hybrid feed already handles celebrity fan-out. Now each follower's cached feed stores complete post objects, so memory is growing quickly and a text edit requires millions of cache writes. Which representation keeps reads efficient without duplicating all the content?",
+    "options": [
+        {"id": "a", "text": "Keep complete objects but invalidate every follower's entire feed on each edit.", "isCorrect": false, "explanation": "This retains the memory duplication and turns edits into widespread cache misses and rebuilds."},
+        {"id": "b", "text": "Store the full post in the follow graph so each feed can join it there.", "isCorrect": false, "explanation": "Moving content duplication into relationship storage does not solve ownership or update fan-out, and mixes unrelated access patterns."},
+        {"id": "c", "text": "Keep capped post-ID lists and batch-hydrate post and author objects from shared caches, over-fetching for filtered items.", "isCorrect": true, "explanation": "Shared objects make edits cheap, while parallel multi-gets keep hydration fast. Over-fetching leaves enough visible items after deleted or blocked posts are removed."},
+        {"id": "d", "text": "Read every followed author's recent posts from storage on each request.", "isCorrect": false, "explanation": "That avoids duplicated content but abandons the precomputed read path, restoring hundreds of author lookups per feed request."}
+    ]
+}

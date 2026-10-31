@@ -1552,7 +1552,14 @@ const CodeSandbox = () => {
     </Container>;
   }
   if (currentQuestion.answerFormat === 'mcq') {
-    return <McqSolver key={currentQuestion.slug} question={currentQuestion} isGuest={isGuest} />;
+    return <McqSolver
+      key={currentQuestion.slug}
+      question={currentQuestion}
+      isGuest={isGuest}
+      onComplete={() => navigate(currentQuestion.topic
+        ? `/system-design/${encodeURIComponent(currentQuestion.topic)}`
+        : currentQuestion.domain === 'frontend' ? '/frontend' : '/all')}
+    />;
   }
 
   return (

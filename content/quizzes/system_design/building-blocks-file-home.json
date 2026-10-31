@@ -1,0 +1,10 @@
+{
+  "slug": "building-blocks-file-home", "title": "Give File Bytes the Right Home", "domain": "system_design", "group": "Foundations", "order": 0, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000007", "type": "quiz", "topic": "choosing-system-design-building-blocks", "difficulty": "Easy",
+  "description": "A first-version file-sharing service stores large files plus ownership and access permissions. Search is not required yet. Which baseline fits?",
+  "options": [
+    {"id":"a","text":"Keep bytes and permissions only in an expiring cache.","isCorrect":false,"explanation":"An expiring cache is not the durable source of truth for either the file or its access rules."},
+    {"id":"b","text":"Use a search index as the only file and permission store.","isCorrect":false,"explanation":"Search is a derived retrieval mechanism, not the authoritative store needed here; it also adds an unrequested feature."},
+    {"id":"c","text":"Put bytes in object storage and metadata and permissions in a database.","isCorrect":true,"explanation":"The stores have different jobs: object storage moves large payloads; the database owns metadata and authorization state."},
+    {"id":"d","text":"Introduce global sharding before tracing an upload.","isCorrect":false,"explanation":"No measured capacity need justifies sharding yet. First make an authorized upload and download work end to end."}
+  ]
+}

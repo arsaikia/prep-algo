@@ -1,0 +1,10 @@
+{
+  "slug":"contention-atomic-stock","title":"Sell the Last Unit Once","domain":"system_design","group":"Design Patterns","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000033","type":"quiz","topic":"pattern-managing-contention","difficulty":"Easy",
+  "description":"Two requests read stock=1 before either writes. Each promises a sale. Which single-row operation makes the availability check and decrement one database decision?",
+  "options":[
+    {"id":"a","text":"Read stock twice before decrementing.","isCorrect":false,"explanation":"Another request can still change it between the last read and write."},
+    {"id":"b","text":"Read stock from a shorter-TTL cache.","isCorrect":false,"explanation":"A fresher copy is still not an atomic check-and-change on the authoritative row."},
+    {"id":"c","text":"Sleep randomly between the read and write.","isCorrect":false,"explanation":"Timing may change the race's frequency but does not enforce the invariant."},
+    {"id":"d","text":"UPDATE stock SET qty=qty-1 WHERE id=? AND qty>0; check affected rows.","isCorrect":true,"explanation":"The conditional update lets one request decrement the last unit and gives the loser zero affected rows. It avoids an application-level read-check-write race."}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug":"idempotency-provider-unknown","title":"The Payment Response Never Arrived","domain":"system_design","group":"Reliability","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000020","type":"quiz","topic":"idempotency-and-delivery-guarantees","difficulty":"Hard",
+  "description":"A provider may have accepted a charge, but its response timed out. Your local database transaction cannot include that provider. What is the safest recovery plan?",
+  "options":[
+    {"id":"a","text":"Mark the charge failed and send a new payment ID.","isCorrect":false,"explanation":"A timeout is an unknown outcome. A new identity can create another charge if the first succeeded."},
+    {"id":"b","text":"Assume the database rollback undid the provider's charge.","isCorrect":false,"explanation":"The external call did not participate in the local transaction, so rollback cannot reverse it."},
+    {"id":"c","text":"Acknowledge success and discard the uncertain operation.","isCorrect":false,"explanation":"That can report a charge that never happened and leaves no durable path to resolve uncertainty."},
+    {"id":"d","text":"Record the uncertain operation, reuse its provider idempotency key and reconcile status.","isCorrect":true,"explanation":"The provider's contract prevents duplicate effects within its retention window; durable state and status checks resolve outcomes the local transaction cannot determine."}
+  ]
+}

@@ -1,0 +1,20 @@
+{
+    "slug": "design-ticketmaster-tradeoff",
+    "title": "The card was charged, but checkout timed out",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-ticketmaster",
+    "difficulty": "Hard",
+    "order": 3,
+    "tags": ["ticketing", "payments", "reconciliation"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0024",
+    "description": "The payment provider times out during confirmation, so you do not know whether the charge succeeded. The fan retries immediately. What recovery policy avoids both an accidental second charge and silently losing track of the first payment?",
+    "options": [
+        {"id": "a", "text": "Create a new payment idempotency key for the retry so it is treated as a fresh request.", "isCorrect": false, "explanation": "A new key can create a second charge even if the original succeeded. Retries must keep the booking's payment identity."},
+        {"id": "b", "text": "Keep a durable pending state, retry or reconcile using the booking-derived payment key, and sell only seats still held by that booking.", "isCorrect": true, "explanation": "The provider outcome must be resolved rather than guessed. Preserve the hold through the uncertain phase; if ownership was lost before finalization, void or refund a successful payment."},
+        {"id": "c", "text": "Release the seats immediately and mark the payment failed because no response arrived.", "isCorrect": false, "explanation": "A timeout is not proof of failure. The fan may already be charged while the seats are sold to someone else."},
+        {"id": "d", "text": "Mark the booking confirmed on timeout and check seat ownership later.", "isCorrect": false, "explanation": "Confirmation must reflect valid seat ownership and payment outcome. Guessing success risks an unfulfillable confirmed booking."}
+    ]
+}

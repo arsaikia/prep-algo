@@ -1,0 +1,10 @@
+{
+  "slug": "cache-read-policy", "title": "Cache a Popular Product", "domain": "system_design", "group": "Caching", "order": 0, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000003", "type": "quiz", "topic": "caching-fundamentals", "difficulty": "Easy",
+  "description": "A product page has many repeated reads and tolerates a short freshness delay. PostgreSQL owns the truth. Which flow is cache-aside?",
+  "options": [
+    {"id":"a","text":"Read the cache; on a miss load PostgreSQL and fill the cache.","isCorrect":true,"explanation":"The application owns the fallback and fill. Writes should commit to the source before invalidating the cached copy."},
+    {"id":"b","text":"Acknowledge every write in memory and flush it later.","isCorrect":false,"explanation":"That is write-behind. It changes durability and does not describe the cache-aside read path."},
+    {"id":"c","text":"Read PostgreSQL on every request and never reuse a result.","isCorrect":false,"explanation":"This keeps the source authoritative but does not cache repeated reads or offload them."},
+    {"id":"d","text":"Synchronously update the database and cache on every write.","isCorrect":false,"explanation":"That describes write-through, with added write latency and a need to handle partial failure."}
+  ]
+}

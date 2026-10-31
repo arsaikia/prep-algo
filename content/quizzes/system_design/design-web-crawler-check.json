@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "8a23a4aa-b074-474e-a73c-b1ef2d08e459",
-    "description": "Your crawler shards its frontier by hash(full URL) across 40 nodes, each running a FIFO queue. To be polite, each node checks a shared Redis key 'last fetch time per host' and re-queues URLs whose host was fetched in the last second. Throughput is a third of target, Redis is saturated, and some large sites still report bursts of 20 requests per second. What is the best change?",
+    "description": "Your crawler splits URLs across 40 FIFO queues using hash(full URL). Before fetching, a node checks a shared Redis 'last fetch time per host' key and re-queues URLs fetched from that host within the last second. Throughput is only a third of target, Redis is saturated, and sites still see bursts of 20 requests/s. How would you redesign scheduling?",
     "options": [
         {
             "id": "a",

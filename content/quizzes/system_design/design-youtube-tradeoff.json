@@ -1,0 +1,20 @@
+{
+    "slug": "design-youtube-tradeoff",
+    "title": "The train enters a slow network",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-youtube",
+    "difficulty": "Medium",
+    "order": 3,
+    "tags": ["video-streaming", "adaptive-bitrate", "hls"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0022",
+    "description": "A viewer starts at 1080p on fast Wi-Fi, then moves to a slow mobile connection. The catalogue has HLS/DASH renditions whose segments align on the same timestamps. What should adapt playback, and what is the segment-length trade-off?",
+    "options": [
+        {"id": "a", "text": "The CDN should transcode each cached segment to a smaller resolution when a request is slow.", "isCorrect": false, "explanation": "The CDN serves encoded objects. Per-request transcoding is not the adaptation mechanism in this design."},
+        {"id": "b", "text": "The metadata API should choose one bitrate at page load and hold it for the whole video.", "isCorrect": false, "explanation": "A one-time choice cannot react to bandwidth changes during playback."},
+        {"id": "c", "text": "The player should keep 1080p and wait for every segment, since aligned renditions are only for seeking.", "isCorrect": false, "explanation": "Alignment enables rendition switches at segment boundaries. Ignoring lower renditions causes avoidable rebuffering."},
+        {"id": "d", "text": "The player should choose lower-bitrate next segments from throughput and buffer measurements; shorter segments react faster but add requests and reduce compression efficiency.", "isCorrect": true, "explanation": "The client observes its own network and buffer, so it controls adaptation. Aligned timestamps keep switches continuous; segment duration balances responsiveness, request overhead and compression."}
+    ]
+}

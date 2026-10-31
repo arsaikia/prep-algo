@@ -1,0 +1,20 @@
+{
+    "slug": "design-top-k-heavy-hitters-tradeoff",
+    "title": "An old trend refuses to leave",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-top-k-heavy-hitters",
+    "difficulty": "Medium",
+    "order": 3,
+    "tags": ["top-k", "sliding-windows", "correctness"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0032",
+    "description": "Your last-hour trending counter uses sixty one-minute buckets and a running total per tag. At each minute boundary it deletes the oldest bucket, but a hashtag with no recent activity remains near the top all afternoon. What is missing from expiration?",
+    "options": [
+        {"id": "a", "text": "Reset every tag's total to zero on the hour.", "isCorrect": false, "explanation": "That creates tumbling-window behavior and throws away still-valid events from the preceding hour."},
+        {"id": "b", "text": "Increase the cached list's TTL so readers stop seeing frequent changes.", "isCorrect": false, "explanation": "Caching cannot repair incorrect counter state and would make the stale trend last even longer."},
+        {"id": "c", "text": "Subtract the expiring bucket's counts from running totals, then update the ranking before publishing the next list.", "isCorrect": true, "explanation": "Deleting storage alone does not undo its contribution to accumulated totals. Sliding windows require both addition and subtraction, and the top-K structure must reflect decreases too."},
+        {"id": "d", "text": "Repartition by a random event ID so old events spread evenly across shards.", "isCorrect": false, "explanation": "Changing partitioning does not remove expired contributions and would break the simple key-sharded local-top-K merge guarantee."}
+    ]
+}

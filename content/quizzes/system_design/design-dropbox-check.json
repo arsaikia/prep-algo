@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "6752f902-af5b-4cd3-a488-9c525c0489cf",
-    "description": "A user on hotel Wi-Fi uploads a 10 GB video to your file sync service. The connection drops every few minutes. Later they change 1 MB in the middle of a similar 10 GB file. Which upload design best handles both situations?",
+    "description": "Someone is uploading a 10 GB video over hotel Wi-Fi that drops every few minutes. Later, they edit just 1 MB in the middle of another similar 10 GB file. Which upload design handles both interrupted transfers and small edits efficiently?",
     "options": [
         {
             "id": "a",

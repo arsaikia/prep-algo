@@ -1,0 +1,10 @@
+{
+  "slug": "consensus-quorum-is-not-order", "title": "Overlapping Quorums Still Need Conflict Rules", "domain": "system_design", "group": "Distributed Systems", "order": 100, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000010", "type": "quiz", "topic": "consensus-and-coordination", "difficulty": "Hard",
+  "description": "A leaderless store uses N=3, R=2 and W=2. Two clients concurrently update one key. A teammate says overlapping quorums alone make the operation linearizable. What is missing?",
+  "options": [
+    {"id":"a","text":"A larger cache so the read can avoid the quorum.","isCorrect":false,"explanation":"Caching does not establish a single order for concurrent writes and can introduce another stale copy."},
+    {"id":"b","text":"A rule for concurrent versions and the store's actual consistency protocol.","isCorrect":true,"explanation":"R+W>N guarantees set overlap under the stated replica assumptions, not a total order. Concurrent writes and sloppy quorums require additional reasoning."},
+    {"id":"c","text":"Wall-clock timestamps, which always reveal the true last write.","isCorrect":false,"explanation":"Clocks drift and can jump. Last-writer-wins can discard data and does not turn overlap into consensus."},
+    {"id":"d","text":"Changing to R=1 and W=1 to remove conflicting responses.","isCorrect":false,"explanation":"That removes even the overlap guarantee and can return stale values."}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug":"saga-durable-human-review","title":"Wait for a Human Without Losing the Workflow","domain":"system_design","group":"Design Patterns","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000036","type":"quiz","topic":"pattern-multi-step-processes","difficulty":"Hard",
+  "description":"A booking workflow can wait 24 hours for fraud review, and its worker may restart during that time. Which design preserves progress and bounds held resources?",
+  "options":[
+    {"id":"a","text":"Keep the review state only in the worker's memory.","isCorrect":false,"explanation":"A restart loses the pending decision and leaves the system unable to resume reliably."},
+    {"id":"b","text":"Hold a database transaction open throughout review.","isCorrect":false,"explanation":"Long-held locks and connections couple availability to human response time and do not suit independent services."},
+    {"id":"c","text":"Persist workflow history and a durable timer, await a review signal, then compensate or escalate on timeout.","isCorrect":true,"explanation":"A durable workflow engine can recover the wait after restart. An explicit timeout policy prevents indefinite reservations; activities still need idempotency."},
+    {"id":"d","text":"Replay the whole workflow with fresh payment keys after each restart.","isCorrect":false,"explanation":"Fresh keys can repeat committed side effects instead of recovering their recorded outcomes."}
+  ]
+}

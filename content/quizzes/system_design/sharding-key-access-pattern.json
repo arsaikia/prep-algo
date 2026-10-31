@@ -1,0 +1,10 @@
+{
+  "slug":"sharding-key-access-pattern","title":"Choose a Key the Query Already Knows","domain":"system_design","group":"Data & Storage","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000051","type":"quiz","topic":"sharding-and-partitioning","difficulty":"Easy",
+  "description":"An order service's dominant query is 'latest orders for this customer.' Customers are numerous and traffic is reasonably spread. Which initial shard key best aligns with that query?",
+  "options":[
+    {"id":"a","text":"Hash(customer_id), with a date index within the shard.","isCorrect":true,"explanation":"The query supplies customer_id, so routing can find one shard. High cardinality helps spread load, while oversized or hot customers still need monitoring."},
+    {"id":"b","text":"The current date alone.","isCorrect":false,"explanation":"Current writes concentrate on one range or value, and a customer's history spans dates."},
+    {"id":"c","text":"Order status alone.","isCorrect":false,"explanation":"Few status values give poor distribution and do not route the customer query directly."},
+    {"id":"d","text":"A random shard chosen independently for every write.","isCorrect":false,"explanation":"Without stable ownership, customer history requires locating records across shards."}
+  ]
+}

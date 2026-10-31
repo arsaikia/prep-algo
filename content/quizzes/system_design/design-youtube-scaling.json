@@ -1,0 +1,20 @@
+{
+    "slug": "design-youtube-scaling",
+    "title": "A viral video locks the counter",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-youtube",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["video-streaming", "counters", "stream-processing"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0021",
+    "description": "Playback bytes already come from a CDN, but a viral video produces tens of thousands of view beacons per second. Each beacon increments the same database row, slowing metadata reads. Displayed counts may lag by seconds to minutes. Which change best fits?",
+    "options": [
+        {"id": "a", "text": "Stream view beacons, deduplicate sessions, apply validity rules and write aggregated deltas every few seconds.", "isCorrect": true, "explanation": "Aggregation turns many per-view writes into periodic updates. Producer pre-aggregation or salted video keys can handle a hot stream key; payment-related counts need a separately audited path."},
+        {"id": "b", "text": "Write each view to a read replica and sum replicas on the video page.", "isCorrect": false, "explanation": "Read replicas are not independent write targets. This does not provide a valid counter update path."},
+        {"id": "c", "text": "Put the view count into every immutable video segment.", "isCorrect": false, "explanation": "A changing count would force segment rewrites and invalidate cached bytes. Counts belong in metadata, not media objects."},
+        {"id": "d", "text": "Keep one database increment per beacon but remove the metadata cache.", "isCorrect": false, "explanation": "The hot-row contention remains, while removing the cache increases read pressure on the same database."}
+    ]
+}

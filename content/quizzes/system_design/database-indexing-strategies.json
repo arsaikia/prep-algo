@@ -12,19 +12,19 @@
   "type": "quiz",
   "topic": "database-indexing-fundamentals",
   "difficulty": "Easy",
-  "description": "Understand when and how to use database indexes effectively.",
+  "description": "A team has a composite B-tree on (tenant_id, created_at), then proposes more indexes for a write-heavy table. Which statement is a sound starting point before checking EXPLAIN?",
   "options": [
     {
       "id": "a",
       "text": "Adding more indexes always improves query performance",
       "isCorrect": false,
-      "explanation": "Indexes speed up reads but slow down writes — every INSERT/UPDATE must also update all indexes. Over-indexing can degrade overall performance."
+      "explanation": "Indexes can speed matching reads but add storage and maintenance work. Inserts add entries, and updates or deletes may require index work; not every update changes every index. Unused indexes can hurt a write-heavy workload."
     },
     {
       "id": "b",
-      "text": "A compound index on (A, B) can satisfy queries filtering on A alone but not B alone",
+      "text": "A compound index on (A, B) naturally supports A or (A, B) lookups; B-only queries are generally a poorer fit",
       "isCorrect": true,
-      "explanation": "Compound indexes follow the leftmost prefix rule. An index on (A, B) can serve queries on A or (A, B), but not B alone — B is only sorted within each A value."
+      "explanation": "Keys are sorted by A first and B within each A value, so a B-only predicate usually cannot seek as directly. Engine-specific skip scans and planner strategies are exceptions; inspect EXPLAIN rather than treating this as a prohibition."
     },
     {
       "id": "c",
@@ -36,7 +36,7 @@
       "id": "d",
       "text": "Covering indexes are indexes that span all tables in a database",
       "isCorrect": false,
-      "explanation": "A covering index includes all columns needed by a query, allowing the database to serve the query entirely from the index without accessing the table (index-only scan)."
+      "explanation": "A covering index includes the values needed for a particular query. It can allow an index-only scan, but visibility checks and engine behavior may still require table access."
     }
   ]
 }

@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "03618d44-458f-48e7-ba3c-939e6d974cc5",
-    "description": "Your notification platform already has separate Kafka topics and worker pools for transactional and bulk traffic. During a 40-million-user marketing push, login one-time passcodes still take 6–8 minutes to arrive by SMS. Transactional consumer lag is near zero, but the SMS workers report that most provider calls wait on the shared SMS rate limiter. What change fixes the OTP latency?",
+    "description": "Your notification platform already separates transactional and bulk traffic into different Kafka topics and worker pools. Yet during a campaign for 40 million users, login passcodes take 6–8 minutes to arrive by SMS. Transactional consumer lag is near zero; SMS workers are waiting for the shared provider rate limiter. Where should you add isolation next?",
     "options": [
         {
             "id": "a",
@@ -32,7 +32,7 @@
             "id": "c",
             "text": "Reserve a share of each provider's token bucket for transactional traffic and pace bulk sends below the remaining capacity.",
             "isCorrect": true,
-            "explanation": "Correct. Priority isolation must extend to the narrowest shared resource; here that is the provider quota. Reserving capacity (with unused share borrowable) and pacing campaigns keeps OTPs fast."
+            "explanation": "The provider quota is the remaining shared bottleneck. Reserve capacity for transactional messages, let other traffic borrow unused capacity, and pace campaigns so bulk sends cannot hold up login codes."
         },
         {
             "id": "d",

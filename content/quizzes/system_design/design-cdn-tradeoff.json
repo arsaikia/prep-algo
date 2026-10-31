@@ -1,0 +1,20 @@
+{
+    "slug": "design-cdn-tradeoff",
+    "title": "A warm cache is not permission",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-cdn",
+    "difficulty": "Hard",
+    "order": 3,
+    "tags": ["cdn", "signed-urls", "security"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0010",
+    "description": "Paid video segments should share cached bytes across viewers. A valid signed URL warms the cache, but a later request with an expired signature still receives the segment because signature checks run only on a cache miss. Which design closes the gap without creating one cached copy per viewer?",
+    "options": [
+        {"id": "a", "text": "Put the signature and expiry in the cache key and validate only misses.", "isCorrect": false, "explanation": "This fragments the cache and still lets a previously cached URL work after its expiry if hits bypass validation."},
+        {"id": "b", "text": "Ask the origin to check entitlement only when an object is first cached.", "isCorrect": false, "explanation": "Authorization for one fetch does not authorize later viewers. A warm object cannot stand in for per-request validation."},
+        {"id": "c", "text": "Stop caching private segments and proxy every request to the origin.", "isCorrect": false, "explanation": "Origin authorization could be made safe, but abandoning caching is unnecessary and loses the required shared-byte delivery benefit."},
+        {"id": "d", "text": "Validate signature and expiry on every request before cache lookup, then exclude validated signing parameters from the cache key.", "isCorrect": true, "explanation": "Every viewer must pass the access check, even on a hit. Authorized requests can then share one cached segment because the signing parameters do not change its bytes."}
+    ]
+}

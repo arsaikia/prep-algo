@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "c9d38878-9c98-427e-840a-44615659c817",
-    "description": "Creators complain that a 3-hour lecture takes more than a day to become watchable, and a worker crash near the end restarts the job. Today one worker encodes the whole original into every rendition in sequence. What change best fixes processing latency and crash recovery?",
+    "description": "A three-hour lecture takes more than a day to become watchable. One worker encodes the whole original into each rendition in sequence, and a crash near the end starts everything over. What would shorten the wait and make recovery cheaper?",
     "options": [
         {
             "id": "a",

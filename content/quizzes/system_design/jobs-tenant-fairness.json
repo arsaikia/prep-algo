@@ -1,0 +1,10 @@
+{
+  "slug":"jobs-tenant-fairness","title":"One Tenant Fills the Queue","domain":"system_design","group":"Design Patterns","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000032","type":"quiz","topic":"pattern-long-running-tasks","difficulty":"Hard",
+  "description":"A tenant submits 50,000 two-hour transcodes ahead of other tenants' two-second thumbnails. Database capacity is bounded. How should the worker design improve fairness?",
+  "options":[
+    {"id":"a","text":"Increase the visibility timeout and keep one FIFO queue.","isCorrect":false,"explanation":"Visibility controls redelivery, not fairness between tenants or very different job sizes."},
+    {"id":"b","text":"Scale workers without a ceiling until the queue is empty.","isCorrect":false,"explanation":"Unbounded workers can exhaust the downstream database and do not provide a fair scheduling policy."},
+    {"id":"c","text":"Separate workload classes and enforce per-tenant concurrency with bounded worker pools.","isCorrect":true,"explanation":"Class isolation prevents long jobs from blocking short ones; tenant limits prevent monopolization while the pool ceiling protects dependencies."},
+    {"id":"d","text":"Ask thumbnail clients to poll status more frequently.","isCorrect":false,"explanation":"Polling adds read load without changing when their work can start."}
+  ]
+}

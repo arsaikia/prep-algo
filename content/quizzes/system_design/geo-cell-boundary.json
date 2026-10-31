@@ -1,0 +1,10 @@
+{
+  "slug":"geo-cell-boundary","title":"The Cafe Across the Cell Boundary","domain":"system_design","group":"Data & Storage","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000017","type":"quiz","topic":"geospatial-indexing","difficulty":"Easy",
+  "description":"A cafe is 20 metres from a user but falls in a neighboring geohash cell. Searching only the user's cell misses it. What should the query do?",
+  "options":[
+    {"id":"a","text":"Fetch the cell and relevant neighbors, then filter by exact distance.","isCorrect":true,"explanation":"Cell boundaries do not match distance circles. Candidate cells avoid boundary misses; exact-distance filtering removes points outside the radius."},
+    {"id":"b","text":"Use a longer geohash and still query only one cell.","isCorrect":false,"explanation":"Smaller cells do not remove boundaries and can make a one-cell search miss more nearby points."},
+    {"id":"c","text":"Treat a shared prefix as an exact distance measurement.","isCorrect":false,"explanation":"A prefix identifies a region, not a point-to-point distance."},
+    {"id":"d","text":"Sort the containing cell's results by rating.","isCorrect":false,"explanation":"Ranking existing candidates cannot recover a cafe excluded before ranking."}
+  ]
+}

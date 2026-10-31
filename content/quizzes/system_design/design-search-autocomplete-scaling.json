@@ -1,0 +1,20 @@
+{
+    "slug": "design-search-autocomplete-scaling",
+    "title": "Trending now, not tomorrow",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-search-autocomplete",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["autocomplete", "stream-processing", "freshness"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0017",
+    "description": "Your 30 GB base prefix index is rebuilt daily and serves quickly from memory. Product wants breaking searches to appear within 15 minutes. Rebuilding and distributing the whole index that often is too expensive. How would you add freshness without replacing the serving design?",
+    "options": [
+        {"id": "a", "text": "Count recent distinct users in a streaming job and merge a small trending overlay into base results with a hard timeout.", "isCorrect": true, "explanation": "The small overlay changes quickly while the large base stays stable. Apply the same privacy threshold and safety filters, and serve the base alone if the overlay is slow."},
+        {"id": "b", "text": "Query raw search logs and sort matching terms on every suggestion request.", "isCorrect": false, "explanation": "That moves aggregation onto the per-keystroke path, undoing the latency benefit of precomputed answers."},
+        {"id": "c", "text": "Reduce the CDN TTL but keep the daily index as the only source.", "isCorrect": false, "explanation": "A shorter cache lifetime cannot reveal trends that have not yet been added to the daily index."},
+        {"id": "d", "text": "Let each suggest host update its base rankings from its own incoming prefixes.", "isCorrect": false, "explanation": "Typed prefixes are not completed-search popularity, and isolated host observations produce inconsistent, easily distorted rankings."}
+    ]
+}

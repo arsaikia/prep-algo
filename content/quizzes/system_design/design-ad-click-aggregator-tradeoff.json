@@ -1,0 +1,20 @@
+{
+    "slug": "design-ad-click-aggregator-tradeoff",
+    "title": "A click arrives after the window closes",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-ad-click-aggregator",
+    "difficulty": "Hard",
+    "order": 3,
+    "tags": ["stream-processing", "event-time", "reconciliation"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0030",
+    "description": "An archived click has event time 12:00:58 but reaches aggregation 20 minutes late, beyond the five-minute allowed-lateness policy. The 12:00 bucket has already been published. Dashboard numbers may be provisional, but final billing must include this valid click. What should happen?",
+    "options": [
+        {"id": "a", "text": "Send the event to the late-events path and include it in reconciliation of the original event-time bucket.", "isCorrect": true, "explanation": "The stream can keep bounded state and timely dashboards, while raw-event reconciliation corrects closed periods. Completeness metadata distinguishes provisional counts from billed totals."},
+        {"id": "b", "text": "Count it in the current minute so no published historical bucket changes.", "isCorrect": false, "explanation": "That preserves the total only by assigning the click to the wrong time bucket, making historical metrics and billing periods inaccurate."},
+        {"id": "c", "text": "Drop it because the watermark proves no valid earlier events can arrive.", "isCorrect": false, "explanation": "A watermark is a progress estimate, not proof that late events are impossible. The explicit late-event policy handles this case."},
+        {"id": "d", "text": "Keep every window open indefinitely so the streaming job never needs reconciliation.", "isCorrect": false, "explanation": "Unbounded waiting defeats freshness and bounded-state goals. A finite lateness policy plus reconciliation separates those concerns."}
+    ]
+}

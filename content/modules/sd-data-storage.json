@@ -7,5 +7,5 @@
     "order": 2,
     "tags": [],
     "lists": [],
-    "summary": "Choosing and shaping a datastore: replication, partitioning, transactions and the write paths that decide what you can promise."
+    "summary": "Pick a datastore and shape the data around your workload. See how replication, partitioning, transactions and write paths affect the guarantees you can offer."
 }

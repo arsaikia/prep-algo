@@ -1,0 +1,20 @@
+{
+    "slug": "design-api-rate-limiting-service-scaling",
+    "title": "One tenant overwhelms a shard",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-api-rate-limiting-service",
+    "difficulty": "Hard",
+    "order": 2,
+    "tags": ["rate-limiting", "hot-keys", "leases"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0003",
+    "description": "One tenant makes 50,000 requests/s against a shared tenant-level token bucket. Its Redis shard is saturated while other shards are mostly idle. The product accepts a small, stated approximation bound. What most directly reduces work on that hot key while keeping the request check within 2 ms?",
+    "options": [
+        {"id": "a", "text": "Double the shard count while keeping one Redis script per request.", "isCorrect": false, "explanation": "The tenant's single counter key still belongs to one shard. Extra shards help other keys, not this bottleneck."},
+        {"id": "b", "text": "Let clients acquire small token leases atomically, spend them locally, and bound outstanding leases.", "isCorrect": true, "explanation": "One shared-store call now covers several requests. Small, tracked leases reduce coordination while making the approximation and stranded-token trade-offs explicit."},
+        {"id": "c", "text": "Give every API pod a bucket with the tenant's full configured limit.", "isCorrect": false, "explanation": "Each pod could admit the entire quota, multiplying the tenant's effective limit as the fleet grows."},
+        {"id": "d", "text": "Send the tenant's checks to a larger Redis cluster in another region.", "isCorrect": false, "explanation": "Cross-region round trips exceed the 2 ms budget, and one key is still handled by one primary shard."}
+    ]
+}

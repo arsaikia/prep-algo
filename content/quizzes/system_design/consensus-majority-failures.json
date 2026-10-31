@@ -1,0 +1,10 @@
+{
+  "slug": "consensus-majority-failures", "title": "Count the Votes That Remain", "domain": "system_design", "group": "Distributed Systems", "order": 0, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000009", "type": "quiz", "topic": "consensus-and-coordination", "difficulty": "Easy",
+  "description": "A five-node coordination cluster loses two nodes. The remaining three can communicate. What can a majority-based consensus protocol still do?",
+  "options": [
+    {"id":"a","text":"Commit decisions with the remaining majority.","isCorrect":true,"explanation":"A five-node group needs floor(5/2)+1 = 3 votes, so it tolerates two failures while those three can communicate."},
+    {"id":"b","text":"Only serve writes after all five return.","isCorrect":false,"explanation":"Unanimity is not required. Waiting for all nodes would discard the protocol's failure tolerance."},
+    {"id":"c","text":"Let each surviving node elect itself independently.","isCorrect":false,"explanation":"Independent ownership would defeat agreement. Elections and commits must satisfy the protocol's quorum rules."},
+    {"id":"d","text":"Add one node to tolerate three failures in a six-node group.","isCorrect":false,"explanation":"Six nodes need four votes and still tolerate only two failures. Seven nodes are needed to tolerate three."}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug":"retries-timeout-meaning","title":"Stopped Waiting Is Not the Same as Failed","domain":"system_design","group":"Reliability","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000057","type":"quiz","topic":"timeouts-retries-and-backpressure","difficulty":"Easy",
+  "description":"A checkout call times out after the payment service may have committed the charge. What can the caller conclude?",
+  "options":[
+    {"id":"a","text":"The remote transaction must have rolled back.","isCorrect":false,"explanation":"A local timeout does not determine the remote transaction's outcome."},
+    {"id":"b","text":"The outcome is uncertain; recover using the same operation identity or a status query.","isCorrect":true,"explanation":"The caller stopped waiting, but the effect may exist. Idempotency and reconciliation are needed before treating a retry as safe."},
+    {"id":"c","text":"A new payment identity is always safe after a timeout.","isCorrect":false,"explanation":"A fresh identity can create another charge if the first attempt succeeded."},
+    {"id":"d","text":"Retrying forever eventually proves only one charge happened.","isCorrect":false,"explanation":"Unbounded retries increase load and cannot establish uniqueness without an effect-level guarantee."}
+  ]
+}

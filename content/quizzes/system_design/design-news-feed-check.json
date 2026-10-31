@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "4b1b612e-0e26-4bd1-8485-9f354b932b72",
-    "description": "Your feed uses pure fan-out on write: each new post id is pushed into every follower's cached feed list. When a singer with 120 million followers posts during an awards show, fan-out lag climbs to 20 minutes and ordinary users' posts take that long to reach their friends. What is the most effective design change?",
+    "description": "Every new post ID is pushed into every follower's cached feed list. A singer with 120 million followers posts during an awards show, and fan-out lag reaches 20 minutes. Friends' everyday posts get stuck behind that work too. What design change removes the celebrity-sized write spike?",
     "options": [
         {
             "id": "a",
@@ -38,7 +38,7 @@
             "id": "d",
             "text": "Skip fan-out for authors above a follower threshold and merge their recent posts into followers' feeds at read time.",
             "isCorrect": true,
-            "explanation": "Correct. The hybrid keeps fast precomputed feeds for normal authors and serves high-fan-out authors from a small replicated cache merged on read, removing the 120-million-write spike."
+            "explanation": "The hybrid keeps precomputed feeds for normal authors. Celebrity posts live in a small replicated cache and are merged when a follower reads, avoiding 120 million feed writes for one post."
         }
     ]
 }

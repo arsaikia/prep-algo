@@ -12,7 +12,7 @@
   "type": "quiz",
   "topic": "rate-limiting-fundamentals",
   "difficulty": "Medium",
-  "description": "Understand the tradeoffs between different rate limiting algorithms.",
+  "description": "An API's 60-per-minute fixed-window limit admits 60 calls at 12:00:59 and another 60 at 12:01:01. The team is comparing alternatives. Which explanation accounts for what happened?",
   "options": [
     {
       "id": "a",
@@ -30,13 +30,13 @@
       "id": "c",
       "text": "Sliding window log is the most memory-efficient algorithm",
       "isCorrect": false,
-      "explanation": "Sliding window log stores every request timestamp, making it the LEAST memory-efficient. Sliding window counter is more efficient."
+      "explanation": "A sliding log stores timestamps across the trailing window, so memory grows with request volume. A sliding counter uses much smaller state but approximates the boundary."
     },
     {
       "id": "d",
       "text": "Leaky bucket processes requests at a variable rate",
       "isCorrect": false,
-      "explanation": "Leaky bucket processes requests at a FIXED rate regardless of input rate, smoothing out bursts."
+      "explanation": "A leaky-bucket queue drains accepted work at a fixed configured rate. Bursts create queueing delay, so the queue needs a bound."
     }
   ]
 }

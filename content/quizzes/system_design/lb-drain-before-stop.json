@@ -1,0 +1,10 @@
+{
+  "slug":"lb-drain-before-stop","title":"Deploy Without Dropping Active Requests","domain":"system_design","group":"Networking","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000022","type":"quiz","topic":"load-balancing-fundamentals","difficulty":"Hard",
+  "description":"Every deploy causes connection resets because a healthy app process exits while the balancer still routes to it. Which shutdown sequence addresses this?",
+  "options":[
+    {"id":"a","text":"Exit first, then let health checks discover the loss.","isCorrect":false,"explanation":"Requests routed before detection still reach a stopped process and fail."},
+    {"id":"b","text":"Stop new routing through readiness, drain in-flight work, then exit within a timeout.","isCorrect":true,"explanation":"Readiness removes the instance from new traffic while existing work finishes. A bounded drain avoids waiting forever."},
+    {"id":"c","text":"Enable sticky sessions so users stay on the exiting node.","isCorrect":false,"explanation":"Affinity does not keep a stopped process alive and can pin users to the failed instance."},
+    {"id":"d","text":"Retry each failure without a total attempt limit.","isCorrect":false,"explanation":"Unbounded retries can amplify the deploy's disruption and do not fix shutdown ordering."}
+  ]
+}

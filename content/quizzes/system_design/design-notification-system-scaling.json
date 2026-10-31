@@ -1,0 +1,20 @@
+{
+    "slug": "design-notification-system-scaling",
+    "title": "A campaign outlives its worker",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-notification-system",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["notifications", "fan-out", "workflows"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0011",
+    "description": "A campaign targets 50 million recipients. At 100,000 deliveries/s, expansion and delivery take several minutes. One API request currently loops through everyone; a crash restarts from the beginning, and operators cannot pause it cleanly. What should replace that loop?",
+    "options": [
+        {"id": "a", "text": "Increase the API request timeout and keep the recipient list in its process memory.", "isCorrect": false, "explanation": "A longer timeout does not preserve progress after a crash or provide a durable place to control the campaign."},
+        {"id": "b", "text": "Persist a campaign job, expand recipients in checkpointed chunks, and pace idempotent delivery jobs through channel queues.", "isCorrect": true, "explanation": "Chunk checkpoints make restarts bounded, pacing respects downstream capacity, and persisted campaign state gives operators a pause or cancel control. Deterministic delivery IDs handle replay."},
+        {"id": "c", "text": "Fetch all recipients in one database transaction and hold it open until sends finish.", "isCorrect": false, "explanation": "A long transaction ties database resources to external provider work and still cannot make provider calls part of that transaction."},
+        {"id": "d", "text": "Give each API instance a copy of the full segment and let instances race to finish it.", "isCorrect": false, "explanation": "Without durable ownership and checkpoints, this duplicates work and increases provider contention rather than making recovery predictable."}
+    ]
+}

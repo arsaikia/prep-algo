@@ -1,0 +1,20 @@
+{
+    "slug": "design-web-crawler-tradeoff",
+    "title": "A Bloom filter says maybe",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-web-crawler",
+    "difficulty": "Medium",
+    "order": 3,
+    "tags": ["web-crawler", "bloom-filter", "deduplication"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0028",
+    "description": "The URL-seen Bloom filter has a 1% false-positive rate. It says a newly discovered URL may already be present. This crawl values completeness enough to pay for extra metadata lookups. How should the scheduler use that answer?",
+    "options": [
+        {"id": "a", "text": "Skip the URL because a positive Bloom-filter result proves it was fetched.", "isCorrect": false, "explanation": "A positive is only a possible match. Skipping it accepts the risk of missing a genuinely new URL."},
+        {"id": "b", "text": "Confirm positive results in the exact seen store; treat negative results as definitely absent from the filter's inserted set.", "isCorrect": true, "explanation": "Exact confirmation protects completeness when the filter says maybe. Properly maintained Bloom filters have false positives, not false negatives; durable seen-state handling still matters."},
+        {"id": "c", "text": "Fetch every positive result again and ignore the metadata store.", "isCorrect": false, "explanation": "Most positives may be genuinely seen URLs. Re-fetching them wastes bandwidth and host budgets instead of checking the ambiguity cheaply."},
+        {"id": "d", "text": "Use the page's SimHash to decide whether the URL has been seen before fetching it.", "isCorrect": false, "explanation": "SimHash describes fetched content, which is not yet available. URL dedupe and near-duplicate content detection answer different questions."}
+    ]
+}

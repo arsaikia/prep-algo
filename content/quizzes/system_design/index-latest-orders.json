@@ -1,0 +1,10 @@
+{
+  "slug":"index-latest-orders","title":"Find a User's Latest Orders","domain":"system_design","group":"Data & Storage","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000015","type":"quiz","topic":"database-indexing-fundamentals","difficulty":"Easy",
+  "description":"The common query is WHERE user_id = ? ORDER BY created_at DESC LIMIT 20. Which B-tree is the best starting point to test with EXPLAIN?",
+  "options":[
+    {"id":"a","text":"An index on is_active alone.","isCorrect":false,"explanation":"That column does not match this query's user filter or date order."},
+    {"id":"b","text":"An index on the full JSON response body.","isCorrect":false,"explanation":"The response body does not provide the requested leading user lookup and ordering."},
+    {"id":"c","text":"A composite index on (user_id, created_at DESC).","isCorrect":true,"explanation":"The equality predicate selects one user's range; creation time orders that range for the latest 20. Verify the plan and write cost on realistic data."},
+    {"id":"d","text":"A separate index for every column in the table.","isCorrect":false,"explanation":"Extra indexes add write and storage work and do not replace an index matched to this access path."}
+  ]
+}

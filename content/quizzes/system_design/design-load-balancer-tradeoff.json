@@ -1,0 +1,20 @@
+{
+    "slug": "design-load-balancer-tradeoff",
+    "title": "The control plane disappears",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-load-balancer",
+    "difficulty": "Medium",
+    "order": 3,
+    "tags": ["load-balancing", "control-plane", "availability"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0008",
+    "description": "The load balancer's management service becomes unreachable. The L7 nodes still have a validated routing snapshot, valid certificates and working backend health checks. No emergency config revocation is pending. What should the data plane do while operators restore the control plane?",
+    "options": [
+        {"id": "a", "text": "Clear routes so a disconnected node cannot serve an old configuration.", "isCorrect": false, "explanation": "That turns a management outage into an outage for every application. A known-good snapshot is safer here than an empty data plane."},
+        {"id": "b", "text": "Keep serving the last known good snapshot, continue local health checks and alert on lost control-plane contact.", "isCorrect": true, "explanation": "Fail-static behavior keeps existing traffic flowing without pretending config is still updating. Versioned snapshots let nodes catch up safely when contact returns."},
+        {"id": "c", "text": "Restart every proxy so it reconnects to the management service.", "isCorrect": false, "explanation": "A restart does not repair the unreachable service and risks dropping established connections across the fleet."},
+        {"id": "d", "text": "Forward every host and path to the largest backend pool until config updates resume.", "isCorrect": false, "explanation": "Ignoring routing rules sends requests to the wrong service. Availability is not useful if responses are incorrect or cross service boundaries."}
+    ]
+}

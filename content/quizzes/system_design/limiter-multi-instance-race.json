@@ -1,0 +1,10 @@
+{
+  "slug":"limiter-multi-instance-race","title":"Three Gateways, One Quota","domain":"system_design","group":"Reliability","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000044","type":"quiz","topic":"rate-limiting-fundamentals","difficulty":"Hard",
+  "description":"Three gateways each maintain a local 100/minute tenant counter. One tenant spreads requests across gateways and gets 300/minute. What enforces one quota within this region?",
+  "options":[
+    {"id":"a","text":"Keep local counters and return 429 more descriptively.","isCorrect":false,"explanation":"A better response message does not coordinate the three independent budgets."},
+    {"id":"b","text":"Read a shared counter and decrement in a separate call.","isCorrect":false,"explanation":"Concurrent requests can pass the same check before either decrement. The decision must be atomic."},
+    {"id":"c","text":"Use source IP instead of tenant identity.","isCorrect":false,"explanation":"IP changes the policy and can punish NAT users or be bypassed; it does not enforce the authenticated tenant's quota."},
+    {"id":"d","text":"Use shared tenant state with atomic check-and-update, and define the store's failure policy.","isCorrect":true,"explanation":"A Redis script can combine refill and decrement without races. Shared state adds a dependency; strict multi-region limits need further budget or authority design."}
+  ]
+}

@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "0f9bff3b-da65-4216-a616-e2c22e87f1e4",
-    "description": "Every API pod calls a regional Redis cluster to enforce token-bucket limits. During a Redis failover lasting 20 seconds, each check waits for a 500 ms client timeout and then returns 503, so the whole public API is unavailable, including search, which only has a soft fairness limit. The login endpoint's limit exists to stop credential stuffing. What is the best redesign?",
+    "description": "Every API pod checks a token bucket in regional Redis. During a 20-second Redis failover, each check waits 500 ms, then returns 503. That takes down the whole public API, even search, whose limit is only for fairness. Login limits, however, protect against credential stuffing. How should the failure policy differ?",
     "options": [
         {
             "id": "a",

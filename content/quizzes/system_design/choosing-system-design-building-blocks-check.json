@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "a76f95d5-4cc2-49cd-9111-6130553544c6",
-    "description": "A checkout service commits an order to PostgreSQL and then publishes an OrderPlaced event to a message broker; a worker emails receipts. Occasionally an order gets no receipt, and occasionally a customer receives two. Which design addresses both problems?",
+    "description": "A checkout service commits an order to PostgreSQL and then publishes OrderPlaced; a worker emails receipts through a provider that supports idempotency keys. Some orders get no receipt and others get two. Which design addresses both problems?",
     "options": [
         {
             "id": "a",
@@ -36,9 +36,9 @@
         },
         {
             "id": "d",
-            "text": "Write the order and an outbox row in one transaction, relay outbox rows to the broker, and have the worker skip event IDs it has already processed.",
+            "text": "Commit the order and outbox row together, relay events, and track durable send state while reusing the event ID as the provider's idempotency key.",
             "isCorrect": true,
-            "explanation": "The outbox makes the order and its event atomic, fixing missing receipts. The relay can publish twice, so an idempotent consumer keyed by event ID fixes duplicates."
+            "explanation": "The outbox preserves the order's intent to publish. Relays can repeat events, so the worker tracks them durably. A processed-ID flag alone cannot make an external send atomic: the provider's idempotency contract handles retries of the same send, and uncertain outcomes need reconciliation."
         }
     ]
 }

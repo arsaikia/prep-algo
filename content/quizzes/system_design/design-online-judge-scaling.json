@@ -1,0 +1,20 @@
+{
+    "slug": "design-online-judge-scaling",
+    "title": "A contest starts in fifteen minutes",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-online-judge",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["online-judge", "capacity", "contests"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0033",
+    "description": "Practice traffic averages 12 submissions/s. A scheduled contest is expected to peak near 200/s, at about three core-seconds per submission. New judge VMs take minutes to become ready. How should you prepare without compromising isolation or runtime fairness?",
+    "options": [
+        {"id": "a", "text": "Pre-scale toward the estimated 600 busy cores plus headroom, isolate contest capacity and queues, and buffer excess work visibly.", "isCorrect": true, "explanation": "The calendar gives you time to provision before the burst. A queue absorbs variation, and scoring by submission time avoids penalizing users for judging delay."},
+        {"id": "b", "text": "Keep the normal fleet and run many more sandboxes per core until reactive scaling catches up.", "isCorrect": false, "explanation": "Oversubscription makes runtimes less reproducible and adds contention precisely during the contest. Known scheduled demand should be provisioned ahead."},
+        {"id": "c", "text": "Judge inside API requests so queued submissions do not need extra storage.", "isCorrect": false, "explanation": "Long-running execution would exhaust request capacity and couple API availability to untrusted workloads."},
+        {"id": "d", "text": "Temporarily remove sandbox isolation to reduce CPU use at the peak.", "isCorrect": false, "explanation": "Isolation is non-negotiable for arbitrary submitted code. A predictable capacity spike is not a reason to weaken the execution boundary."}
+    ]
+}

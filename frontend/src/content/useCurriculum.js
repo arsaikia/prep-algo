@@ -29,14 +29,15 @@ export function buildCurriculum(items) {
         module.topics.sort((a, b) => a.order - b.order);
     }
 
-    // A topic has at most one comprehension check, so this is a lookup rather
-    // than a list. Authoring a second quiz against the same topic would
-    // silently drop one, which the build should catch before this ever runs.
-    const quizByTopic = new Map(
-        items
-            .filter((item) => item.type === 'quiz' && item.topic)
-            .map((quiz) => [quiz.topic, quiz]),
-    );
+    const quizByTopic = new Map();
+    for (const quiz of items.filter((item) => item.type === 'quiz' && item.topic)) {
+        const checks = quizByTopic.get(quiz.topic) ?? [];
+        checks.push(quiz);
+        quizByTopic.set(quiz.topic, checks);
+    }
+    for (const checks of quizByTopic.values()) {
+        checks.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
+    }
 
     return { modules, quizByTopic };
 }

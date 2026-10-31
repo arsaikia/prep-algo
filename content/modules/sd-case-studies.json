@@ -7,5 +7,5 @@
     "order": 6,
     "tags": [],
     "lists": [],
-    "summary": "Apply the method end to end. Each walkthrough follows requirements, entities, API, high-level design and deep dives, with diagrams and a knowledge check."
+    "summary": "Put the method to work. Walk through requirements, entities, the API, a working design and its deep dives, with diagrams and a short sequence of questions to check your reasoning."
 }

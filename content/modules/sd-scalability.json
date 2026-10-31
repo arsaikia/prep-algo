@@ -7,5 +7,5 @@
     "order": 3,
     "tags": [],
     "lists": [],
-    "summary": "Keeping a system fast and up as load grows: queues, backpressure, rate limiting, failure isolation and observability."
+    "summary": "Keep the system fast and available as traffic grows. Use queues, backpressure, rate limits, failure isolation and observability to handle the busy days and the bad ones."
 }

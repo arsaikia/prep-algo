@@ -12,13 +12,13 @@
   "type": "quiz",
   "topic": "caching-fundamentals",
   "difficulty": "Medium",
-  "description": "Understand different caching strategies and their tradeoffs.",
+  "description": "A catalog service is comparing cache write policies. PostgreSQL remains authoritative, and the team wants the cache updated before a successful write returns. Which statement accurately describes the choices?",
   "options": [
     {
       "id": "a",
-      "text": "Write-through cache has higher write latency but ensures cache consistency",
+      "text": "Write-through adds synchronous cache and database work; successful coordinated writes keep the cache current",
       "isCorrect": true,
-      "explanation": "Write-through writes to both cache and database synchronously. Higher write latency (two writes) but cache always has latest data. Good for read-heavy workloads where consistency matters."
+      "explanation": "Write-through waits for both writes, adding latency and keeping the cache current when they succeed as coordinated. It is not a cross-system transaction: partial failure still needs an ordering and recovery policy."
     },
     {
       "id": "b",

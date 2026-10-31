@@ -1,0 +1,10 @@
+{
+  "slug":"index-low-selectivity","title":"Why the Planner Skips an Index","domain":"system_design","group":"Data & Storage","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000016","type":"quiz","topic":"database-indexing-fundamentals","difficulty":"Hard",
+  "description":"Half the rows in a large table have is_active=true. A query returns most columns for all active rows, and EXPLAIN chooses a sequential scan despite an is_active index. What is the sound interpretation?",
+  "options":[
+    {"id":"a","text":"B-trees cannot support equality predicates.","isCorrect":false,"explanation":"Equality is a normal B-tree use. The issue here is how many rows the predicate selects."},
+    {"id":"b","text":"The query is automatically covered by the boolean index.","isCorrect":false,"explanation":"The index lacks most selected columns, and index-only scans also depend on engine visibility conditions."},
+    {"id":"c","text":"Force the index because indexed access is always cheaper.","isCorrect":false,"explanation":"Fetching many scattered table rows through pointers can cost more than reading the table sequentially."},
+    {"id":"d","text":"Low selectivity can make a scan cheaper; measure before adding or forcing indexes.","isCorrect":true,"explanation":"Matching a predicate is not enough. Row count, I/O and returned columns affect the plan, while every additional index still costs writes and storage."}
+  ]
+}

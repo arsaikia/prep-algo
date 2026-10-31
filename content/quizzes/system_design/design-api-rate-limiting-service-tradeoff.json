@@ -1,0 +1,20 @@
+{
+    "slug": "design-api-rate-limiting-service-tradeoff",
+    "title": "A global quota, uneven traffic",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-api-rate-limiting-service",
+    "difficulty": "Hard",
+    "order": 3,
+    "tags": ["rate-limiting", "multi-region", "consistency"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0004",
+    "description": "A tenant has a soft global limit of 1,000 requests/minute across three regions, but 90% of its traffic comes from Europe. Splitting the limit equally throttles it well below its allowance. Checks must stay local and under 2 ms; small bounded over-admission is acceptable. What is the best fit?",
+    "options": [
+        {"id": "a", "text": "Have every region enforce the full 1,000 requests/minute independently.", "isCorrect": false, "explanation": "That allows up to three times the advertised quota. It is not a small, bounded approximation around the global limit."},
+        {"id": "b", "text": "Make each check synchronously consult counters in all three regions.", "isCorrect": false, "explanation": "Synchronous cross-region coordination breaks the latency budget and couples availability to remote regions."},
+        {"id": "c", "text": "Enforce regional shares locally and rebalance them asynchronously using recent consumption.", "isCorrect": true, "explanation": "Shares can follow the traffic without a remote call per request. State the sync interval and traffic-rate bound; a true global hard cap would require a different latency trade-off."},
+        {"id": "d", "text": "Keep equal shares and raise the client timeout so unused quota can accumulate.", "isCorrect": false, "explanation": "A longer timeout does not move quota between regions. It only makes a slow limiter more expensive for callers."}
+    ]
+}

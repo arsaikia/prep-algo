@@ -1,0 +1,10 @@
+{
+  "slug": "hashing-replica-independence", "title": "Three Tokens, One Failure Domain", "domain": "system_design", "group": "Distributed Systems", "order": 100, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000012", "type": "quiz", "topic": "consistent-hashing-fundamentals", "difficulty": "Hard",
+  "description": "A ring places three replicas on the next three virtual tokens. An audit finds all three tokens sometimes belong to one physical server. Which correction matters most?",
+  "options": [
+    {"id":"a","text":"Count virtual tokens as independent servers in availability estimates.","isCorrect":false,"explanation":"One physical failure removes all tokens on that server, so the copies share a failure domain."},
+    {"id":"b","text":"Increase virtual tokens without changing replica selection.","isCorrect":false,"explanation":"More tokens may improve balance but still allow multiple replicas on the same machine."},
+    {"id":"c","text":"Switch to modulo hashing while retaining the same placement rule.","isCorrect":false,"explanation":"Changing key routing does not by itself enforce independent replica placement and increases churn-related movement."},
+    {"id":"d","text":"Skip tokens on already-chosen physical nodes when selecting replicas.","isCorrect":true,"explanation":"Replica selection must use distinct physical nodes, with topology constraints where required. Virtual tokens help balance ownership, not provide independent durability."}
+  ]
+}

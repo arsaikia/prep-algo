@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "02c6f1ec-ad1b-4fd0-8e4d-0612a4a0feb0",
-    "description": "A stadium tour goes on sale at 10:00 with 50,000 seats. Eight million fans are expected within minutes. Holds already use conditional updates, so double sales are impossible, but at the last on-sale the database hit 100% CPU, holds took 20 s, and fans with refresh scripts got most seats. What should you add?",
+    "description": "A stadium tour goes on sale at 10:00: 50,000 seats, with eight million fans expected within minutes. Conditional updates already prevent double sales. Last time, though, database CPU reached 100%, holds took 20 seconds, and refresh scripts won most seats. What should you add before this on-sale?",
     "options": [
         {
             "id": "a",

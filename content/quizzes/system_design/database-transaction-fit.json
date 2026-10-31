@@ -1,0 +1,10 @@
+{
+  "slug":"database-transaction-fit","title":"Pick a Store for Transactional Checkout","domain":"system_design","group":"Data & Storage","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000053","type":"quiz","topic":"sql-vs-nosql-databases","difficulty":"Easy",
+  "description":"A modest-scale checkout changes inventory, creates an order and needs customer relationships enforced. Which starting choice has the clearest fit?",
+  "options":[
+    {"id":"a","text":"A document store solely because the app has many registered users.","isCorrect":false,"explanation":"Registered-user count does not establish access patterns, write rate or transaction requirements."},
+    {"id":"b","text":"PostgreSQL transactions and constraints, with indexes for the hot queries.","isCorrect":true,"explanation":"Multi-entity invariants and related reads fit relational transactions, constraints and joins. Other stores may support transactions too, but their semantics and costs need checking."},
+    {"id":"c","text":"An expiring cache as the only inventory authority.","isCorrect":false,"explanation":"The design needs durable transactional state, not just fast temporary copies."},
+    {"id":"d","text":"One copied customer record in every order with no update policy.","isCorrect":false,"explanation":"Denormalization can optimize a read shape, but it does not by itself enforce cross-entity rules or keep mutable copies consistent."}
+  ]
+}

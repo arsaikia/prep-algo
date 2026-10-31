@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "644b00c4-46a9-42f5-8f24-5591a4897297",
-    "description": "Two matching workers handle riders a block apart. Both query the geo index and both pick driver d_7 as closest. Occasionally d_7 ends up assigned to both rides. Which fix gives one-driver-one-ride while keeping matching fast?",
+    "description": "Two riders a block apart request rides at the same time. Separate matching workers query the geo index and both choose nearby driver d_7. Sometimes the driver ends up assigned to both rides. Which approach keeps matching fast while making that assignment race safe?",
     "options": [
         {
             "id": "a",
@@ -24,9 +24,9 @@
         },
         {
             "id": "b",
-            "text": "Reserve d_7 with a short-lived lease (SET NX with a TTL) before offering, and assign on accept with conditional writes that require the ride to be matching and the driver to be available or offered for this ride",
+            "text": "Reserve d_7 with a short-lived lease (SET NX with a TTL), then atomically assign on accept only if the ride is matching and the driver is available or offered for this ride",
             "isCorrect": true,
-            "explanation": "The lease stops duplicate offers cheaply; the conditional writes are the correctness boundary, so even an expired lease or late accept cannot double-assign."
+            "explanation": "The lease reduces competing offers; the authoritative transaction must check and update both the ride and driver. Independent conditional writes need a recovery protocol and are not, by themselves, an atomic assignment."
         },
         {
             "id": "c",

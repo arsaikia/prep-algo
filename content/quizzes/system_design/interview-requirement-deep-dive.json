@@ -1,0 +1,10 @@
+{
+  "slug":"interview-requirement-deep-dive","title":"Choose the Deep Dive That Fixes a Real Gap","domain":"system_design","group":"Foundations","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000056","type":"quiz","topic":"system-design-interview-framework","difficulty":"Hard",
+  "description":"Your notification baseline works at normal load, but an estimate shows 2,000 messages/s arriving and only 1,500/s draining. A delivery-age goal matters. What is the strongest next discussion?",
+  "options":[
+    {"id":"a","text":"Calculate unrelated profile storage without connecting it to a choice.","isCorrect":false,"explanation":"That arithmetic does not address the demonstrated queue deficit or delivery-age goal."},
+    {"id":"b","text":"Rename diagram components to more advanced technologies.","isCorrect":false,"explanation":"Names alone do not change the rates or explain a capacity tradeoff."},
+    {"id":"c","text":"Stop because the happy-path request already works.","isCorrect":false,"explanation":"The baseline exposes the next problem; sustained backlog prevents meeting the agreed delivery target."},
+    {"id":"d","text":"Explain the 500/s deficit, compare capacity and admission options, and choose a queue-age alert.","isCorrect":true,"explanation":"This ties the estimate to a requirement-driven deep dive, states the tradeoff and closes the loop with an operational check."}
+  ]
+}

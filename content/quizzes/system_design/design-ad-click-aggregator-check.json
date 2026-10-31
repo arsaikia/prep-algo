@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "1a701f6e-1309-443b-99cb-4788b74afbed",
-    "description": "Your click aggregator consumes Kafka, dedupes by click ID in an in-memory set, and every minute runs UPDATE agg SET clicks = clicks + n for each ad. After a processor node crashed and restarted from the last committed offsets, several advertisers' counts for the previous 10 minutes are about 15% higher than the raw event archive shows. What is the right fix?",
+    "description": "Your click aggregator reads Kafka and deduplicates click IDs in an in-memory set. Each minute it runs UPDATE agg SET clicks = clicks + n per ad. After a crash and restart from committed offsets, several advertisers' last ten minutes show about 15% more clicks than the raw archive. Which change makes replay safe?",
     "options": [
         {
             "id": "a",

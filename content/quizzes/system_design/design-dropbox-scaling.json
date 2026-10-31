@@ -1,0 +1,20 @@
+{
+    "slug": "design-dropbox-scaling",
+    "title": "Sync without scanning every folder",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-dropbox",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["file-sync", "change-log", "sharding"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0019",
+    "description": "Millions of devices currently list their whole file tree every 30 seconds to discover changes. You are moving metadata to namespace shards. What sync design avoids repeated tree scans and lets a laptop catch up after several days offline?",
+    "options": [
+        {"id": "a", "text": "Push complete changed files through every device's WebSocket and retain no change history.", "isCorrect": false, "explanation": "Offline devices miss those pushes, and moving file bytes through the notification channel adds unnecessary load."},
+        {"id": "b", "text": "Use a global timestamp cursor and scan every metadata shard for newer rows.", "isCorrect": false, "explanation": "This creates scatter-gather work and makes correctness depend on timestamps. Namespace-local sequences align with the commit boundary."},
+        {"id": "c", "text": "Append a per-namespace sequence in the metadata transaction, let devices pull after their cursors, and use long-poll notifications as hints.", "isCorrect": true, "explanation": "The durable log supplies incremental changes even after a missed hint. Each device resumes independently; a compacted cursor triggers a full resync rather than silent data loss."},
+        {"id": "d", "text": "Poll only folder names and assume files are unchanged when their parent name is unchanged.", "isCorrect": false, "explanation": "A file's contents can change without renaming its folder. This optimization would miss ordinary edits."}
+    ]
+}

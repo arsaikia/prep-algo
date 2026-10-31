@@ -163,12 +163,15 @@ const gradeAnswer = async (question, selectedOptionId, isGuest, submissionId, ti
   return response.data.data;
 };
 
-const McqSolver = ({ question, isGuest = false }) => {
+const McqSolver = ({ question, isGuest = false, onComplete, completeLabel = 'Complete and close quiz' }) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [storageWarning, setStorageWarning] = useState(false);
+  const [closed, setClosed] = useState(false);
+  const inFlight = useRef(null);
+  const identityVersion = useRef(0);
   const pendingSubmission = useRef(null);
   const userId = useSelector((state) => state.auth.userId);
   const identity = `${question.slug}:${question.revision}:${userId}:${isGuest}`;
@@ -183,6 +186,8 @@ const McqSolver = ({ question, isGuest = false }) => {
     onStorageError: () => setStorageWarning(true),
   });
   useEffect(() => {
+    identityVersion.current += 1;
+    inFlight.current = null;
     mounted.current = true;
     tracker.current.startTracking(question.slug, userId);
     if (previousContent.current !== contentIdentity) setSelectedOption(null);
@@ -190,14 +195,19 @@ const McqSolver = ({ question, isGuest = false }) => {
     setResult(null);
     setError('');
     setSubmitting(false);
+    setClosed(false);
     pendingSubmission.current = null;
     return () => { mounted.current = false; };
   }, [identity]);
 
   const handleSubmit = async () => {
-    if (!selectedOption || submitting) return;
+    if (!selectedOption || submitting || inFlight.current) return;
+    if (result?.identity === identity && (isGuest || result.attemptSaved !== false)) return;
     const requestIdentity = identity;
-    const stale = () => !mounted.current || identityRef.current !== requestIdentity;
+    const requestVersion = identityVersion.current;
+    const requestToken = {};
+    inFlight.current = requestToken;
+    const stale = () => !mounted.current || identityRef.current !== requestIdentity || identityVersion.current !== requestVersion;
     setSubmitting(true);
     setError('');
     try {
@@ -216,6 +226,7 @@ const McqSolver = ({ question, isGuest = false }) => {
       // The selection is kept so the answer can be resubmitted as-is.
       setError(`Could not check your answer. ${readApiError(err)}`);
     } finally {
+      if (inFlight.current === requestToken) inFlight.current = null;
       if (!stale()) setSubmitting(false);
     }
   };
@@ -223,6 +234,10 @@ const McqSolver = ({ question, isGuest = false }) => {
   const submitted = result?.identity === identity;
   const passed = Boolean(result?.passed ?? result?.correct);
   const explanationFor = new Map((result?.explanations || []).map(e => [e.id, e.explanation]));
+
+  if (closed) {
+    return <Container role="status"><QuestionTitle>Quiz complete</QuestionTitle><ProgressNote>Nice work! You can close this quiz and continue learning.</ProgressNote></Container>;
+  }
 
   return (
     <Container>
@@ -297,7 +312,14 @@ const McqSolver = ({ question, isGuest = false }) => {
                 {submitting ? 'Saving…' : 'Retry saving answer'}
               </SubmitButton>
             )}
-            <SubmitButton disabled={submitting} onClick={() => {
+            {passed ? <SubmitButton
+              disabled={submitting || (!isGuest && result.attemptSaved === false)}
+              onClick={() => {
+                if (!submitted || !passed || submitting) return;
+                setClosed(true);
+                onComplete?.();
+              }}
+            >{completeLabel}</SubmitButton> : <SubmitButton disabled={submitting} onClick={() => {
               pendingSubmission.current = null;
               setResult(null);
               setSelectedOption(null);
@@ -306,7 +328,7 @@ const McqSolver = ({ question, isGuest = false }) => {
               tracker.current.startTracking(question.slug, userId);
             }}>
               Try a new attempt
-            </SubmitButton>
+            </SubmitButton>}
           </ResultBox>
         )}
       </div>

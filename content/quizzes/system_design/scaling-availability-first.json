@@ -1,0 +1,10 @@
+{
+  "slug":"scaling-availability-first","title":"Enough Capacity, Not Enough Redundancy","domain":"system_design","group":"Foundations","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000047","type":"quiz","topic":"scaling-fundamentals","difficulty":"Easy",
+  "description":"One server easily handles 500 RPS and a 40 GB working set, but the service must survive a machine failure. Why run several app instances?",
+  "options":[
+    {"id":"a","text":"To improve availability even though one machine has enough capacity.","isCorrect":true,"explanation":"Capacity and failure tolerance are separate requirements. Multiple instances behind redundant routing avoid making one app machine the whole service."},
+    {"id":"b","text":"Because vertical scaling never supports a 40 GB working set.","isCorrect":false,"explanation":"Modern instances can hold far more memory; the stated problem is redundancy."},
+    {"id":"c","text":"Because each extra app instance automatically shards the database.","isCorrect":false,"explanation":"Scaling the stateless tier does not distribute database ownership or writes."},
+    {"id":"d","text":"Because adding CPU to one machine creates an independent failure domain.","isCorrect":false,"explanation":"A larger machine is still one machine and can fail as a unit."}
+  ]
+}

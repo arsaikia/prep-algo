@@ -1,0 +1,10 @@
+{
+  "slug":"realtime-one-way-scores","title":"Push Scores Without a Two-Way Channel","domain":"system_design","group":"Design Patterns","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000037","type":"quiz","topic":"pattern-real-time-updates","difficulty":"Easy",
+  "description":"A browser scoreboard needs server-to-client text updates every few seconds. Clients send occasional commands with normal HTTP. Which simple push transport fits?",
+  "options":[
+    {"id":"a","text":"WebRTC with peer discovery and media relays.","isCorrect":false,"explanation":"Peer-to-peer media infrastructure adds complexity without serving this one-way server feed."},
+    {"id":"b","text":"A new page load for every score.","isCorrect":false,"explanation":"Reloading adds unnecessary page and connection work and is not a continuous push channel."},
+    {"id":"c","text":"Server-Sent Events with reconnect and a server-side replay path.","isCorrect":true,"explanation":"SSE fits one-way text updates over HTTP. Last-Event-ID can support catch-up, but the server must retain events to replay."},
+    {"id":"d","text":"WebSockets because one-way text cannot use HTTP streaming.","isCorrect":false,"explanation":"HTTP streaming through SSE supports this directly; full duplex is useful when both sides send frequently."}
+  ]
+}

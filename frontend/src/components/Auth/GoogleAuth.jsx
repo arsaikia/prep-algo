@@ -20,7 +20,7 @@ function GoogleAuth() {
         size="large"
         width={240}
         text="continue_with"
-        shape="rectangular"
+        shape="pill"
       />}
       {signingIn && <p role="status">Signing in…</p>}
       {error && <p role="alert">{String(error)}</p>}

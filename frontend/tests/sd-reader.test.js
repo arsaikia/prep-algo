@@ -178,8 +178,8 @@ test('reference topics are outside the lesson path, counts and progress', () => 
   assert.deepEqual(lessonNeighbours(modules, HANDBOOK_SLUG), { previous: null, next: null, isLesson: false });
   assert.equal(lessonNeighbours(modules, 'scaling').previous, null);
 
-  const quizzes = new Map([['caching', {}], ['fan-out', {}], ['missing', {}]]);
-  assert.deepEqual(curriculumStats(modules, quizzes), { lessons: 4, concepts: 2, patterns: 1, caseStudies: 1, checks: 2 });
+  const quizzes = new Map([['caching', [{ slug: 'cache-1' }, { slug: 'cache-2' }]], ['fan-out', [{ slug: 'fanout-1' }]], ['missing', [{}]]]);
+  assert.deepEqual(curriculumStats(modules, quizzes), { lessons: 4, concepts: 2, patterns: 1, caseStudies: 1, checks: 3 });
 
   const done = new Set(['caching', HANDBOOK_SLUG, 'gone']);
   assert.deepEqual(progressOf(modules[0].topics, done), { done: 1, total: 2 });

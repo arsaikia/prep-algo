@@ -1,0 +1,20 @@
+{
+    "slug": "design-url-shortener-scaling",
+    "title": "The first click gets a 404",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-url-shortener",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["url-shortener", "replication", "caching"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0001",
+    "description": "Your shortener handles 400 creates/s and 40,000 redirects/s at peak. Redirects use Redis, then read replicas on a miss. New links sometimes return 404 on their first click, then work a second later. Existing links are fast. How would you fix the first-click problem without sending every redirect to the primary?",
+    "options": [
+        {"id": "a", "text": "Cache a newly committed link at creation, and use a primary fallback for replica misses that might be lag.", "isCorrect": true, "explanation": "The unique insert still decides creation. Caching the committed row helps the first click, while a targeted primary fallback handles replica lag without moving all reads to the primary."},
+        {"id": "b", "text": "Shard the link table by alias and keep the same replica-only miss path.", "isCorrect": false, "explanation": "More shards may add capacity later, but their replicas can still lag. The first-click freshness problem remains."},
+        {"id": "c", "text": "Keep negative cache entries longer so repeated 404s do not reach the replicas.", "isCorrect": false, "explanation": "Negative caching protects the database from unknown aliases, but a long-lived false 404 would hide a newly created link for longer."},
+        {"id": "d", "text": "Return a 301 for successful redirects so browsers avoid future lookups.", "isCorrect": false, "explanation": "A redirect status cannot fix a lookup that returns 404. Permanent caching also conflicts with revocable links."}
+    ]
+}

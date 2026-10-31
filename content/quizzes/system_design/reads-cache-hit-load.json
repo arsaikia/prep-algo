@@ -1,0 +1,10 @@
+{
+  "slug":"reads-cache-hit-load","title":"What Reaches the Database?","domain":"system_design","group":"Design Patterns","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000039","type":"quiz","topic":"pattern-scaling-reads","difficulty":"Easy",
+  "description":"A service receives 50,000 reads/s. A cache serves 95% of them. Ignoring refresh and write work, how many reads/s reach the database?",
+  "options":[
+    {"id":"a","text":"About 2,500 reads/s.","isCorrect":true,"explanation":"The miss fraction is 5%; 50,000 × 0.05 = 2,500. A full cache loss would expose the source to 20 times its normal read load."},
+    {"id":"b","text":"About 47,500 reads/s.","isCorrect":false,"explanation":"That is the hit volume served by the cache, not the miss volume sent to the source."},
+    {"id":"c","text":"About 50 reads/s.","isCorrect":false,"explanation":"A 5% miss rate is one request in twenty, not one in a thousand."},
+    {"id":"d","text":"Zero reads/s because a cache replaces the database.","isCorrect":false,"explanation":"Cache misses still require a source, and the database remains authoritative."}
+  ]
+}

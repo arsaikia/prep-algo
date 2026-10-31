@@ -1,0 +1,10 @@
+{
+  "slug":"interview-measurable-goals","title":"Turn 'Fast' into a Design Requirement","domain":"system_design","group":"Foundations","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000055","type":"quiz","topic":"system-design-interview-framework","difficulty":"Easy",
+  "description":"The prompt is 'design a fast notification service.' Before selecting a queue, what clarification most directly guides the architecture?",
+  "options":[
+    {"id":"a","text":"Ask which deliveries need seconds versus hours, what scope matters and whether loss or duplication is worse.","isCorrect":true,"explanation":"Measurable quality goals and explicit scope guide the acceptance boundary, retry policy and durability choices."},
+    {"id":"b","text":"Choose the most popular broker so the requirements are implied.","isCorrect":false,"explanation":"A product name does not define the user's latency or correctness needs."},
+    {"id":"c","text":"Enumerate every possible notification feature before agreeing on scope.","isCorrect":false,"explanation":"An unbounded feature list consumes the interview without identifying a manageable core."},
+    {"id":"d","text":"List every database column before discussing behavior.","isCorrect":false,"explanation":"Detailed fields are less useful than knowing the required actions and guarantees."}
+  ]
+}

@@ -39,7 +39,7 @@ test('interview-first curriculum has linked lessons, checks and a worked practic
         const lesson = bySlug.get(slug);
         assert.equal(lesson.kind, 'concept', slug);
         assert.ok(bySlug.has(lesson.module), `${slug}: owning module`);
-        assert.equal(items.filter((item) => item.type === 'quiz' && item.topic === slug).length, 1, `${slug}: knowledge check`);
+        assert.ok(items.filter((item) => item.type === 'quiz' && item.topic === slug).length >= 3, `${slug}: at least three knowledge checks`);
         for (const prerequisite of lesson.prerequisites) {
             assert.equal(bySlug.get(prerequisite)?.type, 'topic', `${slug}: ${prerequisite}`);
         }
@@ -47,7 +47,8 @@ test('interview-first curriculum has linked lessons, checks and a worked practic
     const practice = bySlug.get('design-url-shortener');
     assert.ok(practice.prerequisites.includes(framework.slug));
     assert.match(practice.body, /unique constraint/);
-    assert.match(practice.body, /not the only (one|valid architecture)/);
+    assert.match(practice.body, /## Practice first/);
+    assert.match(practice.body, /## Self-review checklist/);
 });
 
 async function fingerprint(dir) {

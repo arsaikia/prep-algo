@@ -205,56 +205,24 @@ export const ModernSubtitle = styled.p`
 // Google button container with modern styling
 export const GoogleButtonContainer = styled.div`
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    gap: 12px;
     width: 100%;
-    animation: ${slideUp} 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     z-index: 1;
-    
-    /* Style the Google button iframe */
-    > div {
-        width: 100% !important;
-        max-width: 320px;
-        
-        iframe {
-            border-radius: 16px !important;
-            box-shadow: 
-                0 4px 16px rgba(139, 92, 246, 0.1),
-                0 2px 8px rgba(0, 0, 0, 0.05) !important;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            
-            &:hover {
-                transform: translateY(-2px);
-                box-shadow: 
-                    0 8px 32px rgba(139, 92, 246, 0.15),
-                    0 4px 16px rgba(59, 130, 246, 0.1) !important;
-            }
-            
-            &:active {
-                transform: translateY(-1px);
-            }
-        }
+
+    p {
+        margin: 0;
+        color: ${({ theme }) => theme.colors.textSecondary};
+        font-size: 14px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
     }
-    
-    @media (max-width: 768px) {
-        > div {
-            max-width: 280px;
-            
-            iframe {
-                border-radius: 14px !important;
-            }
-        }
-    }
-    
-    @media (max-width: 480px) {
-        > div {
-            max-width: 100%;
-            
-            iframe {
-                border-radius: 12px !important;
-            }
-        }
+
+    [role='alert'] {
+        color: ${({ theme }) => theme.colors.error};
     }
 `;
 
@@ -263,30 +231,31 @@ export const ModernCloseButton = styled.button`
     position: absolute;
     top: 16px;
     right: 16px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    color: ${({ theme }) => theme.colors.text};
-    font-size: 18px;
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    border: 1px solid ${({ theme }) => theme.colors.borderLight};
+    border-radius: 50%;
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-size: 24px;
+    line-height: 1;
     cursor: pointer;
-    padding: 8px 12px;
+    padding: 0;
     width: 40px;
     height: 40px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: 1;
+    transition: background 0.15s ease, color 0.15s ease;
+    z-index: 2;
     
     &:hover {
-        background: rgba(255, 255, 255, 0.15);
-        transform: scale(1.05);
-        color: ${({ theme }) => theme.colors.primary};
+        background: ${({ theme }) => theme.colors.backgroundTertiary};
+        color: ${({ theme }) => theme.colors.text};
     }
-    
-    &:active {
-        transform: scale(0.95);
+
+    &:focus-visible {
+        outline: 2px solid ${({ theme }) => theme.colors.primary};
+        outline-offset: 3px;
     }
 `;
 

@@ -1,0 +1,10 @@
+{
+  "slug":"sharding-backfill-version","title":"Backfill Must Not Undo a New Edit","domain":"system_design","group":"Data & Storage","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000052","type":"quiz","topic":"sharding-and-partitioning","difficulty":"Hard",
+  "description":"During online migration, a new value reaches both shards, then an older historical row is backfilled into the new shard. What protects the new value before read cutover?",
+  "options":[
+    {"id":"a","text":"Copy historical rows last and overwrite every destination row.","isCorrect":false,"explanation":"That lets stale backfill erase a newer dual-written update."},
+    {"id":"b","text":"Switch reads before checking migration progress.","isCorrect":false,"explanation":"Premature cutover can expose missing or stale data."},
+    {"id":"c","text":"Drop the old shard as soon as the first batch arrives.","isCorrect":false,"explanation":"The destination is not complete or verified, so removing the source risks loss."},
+    {"id":"d","text":"Apply version checks or safe insert-if-absent backfill, verify convergence, then switch reads.","isCorrect":true,"explanation":"Backfill must not regress newer writes. Verification precedes read cutover, and the old path is retired only after the migration's consistency conditions hold."}
+  ]
+}

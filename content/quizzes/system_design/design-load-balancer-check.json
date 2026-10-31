@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "60c2e766-5a5b-4eb8-a02e-a84560370d51",
-    "description": "Each checkout server's /healthz endpoint queries the primary database and returns 503 if the query fails. During a 15-second database failover, the load balancer marks every checkout server unhealthy and returns 503 to all users for over a minute, even after the database recovers. Which change best prevents this?",
+    "description": "Each checkout server's /healthz endpoint queries the primary database and returns 503 if that query fails. A 15-second database failover makes the load balancer eject every checkout server. Users keep seeing 503s for over a minute, even after the database recovers. How would you prevent a brief dependency outage from emptying the pool?",
     "options": [
         {
             "id": "a",

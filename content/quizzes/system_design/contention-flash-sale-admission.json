@@ -1,0 +1,10 @@
+{
+  "slug":"contention-flash-sale-admission","title":"Correct Seats, Overwhelmed Database","domain":"system_design","group":"Design Patterns","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000034","type":"quiz","topic":"pattern-managing-contention","difficulty":"Hard",
+  "description":"Conditional seat updates already prevent double booking, but 500,000 fans overwhelm the same booking rows at once. Which extra mechanism reduces contention without replacing correctness checks?",
+  "options":[
+    {"id":"a","text":"A waiting room that admits a bounded rate using signed, expiring tokens.","isCorrect":true,"explanation":"Admission controls how many buyers reach the booking service. The authoritative conditional writes still decide who owns each seat."},
+    {"id":"b","text":"Remove conditions so updates spend less time checking availability.","isCorrect":false,"explanation":"That may reduce work but reintroduces overselling and violates the core invariant."},
+    {"id":"c","text":"Allow unlimited optimistic retries from all rejected buyers.","isCorrect":false,"explanation":"High-conflict retries amplify load on the same hot rows."},
+    {"id":"d","text":"Hold every row lock while buyers enter payment details.","isCorrect":false,"explanation":"Long human waits would consume connections and locks; model holds as expiring data instead."}
+  ]
+}

@@ -39,7 +39,7 @@ The authored path (modules in order):
 7. **Design Case Studies:** 17 end-to-end walkthroughs (URL shortener through
    online judge). Each follows the same sections: requirements, estimates,
    entities, API, high-level design, deep dives, tradeoffs, failure modes and a
-   knowledge check. Attempt the design before reading.
+   sequence of knowledge checks. Attempt the design before reading.
 8. **Reference:** the System Design Handbook, a cheat-sheet that maps problems
    (read-heavy, write-heavy, contention, fanout) to the standard moves. It is
    excluded from progress and previous/next navigation.
@@ -47,6 +47,23 @@ The authored path (modules in order):
 Lessons and case studies embed Mermaid diagrams that are validated at build time
 (`node scripts/content/check-diagrams.mjs`). Prioritize a concept because it
 changes a design decision, not to maximize topic count.
+
+Every lesson has at least three scenario questions, shown one at a time in
+ascending quiz `order` (slug breaks ties). A wrong answer unlocks a new attempt.
+A correct answer offers **Next question**, or **Complete quiz** on the last
+question, rather than starting over. Completion closes the quiz; marking the
+lesson complete remains a separate action. A grading or save failure is shown
+explicitly and can be retried without creating a duplicate submission.
+Guests can practise, but only signed-in quiz submissions save account progress.
+
+Diagrams use a shared pastel palette with dark labels in both themes and
+theme-aware connectors, notes and surrounding labels. The renderer keeps
+authored status colors, uses Mermaid's strict security mode and serializes
+configuration with rendering so rapid theme changes cannot mix themes.
+
+Write like a helpful teammate: short sentences, concrete examples, and a reason
+for each design choice. Keep the assumptions, numbers, tradeoffs, failure cases,
+code and diagrams; concise means less filler, not less information.
 
 Keep stable slugs and existing progress identifiers. Modules and topic order
 drive both the outline and previous/next navigation. Prerequisites are explicit

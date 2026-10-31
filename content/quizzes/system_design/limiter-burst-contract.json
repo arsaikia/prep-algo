@@ -1,0 +1,10 @@
+{
+  "slug":"limiter-burst-contract","title":"Allow a Small Burst After Idle","domain":"system_design","group":"Reliability","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000043","type":"quiz","topic":"rate-limiting-fundamentals","difficulty":"Easy",
+  "description":"An API should allow 20 requests immediately after an idle period, then refill permission at one request per second. Which policy expresses that?",
+  "options":[
+    {"id":"a","text":"A token bucket with capacity 20 and refill rate 1/s.","isCorrect":true,"explanation":"Unused tokens accumulate up to 20, allowing a bounded burst. Subsequent requests consume tokens as they refill."},
+    {"id":"b","text":"An unbounded queue drained as fast as workers can run.","isCorrect":false,"explanation":"That defines neither the intended burst bound nor a fixed admission rate."},
+    {"id":"c","text":"A fixed daily counter with no other limit.","isCorrect":false,"explanation":"A daily total does not express a 20-request burst or per-second refill."},
+    {"id":"d","text":"A leaky bucket that guarantees no queueing delay at any arrival rate.","isCorrect":false,"explanation":"A fixed drain rate can smooth output, but bursts require bounded queueing or rejection and can incur latency."}
+  ]
+}

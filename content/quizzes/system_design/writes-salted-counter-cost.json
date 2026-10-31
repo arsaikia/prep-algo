@@ -1,0 +1,10 @@
+{
+  "slug":"writes-salted-counter-cost","title":"Split a Hot Counter, Pay on Reads","domain":"system_design","group":"Design Patterns","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000042","type":"quiz","topic":"pattern-scaling-writes","difficulty":"Hard",
+  "description":"A viral post's like counter saturates one shard. The team splits increments among eight salted sub-counters. What cost must the read path now handle?",
+  "options":[
+    {"id":"a","text":"Every update must still lock the original unsalted row.","isCorrect":false,"explanation":"Keeping that common lock would retain the very bottleneck salting is meant to remove."},
+    {"id":"b","text":"Reads become free because each sub-counter is smaller.","isCorrect":false,"explanation":"The total is distributed, so one sub-counter cannot answer the complete count."},
+    {"id":"c","text":"Read and sum eight values, optionally caching the total for an acceptable interval.","isCorrect":true,"explanation":"Salting spreads writes at the cost of read fan-in and potentially staler cached totals. Apply it to detected hot keys rather than every entity."},
+    {"id":"d","text":"Use a queue instead of reading any sub-counter.","isCorrect":false,"explanation":"A queue does not provide the aggregate value and does not create sustained storage capacity."}
+  ]
+}

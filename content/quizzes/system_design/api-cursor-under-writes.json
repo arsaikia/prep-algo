@@ -1,0 +1,10 @@
+{
+  "slug": "api-cursor-under-writes", "title": "Page Through a Moving List", "domain": "system_design", "group": "API Design", "order": 100, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000002", "type": "quiz", "topic": "api-design-fundamentals", "difficulty": "Hard",
+  "description": "New orders arrive while a client pages newest-first. Offset pages repeat rows, and several orders share a creation timestamp. Which change addresses shifting offsets without promising a snapshot?",
+  "options": [
+    {"id":"a","text":"Keep offsets but increase the page size.","isCorrect":false,"explanation":"Larger pages reduce request count, not the shifting positions caused by inserts before the next offset."},
+    {"id":"b","text":"Use created_at alone as the cursor.","isCorrect":false,"explanation":"Tied timestamps leave no unique boundary; rows sharing that timestamp can be skipped or repeated."},
+    {"id":"c","text":"Sort each page independently after applying its offset.","isCorrect":false,"explanation":"Sorting after selecting a shifting slice cannot restore a stable boundary between pages."},
+    {"id":"d","text":"Use an opaque (created_at, id) cursor with fixed filters.","isCorrect":true,"explanation":"A unique tie-breaker gives keyset pagination a stable boundary. Index the sort columns; updates still require a separate snapshot guarantee if one is needed."}
+  ]
+}

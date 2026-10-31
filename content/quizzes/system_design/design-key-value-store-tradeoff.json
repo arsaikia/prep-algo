@@ -1,0 +1,20 @@
+{
+    "slug": "design-key-value-store-tradeoff",
+    "title": "A quorum outside the replica list",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-key-value-store",
+    "difficulty": "Hard",
+    "order": 3,
+    "tags": ["key-value-store", "quorums", "availability"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0006",
+    "description": "A store uses N=3, W=2 and R=2. During a partition, it accepts writes on healthy fallback nodes outside a key's normal replica list, with hints for later handoff. A teammate says R+W>N means reads must still see every acknowledged write. How should you explain the trade-off?",
+    "options": [
+        {"id": "a", "text": "Sloppy quorums keep writes available, but a read from normal replicas may not overlap the fallback write set.", "isCorrect": true, "explanation": "The overlap argument assumes quorums drawn from the same N replicas. Hints and repair help convergence later; they do not make reads fresh during this partition."},
+        {"id": "b", "text": "The inequality proves overlap even when reads and writes use different sets of machines.", "isCorrect": false, "explanation": "Counting quorum sizes alone is not enough. The sets must be drawn from the same replica group for that argument to hold."},
+        {"id": "c", "text": "Hinted handoff makes fallback writes visible to every normal replica before the write returns.", "isCorrect": false, "explanation": "Handoff happens when the intended replica recovers. Waiting for all normal replicas would defeat the reason for using fallback nodes."},
+        {"id": "d", "text": "Switching from timestamps to vector clocks guarantees fresh reads without changing replica selection.", "isCorrect": false, "explanation": "Vector clocks identify causal and concurrent versions that a read encounters. They cannot reveal a version held only on unreachable fallback nodes."}
+    ]
+}

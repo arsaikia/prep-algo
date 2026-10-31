@@ -1,0 +1,10 @@
+{
+  "slug":"modeling-derived-address","title":"One Address, Several Read Models","domain":"system_design","group":"Data & Storage","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000013","type":"quiz","topic":"data-modeling-and-transactions","difficulty":"Easy",
+  "description":"A clinic copies its address into appointment read models for fast display. The source address changes. What must this denormalized design account for?",
+  "options":[
+    {"id":"a","text":"Each copy updates automatically because it contains the same text.","isCorrect":false,"explanation":"Copied values have no automatic relationship to the source. An explicit propagation mechanism is needed."},
+    {"id":"b","text":"Update the source and propagate changes, allowing defined read-model lag.","isCorrect":true,"explanation":"Denormalization saves read work by creating copies. Change streams or another owner must synchronize them, with a rebuild path and a staleness policy."},
+    {"id":"c","text":"Remove the source so every appointment becomes authoritative.","isCorrect":false,"explanation":"Multiple authoritative copies make corrections harder and can create contradictory addresses."},
+    {"id":"d","text":"Use a random UUID to make existing copies current.","isCorrect":false,"explanation":"An ID choice does not propagate changes to duplicated fields."}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug":"modeling-write-skew","title":"Two Doctors Go Off Call","domain":"system_design","group":"Data & Storage","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000014","type":"quiz","topic":"data-modeling-and-transactions","difficulty":"Hard",
+  "description":"In PostgreSQL repeatable read, two doctors each see the other on call and update their own row to off call. At least one doctor must remain available. Which approach protects this multi-row rule?",
+  "options":[
+    {"id":"a","text":"Use serializable transactions and retry serialization failures.","isCorrect":true,"explanation":"This is write skew: distinct rows can change against the same snapshot. Serializable isolation rejects a non-serial outcome; the application must retry the full transaction."},
+    {"id":"b","text":"Keep repeatable read because it prevents every concurrency anomaly.","isCorrect":false,"explanation":"PostgreSQL repeatable read prevents several anomalies but still allows write skew across different rows."},
+    {"id":"c","text":"Add a primary key to each doctor's existing row.","isCorrect":false,"explanation":"Row identity does not enforce the cross-row requirement that someone stays on call."},
+    {"id":"d","text":"Move the initial check to a cache.","isCorrect":false,"explanation":"A cache adds staleness without making the check and updates serializable."}
+  ]
+}

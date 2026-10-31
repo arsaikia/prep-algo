@@ -1,0 +1,20 @@
+{
+    "slug": "design-ticketmaster-scaling",
+    "title": "A seat map need not own the sale",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-ticketmaster",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["ticketing", "caching", "consistency"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0023",
+    "description": "A hot event page receives huge read traffic. Most content is static, but seat availability changes every second. Holds already use authoritative conditional updates in Postgres. How can you offload reads while keeping the no-double-sale guarantee?",
+    "options": [
+        {"id": "a", "text": "Cache the complete page for an hour and let the browser mark a selected seat as sold.", "isCorrect": false, "explanation": "The browser cannot decide ownership. Long-lived availability data would also give fans a badly misleading map."},
+        {"id": "b", "text": "Serve all event text and images from the primary so they share a transaction with the seat map.", "isCorrect": false, "explanation": "Static page bytes do not need a seat transaction. This needlessly sends the read spike to the booking database."},
+        {"id": "c", "text": "Cache static event content at the CDN, serve availability separately with a short TTL, and let the hold update decide ownership.", "isCorrect": true, "explanation": "A slightly stale map may lead to a 409 and refresh, but it cannot sell a seat. Separating representations preserves cheap page reads and authoritative booking."},
+        {"id": "d", "text": "Let each region sell any seat shown as available in its local cache, then reconcile later.", "isCorrect": false, "explanation": "Independent cached decisions can sell the same seat twice. Booking cannot use eventual reconciliation as its correctness boundary."}
+    ]
+}

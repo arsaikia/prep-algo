@@ -1,0 +1,10 @@
+{
+  "slug": "building-blocks-slow-provider", "title": "More Workers, a Slower Provider", "domain": "system_design", "group": "Foundations", "order": 100, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000008", "type": "quiz", "topic": "choosing-system-design-building-blocks", "difficulty": "Hard",
+  "description": "Receipt jobs are backing up because an email provider is already at its request limit. The database is healthy. Which change addresses the actual pressure?",
+  "options": [
+    {"id":"a","text":"Add read replicas to the order database.","isCorrect":false,"explanation":"Read capacity does not change the provider's delivery limit."},
+    {"id":"b","text":"Double workers and retry all rejected sends immediately.","isCorrect":false,"explanation":"This pushes more traffic at the saturated dependency and can amplify throttling."},
+    {"id":"c","text":"Shard order IDs so every worker has a new range.","isCorrect":false,"explanation":"Reassigning keys does not raise an external provider's capacity."},
+    {"id":"d","text":"Bound send concurrency, back off on throttling and monitor queue age.","isCorrect":true,"explanation":"The queue buys time, while bounded workers respect downstream capacity. Queue age shows whether the sustained deficit needs more provider capacity or admission control."}
+  ]
+}

@@ -14,13 +14,13 @@
     ],
     "lists": [],
     "legacyId": "862c068f-41a6-427b-be79-86ed6373652a",
-    "description": "In your chat design, the message service writes each message to the store, acks the sender, then publishes it over Redis pub/sub to the recipient's gateway. During a rolling deploy, recipients whose gateway restarted report that some messages sent in that window never appeared on their phones, even though the senders saw the single tick. What is the best fix?",
+    "description": "Your message service persists a message, acknowledges its sender, then publishes it through Redis pub/sub to the recipient's gateway. During a rolling deploy, some recipients lose messages while their gateway restarts, although senders see the single tick. What recovery path should you add?",
     "options": [
         {
             "id": "a",
             "text": "Have devices reconnect with the last sequence they processed and fetch the gap from the message store (or inbox index) before resuming live delivery.",
             "isCorrect": true,
-            "explanation": "Correct. The store is the source of truth and pub/sub is only the fast path. Cursor-based sync on reconnect recovers anything dropped while the gateway was down; clients dedupe by (conversation, seq)."
+            "explanation": "The store is the source of truth; pub/sub is the fast path. Cursor-based sync recovers messages missed while the gateway was down. Clients deduplicate by (conversation, seq), so sync can safely overlap live delivery."
         },
         {
             "id": "b",

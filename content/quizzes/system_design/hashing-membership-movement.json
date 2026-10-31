@@ -1,0 +1,10 @@
+{
+  "slug": "hashing-membership-movement", "title": "Add the Eleventh Cache Node", "domain": "system_design", "group": "Distributed Systems", "order": 0, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000011", "type": "quiz", "topic": "consistent-hashing-fundamentals", "difficulty": "Easy",
+  "description": "A balanced ten-node cache uses a consistent hash ring. An equal-capacity eleventh node joins. Roughly what share of keys should move on average?",
+  "options": [
+    {"id":"a","text":"All keys, because the membership count changed.","isCorrect":false,"explanation":"That resembles modulo rehashing. A ring changes ownership only for the joining node's ranges."},
+    {"id":"b","text":"Exactly one half, regardless of node count.","isCorrect":false,"explanation":"Movement depends on the new node's expected ownership share, not a fixed half."},
+    {"id":"c","text":"About 1/11, with actual movement depending on placement.","isCorrect":true,"explanation":"With balanced ownership, the new node takes about one share out of eleven. This is an expectation, not an exact guarantee."},
+    {"id":"d","text":"No keys, because existing owners never change.","isCorrect":false,"explanation":"The new node must acquire ranges to hold its share; otherwise it contributes no cache capacity."}
+  ]
+}

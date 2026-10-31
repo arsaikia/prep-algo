@@ -1,0 +1,10 @@
+{
+  "slug":"jobs-status-contract","title":"Accept an Export Without Holding the Request","domain":"system_design","group":"Design Patterns","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000031","type":"quiz","topic":"pattern-long-running-tasks","difficulty":"Easy",
+  "description":"Account exports take 20 minutes. The caller needs proof that work was accepted and a way to check progress. Which API contract fits?",
+  "options":[
+    {"id":"a","text":"Return 200 before recording anything and hope a worker sees the request.","isCorrect":false,"explanation":"A crash can lose unrecorded work after the client was told it succeeded."},
+    {"id":"b","text":"Durably record a job, return 202 with its ID, and expose status from a job table.","isCorrect":true,"explanation":"Acceptance is synchronous and durable; execution is asynchronous. Reliable enqueueing needs an outbox or a recovery sweeper."},
+    {"id":"c","text":"Keep the HTTP request open for all 20 minutes.","isCorrect":false,"explanation":"Proxy timeouts, deploys and retries make long work on the request path fragile."},
+    {"id":"d","text":"Use the queue itself as the client's queryable job-status database.","isCorrect":false,"explanation":"A delivery queue is not the authoritative status record queried by job ID."}
+  ]
+}

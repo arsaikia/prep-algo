@@ -1,0 +1,20 @@
+{
+    "slug": "design-uber-tradeoff",
+    "title": "The matcher crashes after making an offer",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-uber",
+    "difficulty": "Hard",
+    "order": 3,
+    "tags": ["ride-hailing", "workflows", "recovery"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0026",
+    "description": "A matcher sends a 15-second offer, then crashes before handling the driver's response. The ride remains matching in the database. Another worker must resume it without stranding the rider or assigning two drivers. What recovery mechanism should you add?",
+    "options": [
+        {"id": "a", "text": "Persist workflow progress and a total deadline, redrive timed-out work, and use idempotent offers plus authoritative conditional assignment.", "isCorrect": true, "explanation": "A replacement can continue from durable state. The total deadline ends unsuccessful matching, while conditional assignment rejects stale accepts and duplicate workflow attempts."},
+        {"id": "b", "text": "Keep the candidate list only in the matcher's memory and wait for that process to restart.", "isCorrect": false, "explanation": "The process may never return, and its memory is gone. Nothing would reliably advance or terminate the ride."},
+        {"id": "c", "text": "Let every replacement worker immediately assign its nearest driver without checking the ride state.", "isCorrect": false, "explanation": "That ignores a late acceptance or another worker's progress and can create competing assignments."},
+        {"id": "d", "text": "Extend driver leases indefinitely whenever a matcher stops responding.", "isCorrect": false, "explanation": "This strands drivers along with the ride. Leases need expiry, and durable workflow state—not an endless lock—must drive recovery."}
+    ]
+}

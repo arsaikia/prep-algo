@@ -1,0 +1,10 @@
+{
+  "slug":"lb-route-by-path","title":"Send Images to the Media Service","domain":"system_design","group":"Networking","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000021","type":"quiz","topic":"load-balancing-fundamentals","difficulty":"Easy",
+  "description":"An HTTPS API needs /images requests sent to one service and /orders requests to another. Which routing capability is required?",
+  "options":[
+    {"id":"a","text":"An HTTP-aware L7 proxy with access to the request path.","isCorrect":true,"explanation":"Path routing requires parsing HTTP, typically after TLS termination. Decide whether to re-encrypt the backend hop."},
+    {"id":"b","text":"An L4 balancer looking only at IP addresses and ports.","isCorrect":false,"explanation":"Those fields do not reveal the encrypted HTTP path."},
+    {"id":"c","text":"DNS records that inspect each request's URL path.","isCorrect":false,"explanation":"DNS resolves names before the HTTP request and does not receive its path."},
+    {"id":"d","text":"Round robin alone, without inspecting HTTP.","isCorrect":false,"explanation":"Round robin spreads traffic but cannot choose a service based on a URL path."}
+  ]
+}

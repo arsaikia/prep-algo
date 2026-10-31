@@ -12,19 +12,19 @@
   "type": "quiz",
   "topic": "consistent-hashing-fundamentals",
   "difficulty": "Medium",
-  "description": "Understand consistent hashing and its use in distributed systems.",
+  "description": "A cache cluster uses one random ring position per server. Some servers own far more keys than others, and membership changes are expected. Which statement points to an appropriate placement improvement?",
   "options": [
     {
       "id": "a",
       "text": "When a node is added to a consistent hash ring, all keys must be redistributed",
       "isCorrect": false,
-      "explanation": "Only keys in the range between the new node and its predecessor need to move — on average K/N keys (where K is total keys, N is total nodes). This is the key advantage over simple modular hashing."
+      "explanation": "A joining node takes its neighboring ranges. Adding one equal-capacity node to N existing balanced nodes moves about K/(N+1) keys on average, where K is total keys. Modulo rehashing instead remaps most keys."
     },
     {
       "id": "b",
       "text": "Virtual nodes help solve the problem of uneven key distribution across physical nodes",
       "isCorrect": true,
-      "explanation": "Without virtual nodes, nodes may be unevenly spaced on the ring, causing hot spots. Virtual nodes (multiple points per physical node) ensure more uniform distribution — each physical node owns many small ranges instead of one large one."
+      "explanation": "Multiple ring positions per physical node reduce random ownership skew by giving it many small ranges. This improves the expected key distribution; it does not guarantee equal bytes, request rates or hot-key load."
     },
     {
       "id": "c",
@@ -36,7 +36,7 @@
       "id": "d",
       "text": "Consistent hashing is only used for cache distribution",
       "isCorrect": false,
-      "explanation": "Consistent hashing is used in many distributed systems: database sharding (DynamoDB, Cassandra), load balancing, distributed caches, CDNs, and distributed file systems."
+      "explanation": "Ring-style placement appears in Dynamo's design, Cassandra token ranges, distributed caches, some load balancers, CDNs and file systems. Do not assume DynamoDB's internal layout is a textbook ring."
     }
   ]
 }

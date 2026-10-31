@@ -1,0 +1,10 @@
+{
+  "slug": "cap-operation-choice", "title": "Keep Like Counts Available", "domain": "system_design", "group": "Distributed Systems", "order": 0, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000005", "type": "quiz", "topic": "cap-theorem-and-consistency", "difficulty": "Easy",
+  "description": "Two regions cannot communicate. The product allows a temporarily old like count but wants reachable replicas to answer. Which policy matches that requirement?",
+  "options": [
+    {"id":"a","text":"Reject every read until both regions agree.","isCorrect":false,"explanation":"That protects a single current view by giving up availability, which is not the stated preference for this operation."},
+    {"id":"b","text":"Serve reachable copies and reconcile after communication recovers.","isCorrect":true,"explanation":"This favors availability during the partition while allowing stale values. Concurrent accepted updates need a reconciliation rule."},
+    {"id":"c","text":"Require globally linearizable reads without blocking either region.","isCorrect":false,"explanation":"CAP rules out guaranteeing both properties during this partition."},
+    {"id":"d","text":"Remove partition tolerance from the configuration.","isCorrect":false,"explanation":"A configuration cannot make the failed link disappear. The design must choose its behavior during the partition."}
+  ]
+}

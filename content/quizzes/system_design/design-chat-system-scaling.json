@@ -1,0 +1,20 @@
+{
+    "slug": "design-chat-system-scaling",
+    "title": "A message for gateway 2",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-chat-system",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["chat", "routing", "websockets"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0013",
+    "description": "Your chat fleet has 4,000 gateways. Every persisted message is broadcast to all of them, but almost all discard it because the recipient is elsewhere. Devices change gateways on reconnect. Which routing plan cuts the wasted work while keeping multi-device delivery?",
+    "options": [
+        {"id": "a", "text": "Hash each user permanently to one gateway and reject connections to other gateways.", "isCorrect": false, "explanation": "A fixed socket home complicates failover and scaling. It also does not by itself provide a current mapping for multiple devices."},
+        {"id": "b", "text": "Send the message only to the sender's gateway and ask the recipient to reconnect there.", "isCorrect": false, "explanation": "Recipients cannot move their live connections for every incoming message. Groups and simultaneous conversations make this unworkable."},
+        {"id": "c", "text": "Broadcast only message IDs, then let all gateways fetch bodies to find their recipients.", "isCorrect": false, "explanation": "Every gateway still processes every message, and the extra fetches make the shared-store load worse."},
+        {"id": "d", "text": "Track device-to-gateway mappings with heartbeat TTLs, batch recipients by gateway, and publish to those gateway channels.", "isCorrect": true, "explanation": "Routing follows each device's current connection instead of broadcasting. The durable message store and reconnect sync remain the recovery path if a mapping or publish is stale."}
+    ]
+}

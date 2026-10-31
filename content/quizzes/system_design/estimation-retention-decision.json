@@ -1,0 +1,10 @@
+{
+  "slug":"estimation-retention-decision","title":"Low Write Rate, Large History","domain":"system_design","group":"Foundations","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000028","type":"quiz","topic":"numbers-to-know-and-estimation","difficulty":"Hard",
+  "description":"A service stores 20 GB/day for five years. Throughput fits one primary, but capacity planning must include three copies plus indexes. Which conclusion follows?",
+  "options":[
+    {"id":"a","text":"Low QPS proves the data fits one node indefinitely.","isCorrect":false,"explanation":"Write rate and retained size are separate limits; a modest stream accumulates a large history."},
+    {"id":"b","text":"Five years is about 36 TB raw and over 100 TB for three copies, so consider partitioning or accessible archives.","isCorrect":true,"explanation":"20 GB × 365 × 5 is roughly 36.5 TB before indexes. Replication triples that, making retention rather than throughput the design pressure."},
+    {"id":"c","text":"Three copies divide the raw capacity requirement by three.","isCorrect":false,"explanation":"Replication duplicates data; it multiplies total storage rather than reducing it."},
+    {"id":"d","text":"Keep only today's 20 GB in the estimate.","isCorrect":false,"explanation":"That ignores the five-year retention requirement and would under-size persistent storage."}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "slug":"estimation-daily-to-peak","title":"Turn Daily Events into Peak Load","domain":"system_design","group":"Foundations","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000027","type":"quiz","topic":"numbers-to-know-and-estimation","difficulty":"Easy",
+  "description":"An app records 10 million events per day. Use 100,000 seconds per day for rough planning and a peak factor of 4. What peak rate should you compare with per-node capacity?",
+  "options":[
+    {"id":"a","text":"About 100 events/s.","isCorrect":false,"explanation":"That is the rounded average, before the stated peak factor."},
+    {"id":"b","text":"About 40 million events/s.","isCorrect":false,"explanation":"Multiplying daily volume by the peak factor without converting days to seconds mixes units."},
+    {"id":"c","text":"About 400 events/s.","isCorrect":true,"explanation":"10,000,000 / 100,000 gives about 100/s average; multiplying by 4 gives about 400/s peak. Rounding is explicit."},
+    {"id":"d","text":"About 4 events/s.","isCorrect":false,"explanation":"That is two orders of magnitude below the result of the daily-to-second conversion."}
+  ]
+}

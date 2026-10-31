@@ -12,7 +12,7 @@
   "type": "quiz",
   "topic": "sql-vs-nosql-databases",
   "difficulty": "Easy",
-  "description": "Understand when to choose SQL vs NoSQL databases.",
+  "description": "A checkout changes inventory and orders atomically and frequently joins customers to purchases. The team is comparing relational and document stores. Which statement best matches these requirements?",
   "options": [
     {
       "id": "a",
@@ -36,7 +36,7 @@
       "id": "d",
       "text": "You should always start with NoSQL for new projects",
       "isCorrect": false,
-      "explanation": "SQL is often the better default — it provides flexibility for evolving schemas, built-in data integrity, and powerful querying. Choose NoSQL when you have specific needs: massive scale, flexible schema, or access patterns that don't fit relational models."
+      "explanation": "A relational store is often a useful starting point for constraints and evolving queries. Choose a specific key-value or document store when its access patterns and guarantees fit; scale or flexible fields alone do not settle the choice."
     }
   ]
 }

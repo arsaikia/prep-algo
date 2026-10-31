@@ -1,0 +1,20 @@
+{
+    "slug": "design-ad-click-aggregator-scaling",
+    "title": "One ad owns all the lag",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-ad-click-aggregator",
+    "difficulty": "Hard",
+    "order": 2,
+    "tags": ["stream-processing", "hot-keys", "deduplication"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0029",
+    "description": "Click events are partitioned by ad ID. One viral ad pins a processor while others idle. You need to spread its events without sending retries of one click to unrelated dedupe states. Which plan preserves the counting boundary?",
+    "options": [
+        {"id": "a", "text": "Choose a fresh random salt for every produce attempt and merge partial counts later.", "isCorrect": false, "explanation": "A retry can receive a different salt and evade shard-local dedupe, inflating counts when partials are summed."},
+        {"id": "b", "text": "Add consumer tasks but leave the hot ad on its existing single partition.", "isCorrect": false, "explanation": "Extra consumers cannot concurrently split ownership of that same partition's keyed state."},
+        {"id": "c", "text": "Drop events for the hot ad once its processor falls behind.", "isCorrect": false, "explanation": "Billing counts require a recovery and reconciliation path, not unrecorded load shedding."},
+        {"id": "d", "text": "Salt by a stable hash of click ID, deduplicate and count per sub-key, then merge partial counts per ad and window.", "isCorrect": true, "explanation": "Retries of one click reach the same sub-key, while distinct clicks spread across processors. The merge sees a small set of partials instead of every click; version the scheme if its salt count changes."}
+    ]
+}

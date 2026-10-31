@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 const Toc = styled.details`
-  margin: 0 0 2rem;
+  margin: 1.5rem 0 2rem;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 10px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};

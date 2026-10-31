@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "6bc14e12-865a-46b9-aa08-349cedb105d8",
-    "description": "Your judge starts a new Docker container for each test case and enforces a 2-second wall-clock limit per test. During a contest burst, workers run 3 containers per core. Users report that identical correct solutions get Accepted in practice but Time Limit Exceeded in the contest, and verdicts take 30+ seconds. What change best addresses both problems?",
+    "description": "Your judge starts a Docker container per test and applies a two-second wall-clock limit. During contests it runs three containers per core. The same correct solution gets Accepted in practice but Time Limit Exceeded in a contest, and verdicts take over 30 seconds. Which change improves both fairness and turnaround time?",
     "options": [
         {
             "id": "a",

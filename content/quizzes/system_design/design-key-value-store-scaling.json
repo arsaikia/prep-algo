@@ -1,0 +1,20 @@
+{
+    "slug": "design-key-value-store-scaling",
+    "title": "Adding node 31",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-key-value-store",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["key-value-store", "partitioning", "consistent-hashing"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0005",
+    "description": "A 30-node key-value store places keys with hash(key) mod 30. A rehearsal for adding node 31 moves almost the whole dataset and overwhelms the network. Which placement scheme lets future growth move roughly a proportional share while spreading the transfer work across peers?",
+    "options": [
+        {"id": "a", "text": "Use a faster hash function but continue taking the result modulo the node count.", "isCorrect": false, "explanation": "Hash speed does not change the remapping caused by changing the modulus from 30 to 31."},
+        {"id": "b", "text": "Copy all data to node 31, then switch the client routing table.", "isCorrect": false, "explanation": "That still moves the whole dataset and makes the new node a bottleneck rather than adding balanced capacity."},
+        {"id": "c", "text": "Increase the replication factor and keep modulo-based ownership.", "isCorrect": false, "explanation": "More replicas may help availability, but ownership still reshuffles when the node count changes and more data must be transferred."},
+        {"id": "d", "text": "Use a consistent-hashing ring with many virtual nodes per physical node and throttle range transfers.", "isCorrect": true, "explanation": "A joining node takes small token ranges from multiple peers, moving roughly 1/31 of ownership rather than nearly everything. Virtual nodes improve balance; zone-aware replica placement still matters."}
+    ]
+}

@@ -12,7 +12,7 @@
   "type": "quiz",
   "topic": "api-design-fundamentals",
   "difficulty": "Easy",
-  "description": "Understand REST API design principles and best practices.",
+  "description": "A shop is documenting POST /orders and retry behavior after a timeout. It wants predictable resource paths, status codes and method semantics. Which statement should guide the contract?",
   "options": [
     {
       "id": "a",
@@ -22,9 +22,9 @@
     },
     {
       "id": "b",
-      "text": "Idempotency means calling an operation multiple times produces the same result as calling it once",
+      "text": "Idempotency means repeating one logical operation has the same intended effect on server state as doing it once",
       "isCorrect": true,
-      "explanation": "GET, PUT, and DELETE should be idempotent. POST is typically not idempotent. Idempotency is crucial for retry safety in distributed systems."
+      "explanation": "GET, PUT and DELETE are idempotent in intended effect, not necessarily in response status: a second DELETE may return a different status. POST retries need a persisted, scoped idempotency key and atomic duplicate handling."
     },
     {
       "id": "c",
@@ -36,7 +36,7 @@
       "id": "d",
       "text": "GraphQL is a type of REST API",
       "isCorrect": false,
-      "explanation": "GraphQL is a distinct query language and runtime — it uses a single endpoint with POST requests, while REST uses multiple endpoints with HTTP methods."
+      "explanation": "GraphQL is a separate query language and execution model, not a kind of REST. It often uses one endpoint and can use GET for queries as well as POST; endpoint count and POST alone do not define the distinction."
     }
   ]
 }

@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "234f2bbc-43a5-4918-ae25-312dc27d3093",
-    "description": "A Dynamo-style store (N=3, W=2, R=2) physically removes a key from replicas that receive a delete. Replica C was partitioned for an hour and missed the delete of cart:42. After C rejoins, nightly Merkle-tree anti-entropy runs and the next day users see the deleted cart again. What is the root cause and fix?",
+    "description": "A Dynamo-style store uses N=3, W=2 and R=2. A delete physically removes the key from replicas that receive it. Replica C is cut off for an hour and misses the deletion of cart:42. After it rejoins and nightly Merkle-tree repair runs, the deleted cart comes back. Why did that happen, and what prevents it?",
     "options": [
         {
             "id": "a",

@@ -1,0 +1,20 @@
+{
+    "slug": "design-chat-system-tradeoff",
+    "title": "An acknowledgement lost in a tunnel",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-chat-system",
+    "difficulty": "Hard",
+    "order": 3,
+    "tags": ["chat", "ordering", "idempotency"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0014",
+    "description": "Alice sends a message, the server persists it as sequence 1043, and her phone loses connectivity before receiving the acknowledgement. It retries the same clientMsgId after reconnecting. Meanwhile, Bob has sent another message from a different gateway. How should the conversation owner handle Alice's retry?",
+    "options": [
+        {"id": "a", "text": "Return Alice's original sequence using the sender/clientMsgId mapping, without appending another message.", "isCorrect": true, "explanation": "The original durable message already has its place in the conversation order. Reusing the acknowledgement makes the retry idempotent while Bob's distinct send gets its own sequence."},
+        {"id": "b", "text": "Append Alice's retry with a new sequence so acknowledgements always refer to the latest request.", "isCorrect": false, "explanation": "That turns a network retry into a duplicate visible message. Request attempts are not separate user messages."},
+        {"id": "c", "text": "Reorder Alice's retry before Bob's message using Alice's phone timestamp.", "isCorrect": false, "explanation": "Phone clocks cannot establish the shared order, and rewriting the order after delivery makes devices disagree."},
+        {"id": "d", "text": "Drop all of Alice's sends until every member confirms receipt of sequence 1043.", "isCorrect": false, "explanation": "One offline member would block the conversation. Durable server acknowledgement and per-device sync avoid that dependency."}
+    ]
+}

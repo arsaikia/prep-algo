@@ -1,0 +1,20 @@
+{
+    "slug": "design-load-balancer-scaling",
+    "title": "Mixed request costs, uneven servers",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-load-balancer",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["load-balancing", "latency", "algorithms"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0007",
+    "description": "Your L7 fleet sends equal numbers of requests to each healthy backend. Some requests take 5 ms, others 2 seconds, so equal counts leave a few backends overloaded. You want better balance without a globally coordinated outstanding-request counter. Which default would you choose?",
+    "options": [
+        {"id": "a", "text": "Hash every request by client IP so repeat clients return to the same backend.", "isCorrect": false, "explanation": "Affinity does not account for request cost and can concentrate busy clients on one backend."},
+        {"id": "b", "text": "Use round robin with longer backend timeouts.", "isCorrect": false, "explanation": "Longer timeouts do not balance outstanding work. They may keep expensive requests occupying capacity for longer."},
+        {"id": "c", "text": "Pick two random healthy endpoints and choose the one with fewer locally observed outstanding requests.", "isCorrect": true, "explanation": "Power of two choices adapts to uneven work using each proxy's own observations. It avoids the coordination cost of finding a fleet-wide minimum."},
+        {"id": "d", "text": "Open a fresh upstream connection per request and choose the backend with the fewest idle connections.", "isCorrect": false, "explanation": "Idle connection counts are not a measure of active work, and discarding connection reuse adds overhead."}
+    ]
+}

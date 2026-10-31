@@ -7,5 +7,5 @@
     "order": 5,
     "tags": [],
     "lists": [],
-    "summary": "Recurring problems and their standard answers: scaling reads and writes, real-time updates, large files, long-running work, contention and multi-step processes."
+    "summary": "Recognize a familiar problem, then choose a fix. Practise scaling reads and writes, real-time updates, large files, long-running work, contention and multi-step processes."
 }

@@ -1,9 +1,11 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { colorDiagramNodes, diagramTheme } from './diagramTheme';
 
 let mermaidPromise = null;
 let renderCount = 0;
+let renderQueue = Promise.resolve();
 const MIN_READABLE_WIDTH = 800;
 
 // Separate chunk, fetched only by pages that actually contain a diagram.
@@ -70,16 +72,17 @@ function MermaidDiagram({ source, label = 'Diagram' }) {
         setState((prev) => (prev.status === 'ready' ? prev : { status: 'loading' }));
 
         loadMermaid()
-            .then(async (mermaid) => {
-                mermaid.initialize({
-                    startOnLoad: false,
-                    securityLevel: 'strict',
-                    suppressErrorRendering: true,
-                    theme: dark ? 'dark' : 'default',
-                    fontFamily: 'inherit',
+            .then((mermaid) => {
+                const render = renderQueue.then(async () => {
+                    if (cancelled) return;
+                    // Initialization is global in Mermaid; keep it paired with its render.
+                    mermaid.initialize(diagramTheme(dark));
+                    const { svg } = await mermaid.render(id, source);
+                    if (!cancelled) setState({ status: 'ready', svg: colorDiagramNodes(svg, document) });
                 });
-                const { svg } = await mermaid.render(id, source);
-                if (!cancelled) setState({ status: 'ready', svg });
+                // Recover the queue, while the component's catch still shows the error.
+                renderQueue = render.catch(() => {});
+                return render;
             })
             .catch((error) => {
                 if (!cancelled) setState({ status: 'error', message: error?.message || String(error) });

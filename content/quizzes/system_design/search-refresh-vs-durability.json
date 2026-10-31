@@ -1,0 +1,10 @@
+{
+  "slug":"search-refresh-vs-durability","title":"A Saved Listing Is Not Searchable Yet","domain":"system_design","group":"Data & Storage","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000050","type":"quiz","topic":"search-and-inverted-indexes","difficulty":"Hard",
+  "description":"A listing save commits to PostgreSQL, but CDC and search refresh take a few seconds. The seller's own page must show the saved data immediately; discovery can lag. Which policy fits?",
+  "options":[
+    {"id":"a","text":"Declare the database write failed when search returns no result.","isCorrect":false,"explanation":"Search lag does not prove the authoritative write failed; resubmitting may create duplicate work."},
+    {"id":"b","text":"Use Elasticsearch as the only source of truth for the save.","isCorrect":false,"explanation":"That discards the designed authoritative store and does not address the separate refresh visibility boundary."},
+    {"id":"c","text":"Serve the seller's page from PostgreSQL while the derived search index catches up.","isCorrect":true,"explanation":"Read-your-writes belongs on a source known to contain the save. Keeping discovery near-real-time avoids forcing refresh on every indexing operation."},
+    {"id":"d","text":"Add replica shards to eliminate CDC delay.","isCorrect":false,"explanation":"Replicas copy indexed data; they cannot index a source change that has not arrived."}
+  ]
+}

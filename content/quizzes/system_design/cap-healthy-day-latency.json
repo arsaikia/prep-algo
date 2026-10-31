@@ -1,0 +1,10 @@
+{
+  "slug": "cap-healthy-day-latency", "title": "Pay for Consistency on a Healthy Day", "domain": "system_design", "group": "Distributed Systems", "order": 100, "tags": [], "lists": [], "legacyId": "a49d1b20-2510-4a56-9e40-000000000006", "type": "quiz", "topic": "cap-theorem-and-consistency", "difficulty": "Hard",
+  "description": "There is no network partition. A team compares local replica reads with reads that wait for cross-region coordination. Which tradeoff does PACELC help explain?",
+  "options": [
+    {"id":"a","text":"Stronger coordination can improve consistency while adding latency.","isCorrect":true,"explanation":"The 'else' part of PACELC describes the latency-versus-consistency choice during normal operation, not just failures."},
+    {"id":"b","text":"Without partitions, every replica is immediately current.","isCorrect":false,"explanation":"Asynchronous replication can lag on a healthy network, so read policy still matters."},
+    {"id":"c","text":"Eventual consistency promises every replica catches up within two seconds.","isCorrect":false,"explanation":"It promises convergence under the model's conditions, not a fixed deadline unless the system adds one."},
+    {"id":"d","text":"Read-your-writes requires all global reads to be linearizable.","isCorrect":false,"explanation":"A session can receive read-your-writes through routing or version checks without giving that guarantee to every reader."}
+  ]
+}

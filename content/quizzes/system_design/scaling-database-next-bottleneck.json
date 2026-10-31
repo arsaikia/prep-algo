@@ -1,0 +1,10 @@
+{
+  "slug":"scaling-database-next-bottleneck","title":"Ten App Servers, One Busy Database","domain":"system_design","group":"Foundations","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000048","type":"quiz","topic":"scaling-fundamentals","difficulty":"Hard",
+  "description":"After scaling from two to ten stateless instances, API CPU is low but database connection count and write latency soar. Which response follows the measured bottleneck?",
+  "options":[
+    {"id":"a","text":"Keep adding instances because capacity is always linear.","isCorrect":false,"explanation":"Shared state can cap total throughput. More callers and connection pools can increase contention at the same database."},
+    {"id":"b","text":"Move sessions back into each instance's memory.","isCorrect":false,"explanation":"That breaks interchangeability and does not address the database's connection and write pressure."},
+    {"id":"c","text":"Add a CDN to distribute database commits.","isCorrect":false,"explanation":"A CDN can offload cacheable reads and bytes, not commit authoritative database writes."},
+    {"id":"d","text":"Cap app scaling, pool connections and tune or scale the measured stateful write path.","isCorrect":true,"explanation":"Horizontal app scaling moved the bottleneck to shared state. Protect connection limits and investigate cheaper writes, batching or partitioning as justified by measurements."}
+  ]
+}

@@ -7,5 +7,5 @@
     "order": 1,
     "tags": [],
     "lists": [],
-    "summary": "The vocabulary every design interview assumes you already have: scaling, load balancing, caching, consistency and the storage tradeoffs underneath them."
+    "summary": "Build your design toolkit: scaling, load balancing, caching, consistency and storage tradeoffs. Learn what each tool helps with and when to reach for it."
 }

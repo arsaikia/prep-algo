@@ -1,0 +1,10 @@
+{
+  "slug":"geo-nearest-stopping-rule","title":"Know When Nearby Is Near Enough","domain":"system_design","group":"Data & Storage","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000018","type":"quiz","topic":"geospatial-indexing","difficulty":"Hard",
+  "description":"A scooter search finds ten candidates in its first covered ring. The farthest candidate could be farther away than an unseen point just outside that region. When is it safe to return the ten nearest?",
+  "options":[
+    {"id":"a","text":"As soon as any ten candidates exist.","isCorrect":false,"explanation":"Candidate count alone does not prove that unexplored cells contain no closer point."},
+    {"id":"b","text":"When the tenth distance is within the guaranteed covered distance, or after expanding enough to establish that bound.","isCorrect":true,"explanation":"The distance to the unexplored region provides the stopping bound. Expand while an unseen candidate could displace a current result, respecting the maximum radius."},
+    {"id":"c","text":"When all candidates share a geohash prefix.","isCorrect":false,"explanation":"A shared cell prefix does not bound the distance of unseen points across its edges."},
+    {"id":"d","text":"After waiting for one more location ping.","isCorrect":false,"explanation":"Freshness does not establish spatial completeness; the search must check its geometric bound."}
+  ]
+}

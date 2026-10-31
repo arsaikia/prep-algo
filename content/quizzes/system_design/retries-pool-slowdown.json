@@ -1,0 +1,10 @@
+{
+  "slug":"retries-pool-slowdown","title":"A Slow Provider Consumes the Whole Pool","domain":"system_design","group":"Reliability","order":100,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000058","type":"quiz","topic":"timeouts-retries-and-backpressure","difficulty":"Hard",
+  "description":"A service accepts 500 requests/s. A dependency slows from 200 ms to 2 s, and the service has 200 concurrent slots. Which response addresses the resulting pressure?",
+  "options":[
+    {"id":"a","text":"Use an unbounded waiting queue so no caller sees rejection.","isCorrect":false,"explanation":"The deficit becomes rising latency and memory use; it does not disappear."},
+    {"id":"b","text":"Retry every slow call at every layer.","isCorrect":false,"explanation":"Nested retries amplify load on the already-slow dependency."},
+    {"id":"c","text":"Propagate deadlines, bound admission and isolate the dependency's pool.","isCorrect":true,"explanation":"Little's law gives about 100 in-flight calls normally and 1,000 at 2 s, beyond 200 slots. Limits and bulkheads protect the service; capacity or load must change to resolve a sustained deficit."},
+    {"id":"d","text":"Remove timeouts so completed work is never interrupted.","isCorrect":false,"explanation":"Long waits retain scarce slots and allow one failing dependency to exhaust the service."}
+  ]
+}

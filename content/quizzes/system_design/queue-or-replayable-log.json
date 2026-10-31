@@ -1,0 +1,10 @@
+{
+  "slug":"queue-or-replayable-log","title":"Let Three Services Read the Same Events","domain":"system_design","group":"Messaging","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000023","type":"quiz","topic":"message-queues-and-streams","difficulty":"Easy",
+  "description":"Billing, analytics and search each need every order event at their own pace. Analytics must replay yesterday after a bug fix. Which setup fits?",
+  "options":[
+    {"id":"a","text":"One destructive work queue shared by all three services.","isCorrect":false,"explanation":"Competing consumers split tasks; acknowledging removes messages rather than retaining them for each independent application."},
+    {"id":"b","text":"A cache containing only the most recent event.","isCorrect":false,"explanation":"One current value cannot provide every event or yesterday's history."},
+    {"id":"c","text":"A retained log with one consumer group per service.","isCorrect":true,"explanation":"Each group tracks its own offsets and receives the records independently. Retention must cover the required replay window."},
+    {"id":"d","text":"One consumer group with one worker from each service.","isCorrect":false,"explanation":"Within a group, partitions are divided among workers. That would not give every service every event."}
+  ]
+}

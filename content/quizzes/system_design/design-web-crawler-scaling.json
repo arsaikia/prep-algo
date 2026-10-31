@@ -1,0 +1,20 @@
+{
+    "slug": "design-web-crawler-scaling",
+    "title": "Fetcher slots are empty",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-web-crawler",
+    "difficulty": "Medium",
+    "order": 2,
+    "tags": ["web-crawler", "capacity", "politeness"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0027",
+    "description": "Your crawler needs about 2,300 pages/s to fetch a billion pages in five days. It allows one request/s per host, but only 800 hosts are currently eligible and each has plenty of queued pages. Fetcher CPU, bandwidth and connection slots are mostly idle. What would most directly raise useful throughput while keeping the politeness rule?",
+    "options": [
+        {"id": "a", "text": "Add enough fetcher machines to triple the number of open connection slots.", "isCorrect": false, "explanation": "Existing slots are already idle. More capacity cannot create hosts that are eligible to fetch."},
+        {"id": "b", "text": "Reduce the per-host delay to 100 ms so the same 800 hosts supply more pages.", "isCorrect": false, "explanation": "That violates the stated one-request-per-second politeness rule rather than solving the scheduling constraint."},
+        {"id": "c", "text": "Add seeds or widen the allowed crawl scope to keep thousands of distinct eligible hosts in rotation.", "isCorrect": true, "explanation": "At one page/s per host, 800 eligible hosts cap throughput near 800 pages/s. The bottleneck is ready-host diversity, not fetch capacity."},
+        {"id": "d", "text": "Combine all host queues into one FIFO so fetchers can take URLs faster.", "isCorrect": false, "explanation": "A FIFO does not increase the eligible-host count and makes politeness harder to enforce."}
+    ]
+}

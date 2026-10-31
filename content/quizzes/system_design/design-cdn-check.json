@@ -14,7 +14,7 @@
     ],
     "lists": [],
     "legacyId": "8282b399-ef07-417c-b0d2-3f08caae557e",
-    "description": "A sports live stream publishes a new 4-second video segment every 4 seconds. The CDN has 200 PoPs with about 10 cache servers each, and every server fetches misses directly from the origin. At kickoff, the origin receives roughly 2,000 requests for each new segment and starts timing out. Which change most directly fixes this?",
+    "description": "A live sports stream publishes a new four-second segment every four seconds. Across 200 PoPs, about ten cache servers per PoP each fetch misses straight from the origin. At kickoff, the origin gets roughly 2,000 requests for every new segment and starts timing out. Which change most directly reduces that duplicate work?",
     "options": [
         {
             "id": "a",

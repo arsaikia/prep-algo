@@ -1,0 +1,10 @@
+{
+  "slug":"idempotency-request-identity","title":"Two Purchases or One Retry?","domain":"system_design","group":"Reliability","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000019","type":"quiz","topic":"idempotency-and-delivery-guarantees","difficulty":"Easy",
+  "description":"A customer intentionally buys the same item twice for the same amount, then retries the second purchase after a timeout. How should the API distinguish these actions?",
+  "options":[
+    {"id":"a","text":"Treat all identical request bodies as one purchase.","isCorrect":false,"explanation":"Legitimate separate purchases can have identical bodies. Payload equality alone is not operation identity."},
+    {"id":"b","text":"Generate a new key at the server for every attempt.","isCorrect":false,"explanation":"A new key makes a retry look like a new operation and permits duplicate effects."},
+    {"id":"c","text":"Use a distinct client key per purchase and reuse the second key on its retry.","isCorrect":true,"explanation":"Keys identify logical operations. Scope them to the caller and operation, bind the payload, and enforce uniqueness atomically."},
+    {"id":"d","text":"Deduplicate every purchase from that customer for the whole day.","isCorrect":false,"explanation":"That blocks legitimate activity and still does not bind one key to one intended purchase."}
+  ]
+}

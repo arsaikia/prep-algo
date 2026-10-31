@@ -1,0 +1,10 @@
+{
+  "slug":"replica-not-a-backup","title":"Every Replica Has the Same Accidental Delete","domain":"system_design","group":"Data & Storage","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000045","type":"quiz","topic":"replication-and-read-consistency","difficulty":"Easy",
+  "description":"An accidental DELETE reaches all replicas before anyone notices. Which recovery mechanism addresses this failure?",
+  "options":[
+    {"id":"a","text":"Add another current replica after the deletion.","isCorrect":false,"explanation":"It copies the already-deleted state and does not recreate historical data."},
+    {"id":"b","text":"Use tested base backups and archived logs for point-in-time recovery.","isCorrect":true,"explanation":"Independent recovery data lets you restore to before the mistake. Replicas mainly support read capacity and availability, not protection from faithfully replicated errors."},
+    {"id":"c","text":"Promote any up-to-date replica.","isCorrect":false,"explanation":"An up-to-date replica has replayed the same delete."},
+    {"id":"d","text":"Restart the application connection pool.","isCorrect":false,"explanation":"Connection recovery cannot restore committed data."}
+  ]
+}

@@ -7,5 +7,5 @@
     "order": 4,
     "tags": [],
     "lists": [],
-    "summary": "Coordination across machines: consensus, leader election, clocks, idempotency and exactly-once delivery."
+    "summary": "Get machines to work together, even when messages arrive late or twice. Explore consensus, leader election, clocks, idempotency and what exactly-once delivery really guarantees."
 }

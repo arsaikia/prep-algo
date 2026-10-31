@@ -274,16 +274,11 @@ function TopicReader() {
   const { hash } = useLocation();
   const { completed, toggle } = useCompletedLessons();
   const [state, setState] = useState({ status: 'loading' });
-  const [quiz, setQuiz] = useState(null);
-  const [quizError, setQuizError] = useState('');
   const [retry, setRetry] = useState(0);
-  const [quizRetry, setQuizRetry] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setState({ status: 'loading' });
-    setQuiz(null);
-    setQuizError('');
 
     (async () => {
       const index = await loadIndex();
@@ -317,17 +312,6 @@ function TopicReader() {
 
     return () => { cancelled = true; };
   }, [slug, retry]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const entry = quizByTopic?.get(slug);
-    setQuiz(null);
-    setQuizError('');
-    if (entry) loadItem(entry.slug, entry.h)
-      .then((body) => { if (!cancelled) setQuiz(body); })
-      .catch((err) => { if (!cancelled) setQuizError(err.message); });
-    return () => { cancelled = true; };
-  }, [slug, quizByTopic, quizRetry]);
 
   const body = state.status === 'ready' ? state.topic.body : '';
   const sections = useMemo(() => extractHeadings(body, { minDepth: 2, maxDepth: 2 }), [body]);
@@ -440,11 +424,7 @@ function TopicReader() {
         </Panel>
       )}
 
-      {quizError && <Panel role="alert">
-        <p>Could not load the optional quiz: {quizError}</p>
-        <button onClick={() => setQuizRetry((value) => value + 1)}>Retry quiz</button>
-      </Panel>}
-      <TopicQuiz key={slug} quiz={quiz?.topic === slug ? quiz : null} />
+      <TopicQuiz key={slug} entries={quizByTopic?.get(slug)} />
       {isLesson && !reference && (
         <CompleteRow $done={done}>
           <p>{done ? 'You marked this lesson as complete.' : 'Finished this lesson? Track it on your learning path.'}</p>

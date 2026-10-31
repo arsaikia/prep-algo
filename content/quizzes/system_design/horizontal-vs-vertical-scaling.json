@@ -12,7 +12,7 @@
   "type": "quiz",
   "topic": "scaling-fundamentals",
   "difficulty": "Easy",
-  "description": "Understand when to scale horizontally vs vertically.",
+  "description": "An app is moving from one large server to several instances behind a balancer. Sessions currently live in process memory. Which concern should the team plan for?",
   "options": [
     {
       "id": "a",
@@ -24,7 +24,7 @@
       "id": "b",
       "text": "Horizontal scaling adds complexity around data consistency and session management",
       "isCorrect": true,
-      "explanation": "With multiple servers, you need load balancing, sticky sessions or externalized session stores, distributed caching, and strategies for data consistency across nodes."
+      "explanation": "Any instance may receive the next request, so shared session state or suitably scoped tokens avoid losing sessions with a node. Affinity can help locality but does not make local state survive failure; shared caches and stores also need consistency policies."
     },
     {
       "id": "c",

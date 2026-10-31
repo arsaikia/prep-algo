@@ -1,0 +1,20 @@
+{
+    "slug": "design-notification-system-tradeoff",
+    "title": "Did that SMS go through?",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-notification-system",
+    "difficulty": "Hard",
+    "order": 3,
+    "tags": ["notifications", "idempotency", "provider-failure"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0012",
+    "description": "An SMS provider accepts a delivery, but the worker crashes before recording sent. The queue redelivers the job, whose deterministic delivery ID is still marked sending. The provider has no idempotency API or reliable status lookup. What can your platform honestly guarantee?",
+    "options": [
+        {"id": "a", "text": "The deterministic delivery ID guarantees the provider cannot send the message twice.", "isCorrect": false, "explanation": "The ID deduplicates internal work, but a provider that does not honor it can accept the same logical delivery again."},
+        {"id": "b", "text": "Using a transactional Kafka consumer makes the external SMS call part of the queue transaction.", "isCorrect": false, "explanation": "Kafka transactions do not include an unrelated provider's side effects. The crash gap remains outside the transaction."},
+        {"id": "c", "text": "Internal retries can be deduplicated, but this ambiguous outcome still needs a stated duplicate-versus-loss policy.", "isCorrect": true, "explanation": "Resending may duplicate the SMS; skipping may lose it if acceptance did not lead to delivery. Without provider cooperation, internal claims cannot remove that uncertainty."},
+        {"id": "d", "text": "Switching the retry to another SMS provider removes the ambiguity.", "isCorrect": false, "explanation": "The first provider may already have sent it. A second provider cannot undo that send and may create a duplicate."}
+    ]
+}

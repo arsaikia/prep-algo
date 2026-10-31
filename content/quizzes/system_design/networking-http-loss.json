@@ -1,0 +1,10 @@
+{
+  "slug":"networking-http-loss","title":"A Lost Packet on a Mobile Connection","domain":"system_design","group":"Networking","order":0,"tags":[],"lists":[],"legacyId":"a49d1b20-2510-4a56-9e40-000000000025","type":"quiz","topic":"networking-essentials","difficulty":"Easy",
+  "description":"A mobile client has several HTTP/2 streams on one TCP connection. Packet loss stalls otherwise independent responses. Which HTTP/3 property helps with this?",
+  "options":[
+    {"id":"a","text":"It removes encryption so packets arrive sooner.","isCorrect":false,"explanation":"HTTP/3 uses QUIC with TLS; removing encryption is not its latency mechanism."},
+    {"id":"b","text":"Its QUIC streams recover independently from packet loss.","isCorrect":true,"explanation":"QUIC avoids TCP's cross-stream head-of-line blocking. A missing packet can still delay its own stream, and congestion control remains shared."},
+    {"id":"c","text":"It guarantees no packets are lost over UDP.","isCorrect":false,"explanation":"UDP does not prevent loss. QUIC supplies transport reliability and stream recovery above it."},
+    {"id":"d","text":"It requires a fresh TCP connection for every response.","isCorrect":false,"explanation":"HTTP/3 uses QUIC over UDP, not per-response TCP connections."}
+  ]
+}

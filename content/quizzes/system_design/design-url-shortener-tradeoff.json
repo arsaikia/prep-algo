@@ -1,0 +1,20 @@
+{
+    "slug": "design-url-shortener-tradeoff",
+    "title": "Click analytics goes offline",
+    "domain": "system_design",
+    "type": "quiz",
+    "group": "Case Studies",
+    "topic": "design-url-shortener",
+    "difficulty": "Medium",
+    "order": 3,
+    "tags": ["url-shortener", "analytics", "availability"],
+    "lists": [],
+    "legacyId": "d18f92c5-578c-47ac-8b12-19fc8a3e0002",
+    "description": "The click stream is unavailable for several minutes. Product says click counts are approximate, not billable, and redirects must stay fast. Your redirect service currently waits for a stream acknowledgement. Which policy best matches those requirements?",
+    "options": [
+        {"id": "a", "text": "Write each click to the link database until the stream recovers.", "isCorrect": false, "explanation": "This moves the analytics dependency onto the transactional database and still makes a redirect wait for an analytics write."},
+        {"id": "b", "text": "Keep every pending click in an unbounded in-memory queue.", "isCorrect": false, "explanation": "A long outage can exhaust memory and take down redirects. Approximate counts do not justify that availability risk."},
+        {"id": "c", "text": "Return an error when the stream is down so clients retry the click later.", "isCorrect": false, "explanation": "This sacrifices the required user path to protect optional analytics. Retrying also makes click counting harder."},
+        {"id": "d", "text": "Return the redirect immediately, buffer events asynchronously within a fixed limit, and drop overflow with monitoring.", "isCorrect": true, "explanation": "The bounded buffer absorbs short outages without risking memory exhaustion. Dropping overflow is an explicit loss policy that fits approximate counts; billable clicks would need stronger durability."}
+    ]
+}
